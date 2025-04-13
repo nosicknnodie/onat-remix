@@ -1,14 +1,20 @@
-import type { LinksFunction } from "@remix-run/node";
+import { Profile } from "@prisma/client";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
+  data,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
-
 import type { ReactNode } from "react";
+import { prisma } from "./auth/db.server";
+import { auth } from "./auth/lucia.server";
+import { ProfileContext, UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
+import Header from "./template/layout/Header";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -25,21 +31,50 @@ export const links: LinksFunction = () => [
   { rel: "apple-touch-icon-precomposed", href: "/favicon.ico" },
 ];
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  const sessionId = request.headers
+    .get("Cookie")
+    ?.match(/auth_session=([^;]+)/)?.[1];
+  if (!sessionId) return data({ user: null, profile: null });
+  const { user } = await auth.validateSession(sessionId);
+  const profile: Profile | null = await prisma.profile.findUnique({
+    where: { userId: user?.id },
+  });
+  return data({ user, profile });
+}
+
 export function Layout({ children }: { children: ReactNode }) {
+  const data = useLoaderData<typeof loader>();
   return (
-    <html lang="ko">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
+    <UserContext.Provider value={data.user}>
+      <ProfileContext.Provider value={data.profile}>
+        <html lang="ko">
+          <head>
+            <meta charSet="utf-8" />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1"
+            />
+            <Meta />
+            <Links />
+          </head>
+          <body className="min-h-screen bg-background font-sans antialiased">
+            <div className="dark:bg-boxdark-2 dark:text-bodydark">
+              <div className="flex h-screen overflow-hidden">
+                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                  <Header />
+                  <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
+                    {children}
+                  </main>
+                </div>
+              </div>
+            </div>
+            <ScrollRestoration />
+            <Scripts />
+          </body>
+        </html>
+      </ProfileContext.Provider>
+    </UserContext.Provider>
   );
 }
 

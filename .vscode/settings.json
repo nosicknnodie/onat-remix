@@ -7,5 +7,6 @@
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "biome.enable": true
+  "biome.enable": true,
+  "idf.pythonInstallPath": "/opt/homebrew/bin/python3"
 }

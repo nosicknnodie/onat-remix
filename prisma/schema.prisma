@@ -7,12 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model User {
+//   id           String    @id
+//   email        String    @unique
+//   name         String?
+//   auth_session Session[]
+//   auth_key     Key[]
+// }
+
+
 model User {
-  id           String    @id
-  email        String    @unique
-  name         String?
-  auth_session Session[]
-  auth_key     Key[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  password      String?
+  role          UserRole @default(USER)
+  // accounts      Account[]
+  // tokens        RefreshToken[]
+  player        Player[]
+  profile       Profile?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  // isTwoFactorEnabled Boolean @default(false)
+  // twoFactorConfirmation TwoFactorConfirmation?
+  // sessions Session[]
+  session Session[]
+  key     Key[]
+  // authenticators Authenticator[]
+  @@map("users")
 }
 
 model Session {
@@ -24,9 +48,380 @@ model Session {
 
 model Key {
   id              String  @id
-  hashed_password String?
+  hashedPassword String?
   userId          String
   user            User    @relation(references: [id], fields: [userId], onDelete: Cascade)
 
   @@unique([id])
 } 
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+
+model Club {
+  id            String @id @default(cuid())
+  name          String    // 클럽 이름
+  url           String  @unique   // 페이지 pathname
+  si            String?   // 도시
+  gun           String?   // 지역
+  imageUrl      String?   // 클럽 이미지
+  emblemUrl     String?   // 엠블럼 URL
+  isPublic      Boolean? @default(false)
+  createProfileId     String?
+  createProfile       Profile?  @relation(fields: [createProfileId], references: [id], onDelete: SetNull)
+  players       Player[]      // 회원 선수
+  matchs        Match[]       // 매치
+  proposals     Proposal[]   // 클럽 제안
+  applications  Application[] // 클럽 지원자  
+  authors       Author[]      //
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  @@index([createProfileId])
+
+}
+
+
+enum PlayerNativeType {
+  NO          // 비선출
+  MIDDLE      // 중등
+  HIGH        // 고등
+  COLLEAGE    // 대학
+  PRO         // 프로
+}
+
+enum GenderType {
+  MALE    // 남자
+  FEMALE  // 여자
+}
+
+
+model Profile {
+  id            String  @id @default(cuid())
+  nick          String?  @unique // 닉네임
+  name          String
+  imageUrl      String?
+  playerNative  PlayerNativeType? // 선출 중등 고등 대학 프로
+  height        Int?       // 키
+  birth         DateTime    // 생일
+  gender        GenderType? // 성별
+  // positions     Position[]  // 포지션s
+  position1     PositionType?
+  position2     PositionType?
+  position3     PositionType?
+  si            String?     // 도시 (시도)
+  gun           String?     // 지역 (시군구)
+  clothesSize   String?        // 옷 사이즈
+  shoesSize     String?        // 신발 사이즈
+  userId        String?     @unique
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
+
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  clubs         Club[]
+  players       Player[]
+  authors       Author[]
+  toProposals   Proposal[]  @relation("toProposal")
+  fromProposals Proposal[]  @relation("fromProposal")
+  mercenarys    Mercenary[]
+  applications  Application[]
+  playerLogs    PlayerLog[]
+  comments      Comment[]
+
+
+  @@index([userId])
+}
+
+// 제안
+model Proposal {
+  id              String    @id @default(cuid())
+  content         String?   // 제안 내용
+  toId            String
+  isReaded        Boolean   @default(false)
+  fromId          String
+  clubId          String
+  endAt           DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now()) @updatedAt
+
+  to              Profile   @relation(name: "toProposal", fields: [toId], references: [id], onDelete: Cascade)
+  from            Profile   @relation(name: "fromProposal",fields: [fromId], references: [id], onDelete: Cascade)
+  club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+  @@index([fromId])
+  @@index([toId])
+}
+
+// 입회 신청
+model Application {
+  id              String    @id @default(cuid())
+  content         String?   // 신청 내용
+  fromProfileId   String    // 신청자 profile fkey
+  toClubId        String    // 신청 club
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  result          Boolean?  // 허락 : 거절
+  fromProfile     Profile   @relation(fields: [fromProfileId], references: [id], onDelete: Cascade)
+  toClub          Club      @relation(fields: [toClubId], references: [id], onDelete: Cascade)
+
+  @@index([fromProfileId])
+  @@index([toClubId])
+}
+
+enum JobTitle {
+  CHAIRMAN      // 회장
+  VICE_CHAIRMAN // 부회장
+  DIRECTOR      // 감독
+  COACH         // 코치
+  OPERATOR      // 운영
+  ADVISER       // 고문
+  NO            // 없음
+}
+
+model Mercenary {
+  id              String    @id @default(cuid())
+  name            String
+  position1       PositionType?
+  position2       PositionType?
+  position3       PositionType?
+  
+  profileId       String?
+  profile         Profile?  @relation(fields: [profileId], references: [id], onDelete: Cascade)       
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now()) @updatedAt
+  
+  attendance      Attendance?
+
+  @@index([profileId])
+}
+
+model Player {
+  id              String    @id @default(cuid())
+  profileId       String
+  userId          String?
+  jobTitle        JobTitle?
+  clubId          String
+
+  isInjury        Boolean  @default(false)
+  isRest          Boolean  @default(false)
+  isExit          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  
+  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  attendances     Attendance[]
+  author          Author?
+  playerLogs      PlayerLog[]
+
+  @@unique([profileId, clubId])
+  @@index([profileId])
+  @@index([clubId])
+  @@index([userId])
+}
+
+enum PlayerLogType {
+  ENTRY    // 가입, 탈퇴
+  REST  // 휴식기
+  INJURY  // 부상
+}
+enum PlayerLogValue {
+  START  // 시작
+  END    // 종료
+}
+
+model PlayerLog {
+  id              String    @id @default(cuid())
+  playerId        String
+  player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  type            PlayerLogType?
+  value           PlayerLogValue?
+  createProfileId       String?
+  createProfile         Profile?   @relation(fields: [createProfileId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@index([playerId])
+  @@index([createProfileId])
+}
+
+model Author {
+  id              String    @id @default(cuid())
+  type            AuthorType  @default(NORMAL)
+  profileId       String
+  clubId          String
+  playerId        String    @unique
+
+  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  player          Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, profileId])
+  @@index([clubId])
+  @@index([profileId])
+}
+
+enum AuthorType {
+  MASTER
+  MANAGER
+  NORMAL
+}
+
+
+model Match {
+  id        String        @id @default(cuid())
+  clubId    String
+  club      Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  title     String
+  description   String     @db.Text
+  placeName     String?
+  address       String?
+  lng           Float?      
+  lat           Float?     
+  stDate        DateTime?
+  isSelf        Boolean       @default(false)   // 자체전 여부
+  attendances   Attendance[]
+  quarters      Quarter[]
+  teams         Team[]
+  comment       Comment[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@index([clubId])
+}
+
+model Team {
+  id              String  @id @default(cuid())
+  seq             Int @default(0)
+  name            String
+  color           String
+  attendances     Attendance[]
+  matchId         String
+  match           Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  assigned        Assigned[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@index([matchId])
+}
+
+model Attendance {
+  id          String    @id @default(cuid())
+  isVote      Boolean   @default(false)   // 참석투표 여부
+  voteTime    DateTime?                   // 참석투표 시간
+
+  isCheck     Boolean   @default(false)   // 출석체크
+  checkTime   DateTime?                   // 출석체크 시간
+  
+  playerId    String?   // 선수 fkey
+  mercenaryId String?   @unique   // 용병 fkey
+  matchId     String    // 매치 fkey
+  teamId      String?   // 팀 fkey
+
+  player      Player?     @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  mercenary   Mercenary?  @relation(fields: [mercenaryId], references: [id], onDelete: SetNull)
+  team        Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  match       Match       @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  assigneds   Assigned[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+
+  @@index([playerId])
+  @@index([teamId])
+  @@index([matchId])
+  @@index([mercenaryId])
+  
+  @@unique([matchId, playerId])
+}
+
+// 쿼터정보
+model Quarter {
+  id            String    @id @default(cuid())
+  order         Int
+  matchId       String
+  match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  assigned      Assigned[]
+  
+  @@index([matchId])
+}
+
+// 쿼터 등록 선수 정보 (쿼터별 선수 포지션)
+model Assigned {
+  id            String    @id @default(cuid())
+  position      PositionType
+  quarterId     String
+  attendanceId  String 
+  teamId        String?
+  team          Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  quarter       Quarter     @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  attendance    Attendance  @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now()) @updatedAt
+
+  @@index([attendanceId])
+  @@index([quarterId])
+  @@index([teamId])
+  @@unique([quarterId, attendanceId])
+
+}
+
+
+// 코멘트
+model Comment {
+  id            String    @id @default(cuid())
+  content       String    @db.Text
+  isDeleted     Boolean   @default(false)
+
+  profileId     String
+  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  matchId       String?
+  match         Match?    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  parentId      String?
+  parentComment Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replys        Comment[] @relation("CommentToComment")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now()) @updatedAt
+
+  @@index([matchId])
+  @@index([profileId])
+  @@index([parentId])
+
+}
+
+enum PositionType {
+  LS
+  ST
+  RS
+  LW
+  LF
+  CF
+  RF
+  RW
+  LAM
+  CAM
+  RAM
+  LM
+  LCM
+  CM
+  RCM
+  RM
+  LWB
+  LDM
+  DM
+  RDM
+  RWB
+  LB
+  LCB
+  SW
+  RCB
+  RB
+  GK
+}

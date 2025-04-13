@@ -7,18 +7,24 @@ declare module "@remix-run/node" {
     v3_singleFetch: true;
   }
 }
-
+const isStorybook = process.env.STORYBOOK === "true";
 export default defineConfig({
   plugins: [
-    remix({
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-        v3_singleFetch: true,
-        v3_lazyRouteDiscovery: true,
-      },
-    }),
+    !isStorybook &&
+      remix({
+        future: {
+          v3_fetcherPersist: true,
+          v3_relativeSplatPath: true,
+          v3_throwAbortReason: true,
+          v3_singleFetch: true,
+          v3_lazyRouteDiscovery: true,
+        },
+      }),
     tsconfigPaths(),
-  ],
+  ].filter(Boolean),
+  server: {
+    watch: {
+      usePolling: true,
+    },
+  },
 });

@@ -83,6 +83,7 @@
 		}
 	},
 	"javascript": {
+		"globals": ["React"],
 		"formatter": {
 			"quoteStyle": "double",
 			"semicolons": "always"
