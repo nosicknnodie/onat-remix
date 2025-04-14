@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
-import { Profile, User } from "@prisma/client";
+import type { Profile, User } from "@prisma/client";
 import { redirect } from "@remix-run/node";
 import { Lucia, type Session as LuciaSession } from "lucia";
 import { session, user } from "~/auth/db.server";
@@ -36,6 +36,15 @@ export const getSession = async (request: Request): Promise<LuciaSession | null>
   return session;
 };
 
+// 요청에서 사용자을 가져오는 함수
+// 쿠키에서 세션 ID를 추출하여 유효성을 검사합니다
+export const getUser = async (request: Request) => {
+  const sessionId = request.headers.get("Cookie")?.match(/auth_session=([^;]+)/)?.[1];
+  if (!sessionId) return null;
+  const { user } = await auth.validateSession(sessionId);
+  return user;
+};
+
 // 인증이 필요한 요청에서 사용하는 함수
 // 세션이 없으면 로그인 페이지로 리다이렉트합니다
 export const requireAuth = async (request: Request): Promise<LuciaSession> => {
@@ -46,8 +55,6 @@ export const requireAuth = async (request: Request): Promise<LuciaSession> => {
   }
   return session;
 };
-
-
 
 // 👇 이 아래에 위치해야 함!
 declare module "lucia" {

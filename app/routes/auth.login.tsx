@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, data, redirect } from "@remix-run/node";
+import { type ActionFunctionArgs, data, redirect } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -57,7 +57,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         "Set-Cookie": sessionCookie.serialize(),
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return data(
       { errors: { password: "Invalid credentials" }, values: result.data },
       { status: 401 }

@@ -67,7 +67,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   });
 };
 
-const Register = () => {
+const Register = (_props: IRegisterProps) => {
   return (
     <div className="max-w-md mx-auto mt-10">
       <form method="post" className="space-y-6">

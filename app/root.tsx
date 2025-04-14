@@ -1,17 +1,17 @@
-import { Profile } from "@prisma/client";
+import type { Profile } from "@prisma/client";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
-  data,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  data,
   useLoaderData,
 } from "@remix-run/react";
 import type { ReactNode } from "react";
 import { prisma } from "./auth/db.server";
-import { auth } from "./auth/lucia.server";
+import { getUser } from "./auth/lucia.server";
 import { ProfileContext, UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";
@@ -32,11 +32,7 @@ export const links: LinksFunction = () => [
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const sessionId = request.headers
-    .get("Cookie")
-    ?.match(/auth_session=([^;]+)/)?.[1];
-  if (!sessionId) return data({ user: null, profile: null });
-  const { user } = await auth.validateSession(sessionId);
+  const user = await getUser(request);
   const profile: Profile | null = await prisma.profile.findUnique({
     where: { userId: user?.id },
   });
