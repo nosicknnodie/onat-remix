@@ -22,6 +22,20 @@ jobs:
       - name: Log in to Harbor
         run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.onsoa.net -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
+      - name: Generate .env from secrets
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "MINIO_ACCESS_KEY=${{ secrets.MINIO_ACCESS_KEY }}" >> .env
+          echo "MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
+          echo "SMTP_SERVER=${{ secrets.SMTP_SERVER }}" >> .env
+          echo "SMTP_ID=${{ secrets.SMTP_ID }}" >> .env
+          echo "SMTP_PW=${{ secrets.SMTP_PW }}" >> .env
+          echo "REMIX_PUBLIC_MAP_KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST }}" >> .env
+          echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.KAKAO_JS }}" >> .env
+          
       - name: Build Docker image with multiple tags
         run: |
           docker build -t harbor.onsoa.net/onat-remix:latest \
