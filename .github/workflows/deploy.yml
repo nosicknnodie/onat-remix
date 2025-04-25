@@ -20,7 +20,7 @@ jobs:
           echo "DATE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: Log in to Harbor
-        run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.onsoa.net -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor-registry.onsoa.net:31443 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       - name: Generate .env from secrets
         run: |
@@ -38,12 +38,12 @@ jobs:
           
       - name: Build Docker image with multiple tags
         run: |
-          docker build -t harbor.onsoa.net/onat/onat-remix:latest \
-                       -t harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }} \
-                       -t harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }} .
+          docker build -t harbor-registry.onsoa.net:31443/onat/onat-remix:latest \
+                       -t harbor-registry.onsoa.net:31443/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }} \
+                       -t harbor-registry.onsoa.net:31443/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }} .
 
       - name: Push all tags
         run: |
-          docker push harbor.onsoa.net/onat/onat-remix:latest
-          docker push harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }}
-          docker push harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }}
+          docker push harbor-registry.onsoa.net:31443/onat/onat-remix:latest
+          docker push harbor-registry.onsoa.net:31443/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }}
+          docker push harbor-registry.onsoa.net:31443/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }}
