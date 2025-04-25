@@ -36,7 +36,7 @@ jobs:
           echo "REMIX_PUBLIC_MAP_KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST }}" >> .env
           echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.KAKAO_JS }}" >> .env
           
-      - name: Build Docker image with multiple tags (ARM64)
+      - name: Build and push Docker image for ARM64
         run: |
           docker buildx create --use || true
           docker buildx build \
@@ -45,12 +45,6 @@ jobs:
             --tag harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }} \
             --tag harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }} \
             --push .
-
-      - name: Push all tags
-        run: |
-          docker push harbor.onsoa.net/onat/onat-remix:latest
-          docker push harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }}
-          docker push harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }}
 
       - name: Notify n8n webhook
         run: |
