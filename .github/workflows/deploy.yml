@@ -1,0 +1,47 @@
+name: Build and Deploy to Harbor
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set tag variables
+        id: vars
+        run: |
+          echo "SHA_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "DATE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Log in to Harbor
+        run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.onsoa.net -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Build Docker image with multiple tags
+        run: |
+          docker build -t harbor.onsoa.net/onat-remix:latest \
+                       -t harbor.onsoa.net/onat-remix:${{ steps.vars.outputs.SHA_TAG }} \
+                       -t harbor.onsoa.net/onat-remix:${{ steps.vars.outputs.DATE_TAG }} .
+
+      - name: Push all tags
+        run: |
+          docker push harbor.onsoa.net/onat-remix:latest
+          docker push harbor.onsoa.net/onat-remix:${{ steps.vars.outputs.SHA_TAG }}
+          docker push harbor.onsoa.net/onat-remix:${{ steps.vars.outputs.DATE_TAG }}
+
+      - name: Notify n8n
+        run: |
+          curl -X POST https://n8n.example.com/webhook/github-deploy \
+            -H "Content-Type: application/json" \
+            -d '{
+              "project": "onat-remix",
+              "status": "success",
+              "tags": ["latest", "${{ steps.vars.outputs.SHA_TAG }}", "${{ steps.vars.outputs.DATE_TAG }}"],
+              "commit": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}"
+            }'

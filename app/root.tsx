@@ -33,9 +33,12 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getUser(request);
-  const profile: Profile | null = await prisma.profile.findUnique({
-    where: { userId: user?.id },
-  });
+  let profile: Profile | null = null;
+  if (user?.id) {
+    profile = await prisma.profile.findUnique({
+      where: { userId: user?.id },
+    });
+  }
   return data({ user, profile });
 }
 

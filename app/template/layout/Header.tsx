@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { NavigationMenuLink } from "~/components/ui/navigation-menu";
 import { useAuthUser, useProfileUser } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
