@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import bcrypt from "bcryptjs";
+import _ from "lodash";
 import { LuLogIn } from "react-icons/lu";
 import { z } from "zod";
 import FormError from "~/components/FormError";
@@ -51,7 +52,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return Response.json(
         {
           errors: { password: "비밀번호가 맞지 않습니다." },
-          values: result.data,
+          values: _.omit(result.data, "password"),
         },
         { status: 401 }
       );
@@ -66,7 +67,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return Response.json(
         {
           errors: { password: "비밀번호가 맞지 않습니다." },
-          values: result.data,
+          values: _.omit(result.data, "password"),
         },
         { status: 401 }
       );
@@ -95,7 +96,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   } catch (_error) {
     console.error(_error);
     return Response.json(
-      { errors: { password: "오류입니다." }, values: result.data },
+      {
+        errors: { password: "오류입니다." },
+        values: _.omit(result.data, "password"),
+      },
       { status: 401 }
     );
   }

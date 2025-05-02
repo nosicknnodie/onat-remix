@@ -6,7 +6,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  data,
   useLoaderData,
 } from "@remix-run/react";
 import type { ReactNode } from "react";
@@ -39,7 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       where: { userId: user?.id },
     });
   }
-  return data({ user, profile });
+  return Response.json({ user, profile });
 }
 
 export function Layout({ children }: { children: ReactNode }) {
