@@ -1,11 +1,22 @@
 import { Link } from "@remix-run/react";
 import type { ComponentProps } from "react";
+import { FaUser } from "react-icons/fa";
+import { Loading } from "~/components/Loading";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { NavigationMenuLink } from "~/components/ui/navigation-menu";
-import { useAuthUser, useProfileUser } from "~/contexts/AuthUserContext";
+import { useProfileUser, useSession } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
 const Header = () => {
   // const session =
-  const user = useAuthUser();
+  const user = useSession();
   const profile = useProfileUser();
   return (
     <div
@@ -84,8 +95,61 @@ const Header = () => {
           </NavigationMenu> */}
         </div>
         <div className="flex">
-          {user?.email}
-          {profile?.id}
+          {user ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="outline-none">
+                  <Avatar>
+                    <AvatarImage></AvatarImage>
+                    <AvatarFallback className="bg-primary-foreground">
+                      <FaUser className="text-primary" />
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel className="flex space-x-2">
+                    <span className="text-sm">{user?.name}</span>
+                    <span className="truncate text-sm font-medium">
+                      {user?.email}
+                    </span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth/edit" className="text-sm">
+                      회원정보 수정
+                    </Link>
+                  </DropdownMenuItem>
+                  <form action="/api/auth/logout" method="post">
+                    <button type="submit" className="w-full">
+                      <DropdownMenuItem className="text-sm">
+                        로그아웃
+                      </DropdownMenuItem>
+                    </button>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : user === undefined ? (
+            <>
+              <Avatar>
+                <AvatarImage></AvatarImage>
+                <AvatarFallback className="bg-primary-foreground">
+                  <Loading />
+                </AvatarFallback>
+              </Avatar>
+            </>
+          ) : (
+            <div className="flex space-x-3">
+              <Link
+                to="/auth/login"
+                className={cn(
+                  "px-1 py-0.5 text-inherit rounded-md flex items-center gap-1"
+                )}
+              >
+                Sign in
+              </Link>{" "}
+            </div>
+          )}
           {/* {user ? (
             <Dropdown
               arrowIcon={false}
