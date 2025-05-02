@@ -10,8 +10,8 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import type { ReactNode } from "react";
-import { prisma } from "./auth/db.server";
-import { getUser } from "./auth/lucia.server";
+import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 import { ProfileContext, UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";

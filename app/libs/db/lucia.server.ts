@@ -2,7 +2,7 @@ import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
 import type { Profile, User } from "@prisma/client";
 import { redirect } from "@remix-run/node";
 import { Lucia, type Session as LuciaSession } from "lucia";
-import { session, user } from "~/auth/db.server";
+import { session, user } from "~/libs/db/db.server";
 
 // These are passed back on the user during the authentication process.
 // Useful to avoid additional DB queries.

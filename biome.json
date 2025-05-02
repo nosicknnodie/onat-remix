@@ -18,7 +18,8 @@
 				"noExtraBooleanCast": "warn",
 				"noMultipleSpacesInRegularExpressionLiterals": "error",
 				"noUselessCatch": "error",
-				"noWith": "error"
+				"noWith": "error",
+				"noForEach": "off"
 			},
 			"correctness": {
 				"noConstAssign": "error",
@@ -43,7 +44,8 @@
 				"noUnusedVariables": "warn",
 				"useIsNan": "error",
 				"useValidForDirection": "error",
-				"useYield": "error"
+				"useYield": "error",
+				"useExhaustiveDependencies": "off"
 			},
 			"suspicious": {
 				"noAsyncPromiseExecutor": "error",
@@ -76,9 +78,11 @@
 			},
 			"style": {
 				"useConst": "error",
-				"useTemplate": "error",
+				"useTemplate": "off",
+				"useImportType": "off",
 				"useBlockStatements": "off",
-				"useShorthandArrayType": "error"
+				"useShorthandArrayType": "error",
+				"useSelfClosingElements": "off"
 			}
 		}
 	},

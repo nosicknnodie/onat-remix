@@ -14,7 +14,9 @@ model User {
   emailVerified DateTime? @map("email_verified")
   image         String?
   password      String?
-  role          UserRole @default(USER)
+  // role          UserRole @default(USER)
+  // accounts      Account[]
+  // tokens        RefreshToken[]
   player        Player[]
   profile       Profile?
   createdAt     DateTime @default(now())
@@ -22,6 +24,21 @@ model User {
   session Session[]
   key     Key[]
   @@map("users")
+}
+
+enum TokenType {
+  VERIFICATION
+  PASSWORD_RESET
+  TWO_FACTOR
+}
+
+model ConfirmToken {
+  id String @id @default(cuid())
+  email String
+  token String @unique
+  expires DateTime
+  type  TokenType @default(VERIFICATION)
+  @@unique([email, token, type])
 }
 
 model Session {
@@ -40,10 +57,10 @@ model Key {
   @@unique([id])
 } 
 
-enum UserRole {
-  ADMIN
-  USER
-}
+// enum UserRole {
+//   ADMIN
+//   USER
+// }
 
 
 model Club {
