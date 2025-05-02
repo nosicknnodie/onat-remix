@@ -42,40 +42,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const data = useLoaderData<typeof loader>();
   return (
-    <UserContext.Provider value={data.user}>
-      <ProfileContext.Provider value={data.profile}>
-        <html lang="ko">
-          <head>
-            <meta charSet="utf-8" />
-            <meta
-              name="viewport"
-              content="width=device-width, initial-scale=1"
-            />
-            <Meta />
-            <Links />
-          </head>
-          <body className="min-h-screen bg-background font-sans antialiased">
-            <div className="dark:bg-boxdark-2 dark:text-bodydark">
-              <div className="flex h-screen overflow-hidden">
-                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-                  <Header />
-                  <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
-                    {children}
-                  </main>
-                </div>
-              </div>
+    <html lang="ko">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <div className="dark:bg-boxdark-2 dark:text-bodydark">
+          <div className="flex h-screen overflow-hidden">
+            <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+              {children}
             </div>
-            <ScrollRestoration />
-            <Scripts />
-          </body>
-        </html>
-      </ProfileContext.Provider>
-    </UserContext.Provider>
+          </div>
+        </div>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
   );
 }
 
 export default function App() {
-  return <Outlet />;
+  const data = useLoaderData<typeof loader>();
+  return (
+    <>
+      <UserContext.Provider value={data?.user ?? null}>
+        <ProfileContext.Provider value={data?.profile ?? null}>
+          <Header />
+          <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
+            <Outlet />
+          </main>
+        </ProfileContext.Provider>
+      </UserContext.Provider>
+    </>
+  );
 }
