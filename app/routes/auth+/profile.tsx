@@ -9,6 +9,7 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 // import Position from "~/templates/profile/Position";
 // import Profile from "~/templates/profile/Profile";
 // import ProfileImage from "~/templates/profile/ProfileImage";
@@ -34,6 +35,12 @@ const Profile = (_props: IProfileProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-x-4 w-full flex justify-center min-h-[120px]">
+                  <ImageCropperDialog
+                    title="이미지 변경"
+                    descirption="이미지를 변경합니다."
+                  >
+                    이미지 변경
+                  </ImageCropperDialog>
                   {/* <FormField
                     name="imageUrl"
                     render={({ field }) => (

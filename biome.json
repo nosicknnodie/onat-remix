@@ -82,7 +82,9 @@
 				"useImportType": "off",
 				"useBlockStatements": "off",
 				"useShorthandArrayType": "error",
+				"noNonNullAssertion": "off",
 				"useSelfClosingElements": "off"
+
 			}
 		}
 	},

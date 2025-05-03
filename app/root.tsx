@@ -8,6 +8,7 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -65,18 +66,22 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+const queryClient = new QueryClient();
+
 export default function App() {
   const data = useLoaderData<typeof loader>();
   return (
     <>
-      <UserContext.Provider value={data?.user ?? null}>
-        <ProfileContext.Provider value={data?.profile ?? null}>
-          <Header />
-          <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
-            <Outlet />
-          </main>
-        </ProfileContext.Provider>
-      </UserContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <UserContext.Provider value={data?.user ?? null}>
+          <ProfileContext.Provider value={data?.profile ?? null}>
+            <Header />
+            <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
+              <Outlet />
+            </main>
+          </ProfileContext.Provider>
+        </UserContext.Provider>
+      </QueryClientProvider>
     </>
   );
 }
