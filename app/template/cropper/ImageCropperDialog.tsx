@@ -1,7 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import mime from "mime-types";
 import { ComponentProps, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { Loading } from "~/components/Loading";
 import {
   Dialog,
@@ -25,13 +23,13 @@ const ImageCropperDialog = ({
 }: IImageCropperDialogProps) => {
   const [open, setOpen] = useState(false);
   const [blob, setBlob] = useState<null | Blob>(null);
+  const [originalFilename, setOriginalFilename] = useState<null | string>(null);
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async () => {
       if (!blob) return;
-      const ext = mime.extension(blob.type || "") || "webp";
-      const filename = `${uuidv4()}.${ext}`;
+
       const formData = new FormData();
-      formData.append("file", blob, filename);
+      formData.append("file", blob, originalFilename || "image.webp");
       const res = await fetch("/api/upload-url", {
         method: "POST",
         body: formData,
@@ -54,7 +52,13 @@ const ImageCropperDialog = ({
   };
   return (
     <>
-      <CropperProvider blob={blob} setBlob={setBlob} isPending={isPending}>
+      <CropperProvider
+        blob={blob}
+        setBlob={setBlob}
+        isPending={isPending}
+        originalFilename={originalFilename}
+        setOriginalFilename={setOriginalFilename}
+      >
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger>{children}</DialogTrigger>
           <DialogContent>

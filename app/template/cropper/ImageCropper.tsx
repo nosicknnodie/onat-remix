@@ -13,7 +13,7 @@ const ImageCropper = ({ children, aspectRatio }: PropsType) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const cropperRef = useRef<ReactCropperElement>(null);
   const [image, setImage] = useState<null | string>(null);
-  const { setBlob } = useCropper();
+  const { setBlob, setOriginalFilename } = useCropper();
   const handleChildrenClick = () => {
     if (inputRef.current) {
       inputRef.current.click();
@@ -25,7 +25,7 @@ const ImageCropper = ({ children, aspectRatio }: PropsType) => {
 
     const files = e.target.files;
     if (!files) return;
-
+    setOriginalFilename(files[0].name);
     const reader = new FileReader();
     reader.onload = () => {
       setImage(reader.result as string);

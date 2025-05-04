@@ -4,12 +4,18 @@ import {
   type LoaderFunction,
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
-import { createFileUploadHandler } from "@remix-run/node/dist/upload/fileUploadHandler";
+import {
+  NodeOnDiskFile,
+  createFileUploadHandler,
+} from "@remix-run/node/dist/upload/fileUploadHandler";
 // biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import fs from "fs/promises";
+import mime from "mime-types";
 import sharp from "sharp";
+import slugify from "slugify";
+import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { sendPublicImage } from "~/libs/db/s3.server";
+import { sendBufferToPublicImage } from "~/libs/db/s3.server";
 
 export const loader: LoaderFunction = async () => {
   // 필요 시 GET presigned URL도 여기서 처리 가능
@@ -32,19 +38,28 @@ export const action: ActionFunction = async ({ request }) => {
   if (!file || typeof file === "string")
     return Response.json({ error: "파일 없음" }, { status: 400 });
 
-  if ("filepath" in file) {
-    const fileBuffer = await fs.readFile(file.filepath as string);
-    const webpBuffer = await sharp(fileBuffer).webp({ quality: 80 }).toBuffer();
-    const publicUrl = await sendPublicImage(webpBuffer);
-    // const res = await prisma.file.create({
-    //   data: {
-    //     url: publicUrl,
-    //     userId: user.id,
-    //   },
-    // })
-    return Response.json({ publicUrl });
-  }
+  const nodeFile = file as unknown as NodeOnDiskFile;
+  const ext = mime.extension(nodeFile.type || "") || "webp";
+  const baseName = nodeFile.name?.replace(/\.[^/.]+$/, "") || "image";
+  const safeName = slugify(baseName, { lower: true, strict: true });
+  const filename = `${safeName}.${ext}`;
 
-  const publicUrl = await sendPublicImage(file);
+  const fileBuffer = await fs.readFile(nodeFile.getFilePath());
+  const webpBuffer = await sharp(fileBuffer).webp({ quality: 80 }).toBuffer();
+  const key = `user/${user.id}/${Date.now()}_${filename}`;
+  const publicUrl = await sendBufferToPublicImage({
+    key: key,
+    body: webpBuffer,
+    contentType: "image/webp",
+  });
+  await prisma.file.create({
+    data: {
+      url: publicUrl,
+      uploaderId: user.id,
+      mimeType: ext,
+      size: webpBuffer.length,
+    },
+  });
+
   return Response.json({ publicUrl });
 };

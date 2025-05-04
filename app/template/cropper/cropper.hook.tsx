@@ -2,6 +2,8 @@ import { PropsWithChildren, createContext, useContext } from "react";
 
 interface ICropperContextProps extends PropsWithChildren {
   blob: Blob | null;
+  originalFilename: string | null;
+  setOriginalFilename: React.Dispatch<React.SetStateAction<string | null>>;
   setBlob: React.Dispatch<React.SetStateAction<Blob | null>>;
   isPending: boolean;
 }
