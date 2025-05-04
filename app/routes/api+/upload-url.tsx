@@ -25,7 +25,7 @@ export const action: ActionFunction = async ({ request }) => {
   const user = await getUser(request);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const uploadHandler = createFileUploadHandler({
-    maxPartSize: 10_000_000, // 10MB
+    maxPartSize: 25_000_000, // 25MB
     file: ({ filename }) => filename,
   });
 
