@@ -10,7 +10,6 @@ import {
 } from "@remix-run/node/dist/upload/fileUploadHandler";
 // biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import fs from "fs/promises";
-import mime from "mime-types";
 import sharp from "sharp";
 import slugify from "slugify";
 import { prisma } from "~/libs/db/db.server";
@@ -37,15 +36,15 @@ export const action: ActionFunction = async ({ request }) => {
   const file = formData.get("file");
   if (!file || typeof file === "string")
     return Response.json({ error: "파일 없음" }, { status: 400 });
-
+  const ext = "webp";
   const nodeFile = file as unknown as NodeOnDiskFile;
-  const ext = mime.extension(nodeFile.type || "") || "webp";
   const baseName = nodeFile.name?.replace(/\.[^/.]+$/, "") || "image";
   const safeName = slugify(baseName, { lower: true, strict: true });
-  const filename = `${safeName}.${ext}`;
 
   const fileBuffer = await fs.readFile(nodeFile.getFilePath());
   const webpBuffer = await sharp(fileBuffer).webp({ quality: 80 }).toBuffer();
+
+  const filename = `${safeName}.${ext}`;
   const key = `user/${user.id}/${Date.now()}_${filename}`;
   const publicUrl = await sendBufferToPublicImage({
     key: key,
