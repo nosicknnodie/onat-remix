@@ -27,7 +27,7 @@ const Header = () => {
         <div>
           <Link to={"/"} className="px-2 py-0.5">
             <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
-              ⚽️ ONSOA
+              ONSOA
             </span>
           </Link>
         </div>
@@ -114,7 +114,7 @@ const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/auth/edit" className="text-sm">
+                    <Link to="/settings/edit" className="text-sm">
                       회원정보 수정
                     </Link>
                   </DropdownMenuItem>
