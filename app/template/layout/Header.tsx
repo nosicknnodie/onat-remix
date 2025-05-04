@@ -12,12 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { NavigationMenuLink } from "~/components/ui/navigation-menu";
-import { useProfileUser, useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
 const Header = () => {
   // const session =
   const user = useSession();
-  const profile = useProfileUser();
   return (
     <div
       className={cn(

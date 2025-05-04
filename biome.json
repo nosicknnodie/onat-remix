@@ -83,7 +83,8 @@
 				"useBlockStatements": "off",
 				"useShorthandArrayType": "error",
 				"noNonNullAssertion": "off",
-				"useSelfClosingElements": "off"
+				"useSelfClosingElements": "off",
+				"noUselessElse": "off"
 
 			}
 		}

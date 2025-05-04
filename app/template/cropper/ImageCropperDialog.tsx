@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import mime from "mime-types";
 import { ComponentProps, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Loading } from "~/components/Loading";
@@ -27,8 +28,8 @@ const ImageCropperDialog = ({
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async () => {
       if (!blob) return;
-
-      const filename = uuidv4() + ".webp";
+      const ext = mime.extension(blob.type || "") || "webp";
+      const filename = `${uuidv4()}.${ext}`;
       const formData = new FormData();
       formData.append("file", blob, filename);
       const res = await fetch("/api/upload-url", {
@@ -36,18 +37,18 @@ const ImageCropperDialog = ({
         body: formData,
       });
 
-      const { publicURl } = await res.json();
+      const { publicUrl } = await res.json();
       // const uploadRes = await fetch(uploadUrl, {
       //   method: "PUT",
       //   body: blob,
       // });
       // if (!uploadRes.ok) throw new Error("업로드 실패");
-      return publicURl;
+      return publicUrl;
     },
   });
   const handleSave = async () => {
-    const publicUrl = await mutateAsync();
-    console.log(publicUrl);
+    const url = await mutateAsync();
+    console.log(url);
     setBlob(null);
     setOpen(false);
   };

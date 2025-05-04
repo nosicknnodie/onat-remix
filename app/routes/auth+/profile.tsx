@@ -10,9 +10,6 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
-// import Position from "~/templates/profile/Position";
-// import Profile from "~/templates/profile/Profile";
-// import ProfileImage from "~/templates/profile/ProfileImage";
 
 interface IProfileProps {}
 
@@ -41,25 +38,7 @@ const Profile = (_props: IProfileProps) => {
                   >
                     이미지 변경
                   </ImageCropperDialog>
-                  {/* <FormField
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <>
-                        <ProfileImage
-                            onSetImage={(image?: string) => {
-                              // form.setValue("imageData", image);
-                              // setImageData(image);
-                            }}
-                            imageUrl={["profiles", field.value].join("/")}
-                          />
-                      </>
-                    )}
-                  ></FormField> */}
                 </div>
-                {/* <Profile form={form} isPending={isPending} /> */}
-
-                {/* <FormError message={message.error} />
-                  <FormSuccess message={message.success} /> */}
               </CardContent>
               <CardFooter className="flex justify-center">
                 <Button type="submit">저장</Button>
@@ -74,24 +53,7 @@ const Profile = (_props: IProfileProps) => {
               <CardDescription className="flex justify-center">
                 포지션 3개를 등록해주세요.
               </CardDescription>
-              <CardContent>
-                {/* <Position
-                    isPending={isPending}
-                    value={compact([
-                      form.getValues().position1,
-                      form.getValues().position2,
-                      form.getValues().position3,
-                    ])}
-                    onValueChange={(v) => {
-                      form.setValue("position1", v?.[0] ?? null);
-                      form.setValue("position2", v?.[1] ?? null);
-                      form.setValue("position3", v?.[2] ?? null);
-                      form.trigger("position1");
-                    }}
-                  /> */}
-                {/* <FormError message={message.error} />
-                  <FormSuccess message={message.success} /> */}
-              </CardContent>
+              <CardContent></CardContent>
               <CardFooter className="flex justify-center">
                 <Button type="submit">저장</Button>
               </CardFooter>

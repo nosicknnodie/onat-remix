@@ -7,6 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model File {
+  id         String   @id @default(cuid())
+  url        String
+  mimeType   String
+  size       Int
+  uploaderId String?
+  uploader   User?  @relation("UploadedImages", fields: [uploaderId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  owner User[] @relation("UserImage")
+
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -14,15 +26,37 @@ model User {
   emailVerified DateTime? @map("email_verified")
   image         String?
   password      String?
-  // role          UserRole @default(USER)
-  // accounts      Account[]
-  // tokens        RefreshToken[]
-  player        Player[]
-  profile       Profile?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+
+  userImageId   String? // 현재 설정된 프로필 이미지
+  userImage     File? @relation("UserImage", fields: [userImageId], references: [id])
+  uploadedImages   File[] @relation("UploadedImages")
+  playerNative  PlayerNativeType? // 선출 중등 고등 대학 프로
+  height        Int?       // 키
+  birth         DateTime?    // 생일
+  gender        GenderType? // 성별
+  position1     PositionType?
+  position2     PositionType?
+  position3     PositionType?
+  si            String?     // 도시 (시도)
+  gun           String?     // 지역 (시군구)
+  clothesSize   String?        // 옷 사이즈
+  shoesSize     String?        // 신발 사이즈
+
+  clubs         Club[]
+  players       Player[]
+  toProposals   Proposal[]  @relation("toProposal")
+  fromProposals Proposal[]  @relation("fromProposal")
+  mercenarys    Mercenary[]
+  applications  Application[]
+  playerLogs    PlayerLog[]
+  comments      Comment[]
+
   session Session[]
   key     Key[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  
   @@map("users")
 }
 
@@ -31,6 +65,20 @@ enum TokenType {
   PASSWORD_RESET
   TWO_FACTOR
 }
+
+enum PlayerNativeType {
+  NO          // 비선출
+  MIDDLE      // 중등
+  HIGH        // 고등
+  COLLEAGE    // 대학
+  PRO         // 프로
+}
+
+enum GenderType {
+  MALE    // 남자
+  FEMALE  // 여자
+}
+
 
 model ConfirmToken {
   id String @id @default(cuid())
@@ -57,11 +105,6 @@ model Key {
   @@unique([id])
 } 
 
-// enum UserRole {
-//   ADMIN
-//   USER
-// }
-
 
 model Club {
   id            String @id @default(cuid())
@@ -72,68 +115,17 @@ model Club {
   imageUrl      String?   // 클럽 이미지
   emblemUrl     String?   // 엠블럼 URL
   isPublic      Boolean? @default(false)
-  createProfileId     String?
-  createProfile       Profile?  @relation(fields: [createProfileId], references: [id], onDelete: SetNull)
+  createUserId     String?
+  createUser       User?  @relation(fields: [createUserId], references: [id], onDelete: SetNull)
   players       Player[]      // 회원 선수
   matchs        Match[]       // 매치
   proposals     Proposal[]   // 클럽 제안
   applications  Application[] // 클럽 지원자  
-  authors       Author[]      //
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
-  @@index([createProfileId])
+  @@index([createUserId])
 
-}
-
-
-enum PlayerNativeType {
-  NO          // 비선출
-  MIDDLE      // 중등
-  HIGH        // 고등
-  COLLEAGE    // 대학
-  PRO         // 프로
-}
-
-enum GenderType {
-  MALE    // 남자
-  FEMALE  // 여자
-}
-
-
-model Profile {
-  id            String  @id @default(cuid())
-  nick          String?  @unique // 닉네임
-  name          String
-  imageUrl      String?
-  playerNative  PlayerNativeType? // 선출 중등 고등 대학 프로
-  height        Int?       // 키
-  birth         DateTime    // 생일
-  gender        GenderType? // 성별
-  // positions     Position[]  // 포지션s
-  position1     PositionType?
-  position2     PositionType?
-  position3     PositionType?
-  si            String?     // 도시 (시도)
-  gun           String?     // 지역 (시군구)
-  clothesSize   String?        // 옷 사이즈
-  shoesSize     String?        // 신발 사이즈
-  userId        String?     @unique
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @default(now()) @updatedAt
-
-  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  clubs         Club[]
-  players       Player[]
-  authors       Author[]
-  toProposals   Proposal[]  @relation("toProposal")
-  fromProposals Proposal[]  @relation("fromProposal")
-  mercenarys    Mercenary[]
-  applications  Application[]
-  playerLogs    PlayerLog[]
-  comments      Comment[]
-
-  @@index([userId])
 }
 
 // 제안
@@ -148,8 +140,8 @@ model Proposal {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @default(now()) @updatedAt
 
-  to              Profile   @relation(name: "toProposal", fields: [toId], references: [id], onDelete: Cascade)
-  from            Profile   @relation(name: "fromProposal",fields: [fromId], references: [id], onDelete: Cascade)
+  to              User   @relation(name: "toProposal", fields: [toId], references: [id], onDelete: Cascade)
+  from            User   @relation(name: "fromProposal",fields: [fromId], references: [id], onDelete: Cascade)
   club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@index([clubId])
@@ -161,15 +153,15 @@ model Proposal {
 model Application {
   id              String    @id @default(cuid())
   content         String?   // 신청 내용
-  fromProfileId   String    // 신청자 profile fkey
+  fromUserId      String    // 신청자 profile fkey
   toClubId        String    // 신청 club
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now()) @updatedAt
   result          Boolean?  // 허락 : 거절
-  fromProfile     Profile   @relation(fields: [fromProfileId], references: [id], onDelete: Cascade)
+  fromUser        User      @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
   toClub          Club      @relation(fields: [toClubId], references: [id], onDelete: Cascade)
 
-  @@index([fromProfileId])
+  @@index([fromUserId])
   @@index([toClubId])
 }
 
@@ -190,21 +182,22 @@ model Mercenary {
   position2       PositionType?
   position3       PositionType?
   
-  profileId       String?
-  profile         Profile?  @relation(fields: [profileId], references: [id], onDelete: Cascade)       
+  userId          String?
+  user            User?  @relation(fields: [userId], references: [id], onDelete: SetNull)       
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @default(now()) @updatedAt
   
   attendance      Attendance?
 
-  @@index([profileId])
+  @@index([userId])
 }
 
 model Player {
   id              String    @id @default(cuid())
-  profileId       String
+  nick            String
   userId          String?
   jobTitle        JobTitle?
+  role            RoleType  @default(NORMAL)
   clubId          String
 
   isInjury        Boolean  @default(false)
@@ -213,17 +206,20 @@ model Player {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
   
-  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
   attendances     Attendance[]
-  author          Author?
   playerLogs      PlayerLog[]
 
-  @@unique([profileId, clubId])
-  @@index([profileId])
   @@index([clubId])
   @@index([userId])
+}
+
+
+enum RoleType {
+  MASTER
+  MANAGER
+  NORMAL
 }
 
 enum PlayerLogType {
@@ -242,36 +238,16 @@ model PlayerLog {
   player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   type            PlayerLogType?
   value           PlayerLogValue?
-  createProfileId       String?
-  createProfile         Profile?   @relation(fields: [createProfileId], references: [id], onDelete: Cascade)
+  createUserId    String?
+  createUser      User?   @relation(fields: [createUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
   @@index([playerId])
-  @@index([createProfileId])
+  @@index([createUserId])
 }
 
-model Author {
-  id              String    @id @default(cuid())
-  type            AuthorType  @default(NORMAL)
-  profileId       String
-  clubId          String
-  playerId        String    @unique
 
-  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  player          Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
-
-  @@unique([clubId, profileId])
-  @@index([clubId])
-  @@index([profileId])
-}
-
-enum AuthorType {
-  MASTER
-  MANAGER
-  NORMAL
-}
 
 
 model Match {
@@ -338,7 +314,6 @@ model Attendance {
   @@index([teamId])
   @@index([matchId])
   @@index([mercenaryId])
-  
   @@unique([matchId, playerId])
 }
 
@@ -380,19 +355,19 @@ model Comment {
   content       String    @db.Text
   isDeleted     Boolean   @default(false)
 
-  profileId     String
-  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   matchId       String?
   match         Match?    @relation(fields: [matchId], references: [id], onDelete: Cascade)
   parentId      String?
   parentComment Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   replys        Comment[] @relation("CommentToComment")
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @default(now()) @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
 
   @@index([matchId])
-  @@index([profileId])
+  @@index([userId])
   @@index([parentId])
 
 }

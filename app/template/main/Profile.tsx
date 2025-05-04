@@ -1,13 +1,11 @@
-import { useContext } from "react";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { PROFILES_URL } from "~/libs/const";
-import { ProfileContext } from "./Profile.context";
+import { useSession } from "~/contexts/AuthUserContext";
 
 interface IProfileProps {}
 
 const Profile = (_props: IProfileProps) => {
-  const profile = useContext(ProfileContext);
+  const user = useSession();
   return (
     <>
       <Card className="w-full min-w-[768px]">
@@ -22,48 +20,46 @@ const Profile = (_props: IProfileProps) => {
                     PRO: "프로선출",
                     HIGH: "고등선출",
                     MIDDLE: "중등선출",
-                  }[profile?.playerNative ?? "NO"]
+                  }[user?.playerNative ?? "NO"]
                 }
               </span>
               <span className="rounded-md bg-secondary-foreground text-secondary px-2 py-0.5">
-                {[profile?.si, profile?.gun].join(" ")}
+                {[user?.si, user?.gun].join(" ")}
               </span>
             </div>
             <div>
               <div className="rounded-md flex space-x-2 h-5 items-center">
                 <div className="font-semibold text-2xl text-primary">
-                  {profile?.nick}
+                  {user?.name}
                 </div>
                 <Separator orientation="vertical" />
-                <div className="">{profile?.name}</div>
+                <div className="">{user?.name}</div>
               </div>
             </div>
             <Separator />
             <div className="space-x-2 flex justify-start">
               <span className="rounded-md bg-blue-50 px-2 py-0.5 text-blue-700">
-                {profile?.position1}
+                {user?.position1}
               </span>
               <span className="rounded-md bg-red-50 px-2 py-0.5 text-red-700">
-                {profile?.position2}
+                {user?.position2}
               </span>
               <span className="rounded-md bg-blue-50 px-2 py-0.5 text-blue-700">
-                {profile?.position3}
+                {user?.position3}
               </span>
             </div>
           </div>
           <div className="w-32 h-28 rounded-full border overflow-hidden relative shadow">
-            <img
+            {/* <img
               alt="프로필 사진"
               src={
-                profile?.imageUrl
+                user?.
                   ? [PROFILES_URL, profile.imageUrl].join("/")
                   : "/images/user_84308.png"
               }
               sizes={"(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-              // priority={false}
-              // fill
               className="w-full h-full"
-            />
+            /> */}
           </div>
         </CardContent>
       </Card>

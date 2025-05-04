@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
-import type { Profile, User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { redirect } from "@remix-run/node";
 import { Lucia, type Session as LuciaSession } from "lucia";
 import { session, user } from "~/libs/db/db.server";
@@ -60,6 +60,6 @@ export const requireAuth = async (request: Request): Promise<LuciaSession> => {
 declare module "lucia" {
   interface Register {
     Lucia: typeof auth;
-    DatabaseUserAttributes: User & { profile?: Profile };
+    DatabaseUserAttributes: User;
   }
 }

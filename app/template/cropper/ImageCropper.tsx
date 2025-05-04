@@ -40,7 +40,7 @@ const ImageCropper = ({ children, aspectRatio }: PropsType) => {
       cropperRef.current?.cropper.getCroppedCanvas().toBlob((blob) => {
         setBlob(blob);
         setImage(null);
-      }, "image/webp");
+      });
     }
   };
 

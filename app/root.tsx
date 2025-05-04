@@ -1,4 +1,3 @@
-import type { Profile } from "@prisma/client";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Links,
@@ -10,9 +9,8 @@ import {
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { ProfileContext, UserContext } from "./contexts/AuthUserContext";
+import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";
 
@@ -33,13 +31,7 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getUser(request);
-  let profile: Profile | null = null;
-  if (user?.id) {
-    profile = await prisma.profile.findUnique({
-      where: { userId: user?.id },
-    });
-  }
-  return Response.json({ user, profile });
+  return Response.json({ user });
 }
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -74,12 +66,10 @@ export default function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <UserContext.Provider value={data?.user ?? null}>
-          <ProfileContext.Provider value={data?.profile ?? null}>
-            <Header />
-            <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
-              <Outlet />
-            </main>
-          </ProfileContext.Provider>
+          <Header />
+          <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start">
+            <Outlet />
+          </main>
         </UserContext.Provider>
       </QueryClientProvider>
     </>
