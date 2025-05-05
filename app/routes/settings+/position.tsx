@@ -3,6 +3,7 @@ import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import _ from "lodash";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useSession } from "~/contexts/AuthUserContext";
 import { invalidateUserSessionCache } from "~/libs/db/adatper";
@@ -49,20 +50,39 @@ const PositionPage = (_props: IPositionPageProps) => {
   const [positions, setPositions] = useState<string[]>(defaultPositions);
   return (
     <>
-      <form method="post">
-        <Input type="hidden" name="position1" value={positions?.at(0) ?? ""} />
-        <Input type="hidden" name="position2" value={positions?.at(1) ?? ""} />
-        <Input type="hidden" name="position3" value={positions?.at(2) ?? ""} />
-        <Position
-          value={positions}
-          onValueChange={(v) => setPositions(v ?? [])}
-        />
-        <div className="w-full">
-          <Button type="submit" className="w-full">
-            저장
-          </Button>
-        </div>
-      </form>
+      <Card className="mx-auto mt-8 w-full">
+        <CardHeader>
+          <CardTitle>포지션 변경</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form method="post">
+            <Input
+              type="hidden"
+              name="position1"
+              value={positions?.at(0) ?? ""}
+            />
+            <Input
+              type="hidden"
+              name="position2"
+              value={positions?.at(1) ?? ""}
+            />
+            <Input
+              type="hidden"
+              name="position3"
+              value={positions?.at(2) ?? ""}
+            />
+            <Position
+              value={positions}
+              onValueChange={(v) => setPositions(v ?? [])}
+            />
+            <div className="w-full">
+              <Button type="submit" className="w-full">
+                저장
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </>
   );
 };
