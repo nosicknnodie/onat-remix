@@ -1,3 +1,4 @@
+import { Loading } from "~/components/Loading";
 import {
   Card,
   CardContent,
@@ -10,7 +11,6 @@ import { cn } from "~/libs/utils";
 
 export default function Index() {
   const user = useSession();
-
   if (!user)
     return (
       <>
@@ -19,7 +19,13 @@ export default function Index() {
             "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex justify-center items-center "
           )}
         >
-          로그인이 필요합니다.
+          {user === undefined ? (
+            <>
+              <Loading />
+            </>
+          ) : (
+            "로그인이 필요합니다."
+          )}
         </main>
       </>
     );

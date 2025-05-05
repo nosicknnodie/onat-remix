@@ -5,10 +5,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  data,
   useLoaderData,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { User } from "lucia";
+import { type ReactNode, useEffect, useState } from "react";
 import { getUser } from "~/libs/db/lucia.server";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
@@ -30,8 +32,8 @@ export const links: LinksFunction = () => [
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await getUser(request);
-  return Response.json({ user });
+  const user = getUser(request);
+  return data({ user });
 }
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -62,10 +64,14 @@ const queryClient = new QueryClient();
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+  useEffect(() => {
+    data.user.then(setUser);
+  }, [data.user]);
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <UserContext.Provider value={data?.user ?? null}>
+        <UserContext.Provider value={user}>
           <Header />
           <Outlet />
         </UserContext.Provider>

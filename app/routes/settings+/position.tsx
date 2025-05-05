@@ -1,7 +1,7 @@
 import { PositionType } from "@prisma/client";
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import _ from "lodash";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -27,9 +27,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   await prisma.user.update({
     where: { id: userId },
     data: {
-      position1,
-      position2,
-      position3,
+      position1: position1 || null,
+      position2: position2 || null,
+      position3: position3 || null,
     },
   });
 
@@ -42,12 +42,12 @@ interface IPositionPageProps {}
 
 const PositionPage = (_props: IPositionPageProps) => {
   const user = useSession();
-  const defaultPositions = _.compact([
-    user?.position1,
-    user?.position2,
-    user?.position3,
-  ]);
-  const [positions, setPositions] = useState<string[]>(defaultPositions);
+  const [positions, setPositions] = useState<string[]>();
+  useEffect(() => {
+    setPositions(
+      _.compact([user?.position1, user?.position2, user?.position3])
+    );
+  }, [user]);
   return (
     <>
       <Card className="mx-auto mt-8 w-full">
