@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg width="680" height="1050" viewBox="0 0 680 1050" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="4" y="1046" width="1042" height="672" rx="6" transform="rotate(-90 4 1046)" stroke="#eeeeee" stroke-width="8"/>
+<circle cx="339.5" cy="935.5" r="87.5" transform="rotate(-90 339.5 935.5)" stroke="#eeeeee" stroke-width="8"/>
+<circle cx="339.5" cy="105.5" r="87.5" transform="rotate(-90 339.5 105.5)" stroke="#eeeeee" stroke-width="8"/>
+<mask id="path-4-inside-1_1213_2" fill="white">
+<path d="M143 165C140.239 165 138 162.761 138 160V0L541.2 0V160C541.2 162.761 538.961 165 536.2 165L143 165Z"/>
+</mask>
+<path d="M143 165C140.239 165 138 162.761 138 160V0L541.2 0V160C541.2 162.761 538.961 165 536.2 165L143 165Z" fill="white" stroke="#eeeeee" stroke-width="16" mask="url(#path-4-inside-1_1213_2)"/>
+<mask id="path-5-inside-2_1213_2" fill="white">
+<path d="M138 1050V890C138 887.239 140.239 885 143 885H536.2C538.961 885 541.2 887.239 541.2 890V1050H138Z"/>
+</mask>
+<path d="M138 1050V890C138 887.239 140.239 885 143 885H536.2C538.961 885 541.2 887.239 541.2 890V1050H138Z" fill="white" stroke="#eeeeee" stroke-width="16" mask="url(#path-5-inside-2_1213_2)"/>
+<rect x="252" y="1046" width="47" height="175.2" transform="rotate(-90 252 1046)" fill="white" stroke="#eeeeee" stroke-width="8"/>
+<rect x="252" y="51" width="47" height="175.2" transform="rotate(-90 252 51)" fill="white" stroke="#eeeeee" stroke-width="8"/>
+<circle cx="340" cy="934" r="4" transform="rotate(-90 340 934)" fill="#eeeeee" stroke="#eeeeee" stroke-width="4"/>
+<circle cx="340" cy="104" r="4" transform="rotate(-90 340 104)" fill="#eeeeee" stroke="#eeeeee" stroke-width="4"/>
+<circle cx="339.5" cy="524.5" r="87.5" transform="rotate(-90 339.5 524.5)" stroke="#eeeeee" stroke-width="8"/>
+<line x1="1.74846e-07" y1="521" x2="680" y2="521" stroke="#eeeeee" stroke-width="8"/>
+<circle cx="340" cy="521" r="4" transform="rotate(-90 340 521)" stroke="#eeeeee" stroke-width="8"/>
+</svg>
+
