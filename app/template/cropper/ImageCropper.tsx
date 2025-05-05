@@ -54,9 +54,9 @@ const ImageCropper = ({ children, aspectRatio }: PropsType) => {
         onChange={handleFileChange}
       />
       {!image && (
-        <button type="button" onClick={handleChildrenClick}>
+        <Button type="button" variant="outline" onClick={handleChildrenClick}>
           {children}
-        </button>
+        </Button>
       )}
       {image && (
         <div className="container">

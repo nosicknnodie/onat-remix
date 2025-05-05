@@ -1,6 +1,8 @@
+import { File } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { ComponentProps, useState } from "react";
 import { Loading } from "~/components/Loading";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,15 +12,18 @@ import {
 } from "~/components/ui/dialog";
 import ImageCropper from "./ImageCropper";
 import { CropperProvider, useCropper } from "./cropper.hook";
-interface IImageCropperDialogProps extends React.PropsWithChildren {
+interface IImageCropperDialogProps extends ComponentProps<typeof ImageCropper> {
   title: string;
   descirption: string;
+  onChangeValue?: (file: File) => void;
 }
 
 const ImageCropperDialog = ({
   children,
   title,
   descirption,
+  onChangeValue,
+  aspectRatio,
   ..._props
 }: IImageCropperDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -35,18 +40,12 @@ const ImageCropperDialog = ({
         body: formData,
       });
 
-      const { publicUrl } = await res.json();
-      // const uploadRes = await fetch(uploadUrl, {
-      //   method: "PUT",
-      //   body: blob,
-      // });
-      // if (!uploadRes.ok) throw new Error("업로드 실패");
-      return publicUrl;
+      return await res.json();
     },
   });
   const handleSave = async () => {
-    const url = await mutateAsync();
-    console.log(url);
+    const fileMetaData = await mutateAsync();
+    onChangeValue?.(fileMetaData);
     setBlob(null);
     setOpen(false);
   };
@@ -68,8 +67,10 @@ const ImageCropperDialog = ({
               {isPending && <Loading className="absolute top-1/2 left-1/2" />}
               <PreviewImage />
             </div>
-            <ImageCropper>이미지업로드</ImageCropper>
-            <SaveButton onClick={handleSave} />
+            <div className="w-full flex gap-2 justify-center items-center">
+              <ImageCropper aspectRatio={aspectRatio}>업로드</ImageCropper>
+              <SaveButton onClick={handleSave} />
+            </div>
           </DialogContent>
         </Dialog>
       </CropperProvider>
@@ -81,9 +82,9 @@ const SaveButton = (props: ComponentProps<"button">) => {
   const { blob } = useCropper();
   if (!blob) return null;
   return (
-    <button type="submit" {...props}>
+    <Button type="submit" {...props}>
       적용
-    </button>
+    </Button>
   );
 };
 

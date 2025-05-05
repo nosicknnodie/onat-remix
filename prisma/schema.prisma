@@ -24,7 +24,6 @@ model User {
   name          String?
   email         String   @unique
   emailVerified DateTime? @map("email_verified")
-  image         String?
   password      String?
 
   userImageId   String? // 현재 설정된 프로필 이미지

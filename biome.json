@@ -59,7 +59,7 @@
 				"noDuplicateClassMembers": "error",
 				"noDuplicateObjectKeys": "error",
 				"noDuplicateParameters": "error",
-				"noEmptyBlockStatements": "warn",
+				"noEmptyBlockStatements": "off",
 				"noFallthroughSwitchClause": "error",
 				"noFunctionAssign": "error",
 				"noGlobalAssign": "error",
@@ -71,7 +71,8 @@
 				"noSparseArray": "warn",
 				"noUnsafeNegation": "error",
 				"useGetterReturn": "error",
-				"useValidTypeof": "error"
+				"useValidTypeof": "error",
+				"noArrayIndexKey": "off"
 			},
 			"a11y": {
 				"noSvgWithoutTitle": "warn"

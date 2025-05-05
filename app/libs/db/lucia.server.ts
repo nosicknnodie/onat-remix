@@ -1,14 +1,14 @@
-import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
-import type { User } from "@prisma/client";
+import type { File, User } from "@prisma/client";
 import { redirect } from "@remix-run/node";
+import _ from "lodash";
 import { Lucia, type Session as LuciaSession } from "lucia";
-import { session, user } from "~/libs/db/db.server";
+import { adapter } from "./adatper";
 
 // These are passed back on the user during the authentication process.
 // Useful to avoid additional DB queries.
 // Lucia 인증 인스턴스를 생성합니다
 // Prisma 어댑터를 사용하여 데이터베이스와 연동합니다
-export const auth = new Lucia(new PrismaAdapter(session, user), {
+export const auth = new Lucia(adapter, {
   // 세션 쿠키 설정
   // 프로덕션 환경에서는 secure 속성을 true로 설정합니다
   sessionCookie: {
@@ -19,10 +19,8 @@ export const auth = new Lucia(new PrismaAdapter(session, user), {
   // 사용자 속성을 반환하는 함수
   // 데이터베이스에서 가져온 사용자 정보를 필요한 형태로 변환합니다
   getUserAttributes: (attributes) => {
-    const { email, name } = attributes;
     return {
-      email,
-      name,
+      ..._.omit(attributes, "password"),
     };
   },
 });
@@ -60,6 +58,6 @@ export const requireAuth = async (request: Request): Promise<LuciaSession> => {
 declare module "lucia" {
   interface Register {
     Lucia: typeof auth;
-    DatabaseUserAttributes: User;
+    DatabaseUserAttributes: User & { userImage?: File };
   }
 }

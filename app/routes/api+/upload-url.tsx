@@ -51,7 +51,7 @@ export const action: ActionFunction = async ({ request }) => {
     body: webpBuffer,
     contentType: "image/webp",
   });
-  await prisma.file.create({
+  const res = await prisma.file.create({
     data: {
       url: publicUrl,
       uploaderId: user.id,
@@ -60,5 +60,5 @@ export const action: ActionFunction = async ({ request }) => {
     },
   });
 
-  return Response.json({ publicUrl });
+  return Response.json({ ...res });
 };
