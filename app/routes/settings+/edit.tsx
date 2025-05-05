@@ -62,7 +62,7 @@ const EditPage = (_props: IEditPageProps) => {
   const [si, setSi] = useState(user.si);
   const [imageFile, setImageFile] = useState<undefined | File>(user.userImage);
   return (
-    <Card className="max-w-xl mx-auto mt-8">
+    <Card className="max-w-xl mx-auto mt-8 w-full">
       <CardHeader>
         <CardTitle>회원 정보 수정</CardTitle>
       </CardHeader>
