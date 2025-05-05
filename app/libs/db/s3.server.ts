@@ -10,16 +10,6 @@ const s3 = new S3Client({
   forcePathStyle: true,
 });
 
-// export async function getPresignedUploadUrl(filename: string, contentType: string) {
-//   const command = new PutObjectCommand({
-//     Bucket: "onat",
-//     Key: filename,
-//     ContentType: contentType,
-//   });
-
-//   return await getSignedUrl(s3, command, { expiresIn: 60 });
-// }
-
 export async function sendBufferToPublicImage({
   key,
   body,

@@ -67,9 +67,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <UserContext.Provider value={data?.user ?? null}>
           <Header />
-          <main className="mx-auto max-w-screen-lg p-4 md:p-6 2xl:p-10 flex justify-center items-start w-full">
-            <Outlet />
-          </main>
+          <Outlet />
         </UserContext.Provider>
       </QueryClientProvider>
     </>
