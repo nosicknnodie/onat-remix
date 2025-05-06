@@ -1,4 +1,11 @@
 import { NavLink, Outlet } from "@remix-run/react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
 import { cn } from "~/libs/utils";
 
 interface ILayoutProps {}
@@ -8,9 +15,20 @@ const Layout = (_props: ILayoutProps) => {
     <>
       <main
         className={cn(
-          "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex justify-center items-start "
+          "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex flex-col"
         )}
       >
+        <div>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>회원정보 수정</BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <div className="flex flex-col w-full ">
           <nav className="border-b w-full">
             <ul className="flex gap-6 px-6 py-4 text-base w-full">

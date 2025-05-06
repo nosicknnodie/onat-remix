@@ -1,4 +1,5 @@
 // routes/upload.tsx
+import { FilePurposeType } from "@prisma/client";
 import {
   type ActionFunction,
   type LoaderFunction,
@@ -34,6 +35,7 @@ export const action: ActionFunction = async ({ request }) => {
     uploadHandler
   );
   const file = formData.get("file");
+  const purpose = (formData.get("purpose") as FilePurposeType) || "PROFILE";
   if (!file || typeof file === "string")
     return Response.json({ error: "파일 없음" }, { status: 400 });
   const ext = "webp";
@@ -57,6 +59,7 @@ export const action: ActionFunction = async ({ request }) => {
       uploaderId: user.id,
       mimeType: ext,
       size: webpBuffer.length,
+      purpose: purpose,
     },
   });
 

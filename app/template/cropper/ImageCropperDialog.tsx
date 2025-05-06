@@ -1,4 +1,4 @@
-import { File } from "@prisma/client";
+import { File, FilePurposeType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { ComponentProps, useState } from "react";
 import { Loading } from "~/components/Loading";
@@ -15,6 +15,7 @@ import { CropperProvider, useCropper } from "./cropper.hook";
 interface IImageCropperDialogProps extends ComponentProps<typeof ImageCropper> {
   title: string;
   descirption: string;
+  purpose?: FilePurposeType;
   onChangeValue?: (file: File) => void;
 }
 
@@ -24,6 +25,7 @@ const ImageCropperDialog = ({
   descirption,
   onChangeValue,
   aspectRatio,
+  purpose,
   ..._props
 }: IImageCropperDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -35,6 +37,7 @@ const ImageCropperDialog = ({
 
       const formData = new FormData();
       formData.append("file", blob, originalFilename || "image.webp");
+      formData.append("purpose", purpose || "PROFILE");
       const res = await fetch("/api/upload-url", {
         method: "POST",
         body: formData,

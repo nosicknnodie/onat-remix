@@ -11,12 +11,24 @@ model File {
   id         String   @id @default(cuid())
   url        String
   mimeType   String
+  purpose    FilePurposeType  @default(PROFILE)
   size       Int
   uploaderId String?
   uploader   User?  @relation("UploadedImages", fields: [uploaderId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
-  owner User[] @relation("UserImage")
+  owner      User[] @relation("UserImage")
+  clubImages      Club[] @relation("ClubImage")
+  clubEmblems      Club[] @relation("ClubEmblem")
 
+}
+
+enum FilePurposeType {
+  PROFILE
+  CLUB_IMAGE
+  CLUB_EMBLEM
+  POST_IMAGE
+  MATCH_PHOTO
+  DOCUMENT
 }
 
 model User {
@@ -49,6 +61,7 @@ model User {
   applications  Application[]
   playerLogs    PlayerLog[]
   comments      Comment[]
+  matchs        Match[]
 
   session Session[]
   key     Key[]
@@ -106,22 +119,26 @@ model Key {
 
 
 model Club {
-  id            String @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String    // 클럽 이름
-  url           String  @unique   // 페이지 pathname
+  description   String?   @db.Text
   si            String?   // 도시
   gun           String?   // 지역
-  imageUrl      String?   // 클럽 이미지
-  emblemUrl     String?   // 엠블럼 URL
-  isPublic      Boolean? @default(false)
-  createUserId     String?
-  createUser       User?  @relation(fields: [createUserId], references: [id], onDelete: SetNull)
+  imageId       String?   // 클럽 이미지
+  emblemId      String?   // 엠블럼 URL
+  image         File?      @relation("ClubImage",fields: [imageId], references: [id], onDelete: SetNull)
+  emblem        File?      @relation("ClubEmblem",fields: [emblemId], references: [id], onDelete: SetNull)
+
+
+  isPublic      Boolean?  @default(false)
+  createUserId  String?
+  createUser    User?     @relation(fields: [createUserId], references: [id], onDelete: SetNull)
   players       Player[]      // 회원 선수
-  matchs        Match[]       // 매치
+  matchClubs    MatchClub[]       // 매치
   proposals     Proposal[]   // 클럽 제안
   applications  Application[] // 클럽 지원자  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   @@index([createUserId])
 
@@ -186,7 +203,7 @@ model Mercenary {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @default(now()) @updatedAt
   
-  attendance      Attendance?
+  attendance      Attendance[]
 
   @@index([userId])
 }
@@ -250,26 +267,38 @@ model PlayerLog {
 
 
 model Match {
-  id        String        @id @default(cuid())
-  clubId    String
-  club      Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  title     String
-  description   String     @db.Text
-  placeName     String?
-  address       String?
-  lng           Float?      
-  lat           Float?     
-  stDate        DateTime?
+  id              String        @id @default(cuid())
+  
+  title           String
+  description     String     @db.Text
+  placeName       String?
+  address         String?
+  lng             Float?      
+  lat             Float?     
+  stDate          DateTime?
+  
+  matchClubs      MatchClub[]
+  createUserId    String?
+  createUser      User?    @relation(fields: [createUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+}
+
+model MatchClub {
+  id            String        @id @default(cuid())
+  matchId       String        
+  match         Match         @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  clubId        String
+  club          Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
   isSelf        Boolean       @default(false)   // 자체전 여부
   attendances   Attendance[]
   quarters      Quarter[]
   teams         Team[]
-  comment       Comment[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
 
   @@index([clubId])
+  @@index([matchId])
+  @@unique([matchId, clubId])
 }
 
 model Team {
@@ -278,13 +307,13 @@ model Team {
   name            String
   color           String
   attendances     Attendance[]
-  matchId         String
-  match           Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchClubId         String
+  matchClub           MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigned        Assigned[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
-  @@index([matchId])
+  @@index([matchClubId])
 }
 
 model Attendance {
@@ -295,15 +324,15 @@ model Attendance {
   isCheck     Boolean   @default(false)   // 출석체크
   checkTime   DateTime?                   // 출석체크 시간
   
-  playerId    String?   // 선수 fkey
-  mercenaryId String?   @unique   // 용병 fkey
-  matchId     String    // 매치 fkey
-  teamId      String?   // 팀 fkey
+  playerId        String?   // 선수 fkey
+  mercenaryId     String?   // 용병 fkey
+  matchClubId     String    // 매치 fkey
+  teamId          String?   // 팀 fkey
 
   player      Player?     @relation(fields: [playerId], references: [id], onDelete: SetNull)
   mercenary   Mercenary?  @relation(fields: [mercenaryId], references: [id], onDelete: SetNull)
   team        Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  match       Match       @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchClub   MatchClub       @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
 
   assigneds   Assigned[]
   createdAt   DateTime  @default(now())
@@ -311,20 +340,21 @@ model Attendance {
 
   @@index([playerId])
   @@index([teamId])
-  @@index([matchId])
+  @@index([matchClubId])
   @@index([mercenaryId])
-  @@unique([matchId, playerId])
+  @@unique([matchClubId, mercenaryId])
+  @@unique([matchClubId, playerId])
 }
 
 // 쿼터정보
 model Quarter {
   id            String    @id @default(cuid())
   order         Int
-  matchId       String
-  match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchClubId       String
+  matchClub         MatchClub     @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigned      Assigned[]
   
-  @@index([matchId])
+  @@index([matchClubId])
 }
 
 // 쿼터 등록 선수 정보 (쿼터별 선수 포지션)
@@ -337,8 +367,8 @@ model Assigned {
   team          Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
   quarter       Quarter     @relation(fields: [quarterId], references: [id], onDelete: Cascade)
   attendance    Attendance  @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @default(now()) @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
 
   @@index([attendanceId])
   @@index([quarterId])
@@ -357,18 +387,22 @@ model Comment {
   userId        String
   user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  matchId       String?
-  match         Match?    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  targetId      String
+  targetType    CommentTargetType
   parentId      String?
   parentComment Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   replys        Comment[] @relation("CommentToComment")
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @default(now()) @updatedAt
 
-  @@index([matchId])
+  @@index([targetId, targetType])
   @@index([userId])
   @@index([parentId])
 
+}
+
+enum CommentTargetType {
+  MATCH_CLUB
 }
 
 enum PositionType {
