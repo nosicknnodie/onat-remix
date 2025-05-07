@@ -30,9 +30,59 @@ import { Textarea } from "~/components/ui/textarea";
 import { SIGUNGU } from "~/libs/sigungu";
 import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 
+import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import { useActionData } from "@remix-run/react";
+import { prisma } from "~/libs/db/db.server"; // prisma 경로에 맞게 수정하세요
+import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const user = await getUser(request); // 로그인한 사용자 확인 (없으면 리다이렉트 등 처리 가능)
+
+  if (!user) {
+    return redirect("/auth/login");
+  }
+
+  const imageId = formData.get("imageId")?.toString() || null;
+  const emblemId = formData.get("emblemId")?.toString() || null;
+  const name = formData.get("name")?.toString().trim();
+  const description = formData.get("description")?.toString().trim();
+  const isPublic = formData.get("isPublic") === "true";
+  const si = formData.get("si")?.toString();
+  const gun = formData.get("gun")?.toString();
+
+  if (!name) {
+    return Response.json({ error: "클럽 이름은 필수입니다." }, { status: 400 });
+  }
+
+  try {
+    const club = await prisma.club.create({
+      data: {
+        name,
+        description,
+        isPublic,
+        imageId: imageId || undefined,
+        emblemId: emblemId || undefined,
+        si: si || null,
+        gun: gun || null,
+        createUserId: user.id,
+      },
+    });
+
+    return redirect(`/clubs/${club.id}`);
+  } catch (err) {
+    console.error(err);
+    return Response.json(
+      { error: "클럽 생성 중 오류가 발생했습니다." },
+      { status: 500 }
+    );
+  }
+}
+
 interface IClubNewPageProps {}
 
 const ClubNewPage = (_props: IClubNewPageProps) => {
+  const actionData = useActionData<typeof action>();
   const [sis, setSis] = useState("");
   const [image, setImage] = useState<null | File>(null);
   const [emblem, setEmblem] = useState<null | File>(null);
@@ -62,12 +112,13 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-6">
-                {/* TODO: 클럽 이미지 및 엠블럼 업로드 필드는 추후 구현 예정 (imageUrl, emblemUrl) */}
+              <form method="post" className="space-y-6">
+                <input type="hidden" name="imageId" value={image?.id || ""} />
+                <input type="hidden" name="emblemId" value={emblem?.id || ""} />
                 <div className="relative w-full h-[240px]">
                   <img
                     alt="clubImage"
-                    src={image?.url || "/images/club-default-image.png"}
+                    src={image?.url || "/images/club-default-image.webp"}
                     className="w-full h-full rounded-md"
                   />
                   <ImageCropperDialog
@@ -80,7 +131,7 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                     }}
                   >
                     <div
-                      className="cursor-pointer absolute bottom-2 right-2 bg-background p-2 rounded-lg"
+                      className="cursor-pointer absolute bottom-2 right-2 bg-background p-2 rounded-lg shadow-md"
                       // onClick={() => setOpen(true)}
                     >
                       <CameraIcon />
@@ -91,10 +142,10 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                   <div className="w-[120px] h-[120px] relative">
                     <img
                       alt="emblem"
-                      src={image?.url || "/images/onat-emblem.png"}
+                      src={emblem?.url || "/images/onat-emblem.png"}
                       width={120}
                       height={120}
-                      className="border-none outline-none"
+                      className="border-none outline-none rounded-lg"
                     ></img>
                     <ImageCropperDialog
                       title="클럽 엠블럼 업로드"
@@ -105,8 +156,8 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                         setEmblem(image);
                       }}
                     >
-                      <div className="p-2">
-                        <CameraIcon className="cursor-pointer absolute bottom-1 right-0" />
+                      <div className="p-1 cursor-pointer absolute bottom-1 right-1 shadow-md">
+                        <CameraIcon className="" />
                       </div>
                     </ImageCropperDialog>
                   </div>
@@ -131,6 +182,7 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                     <div className="space-y-2">
                       <Label htmlFor="si">도시</Label>
                       <Select
+                        name="si"
                         disabled={isPending}
                         onValueChange={(e) => setSis(e)}
                         defaultValue={undefined}
@@ -150,7 +202,11 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="gun">지역</Label>
-                      <Select disabled={isPending} defaultValue={undefined}>
+                      <Select
+                        name="gun"
+                        disabled={isPending}
+                        defaultValue={undefined}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="지역 선택" />
                         </SelectTrigger>
@@ -183,8 +239,8 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                     </Select>
                   </div>
                 </div>
-                <FormError></FormError>
-                <FormSuccess></FormSuccess>
+                <FormError>{actionData?.error}</FormError>
+                <FormSuccess>{actionData?.success}</FormSuccess>
                 <Button type="submit" disabled={isPending}>
                   Save
                 </Button>
