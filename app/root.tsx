@@ -1,4 +1,8 @@
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type {
+  LinksFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -16,6 +20,13 @@ import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "ONSOA | 홈" },
+    { name: "description", content: "축구 관리앱 입니다." },
+  ];
+};
+
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -27,8 +38,8 @@ export const links: LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
-  { rel: "apple-touch-icon", href: "/favicon.ico" },
-  { rel: "apple-touch-icon-precomposed", href: "/favicon.ico" },
+  { rel: "apple-touch-icon", href: "/favicon.ico?v=1" },
+  { rel: "apple-touch-icon-precomposed", href: "/favicon.ico?v=1" },
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {

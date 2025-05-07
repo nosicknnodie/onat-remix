@@ -30,8 +30,12 @@ import { Textarea } from "~/components/ui/textarea";
 import { SIGUNGU } from "~/libs/sigungu";
 import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { useActionData } from "@remix-run/react";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  redirect,
+} from "@remix-run/node";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server"; // prisma 경로에 맞게 수정하세요
 import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
 
@@ -43,6 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect("/auth/login");
   }
 
+  const id = formData.get("id")?.toString();
   const imageId = formData.get("imageId")?.toString() || null;
   const emblemId = formData.get("emblemId")?.toString() || null;
   const name = formData.get("name")?.toString().trim();
@@ -56,17 +61,16 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const club = await prisma.club.create({
+    const club = await prisma.club.update({
+      where: { id },
       data: {
         name,
         description,
         isPublic,
         imageId: imageId || undefined,
         emblemId: emblemId || undefined,
-        si: si || null,
-        gun: gun || null,
-        ownerUserId: user.id,
-        createUserId: user.id,
+        si: si !== "null" ? si || null : null,
+        gun: gun !== "null" ? gun || null : null,
       },
     });
 
@@ -80,14 +84,52 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-interface IClubNewPageProps {}
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
+  if (!user) {
+    // 로그인 안된 사용자는 로그인 페이지로 리디렉트
+    throw redirect("/auth/login");
+  }
 
-const ClubNewPage = (_props: IClubNewPageProps) => {
+  const id = params.id;
+  const club = await prisma.club.findUnique({
+    where: { id },
+    include: { image: true, emblem: true },
+  });
+  if (!club) {
+    // 클럽가 없는 경우는 404 페이지로 리디렉트
+    throw redirect("/404");
+  }
+  if (user.id !== club.ownerUserId) {
+    // 클럽 작성자와 로그인한 사용자가 다른 경우는 404 페이지로 리디렉트
+    return redirect("/clubs/" + id);
+  }
+  return Response.json({ club });
+};
+
+interface IClubEditPageProps {}
+
+const ClubEditPage = (_props: IClubEditPageProps) => {
+  const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [sis, setSis] = useState("");
-  const [image, setImage] = useState<null | File>(null);
-  const [emblem, setEmblem] = useState<null | File>(null);
+  const club = loaderData.club;
+  if (!club) return null;
+
+  const [sis, setSis] = useState(club.si ?? "null");
+  const [gun, setGun] = useState(club.gun ?? "null");
+  const [image, setImage] = useState<null | File>(club.image);
+  const [emblem, setEmblem] = useState<null | File>(club.emblem);
   const isPending = false;
+
+  const handleSetSi = (value: string) => {
+    setSis((v: string) => {
+      if (v !== value) {
+        setGun("null");
+      }
+      return value;
+    });
+  };
+
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -101,19 +143,20 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
               <BreadcrumbLink href="/clubs">클럽</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>클럽 생성</BreadcrumbItem>
+            <BreadcrumbItem>클럽 수정</BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         <div>
           <Card>
             <CardHeader>
-              <p className="text-2xl font-semibold text-center">🪽 클럽 생성</p>
+              <p className="text-2xl font-semibold text-center">🛠 클럽 수정</p>
               <CardDescription className="w-full text-center">
-                클럽 프로필을 입력해주세요.
+                클럽 정보를 수정해주세요.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form method="post" className="space-y-6">
+                <input type="hidden" name="id" value={club.id} />
                 <input type="hidden" name="imageId" value={image?.id || ""} />
                 <input type="hidden" name="emblemId" value={emblem?.id || ""} />
                 <div className="relative w-full h-[240px]">
@@ -166,7 +209,12 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">클럽 이름</Label>
-                    <Input id="name" name="name" disabled={isPending} />
+                    <Input
+                      id="name"
+                      name="name"
+                      disabled={isPending}
+                      defaultValue={club.name}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="description">클럽 소개</Label>
@@ -177,6 +225,7 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                       disabled={isPending}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder="클럽에 대한 간단한 설명을 입력해주세요 (선택)"
+                      defaultValue={club.description}
                     />
                   </div>
                   <div className="flex justify-start gap-x-4">
@@ -185,8 +234,8 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                       <Select
                         name="si"
                         disabled={isPending}
-                        onValueChange={(e) => setSis(e)}
-                        defaultValue={undefined}
+                        onValueChange={handleSetSi}
+                        defaultValue={club.si ?? "null"}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="도시 선택" />
@@ -206,7 +255,9 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                       <Select
                         name="gun"
                         disabled={isPending}
-                        defaultValue={undefined}
+                        defaultValue={club.gun ?? "null"}
+                        value={gun}
+                        onValueChange={(v) => setGun(v)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="지역 선택" />
@@ -228,7 +279,7 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                     <Select
                       name="isPublic"
                       disabled={isPending}
-                      defaultValue="true"
+                      defaultValue={String(club.isPublic)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="공개 여부" />
@@ -254,4 +305,4 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
   );
 };
 
-export default ClubNewPage;
+export default ClubEditPage;

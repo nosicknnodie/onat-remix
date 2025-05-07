@@ -53,7 +53,8 @@ model User {
   clothesSize   String?        // 옷 사이즈
   shoesSize     String?        // 신발 사이즈
 
-  clubs         Club[]
+  ownerClubs    Club[]  @relation("ClubOwnerUser")
+  createClubs   Club[]  @relation("ClubCreateUser")
   players       Player[]
   toProposals   Proposal[]  @relation("toProposal")
   fromProposals Proposal[]  @relation("fromProposal")
@@ -131,8 +132,10 @@ model Club {
 
 
   isPublic      Boolean?  @default(false)
+  ownerUserId  String?
+  ownerUser    User?      @relation("ClubOwnerUser",fields: [ownerUserId], references: [id], onDelete: SetNull)
   createUserId  String?
-  createUser    User?     @relation(fields: [createUserId], references: [id], onDelete: SetNull)
+  createUser    User?     @relation("ClubCreateUser",fields: [createUserId], references: [id], onDelete: SetNull)
   players       Player[]      // 회원 선수
   matchClubs    MatchClub[]       // 매치
   proposals     Proposal[]   // 클럽 제안
