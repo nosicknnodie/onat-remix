@@ -19,6 +19,7 @@
 				"noMultipleSpacesInRegularExpressionLiterals": "error",
 				"noUselessCatch": "error",
 				"noWith": "error",
+				"useLiteralKeys": "off",
 				"noForEach": "off"
 			},
 			"correctness": {

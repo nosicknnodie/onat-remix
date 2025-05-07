@@ -38,9 +38,13 @@ import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const user = await getUser(request); // 로그인한 사용자 확인 (없으면 리다이렉트 등 처리 가능)
-
   if (!user) {
     return redirect("/auth/login");
+  }
+
+  const userName = user?.name;
+  if (!userName) {
+    return redirect("/settings/edit");
   }
 
   const imageId = formData.get("imageId")?.toString() || null;
@@ -56,18 +60,29 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const club = await prisma.club.create({
-      data: {
-        name,
-        description,
-        isPublic,
-        imageId: imageId || undefined,
-        emblemId: emblemId || undefined,
-        si: si || null,
-        gun: gun || null,
-        ownerUserId: user.id,
-        createUserId: user.id,
-      },
+    const club = await prisma.$transaction(async (tx) => {
+      const txClub = await tx.club.create({
+        data: {
+          name,
+          description,
+          isPublic,
+          imageId: imageId || undefined,
+          emblemId: emblemId || undefined,
+          si: si || null,
+          gun: gun || null,
+          ownerUserId: user.id,
+          createUserId: user.id,
+        },
+      });
+      await tx.player.create({
+        data: {
+          userId: user.id,
+          clubId: txClub.id,
+          nick: userName,
+          role: "MASTER",
+        },
+      });
+      return txClub;
     });
 
     return redirect(`/clubs/${club.id}`);

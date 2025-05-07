@@ -1,14 +1,21 @@
 import {
   ColumnDef,
+  TableOptions,
   flexRender,
   getCoreRowModel,
-  TableOptions,
   useReactTable,
 } from "@tanstack/react-table";
 import _ from "lodash";
 import { useMemo } from "react";
-import { cn } from "~/lib/utils";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { cn } from "~/libs/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
 
 interface ITableProps<TData, TValue> {
   data: TData[];
@@ -54,17 +61,20 @@ const DataTable = <TData, TValue>({
                       style={{ width: header.getSize() }}
                       onClick={header.column.getToggleSortingHandler()}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : (
-                          <div className="flex items-center justify-center gap-1">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {{
+                      {header.isPlaceholder ? null : (
+                        <div className="flex items-center justify-center gap-1">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {
+                            {
                               asc: "▲",
                               desc: "▼",
-                            }[header.column.getIsSorted() as string]}
-                          </div>
-                        )}
+                            }[header.column.getIsSorted() as string]
+                          }
+                        </div>
+                      )}
                     </TableHead>
                   );
                 })}

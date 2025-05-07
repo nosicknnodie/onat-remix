@@ -1,4 +1,3 @@
-import { Club, File } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData, useParams } from "@remix-run/react";
@@ -20,7 +19,7 @@ import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 import ClubTab from "~/template/club/Tabs";
-interface IClubPageProps {}
+interface IMatchesPageProps {}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const club = await prisma.club.findUnique({
@@ -35,12 +34,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return Response.json({ club });
 }
 
-const ClubPage = (_props: IClubPageProps) => {
+const MatchesPage = (_props: IMatchesPageProps) => {
+  const data = useLoaderData<typeof loader>();
   const user = useSession();
-  const data: { club: Club & { image?: File | null; emblem?: File | null } } =
-    useLoaderData<typeof loader>();
-  const club = data.club;
-  if (!club) return null;
   const params = useParams();
   return (
     <>
@@ -83,33 +79,9 @@ const ClubPage = (_props: IClubPageProps) => {
           </Breadcrumb>
         </div>
         <ClubTab club={data.club} />
-        <div className="rounded-lg overflow-hidden shadow border">
-          <img
-            src={data.club?.image?.url || "/images/club-default-image.webp"}
-            alt="대표 이미지"
-            className="w-full h-52 object-cover"
-          />
-          <div className="p-6 flex items-start gap-4">
-            <img
-              src={data.club?.emblem?.url || "/images/club-default-emblem.webp"}
-              alt="엠블럼"
-              className="w-16 h-16 object-cover rounded-full border"
-            />
-            <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold">{data.club.name}</h2>
-              <p className="text-muted-foreground text-sm">
-                {data.club.description || "클럽 소개가 없습니다."}
-              </p>
-              <p className="text-xs text-gray-500">
-                지역: {data.club.si || "-"} {data.club.gun || "-"} /{" "}
-                {data.club.isPublic ? "공개" : "비공개"}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </>
   );
 };
 
-export default ClubPage;
+export default MatchesPage;
