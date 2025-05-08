@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { User } from "lucia";
 import { type ReactNode, useEffect, useState } from "react";
 import { getUser } from "~/libs/db/lucia.server";
+import ProgressBar from "./components/ProgressBar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";
@@ -76,6 +77,7 @@ const queryClient = new QueryClient();
 export default function App() {
   const data = useLoaderData<typeof loader>();
   const [user, setUser] = useState<User | null | undefined>(undefined);
+
   useEffect(() => {
     data.user.then(setUser);
   }, [data.user]);
@@ -84,6 +86,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <UserContext.Provider value={user}>
           <Header />
+          <ProgressBar />
           <Outlet />
         </UserContext.Provider>
       </QueryClientProvider>

@@ -25,7 +25,7 @@ const Header = () => {
         <div>
           <Link to={"/"} className="px-2 py-0.5">
             <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
-              ONSOA 1
+              ONSOA
             </span>
           </Link>
         </div>
