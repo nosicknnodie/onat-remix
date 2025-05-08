@@ -74,7 +74,7 @@ const ClubsPage = (_props: IClubsPageProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid max-sm:grid-cols-1 sm:grid-cols-3 gap-4">
           {data.clubs.map((club) => (
             <div
               key={club.id}

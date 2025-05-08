@@ -56,10 +56,10 @@ model User {
   ownerClubs    Club[]  @relation("ClubOwnerUser")
   createClubs   Club[]  @relation("ClubCreateUser")
   players       Player[]
-  toProposals   Proposal[]  @relation("toProposal")
-  fromProposals Proposal[]  @relation("fromProposal")
+  // toProposals   Proposal[]  @relation("toProposal")
+  // fromProposals Proposal[]  @relation("fromProposal")
   mercenarys    Mercenary[]
-  applications  Application[]
+  // applications  Application[]
   playerLogs    PlayerLog[]
   comments      Comment[]
   matchs        Match[]
@@ -138,8 +138,8 @@ model Club {
   createUser    User?     @relation("ClubCreateUser",fields: [createUserId], references: [id], onDelete: SetNull)
   players       Player[]      // 회원 선수
   matchClubs    MatchClub[]       // 매치
-  proposals     Proposal[]   // 클럽 제안
-  applications  Application[] // 클럽 지원자  
+  // proposals     Proposal[]   // 클럽 제안
+  // applications  Application[] // 클럽 지원자  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
@@ -148,41 +148,41 @@ model Club {
 }
 
 // 제안
-model Proposal {
-  id              String    @id @default(cuid())
-  content         String?   // 제안 내용
-  toId            String
-  isReaded        Boolean   @default(false)
-  fromId          String
-  clubId          String
-  endAt           DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @default(now()) @updatedAt
+// model Proposal {
+//   id              String    @id @default(cuid())
+//   content         String?   // 제안 내용
+//   toId            String
+//   isReaded        Boolean   @default(false)
+//   fromId          String
+//   clubId          String
+//   endAt           DateTime?
+//   createdAt       DateTime  @default(now())
+//   updatedAt       DateTime  @default(now()) @updatedAt
 
-  to              User   @relation(name: "toProposal", fields: [toId], references: [id], onDelete: Cascade)
-  from            User   @relation(name: "fromProposal",fields: [fromId], references: [id], onDelete: Cascade)
-  club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+//   to              User   @relation(name: "toProposal", fields: [toId], references: [id], onDelete: Cascade)
+//   from            User   @relation(name: "fromProposal",fields: [fromId], references: [id], onDelete: Cascade)
+//   club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  @@index([clubId])
-  @@index([fromId])
-  @@index([toId])
-}
+//   @@index([clubId])
+//   @@index([fromId])
+//   @@index([toId])
+// }
 
 // 입회 신청
-model Application {
-  id              String    @id @default(cuid())
-  content         String?   // 신청 내용
-  fromUserId      String    // 신청자 profile fkey
-  toClubId        String    // 신청 club
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @default(now()) @updatedAt
-  result          Boolean?  // 허락 : 거절
-  fromUser        User      @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
-  toClub          Club      @relation(fields: [toClubId], references: [id], onDelete: Cascade)
+// model Application {
+//   id              String    @id @default(cuid())
+//   content         String?   // 신청 내용
+//   fromUserId      String    // 신청자 profile fkey
+//   toClubId        String    // 신청 club
+//   createdAt       DateTime  @default(now())
+//   updatedAt       DateTime  @default(now()) @updatedAt
+//   result          Boolean?  // 허락 : 거절
+//   fromUser        User      @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
+//   toClub          Club      @relation(fields: [toClubId], references: [id], onDelete: Cascade)
 
-  @@index([fromUserId])
-  @@index([toClubId])
-}
+//   @@index([fromUserId])
+//   @@index([toClubId])
+// }
 
 enum JobTitle {
   CHAIRMAN      // 회장
@@ -215,13 +215,14 @@ model Player {
   id              String    @id @default(cuid())
   nick            String
   userId          String?
-  jobTitle        JobTitle?
-  role            RoleType  @default(NORMAL)
+  jobTitle        JobTitle? @default(NO)
+  role            RoleType  @default(PENDING)
   clubId          String
 
   isInjury        Boolean  @default(false)
   isRest          Boolean  @default(false)
-  isExit          Boolean  @default(false)
+  // isExit          Boolean  @default(false)
+  status          StatusType @default(PENDING)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
   
@@ -232,23 +233,35 @@ model Player {
 
   @@index([clubId])
   @@index([userId])
+  @@unique([clubId, userId])
 }
 
+enum StatusType {
+  PENDING
+  APPROVED
+  REJECTED
+  LEFT
+  BANNED
+}
 
 enum RoleType {
   MASTER
   MANAGER
   NORMAL
+  PENDING
 }
 
 enum PlayerLogType {
-  ENTRY    // 가입, 탈퇴
-  REST  // 휴식기
-  INJURY  // 부상
+  STATUS      // 가입, 탈퇴
+  REST        // 휴식기
+  INJURY      // 부상
+  ROLE        // 역할
+  JOB_TITLE   // 직책
 }
 enum PlayerLogValue {
-  START  // 시작
-  END    // 종료
+  START     // 시작
+  END       // 종료
+  CHANGED   // 변경
 }
 
 model PlayerLog {
@@ -257,6 +270,8 @@ model PlayerLog {
   player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   type            PlayerLogType?
   value           PlayerLogValue?
+  from            String?
+  to              String?
   createUserId    String?
   createUser      User?   @relation(fields: [createUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())

@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link, NavLink } from "@remix-run/react";
 import type { ComponentProps } from "react";
 import { FaUser } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
@@ -23,10 +23,17 @@ const Header = () => {
     >
       <div className="max-w-screen-lg flex justify-between w-full items-center">
         <div>
-          <Link to={"/"} className="px-2 py-0.5">
-            <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+          <Link to={"/"} className="">
+            <div className="px-4 py-0.5">
+              <img
+                src="/images/logo-onsoa.png"
+                alt="logo"
+                className="h-8 cursor-pointer"
+              />
+            </div>
+            {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
               ONSOA
-            </span>
+            </span> */}
           </Link>
         </div>
         <div className="space-x-2 flex">
@@ -245,20 +252,26 @@ const ListItem = ({
   title,
   children,
   ...props
-}: ComponentProps<typeof Link>) => {
+}: ComponentProps<typeof NavLink>) => {
   return (
-    <Link
-      className={cn(
-        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-        className
-      )}
+    <NavLink
+      className={({ isActive }) =>
+        cn(
+          "text-gray-600 relative incline-block font-semibold pt-0.5 px-2",
+          "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] pt-1 pb-3 hover:bg-[length:100%_3px] transition-all",
+          {
+            "text-primary font-bold after:absolute after:-right-0 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
+              isActive,
+          }
+        )
+      }
       {...props}
     >
-      <div className="text-sm font-medium leading-none">{title}</div>
-      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+      <div className="font-medium leading-none">{title}</div>
+      {/* <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
         {children}
-      </p>
-    </Link>
+      </p> */}
+    </NavLink>
   );
 };
 
