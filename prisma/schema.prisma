@@ -43,7 +43,7 @@ model User {
   uploadedImages   File[] @relation("UploadedImages")
   playerNative  PlayerNativeType? // 선출 중등 고등 대학 프로
   height        Int?       // 키
-  birth         DateTime?    // 생일
+  birth         String?    // 생일
   gender        GenderType? // 성별
   position1     PositionType?
   position2     PositionType?
@@ -138,8 +138,6 @@ model Club {
   createUser    User?     @relation("ClubCreateUser",fields: [createUserId], references: [id], onDelete: SetNull)
   players       Player[]      // 회원 선수
   matchClubs    MatchClub[]       // 매치
-  // proposals     Proposal[]   // 클럽 제안
-  // applications  Application[] // 클럽 지원자  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
@@ -147,42 +145,6 @@ model Club {
 
 }
 
-// 제안
-// model Proposal {
-//   id              String    @id @default(cuid())
-//   content         String?   // 제안 내용
-//   toId            String
-//   isReaded        Boolean   @default(false)
-//   fromId          String
-//   clubId          String
-//   endAt           DateTime?
-//   createdAt       DateTime  @default(now())
-//   updatedAt       DateTime  @default(now()) @updatedAt
-
-//   to              User   @relation(name: "toProposal", fields: [toId], references: [id], onDelete: Cascade)
-//   from            User   @relation(name: "fromProposal",fields: [fromId], references: [id], onDelete: Cascade)
-//   club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
-
-//   @@index([clubId])
-//   @@index([fromId])
-//   @@index([toId])
-// }
-
-// 입회 신청
-// model Application {
-//   id              String    @id @default(cuid())
-//   content         String?   // 신청 내용
-//   fromUserId      String    // 신청자 profile fkey
-//   toClubId        String    // 신청 club
-//   createdAt       DateTime  @default(now())
-//   updatedAt       DateTime  @default(now()) @updatedAt
-//   result          Boolean?  // 허락 : 거절
-//   fromUser        User      @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
-//   toClub          Club      @relation(fields: [toClubId], references: [id], onDelete: Cascade)
-
-//   @@index([fromUserId])
-//   @@index([toClubId])
-// }
 
 enum JobTitle {
   CHAIRMAN      // 회장

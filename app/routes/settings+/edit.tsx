@@ -1,7 +1,9 @@
 import { File } from "@prisma/client";
 import { CameraIcon } from "@radix-ui/react-icons";
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { useState } from "react";
+import { ActionFunctionArgs } from "@remix-run/node";
+import { useActionData } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -33,10 +35,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const gun = String(form.get("gun") ?? "");
   const userImageId = form.get("userImageId")?.toString() ?? null;
 
-  const birthValid = birthYear && birthMonth && birthDay;
-  const birth = birthValid
-    ? new Date(birthYear, birthMonth - 1, birthDay)
-    : null;
+  const MM = birthMonth ? String(birthMonth).padStart(2, "0") : undefined;
+  const dd = birthDay ? String(birthDay).padStart(2, "0") : undefined;
+  const birthValid = birthYear && MM && dd;
+  const birth = birthValid ? `${birthYear}-${MM}-${dd}` : null;
   await prisma.user.update({
     where: { id },
     data: {
@@ -51,16 +53,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   await invalidateUserSessionCache(id);
 
-  return redirect("/settings/edit");
+  return Response.json({ success: "수정완료 했습니다." });
 };
 
 interface IEditPageProps {}
 
 const EditPage = (_props: IEditPageProps) => {
+  const actionData = useActionData<typeof action>();
   const user = useSession();
+  const [si, setSi] = useState(user?.si);
+  const [imageFile, setImageFile] = useState<undefined | File>(user?.userImage);
+  useEffect(() => {
+    setSi(user?.si);
+    setImageFile(user?.userImage);
+  }, [user]);
   if (!user) return null;
-  const [si, setSi] = useState(user.si);
-  const [imageFile, setImageFile] = useState<undefined | File>(user.userImage);
   return (
     <Card className="max-w-xl mx-auto mt-8 w-full">
       <CardHeader>
@@ -83,7 +90,7 @@ const EditPage = (_props: IEditPageProps) => {
               width={120}
               height={120}
               className={cn(
-                "w-full h-full outline-none rounded-full border overflow-hidden flex justify-center items-center"
+                "w-full h-full outline-none rounded-full border overflow-hidden flex justify-center items-center",
               )}
               // onError={() => setImage("/images/user_84308.png")}
             ></img>
@@ -115,11 +122,7 @@ const EditPage = (_props: IEditPageProps) => {
 
           <div className="space-y-1">
             <Label htmlFor="name">이름</Label>
-            <Input
-              name="name"
-              id="name"
-              defaultValue={user.name ?? undefined}
-            />
+            <Input name="name" id="name" defaultValue={user.name ?? undefined} />
           </div>
 
           <div className="space-y-1">
@@ -127,11 +130,7 @@ const EditPage = (_props: IEditPageProps) => {
             <div className="flex gap-2">
               <Select
                 name="birthYear"
-                defaultValue={
-                  user.birth
-                    ? new Date(user.birth).getFullYear().toString()
-                    : ""
-                }
+                defaultValue={user.birth ? new Date(user.birth).getFullYear().toString() : ""}
               >
                 <SelectTrigger className="w-[100px]">
                   <SelectValue placeholder="년도" />
@@ -150,11 +149,7 @@ const EditPage = (_props: IEditPageProps) => {
 
               <Select
                 name="birthMonth"
-                defaultValue={
-                  user.birth
-                    ? (new Date(user.birth).getMonth() + 1).toString()
-                    : ""
-                }
+                defaultValue={user.birth ? (new Date(user.birth).getMonth() + 1).toString() : ""}
               >
                 <SelectTrigger className="w-[80px]">
                   <SelectValue placeholder="월" />
@@ -170,9 +165,7 @@ const EditPage = (_props: IEditPageProps) => {
 
               <Select
                 name="birthDay"
-                defaultValue={
-                  user.birth ? new Date(user.birth).getDate().toString() : ""
-                }
+                defaultValue={user.birth ? new Date(user.birth).getDate().toString() : ""}
               >
                 <SelectTrigger className="w-[80px]">
                   <SelectValue placeholder="일" />
@@ -204,11 +197,7 @@ const EditPage = (_props: IEditPageProps) => {
           <div className="space-y-1">
             <Label htmlFor="si">도시 & 지역</Label>
             <div className="flex gap-2">
-              <Select
-                name="si"
-                defaultValue={user.si ?? undefined}
-                onValueChange={setSi}
-              >
+              <Select name="si" defaultValue={user.si ?? undefined} onValueChange={setSi}>
                 <SelectTrigger className="w-[80px]">
                   <SelectValue placeholder="도시" />
                 </SelectTrigger>
@@ -239,6 +228,7 @@ const EditPage = (_props: IEditPageProps) => {
             </div>
             {/* <Input name="si" id="si" defaultValue={user.si ?? undefined} /> */}
           </div>
+          <FormSuccess>{actionData?.success}</FormSuccess>
           <Button type="submit" className="w-full">
             수정하기
           </Button>

@@ -46,7 +46,7 @@ const MembersPage = (_props: IMembersPageProps) => {
   const location = useLocation();
   const players = useMemo(
     () => fetch.data?.players ?? loaderData.players ?? [],
-    [loaderData, fetch.data]
+    [loaderData, fetch.data],
   );
   const value = {
     players,
