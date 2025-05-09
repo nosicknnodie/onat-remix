@@ -1,8 +1,4 @@
-import type {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -22,10 +18,7 @@ import "./tailwind.css";
 import Header from "./template/layout/Header";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "ONSOA | 홈" },
-    { name: "description", content: "축구 관리앱 입니다." },
-  ];
+  return [{ title: "ONSOA | 홈" }, { name: "description", content: "축구 관리앱 입니다." }];
 };
 
 export const links: LinksFunction = () => [
@@ -34,6 +27,10 @@ export const links: LinksFunction = () => [
     rel: "preconnect",
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css",
   },
   {
     rel: "stylesheet",
@@ -57,7 +54,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="min-h-screen bg-background font-pretendard antialiased">
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
           <div className="flex h-screen overflow-hidden">
             <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">

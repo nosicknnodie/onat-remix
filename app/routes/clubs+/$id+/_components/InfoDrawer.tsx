@@ -1,13 +1,10 @@
+import { AvatarImage } from "@radix-ui/react-avatar";
 import { format } from "date-fns";
 import _ from "lodash";
-import {
-  CalendarIcon,
-  HomeIcon,
-  KeyIcon,
-  MailIcon,
-  UserIcon,
-} from "lucide-react"; // 또는 @heroicons/react 사용 가능
+import { CalendarIcon, HomeIcon, KeyIcon, MailIcon, UserIcon } from "lucide-react"; // 또는 @heroicons/react 사용 가능
 import { FaFutbol, FaHeartbeat } from "react-icons/fa";
+import { Loading } from "~/components/Loading";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   Drawer,
@@ -57,43 +54,32 @@ const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
             <DrawerTitle className="text-lg font-bold mb-4 border-b pb-2">
               회원 정보 확인
             </DrawerTitle>
-            <DrawerDescription>
-              사용자 회원 정보 확인란입니다.
-            </DrawerDescription>
+            <DrawerDescription>사용자 회원 정보 확인란입니다.</DrawerDescription>
           </DrawerHeader>
-          <div className="space-y-3 pl-4">
+          <div className="space-y-3 pl-4 relative w-full">
+            {player?.user?.userImage?.url && (
+              <Avatar className="group max-sm:size-[100px] sm:size-[180px] absolute right-2 top-5 opacity-80 shadow-lg">
+                <AvatarImage
+                  className="object-cover"
+                  src={player?.user?.userImage?.url || "/images/user_empty.png"}
+                />
+                <AvatarFallback>
+                  <Loading />
+                </AvatarFallback>
+              </Avatar>
+            )}
             <InfoRow
               label="이름 (닉네임)"
               value={`${player?.user?.name} (${player?.nick})`}
               icon={<UserIcon size={16} />}
             />
-            <InfoRow
-              label="포지션"
-              value={positions}
-              icon={<FaFutbol size={16} />}
-            />
-            <InfoRow
-              label="상태"
-              value={statusText}
-              icon={<FaHeartbeat size={16} />}
-            />
-            <InfoRow
-              label="이메일"
-              value={player?.user?.email}
-              icon={<MailIcon size={16} />}
-            />
-            <InfoRow
-              label="주소"
-              value={address}
-              icon={<HomeIcon size={16} />}
-            />
+            <InfoRow label="포지션" value={positions} icon={<FaFutbol size={16} />} />
+            <InfoRow label="상태" value={statusText} icon={<FaHeartbeat size={16} />} />
+            <InfoRow label="이메일" value={player?.user?.email} icon={<MailIcon size={16} />} />
+            <InfoRow label="주소" value={address} icon={<HomeIcon size={16} />} />
             <InfoRow
               label="생년월일"
-              value={
-                player?.user?.birth
-                  ? format(new Date(player.user.birth), "yyyy-MM-dd")
-                  : "-"
-              }
+              value={player?.user?.birth ? format(new Date(player.user.birth), "yyyy-MM-dd") : "-"}
               icon={<CalendarIcon size={16} />}
             />
             <InfoRow

@@ -1,12 +1,5 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  UIMatch,
-  useLoaderData,
-  useMatches,
-  useParams,
-} from "@remix-run/react";
+import { Link, Outlet, UIMatch, useLoaderData, useMatches, useParams } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 import ClubTab from "~/template/club/Tabs";
@@ -82,28 +75,24 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export type IClubLayoutLoaderData = {
-  club:
-    | Club & {
-        image?: File | null;
-        emblem?: File | null;
-      };
+  club: Club & {
+    image?: File | null;
+    emblem?: File | null;
+  };
   player: (Player & { user: { userImage: string } }) | null;
 };
 
 const Layout = (_props: ILayoutProps) => {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData<IClubLayoutLoaderData>();
   const user = useSession();
   const params = useParams();
-  const matches = useMatches() as UIMatch<
-    unknown,
-    { breadcrumb?: React.ReactNode }
-  >[];
+  const matches = useMatches() as UIMatch<unknown, { breadcrumb?: React.ReactNode }>[];
 
   const breadcrumbs = matches
     .filter((match) => match.handle?.breadcrumb)
     .map((match) => ({
       name: match.handle.breadcrumb,
-      path: match.pathname,
+      path: match.pathname.endsWith("/") ? match.pathname.slice(0, -1) : match.pathname,
     }));
 
   const isJoined = !!user && !data.player;
@@ -135,28 +124,24 @@ const Layout = (_props: ILayoutProps) => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink to={"/clubs/" + params.id}>
-                  {data.club.name}
-                </BreadcrumbLink>
+                <BreadcrumbLink to={"/clubs/" + params.id}>{data.club.name}</BreadcrumbLink>
               </BreadcrumbItem>
               {breadcrumbs.map((breadcrumb) => (
                 <Fragment key={breadcrumb.path}>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbLink to={breadcrumb.path}>
-                      {breadcrumb.name}
-                    </BreadcrumbLink>
+                    <BreadcrumbLink to={breadcrumb.path}>{breadcrumb.name}</BreadcrumbLink>
                   </BreadcrumbItem>
                 </Fragment>
               ))}
               <BreadcrumbItem>
-                {user?.id === data.club.ownerUserId && (
+                {(data.player?.role === "MANAGER" || data.player?.role === "MASTER") && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         className={cn(
-                          "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+                          "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
                         )}
                       >
                         <span className="sr-only">Open menu</span>
@@ -166,6 +151,9 @@ const Layout = (_props: ILayoutProps) => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
                         <Link to={`/clubs/${params.id}/edit`}>클럽 수정</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to={"/matches/new"}>매치 추가</Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -180,12 +168,8 @@ const Layout = (_props: ILayoutProps) => {
                 <Button>가입</Button>
               </JoinDialog>
             )}
-            {isRejected && (
-              <FormError className="py-2">가입 승인 거절되었습니다.</FormError>
-            )}
-            {isJoinPending && (
-              <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
-            )}
+            {isRejected && <FormError className="py-2">가입 승인 거절되었습니다.</FormError>}
+            {isJoinPending && <FormSuccess>가입 승인 대기중입니다.</FormSuccess>}
             {isReJoined && (
               <JoinDialog player={data.player ?? undefined}>
                 <Button>재가입</Button>
