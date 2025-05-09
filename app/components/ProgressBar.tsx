@@ -29,7 +29,7 @@ export default function ProgressBar() {
   return isVisible ? (
     <div className="fixed top-16 left-0 w-full h-0.5 bg-transparent z-50">
       <div
-        className="h-full bg-blue-500 transition-all duration-200 ease-out origin-left"
+        className="h-full bg-primary transition-all duration-200 ease-out origin-left"
         style={{
           transform: `scaleX(${progress / 100})`,
           transformOrigin: "left",

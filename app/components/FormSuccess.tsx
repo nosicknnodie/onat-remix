@@ -7,7 +7,7 @@ const FormSuccess = ({ children, ...props }: FormSuccessProps) => {
 
   return (
     <div
-      className="bg-emerald-500/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-emerald-500"
+      className="bg-primary/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-primary"
       {...props}
     >
       <CheckCircledIcon className="h-4 w-4" />

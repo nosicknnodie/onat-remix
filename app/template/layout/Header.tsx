@@ -106,8 +106,8 @@ const Header = () => {
                 <DropdownMenuTrigger className="outline-none">
                   <Avatar>
                     <AvatarImage src={user?.userImage?.url}></AvatarImage>
-                    <AvatarFallback className="bg-primary-foreground">
-                      <FaUser className="text-primary" />
+                    <AvatarFallback className="bg-primary">
+                      <FaUser className="text-primary-foreground" />
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
@@ -138,7 +138,7 @@ const Header = () => {
             <>
               <Avatar>
                 <AvatarImage></AvatarImage>
-                <AvatarFallback className="bg-primary-foreground">
+                <AvatarFallback className="bg-primary">
                   <Loading />
                 </AvatarFallback>
               </Avatar>

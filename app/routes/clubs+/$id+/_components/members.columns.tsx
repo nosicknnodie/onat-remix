@@ -1,6 +1,7 @@
 import { File, Player, User } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
+import _ from "lodash";
 import { FaStar, FaUser } from "react-icons/fa";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { MembersAction } from "./members.action";
@@ -64,6 +65,7 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
                     </span>
                   ),
                   NORMAL: "",
+                  PENDING: "",
                 }[row.original.role ?? "NORMAL"]
               }
             </div>
@@ -97,7 +99,11 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
       return (
         <div className="flex justify-center items-center space-x-2">
           <span>
-            {[user?.position1, user?.position2, user?.position3].join(",")}
+            {_.compact([
+              user?.position1,
+              user?.position2,
+              user?.position3,
+            ]).join(",")}
           </span>
         </div>
       );

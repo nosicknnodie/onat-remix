@@ -1,5 +1,6 @@
 import { JobTitle, Player, RoleType } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { useOutletContext } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
@@ -15,6 +16,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { IClubLayoutLoaderData } from "../_layout";
+import InfoDrawer from "./InfoDrawer";
 import { useGetPlayers } from "./member.context";
 import { IPlayer } from "./members.columns";
 
@@ -23,10 +26,11 @@ interface IMembersActionProps {
 }
 
 export const MembersAction = ({ payload }: IMembersActionProps) => {
-  const isMaster = payload.role === "MASTER";
-  const isManager = payload.role === "MANAGER";
-  const isNormal = payload.role === "NORMAL";
-  const query = useGetPlayers();
+  const { player } = useOutletContext<IClubLayoutLoaderData>();
+  const isMaster = player?.role === "MASTER";
+  const isManager = player?.role === "MANAGER";
+  const isNormal = player?.role === "NORMAL";
+  const context = useGetPlayers();
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (value: Partial<Player>) => {
       return fetch("/api/players/" + payload.id, {
@@ -37,23 +41,19 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
   });
   const handleChangeJobTitle = async (jobTitle: JobTitle) => {
     await mutateAsync({ jobTitle });
-    await query?.refetch();
+    await context?.refetch();
   };
   const handleChangeRole = async (role: RoleType) => {
     await mutateAsync({ role });
-    await query?.refetch();
+    await context?.refetch();
   };
   const handleInjury = async (isInjury: boolean) => {
     await mutateAsync({ isInjury });
-    await query?.refetch();
+    await context?.refetch();
   };
   const handleIsRest = async (isRest: boolean) => {
     await mutateAsync({ isRest });
-    await query?.refetch();
-  };
-  const handleIsExit = async (isExit: boolean) => {
-    await mutateAsync({ isExit });
-    await query?.refetch();
+    await context?.refetch();
   };
   return (
     <>
@@ -76,7 +76,9 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{`${payload.nick} 님`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>정보확인(개발중)</DropdownMenuItem>
+            <DropdownMenuItem>
+              <InfoDrawer player={payload}>정보확인</InfoDrawer>
+            </DropdownMenuItem>
             {/* <DropdownMenuItem disabled>기록(개발중)</DropdownMenuItem>
             <DropdownMenuItem disabled>출석정보(개발중)</DropdownMenuItem>
             <DropdownMenuItem disabled>매치(개발중)</DropdownMenuItem> */}
@@ -86,22 +88,22 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                 <DropdownMenuSubContent>
                   {isMaster && (
                     <DropdownMenuCheckboxItem
-                      checked={isMaster}
+                      checked={payload.role === "MASTER"}
                       disabled={true}
                     >
                       MASTER
                     </DropdownMenuCheckboxItem>
                   )}
                   <DropdownMenuCheckboxItem
-                    checked={isManager}
-                    disabled={isMaster}
+                    checked={payload.role === "MANAGER"}
+                    disabled={!isMaster}
                     onClick={() => handleChangeRole("MANAGER")}
                   >
                     매니저
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
-                    checked={isNormal}
-                    disabled={isMaster}
+                    checked={payload.role === "NORMAL"}
+                    disabled={!isMaster && !isManager}
                     onClick={() => handleChangeRole("NORMAL")}
                   >
                     회원
@@ -175,10 +177,10 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                {isNormal && (
+                {payload.role === "NORMAL" && (
                   <DropdownMenuItem
                     className="text-destructive"
-                    onClick={() => handleIsExit(true)}
+                    // onClick={() => handleIsExit(true)}
                   >
                     탈퇴
                   </DropdownMenuItem>
