@@ -5,6 +5,6 @@ export const PendingsContext = createContext<
   (IPendingsPageLoaderData & { refetch: () => Promise<void> }) | undefined
 >(undefined);
 
-export const useGetPlayers = () => {
+export const useGetPendingPlayers = () => {
   return useContext(PendingsContext);
 };

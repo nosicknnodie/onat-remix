@@ -111,7 +111,7 @@ const Layout = (_props: ILayoutProps) => {
   const isReJoined =
     user &&
     data.player &&
-    new Date(Date.now() - 1000 * 60 * 60) < new Date(data.player.updatedAt) &&
+    new Date(Date.now() - 1000 * 60 * 60) > new Date(data.player.updatedAt) &&
     (data.player.status === "LEFT" ||
       data.player.status === "BANNED" ||
       data.player.status === "REJECTED");
@@ -173,19 +173,25 @@ const Layout = (_props: ILayoutProps) => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          {/* 가입하기 버튼 */}
-          {isJoined && (
-            <JoinDialog>
-              <Button>가입</Button>
-            </JoinDialog>
-          )}
-          {isRejected && <FormError>가입 승인 거절되었습니다.</FormError>}
-          {isJoinPending && <FormSuccess>가입 승인 대기중입니다.</FormSuccess>}
-          {isReJoined && (
-            <JoinDialog player={data.player ?? undefined}>
-              <Button>재가입</Button>
-            </JoinDialog>
-          )}
+          <div className="flex gap-2 items-center">
+            {/* 가입하기 버튼 */}
+            {isJoined && (
+              <JoinDialog>
+                <Button>가입</Button>
+              </JoinDialog>
+            )}
+            {isRejected && (
+              <FormError className="py-2">가입 승인 거절되었습니다.</FormError>
+            )}
+            {isJoinPending && (
+              <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
+            )}
+            {isReJoined && (
+              <JoinDialog player={data.player ?? undefined}>
+                <Button>재가입</Button>
+              </JoinDialog>
+            )}
+          </div>
         </div>
         <ClubTab club={data.club} />
         <Outlet context={{ club: data.club, player: data.player }} />

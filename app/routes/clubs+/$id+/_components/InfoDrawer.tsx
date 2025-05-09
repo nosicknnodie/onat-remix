@@ -33,6 +33,8 @@ const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
     player?.isInjury ? "부상중" : undefined,
     player?.isRest ? "휴식중" : undefined,
   ]).join(",");
+  const address = _.compact([player?.user?.si, player?.user?.gun]).join(" ");
+
   return (
     <>
       <Drawer direction="right">
@@ -42,7 +44,7 @@ const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
             onClick={(e) => {
               e.stopPropagation();
             }}
-            className="w-full justify-start flex px-2 py-0.5"
+            className="w-full justify-start flex py-0.5 px-0 h-6 text-primary"
           >
             {children}
           </Button>
@@ -82,7 +84,7 @@ const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
             />
             <InfoRow
               label="주소"
-              value={`${player?.user?.si} ${player?.user?.gun}`}
+              value={address}
               icon={<HomeIcon size={16} />}
             />
             <InfoRow
@@ -96,7 +98,14 @@ const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
             />
             <InfoRow
               label="권한"
-              value={player?.role === "NORMAL" ? "사용자" : "관리자"}
+              value={
+                {
+                  NORMAL: "회원",
+                  PENDING: "대기회원",
+                  MASTER: "마스터",
+                  MANAGER: "관리자",
+                }[player?.role ?? "PENDING"]
+              }
               icon={<KeyIcon size={16} />}
             />
           </div>

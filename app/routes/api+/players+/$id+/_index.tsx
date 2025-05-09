@@ -37,9 +37,37 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       id: playerId,
     },
   });
+
   if (!existingPlayer) {
     return Response.json({ error: "Player not found" }, { status: 404 });
   }
+
+  const requestPlayer = await prisma.player.findUnique({
+    where: {
+      clubId_userId: {
+        userId: user.id,
+        clubId: existingPlayer.clubId,
+      },
+    },
+  });
+  if (!requestPlayer) {
+    return Response.json(
+      { error: "You are not a member of this club" },
+      { status: 403 }
+    );
+  }
+
+  const isAllow =
+    requestPlayer?.role === "MASTER" ||
+    requestPlayer?.role === "MANAGER" ||
+    requestPlayer?.id === existingPlayer.id;
+  if (!isAllow) {
+    return Response.json(
+      { error: "You don't have permission to update this player" },
+      { status: 403 }
+    );
+  }
+
   const parsed = result.data;
   const logs: (Partial<Omit<PlayerLog, "playerId">> &
     Pick<PlayerLog, "playerId">)[] = [];

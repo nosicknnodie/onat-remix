@@ -1,4 +1,4 @@
-import { JobTitle, Player, RoleType } from "@prisma/client";
+import { JobTitle, Player, RoleType, StatusType } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useOutletContext } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
@@ -55,6 +55,13 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
     await mutateAsync({ isRest });
     await context?.refetch();
   };
+  const handleStatus = async (status: StatusType) => {
+    if (status === "BANNED") {
+      await mutateAsync({ status, role: "PENDING", jobTitle: "NO" });
+      await context?.refetch();
+    }
+  };
+
   return (
     <>
       <div className="flex justify-center">
@@ -180,7 +187,7 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                 {payload.role === "NORMAL" && (
                   <DropdownMenuItem
                     className="text-destructive"
-                    // onClick={() => handleIsExit(true)}
+                    onClick={() => handleStatus("BANNED")}
                   >
                     탈퇴
                   </DropdownMenuItem>

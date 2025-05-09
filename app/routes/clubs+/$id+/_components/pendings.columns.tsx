@@ -2,7 +2,8 @@ import { File, Player, User } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import _ from "lodash";
-import { FaStar, FaUser } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
+import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PendingsAction } from "./pendings.action";
 export interface IPlayer extends Player {
@@ -25,8 +26,8 @@ export const pendingsColumns: ColumnDef<IPlayer>[] = [
                 row.original?.user?.userImage?.url || "/images/user_empty.png"
               }
             />
-            <AvatarFallback>
-              <FaUser />
+            <AvatarFallback className="bg-primary-foreground">
+              <Loading />
             </AvatarFallback>
           </Avatar>
           <div>
