@@ -1,7 +1,9 @@
-import { JobTitle, RoleType } from "@prisma/client";
+import { JobTitle, PlayerLog, RoleType, StatusType } from "@prisma/client";
 import { ActionFunctionArgs } from "@remix-run/node";
+import _ from "lodash";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 
 const PlayerUpdateSchema = z.object({
   role: z.nativeEnum(RoleType).optional(),
@@ -9,10 +11,12 @@ const PlayerUpdateSchema = z.object({
   nick: z.string().optional(),
   isInjury: z.boolean().optional(),
   isRest: z.boolean().optional(),
-  isExit: z.boolean().optional(),
+  status: z.nativeEnum(StatusType).optional(),
 });
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const user = await getUser(request);
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const playerId = params.id;
   if (!playerId) {
     return Response.json({ error: "playerId is required" }, { status: 400 });
@@ -28,16 +32,71 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     );
   }
 
-  const parsed = result.data;
-  const updateData = {} as Record<string, string | boolean>;
-
-  for (const [key, value] of Object.entries(parsed)) {
-    if (value !== "") {
-      updateData[key] = value;
-    }
+  const existingPlayer = await prisma.player.findUnique({
+    where: {
+      id: playerId,
+    },
+  });
+  if (!existingPlayer) {
+    return Response.json({ error: "Player not found" }, { status: 404 });
   }
+  const parsed = result.data;
+  const logs: (Partial<Omit<PlayerLog, "playerId">> &
+    Pick<PlayerLog, "playerId">)[] = [];
 
-  if (Object.keys(updateData).length === 0) {
+  const cleaned = _.omitBy(parsed, _.isUndefined);
+  _.forEach(cleaned, (value, key) => {
+    switch (key) {
+      case "isInjury":
+        logs.push({
+          type: "INJURY",
+          value: value === true ? "START" : "END",
+          playerId: playerId,
+          createUserId: user.id,
+        });
+        break;
+      case "isRest":
+        logs.push({
+          type: "REST",
+          value: value === true ? "START" : "END",
+          playerId: playerId,
+          createUserId: user.id,
+        });
+        break;
+      case "role":
+        logs.push({
+          type: "ROLE",
+          value: "CHANGED",
+          from: existingPlayer?.role,
+          to: value?.toString(),
+          playerId: playerId,
+          createUserId: user.id,
+        });
+        break;
+      case "jobTitle":
+        logs.push({
+          type: "JOB_TITLE",
+          value: "CHANGED",
+          from: existingPlayer?.jobTitle,
+          to: value?.toString(),
+          playerId: playerId,
+          createUserId: user.id,
+        });
+        break;
+      case "status":
+        logs.push({
+          type: "STATUS",
+          value: "CHANGED",
+          from: existingPlayer?.status,
+          to: value?.toString(),
+          playerId: playerId,
+          createUserId: user.id,
+        });
+        break;
+    }
+  });
+
+  if (Object.keys(cleaned).length === 0) {
     return Response.json(
       { error: "No valid fields to update" },
       { status: 400 }
@@ -45,9 +104,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
 
   try {
-    const updated = await prisma.player.update({
-      where: { id: playerId },
-      data: updateData,
+    const updated = await prisma.$transaction(async (tx) => {
+      const txPlayer = await tx.player.update({
+        where: { id: playerId },
+        data: cleaned,
+      });
+      if (logs.length > 0) {
+        await tx.playerLog.createMany({
+          data: logs,
+        });
+      }
+      return txPlayer;
     });
 
     return Response.json({
