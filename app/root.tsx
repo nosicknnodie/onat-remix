@@ -9,13 +9,17 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import dayjs from "dayjs";
+import "dayjs/locale/ko"; // 한국어 locale import
 import { User } from "lucia";
 import { type ReactNode, useEffect, useState } from "react";
+import { useKakaoLoader } from "react-kakao-maps-sdk";
 import { getUser } from "~/libs/db/lucia.server";
 import ProgressBar from "./components/ProgressBar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";
+dayjs.locale("ko"); // 전역 locale 설정
 
 export const meta: MetaFunction = () => {
   return [{ title: "ONSOA | 홈" }, { name: "description", content: "축구 관리앱 입니다." }];
@@ -42,7 +46,10 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = getUser(request);
-  return data({ user });
+  return data({
+    user,
+    env: { PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY: process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY },
+  });
 }
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -74,7 +81,10 @@ const queryClient = new QueryClient();
 export default function App() {
   const data = useLoaderData<typeof loader>();
   const [user, setUser] = useState<User | null | undefined>(undefined);
-
+  const appKey = data?.env?.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
+  useKakaoLoader({
+    appkey: appKey,
+  });
   useEffect(() => {
     data.user.then(setUser);
   }, [data.user]);
