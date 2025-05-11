@@ -175,6 +175,7 @@ model Mercenary {
   attendance      Attendance[]
 
   @@index([userId])
+  @@unique([userId, clubId])
 }
 
 model Player {
