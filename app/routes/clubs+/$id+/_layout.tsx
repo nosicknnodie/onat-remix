@@ -2,13 +2,13 @@ import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, Outlet, UIMatch, useLoaderData, useMatches, useParams } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
-import ClubTab from "~/template/club/Tabs";
 
 import { Club, File, Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Fragment } from "react/jsx-runtime";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
+import ItemLink from "~/components/ItemLink";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -177,7 +177,14 @@ const Layout = (_props: ILayoutProps) => {
             )}
           </div>
         </div>
-        <ClubTab club={data.club} />
+        <div className="flex gap-6 px-4 text-base w-full">
+          <ItemLink to={`/clubs/${data.club.id}`} end>
+            정보
+          </ItemLink>
+          <ItemLink to={`/clubs/${data.club.id}/members`}>멤버</ItemLink>
+          <ItemLink to={`/clubs/${data.club.id}/matches`}>매치</ItemLink>
+          <ItemLink to={`/clubs/${data.club.id}/pendings`}>승인대기</ItemLink>
+        </div>
         <Outlet context={{ club: data.club, player: data.player }} />
       </div>
     </>

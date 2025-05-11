@@ -138,6 +138,7 @@ model Club {
   createUser    User?     @relation("ClubCreateUser",fields: [createUserId], references: [id], onDelete: SetNull)
   players       Player[]      // 회원 선수
   matchClubs    MatchClub[]       // 매치
+  mercenarys    Mercenary[]     // 용병
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
@@ -162,7 +163,10 @@ model Mercenary {
   position1       PositionType?
   position2       PositionType?
   position3       PositionType?
-  
+
+  clubId          String                 // 🔄 클럽 직접 연결
+  club            Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
   userId          String?
   user            User?  @relation(fields: [userId], references: [id], onDelete: SetNull)       
   createdAt       DateTime  @default(now())
