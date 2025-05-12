@@ -1,15 +1,11 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { Outlet, useParams } from "@remix-run/react";
+import { Outlet, useOutletContext, useParams } from "@remix-run/react";
 import ItemLink from "~/components/ItemLink";
-
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  // const user = await getUser(request);
-  return Response.json({});
-};
+import { loader as layoutLoader } from "../../_layout";
 
 interface IMatchClubIdLayoutProps {}
 
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
+  const outletData = useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();
   const params = useParams();
   return (
     <>
@@ -26,7 +22,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}>기록</ItemLink>
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}>MOM</ItemLink>
       </div>
-      <Outlet />
+      <Outlet context={outletData} />
     </>
   );
 };

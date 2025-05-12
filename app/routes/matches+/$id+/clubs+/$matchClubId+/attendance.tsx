@@ -281,11 +281,14 @@ const AttendancePage = (_props: IAttendancePageProps) => {
         {(["ATTEND", "ABSENT", "PENDING"] as const).map((key) => (
           <div
             key={key}
-            className={cn("p-4 rounded-lg shadow-sm bg-white hover:shadow-md", {
-              "bg-primary/5": key === "ATTEND",
-              "bg-destructive/5": key === "ABSENT",
-              "bg-muted-foreground/5": key === "PENDING",
-            })}
+            className={cn(
+              "p-4 rounded-lg shadow-sm bg-white hover:shadow-md transition-shadow duration-300",
+              {
+                "bg-primary/5": key === "ATTEND",
+                "bg-destructive/5": key === "ABSENT",
+                "bg-muted-foreground/5": key === "PENDING",
+              },
+            )}
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className={cn("font-semibold text-sm flex items-center gap-1")}>
@@ -330,28 +333,6 @@ const AttendancePage = (_props: IAttendancePageProps) => {
           </div>
         ))}
       </div>
-
-      {/* <div className="mt-6 space-x-2">
-        <span className="font-bold">참석 여부 선택:</span>
-        <Button
-          onClick={() => handleStatusChange("ATTEND")}
-          className="px-3 py-1 border rounded hover:bg-green-100 flex items-center gap-1"
-        >
-          <FaCheckCircle className="text-green-500" /> 참석
-        </Button>
-        <Button
-          onClick={() => handleStatusChange("ABSENT")}
-          className="px-3 py-1 border rounded hover:bg-red-100 flex items-center gap-1"
-        >
-          <FaTimesCircle className="text-red-500" /> 불참
-        </Button>
-        <Button
-          onClick={() => handleStatusChange("PENDING")}
-          className="px-3 py-1 border rounded hover:bg-yellow-100 flex items-center gap-1"
-        >
-          <FaQuestionCircle className="text-yellow-500" /> 미정
-        </Button>
-      </div> */}
     </div>
   );
 };

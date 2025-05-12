@@ -1,4 +1,3 @@
-import { Club, Match, MatchClub } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
@@ -24,33 +23,38 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const matches = await prisma.match.findMany({
-    include: {
-      matchClubs: {
-        include: {
-          club: { include: { image: true, emblem: true } },
+  const user = await getUser(request);
+
+  const [matches, myClubs] = await Promise.all([
+    prisma.match.findMany({
+      include: {
+        matchClubs: {
+          include: {
+            club: { include: { image: true, emblem: true } },
+          },
         },
       },
-    },
-  });
-  return Response.json({ matches });
+    }),
+    user?.id
+      ? prisma.player.findMany({
+          where: { userId: user.id, status: "APPROVED" },
+          select: { clubId: true },
+        })
+      : [],
+  ]);
+
+  return { matches, myClubIds: myClubs.map((c) => c.clubId) };
 };
 
 interface IMatchsPageProps {}
 
-interface IMatchsPageLoaderData {
-  matches: (Match & {
-    matchClubs: (MatchClub & {
-      club: Club & { image?: { url: string } | null; emblem?: { url: string } | null };
-    })[];
-  })[];
-}
-
 const MatchsPage = (_props: IMatchsPageProps) => {
-  const loaderData = useLoaderData<IMatchsPageLoaderData>();
+  const loaderData = useLoaderData<typeof loader>();
+  const myClubIds = loaderData.myClubIds ?? [];
   const matches = useMemo(() => loaderData.matches ?? [], [loaderData.matches]);
   const values = matches.sort(
     (a, b) => new Date(a.stDate!).getTime() - new Date(b.stDate!).getTime(),
@@ -88,74 +92,71 @@ const MatchsPage = (_props: IMatchsPageProps) => {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
-          {values?.map((match) => (
-            <Link key={match.id} to={`/matches/${match.id}`}>
-              <Card
+          {values?.map((match) => {
+            const matchClubId = match.matchClubs.find((mc) => myClubIds.includes(mc.clubId))?.id;
+            return (
+              <Link
                 key={match.id}
-                className="col-span-1 flex flex-col border border-gray-200 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300"
+                to={`/matches/${match.id}${matchClubId ? `/clubs/${matchClubId}` : ""}`}
               >
-                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 min-w-0 flex-1">
-                  <div className="space-y-1 w-full min-w-0">
-                    <CardTitle className="text-lg font-semibold truncate">{match.title}</CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground line-clamp-2 overflow-hidden break-words w-full">
-                      {match.description}
-                    </CardDescription>
-                  </div>
-                  {/* {match.matchClubs[0]?.isSelf && (
-                  <span
-                    className={`text-xs h-fit px-2 py-1 rounded-full font-medium whitespace-nowrap ${
-                      match.matchClubs[0]?.isSelf
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {match.matchClubs[0]?.isSelf ? "자체전" : "매치전"}
-                  </span>
-                )} */}
-                  <div className="flex gap-2">
-                    {match.matchClubs.map((matchClub, i) => (
-                      <Fragment key={matchClub.id}>
-                        {i !== 0 && (
-                          <div className="flex whitespace-nowrap items-center text-sm font-semibold">
-                            <span className="text-primary">vs</span>
+                <Card
+                  key={match.id}
+                  className="col-span-1 flex flex-col border border-gray-200 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300"
+                >
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 min-w-0 flex-1">
+                    <div className="space-y-1 w-full min-w-0">
+                      <CardTitle className="text-lg font-semibold truncate">
+                        {match.title}
+                      </CardTitle>
+                      <CardDescription className="text-sm text-muted-foreground line-clamp-2 overflow-hidden break-words w-full">
+                        {match.description}
+                      </CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      {match.matchClubs.map((matchClub, i) => (
+                        <Fragment key={matchClub.id}>
+                          {i !== 0 && (
+                            <div className="flex whitespace-nowrap items-center text-sm font-semibold">
+                              <span className="text-primary">vs</span>
+                            </div>
+                          )}
+                          <div className="flex whitespace-nowrap items-center text-sm font-semibold gap-1">
+                            <Avatar>
+                              <AvatarImage
+                                src={
+                                  matchClub.club?.emblem?.url ?? "/images/club-default-emblem.webp"
+                                }
+                              />
+                              <AvatarFallback className="bg-primary">
+                                <Loading />
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{matchClub.club?.name}</span>
                           </div>
-                        )}
-                        <div className="flex whitespace-nowrap items-center text-sm font-semibold gap-1">
-                          <Avatar>
-                            <AvatarImage
-                              src={
-                                matchClub.club?.emblem?.url ?? "/images/club-default-emblem.webp"
-                              }
-                            />
-                            <AvatarFallback className="bg-primary">
-                              <Loading />
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>{matchClub.club?.name}</span>
-                        </div>
-                      </Fragment>
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent className="text-sm space-y-2 text-muted-foreground">
-                  <p className="flex items-center gap-2">
-                    <HiLocationMarker className="text-base text-primary" />
-                    <span className="text-foreground">{match.placeName}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiHome className="text-base text-primary" />
-                    <span className="text-foreground">{match.address}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiClock className="text-base text-primary" />
-                    <span className="text-foreground">
-                      {dayjs(match.stDate).format("YYYY-MM-DD (ddd) HH:mm")}
-                    </span>
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                        </Fragment>
+                      ))}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="text-sm space-y-2 text-muted-foreground">
+                    <p className="flex items-center gap-2">
+                      <HiLocationMarker className="text-base text-primary" />
+                      <span className="text-foreground">{match.placeName}</span>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <HiHome className="text-base text-primary" />
+                      <span className="text-foreground">{match.address}</span>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <HiClock className="text-base text-primary" />
+                      <span className="text-foreground">
+                        {dayjs(match.stDate).format("YYYY-MM-DD (ddd) HH:mm")}
+                      </span>
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
           {/* <MatchCard match={{} as MatchClub & { MatchClub: MatchClub[] }} /> */}
         </div>
       </div>
