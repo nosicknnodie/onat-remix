@@ -262,7 +262,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
               {statusIcons[currentStatus as "ATTEND" | "ABSENT" | "PENDING"]}
               {{ ATTEND: "참석", ABSENT: "불참", PENDING: "선택안함" }[currentStatus]}
             </span>
-            {fetcher.state === "loading" && <Loading size={16} />}
+            {fetcher.state !== "idle" && <Loading size={16} />}
           </div>
 
           {isCheckTimeOpen && currentStatus === "ATTEND" && (
