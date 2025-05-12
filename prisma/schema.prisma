@@ -172,7 +172,7 @@ model Mercenary {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @default(now()) @updatedAt
   
-  attendance      Attendance[]
+  attendances      Attendance[]
 
   @@index([userId])
   @@unique([userId, clubId])
@@ -260,7 +260,7 @@ model Match {
   address         String?
   lng             Float?      
   lat             Float?     
-  stDate          DateTime?
+  stDate          DateTime
   
   matchClubs      MatchClub[]
   createUserId    String?

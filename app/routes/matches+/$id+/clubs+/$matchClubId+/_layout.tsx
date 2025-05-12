@@ -1,10 +1,9 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Outlet, useParams } from "@remix-run/react";
 import ItemLink from "~/components/ItemLink";
-import { getUser } from "~/libs/db/lucia.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const user = await getUser(request);
+  // const user = await getUser(request);
   return Response.json({});
 };
 
