@@ -4,9 +4,17 @@ import { loader as layoutLoader } from "../../_layout";
 
 interface IMatchClubIdLayoutProps {}
 
+type IParentLayoutOutletContext = Awaited<ReturnType<typeof layoutLoader>>;
+type IMatchClub = IParentLayoutOutletContext["match"]["matchClubs"][number];
+
+export type IMatchClubIdLayoutOutletContext = IParentLayoutOutletContext & {
+  matchClub: IMatchClub;
+};
+
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
-  const outletData = useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();
+  const outletData = useOutletContext<IParentLayoutOutletContext>();
   const params = useParams();
+  const matchClub = outletData?.match?.matchClubs?.find((mc) => mc.id === params.matchClubId);
   return (
     <>
       <div className="flex gap-x-4 p-2">
@@ -22,7 +30,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}>기록</ItemLink>
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}>MOM</ItemLink>
       </div>
-      <Outlet context={outletData} />
+      <Outlet context={{ ...outletData, matchClub }} />
     </>
   );
 };

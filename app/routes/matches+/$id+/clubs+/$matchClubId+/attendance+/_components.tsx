@@ -1,4 +1,5 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { Link } from "@remix-run/react";
 import { ComponentProps } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
@@ -68,7 +69,9 @@ export const AttendanceAddMercenaryAction = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>+ 용병추가</DropdownMenuItem>
+          <Link to="../mercenary">
+            <DropdownMenuItem>+ 용병 추가</DropdownMenuItem>
+          </Link>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
