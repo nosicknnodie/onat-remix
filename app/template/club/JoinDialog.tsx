@@ -44,7 +44,6 @@ const JoinDialog = ({ children, player }: IJoinDialogProps) => {
         nav(data.redirectTo);
       }
     }
-    console.log("data - ", data);
   };
 
   return (
@@ -56,16 +55,9 @@ const JoinDialog = ({ children, player }: IJoinDialogProps) => {
             <DialogTitle>클럽가입</DialogTitle>
             <DialogDescription></DialogDescription>
           </DialogHeader>
-          <form
-            method="post"
-            className="space-y-4 mt-4"
-            onSubmit={handleSubmit}
-          >
+          <form method="post" className="space-y-4 mt-4" onSubmit={handleSubmit}>
             <div className="flex flex-col space-y-1">
-              <Label
-                htmlFor="nickname"
-                className="text-sm font-medium text-gray-700"
-              >
+              <Label htmlFor="nickname" className="text-sm font-medium text-gray-700">
                 닉네임
               </Label>
               <Input
