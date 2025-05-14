@@ -160,6 +160,8 @@ enum JobTitle {
 model Mercenary {
   id              String    @id @default(cuid())
   name            String
+  hp              String?
+  description     String?
   position1       PositionType?
   position2       PositionType?
   position3       PositionType?

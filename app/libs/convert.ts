@@ -89,3 +89,15 @@ export const convertToNull = <T extends JsonObject>(input: T): T => {
   process(input);
   return input;
 };
+
+export function formatPhoneNumber(phone: string): string {
+  // 이미 하이픈이 있으면 그대로 반환
+  if (phone.includes("-")) return phone;
+
+  // 하이픈 없고 11자리 숫자인 경우
+  return phone.replace(/^(\d{3})(\d{4})(\d{4})$/, "$1-$2-$3");
+}
+
+export function removePhoneHyphen(phone: string): string {
+  return phone.replace(/-/g, "");
+}

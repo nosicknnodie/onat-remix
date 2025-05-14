@@ -1,12 +1,11 @@
-import { TypedResponse } from "@remix-run/node";
 import { ColumnDef } from "@tanstack/react-table";
 import _ from "lodash";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { loader } from "./_index";
-type TData = Exclude<Awaited<ReturnType<typeof loader>>, TypedResponse<unknown>>["mercenaries"];
+import { formatPhoneNumber } from "~/libs/convert";
+import { IMatchClubMecenaryLoaderTData } from "./_index";
 
-export const mercenaryColumns: ColumnDef<TData[number]>[] = [
+export const mercenaryColumns: ColumnDef<IMatchClubMecenaryLoaderTData[number]>[] = [
   {
     id: "name",
     accessorFn: (v) => v.user?.name || v.name || "",
@@ -14,20 +13,33 @@ export const mercenaryColumns: ColumnDef<TData[number]>[] = [
       return <div className="flex justify-center">이름</div>;
     },
     cell: ({ row }) => {
-      console.log("row.original - ", row.original);
+      const hp = row.original?.hp;
+      const user = row.original?.user;
       return (
         <div className="flex justify-center items-center truncate space-x-2">
-          <Avatar>
-            <AvatarImage src={row.original?.user?.userImage?.url || "/images/user_empty.png"} />
-
-            <AvatarFallback className="bg-primary-foreground">
-              <Loading />
-            </AvatarFallback>
-          </Avatar>
+          {row.original?.user?.userImage?.url && (
+            <Avatar>
+              <AvatarImage src={row.original?.user?.userImage?.url || "/images/user_empty.png"} />
+              <AvatarFallback className="bg-primary-foreground">
+                <Loading />
+              </AvatarFallback>
+            </Avatar>
+          )}
           <div>
             <div className="flex space-x-2 items-center h-5">
               <span className="text-base font-semibold">{row.getValue("name")}</span>
+              {/* {user?.email && (
+                <>
+                  <Separator orientation="vertical" />
+                  <span className="text-sm">{user?.email}</span>
+                </>
+              )} */}
             </div>
+            {hp && (
+              <div className="flex space-x-2 items-center h-5">
+                <span className="text-sm">{formatPhoneNumber(hp)}</span>
+              </div>
+            )}
           </div>
         </div>
       );
