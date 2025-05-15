@@ -1,4 +1,5 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { AES } from "~/libs/crypto.utils";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 
@@ -32,6 +33,25 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   });
 
   if (!matchClub) return redirect("/matches/" + matchClubId);
+
+  // 용병 개인정보 decrypt
+  Object.assign(matchClub, {
+    club: {
+      ...matchClub.club,
+      mercenarys: matchClub.club.mercenarys
+        .filter(
+          (mer) =>
+            !mer.userId ||
+            !matchClub.club.players
+              .filter((p) => p.status === "APPROVED")
+              .some((p) => p.userId === mer.userId),
+        )
+        .map((mer) => ({
+          ...mer,
+          hp: mer.hp ? AES.decrypt(mer.hp) : null,
+        })),
+    },
+  });
 
   const [currentPlayer, currentMercenary] = await Promise.all([
     prisma.player.findFirst({
@@ -105,6 +125,7 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
   const formData = await request.formData();
   const isVote = formData.get("isVote") === "true";
   const isCheck = formData.get("isCheck") === "true";
+  const mercenaryId = formData.get("mercenaryId")?.toString();
   if (!matchClubId) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
 
   const currentMatchClub = await prisma.matchClub.findUnique({
@@ -126,7 +147,8 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
   await prisma.attendance.upsert({
     create: {
       matchClubId,
-      playerId: currentPlayer.id,
+      playerId: mercenaryId ? null : currentPlayer.id,
+      mercenaryId: mercenaryId,
       isVote,
       isCheck,
     },
@@ -134,12 +156,19 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
       isVote,
       isCheck,
     },
-    where: {
-      matchClubId_playerId: {
-        matchClubId,
-        playerId: currentPlayer.id,
-      },
-    },
+    where: mercenaryId
+      ? {
+          matchClubId_mercenaryId: {
+            matchClubId,
+            mercenaryId,
+          },
+        }
+      : {
+          matchClubId_playerId: {
+            matchClubId,
+            playerId: currentPlayer.id,
+          },
+        },
   });
   return { success: true };
 };

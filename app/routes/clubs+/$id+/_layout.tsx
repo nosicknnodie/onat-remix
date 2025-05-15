@@ -111,7 +111,7 @@ const Layout = (_props: ILayoutProps) => {
   const isRejected = user && data.player && data.player.status === "REJECTED";
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 w-full">
         <div className="flex justify-between items-center">
           <Breadcrumb>
             <BreadcrumbList>

@@ -1,8 +1,13 @@
 import { useFetcher, useLoaderData, useRevalidator } from "@remix-run/react";
 import dayjs from "dayjs";
-import { useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useSession } from "~/contexts/AuthUserContext";
 import { loader } from "./_data";
+
+export const AttendanceContext = createContext({} as ReturnType<typeof useAttendance>);
+
+export const useAttendanceContext = () => useContext(AttendanceContext);
+
 export const useAttendance = () => {
   const { revalidate } = useRevalidator();
   const fetcher = useFetcher();
@@ -23,7 +28,7 @@ export const useAttendance = () => {
       (p) => p.userId && !matchClub.attendances.some((a) => a.player?.userId === p.userId),
     ),
   };
-  const mercenaryAttedances = matchClub.attendances.filter((a) => !!a.mercenary);
+  const mercenaryAttedances = matchClub.attendances.filter((a) => !!a.mercenary && a.isVote);
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data != null) {
@@ -41,5 +46,6 @@ export const useAttendance = () => {
     currentStatus,
     currentChecked,
     fetcher,
+    revalidate,
   };
 };
