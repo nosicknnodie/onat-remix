@@ -13,6 +13,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const name = formData.get("name")?.toString();
   const hp = formData.get("hp")?.toString();
   const userId = formData.get("userId")?.toString();
+  const description = formData.get("description")?.toString();
   const position1 = formData.get("position1")?.toString() as PositionType | undefined;
   const position2 = formData.get("position2")?.toString() as PositionType | undefined;
   const position3 = formData.get("position3")?.toString() as PositionType | undefined;
@@ -41,6 +42,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       data: {
         clubId: matchClub.clubId,
         name,
+        description,
         position1: position1 || null,
         position2: position2 || null,
         position3: position3 || null,

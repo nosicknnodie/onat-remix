@@ -25,12 +25,20 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     if (!matchClub) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
 
+    const players = await prisma.player.findMany({
+      where: {
+        clubId: matchClub?.clubId,
+        status: "APPROVED",
+      },
+    });
+
+    // 용병 목록
     const mercenaries = await prisma.mercenary.findMany({
       where: {
         clubId: matchClub?.clubId,
       },
       include: {
-        attendances: true,
+        attendances: { include: { matchClub: { include: { match: true } } } },
         user: {
           include: {
             userImage: true,
@@ -38,15 +46,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
         },
       },
     });
-    const decryptMercenaries = mercenaries.map((mer) => ({
-      ...mer,
-      hp: mer.hp ? AES.decrypt(mer.hp) : null,
-    }));
-    const attedMercenaries = decryptMercenaries.filter((mer) =>
-      mer.attendances.some((a) => a.matchClubId === matchClubId && a.isVote),
-    );
 
-    return { mercenaries: decryptMercenaries, attedMercenaries };
+    // 클럽 회원을 제외한 용병 목록, 개인정보 decrypt
+    const decryptMercenaries = mercenaries
+      .filter((mer) => !players.some((p) => p.userId === mer.userId))
+      .map((mer) => ({
+        ...mer,
+        hp: mer.hp ? AES.decrypt(mer.hp) : null,
+      }));
+
+    return { mercenaries: decryptMercenaries };
   } catch (e) {
     console.error("e - ", e);
     return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
@@ -61,7 +70,6 @@ interface IMatchClubMecenaryPageProps {}
 
 const MatchClubMecenaryPage = (_props: IMatchClubMecenaryPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const attedMercenaries = loaderData.attedMercenaries;
   const [, startTransition] = useTransition();
   const mercenaries = loaderData.mercenaries;
   // const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
@@ -105,7 +113,12 @@ const MatchClubMecenaryPage = (_props: IMatchClubMecenaryPageProps) => {
         <Card>
           <CardHeader>
             <CardTitle>용병관리</CardTitle>
-            <CardDescription>클럽내의 용병 관리 페이지 입니다.</CardDescription>
+            <CardDescription>
+              <p>클럽내의 용병 관리 페이지 입니다.</p>
+              <p className="before:content-['*'] before:mr-1 before:text-destructive ">
+                클럽내의 가입자는 용병으로 등록하여도 리스트에 나오지 않습니다.
+              </p>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
@@ -125,7 +138,6 @@ const MatchClubMecenaryPage = (_props: IMatchClubMecenaryPageProps) => {
               columns={mercenaryColumns}
               options={{
                 state: {
-                  // columnFilters: columnFilters,
                   globalFilter: globalFilter,
                   sorting: sorting,
                 },

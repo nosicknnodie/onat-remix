@@ -32,6 +32,15 @@ const AddMercenary = (_props: IAddMercenaryProps) => {
             />
           </div>
           <div className="space-y-2">
+            <Label
+              htmlFor="description"
+              className="after:content-['*'] after:text-red-500 after:ml-1"
+            >
+              설명
+            </Label>
+            <Input type="text" id="description" name="description" placeholder="OOO의 친구.." />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="hp">전화번호</Label>
             <Input type="text" id="hp" name="hp" placeholder="전화번호" />
           </div>

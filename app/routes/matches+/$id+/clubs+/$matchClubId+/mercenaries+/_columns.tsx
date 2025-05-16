@@ -1,8 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
-import _ from "lodash";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { formatPhoneNumber } from "~/libs/convert";
+import Actions from "./_actions";
 import { IMatchClubMecenaryLoaderTData } from "./_index";
 
 export const mercenaryColumns: ColumnDef<IMatchClubMecenaryLoaderTData[number]>[] = [
@@ -46,33 +46,24 @@ export const mercenaryColumns: ColumnDef<IMatchClubMecenaryLoaderTData[number]>[
     },
   },
   {
-    id: "positions",
-    // accessorFn: (v) => v.fromProfile?.birth,
+    id: "description",
+    accessorFn: (v) => v.description,
     header({ table }) {
-      return <div className="flex justify-center">포지션</div>;
+      return <div className="flex justify-center">설명</div>;
     },
     cell: ({ row }) => {
-      const mercenary = row.original;
       return (
         <div className="flex justify-center items-center space-x-2">
-          <span>
-            {_.compact([mercenary?.position1, mercenary?.position2, mercenary?.position3]).join(
-              ",",
-            )}
-          </span>
+          <span>{row.getValue("description")}</span>
         </div>
       );
     },
   },
-  // {
-  //   id: "actions",
-  //   // accessorFn: (v) => v.content,
-  //   // header({ table }) {
-  //   //   return <div className="flex justify-center">내용</div>;
-  //   // },
-  //   cell: ({ row }) => {
-  //     const payload = row.original;
-  //     return <MembersAction payload={payload} />;
-  //   },
-  // },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const payload = row.original;
+      return <Actions payload={payload} />;
+    },
+  },
 ];

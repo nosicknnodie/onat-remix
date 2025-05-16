@@ -103,6 +103,10 @@ export const AttendanceAddMercenaryAction = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem>
+            <RiTeamLine className="mr-2" />
+            참석 관리
+          </DropdownMenuItem>
           <AttendanceAddMercenaryDrawer>
             <Button
               variant="ghost"
@@ -113,7 +117,7 @@ export const AttendanceAddMercenaryAction = () => {
               용병 추가
             </Button>
           </AttendanceAddMercenaryDrawer>
-          <Link to="../mercenary">
+          <Link to="../mercenaries">
             <DropdownMenuItem>
               <RiTeamLine className="mr-2" />
               용병 관리
