@@ -6,6 +6,7 @@ import { getUser } from "~/libs/db/lucia.server";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
+  const matchId = params.id;
   const matchClubId = params.matchClubId;
   const matchClub = await prisma.matchClub.findUnique({
     where: { id: matchClubId },
@@ -32,7 +33,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     },
   });
 
-  if (!matchClub) return redirect("/matches/" + matchClubId);
+  if (!matchClub) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
 
   // 용병 개인정보 decrypt
   Object.assign(matchClub, {
@@ -54,10 +55,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   });
 
   const [currentPlayer, currentMercenary] = await Promise.all([
-    prisma.player.findFirst({
+    prisma.player.findUnique({
       where: {
-        userId: user?.id,
-        clubId: matchClub?.clubId,
+        clubId_userId: {
+          userId: user?.id,
+          clubId: matchClub?.clubId,
+        },
         status: "APPROVED",
       },
       include: {
@@ -69,10 +72,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         },
       },
     }),
-    prisma.mercenary.findFirst({
+    prisma.mercenary.findUnique({
       where: {
-        userId: user?.id,
-        clubId: matchClub?.clubId,
+        userId_clubId: {
+          userId: user?.id,
+          clubId: matchClub?.clubId,
+        },
         attendances: {
           some: {
             matchClubId: matchClubId,
@@ -91,7 +96,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   ]);
 
   if (!currentPlayer && !currentMercenary) {
-    return redirect("/matches/" + matchClubId);
+    return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
   }
 
   const currentStatus = currentPlayer

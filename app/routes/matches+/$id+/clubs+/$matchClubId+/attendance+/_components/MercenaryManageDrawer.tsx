@@ -1,6 +1,5 @@
 import { File, Mercenary, User } from "@prisma/client";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Link, useLoaderData, useParams } from "@remix-run/react";
+import { useLoaderData, useParams } from "@remix-run/react";
 import {
   ColumnDef,
   Row,
@@ -9,21 +8,10 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import {
-  ComponentProps,
-  PropsWithChildren,
-  useMemo,
-  useOptimistic,
-  useState,
-  useTransition,
-} from "react";
-import { FaCheckCircle } from "react-icons/fa";
-import { FiUserPlus } from "react-icons/fi";
-import { RiTeamLine } from "react-icons/ri";
+import { PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -32,104 +20,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
 import { formatPhoneNumber, removePhoneHyphen } from "~/libs/convert";
-import { cn } from "~/libs/utils";
-import { loader } from "./_data";
-import { useAttendanceContext } from "./_hook";
+import { loader } from "../_data";
+import { useAttendanceContext } from "../_hook";
 
-export const AttendanceGroupCard = ({ className, ...props }: ComponentProps<"div">) => (
-  <div
-    className={cn(
-      "p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 bg-white space-y-2",
-      className,
-    )}
-    {...props}
-  />
-);
-
-export const AttendanceGroupCardHeader = ({ className, ...props }: ComponentProps<"div">) => (
-  <div className={cn("flex items-center justify-between", className)} {...props} />
-);
-
-export const AttendanceGroupCardTitle = ({ className, ...props }: ComponentProps<"h3">) => (
-  <h3 className={cn("font-semibold text-sm flex items-center gap-1", className)} {...props} />
-);
-
-export const AttendanceGroupCardContent = ({ className, ...props }: ComponentProps<"div">) => (
-  <div className={cn("flex flex-wrap gap-2", className)} {...props} />
-);
-
-export const AttendanceGroupCardItem = ({
-  className,
-  children,
-  isChecked,
-  ...props
-}: ComponentProps<"div"> & { isChecked?: boolean }) => (
-  <div
-    className={cn("text-sm border px-3 py-1 rounded-full bg-white relative", className)}
-    {...props}
-  >
-    {isChecked && (
-      <FaCheckCircle className="text-green-500 text-sm ml-1 absolute -top-1 -right-1 bg-white" />
-    )}
-    {children}
-  </div>
-);
-
-export const AttendanceAddMercenaryAction = () => {
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0 focus:outline-none focus:ring-0 focus-visible:ring-0"
-            // disabled={isPending}
-          >
-            <span className="sr-only">Open menu</span>
-            {/* {isPending ? (
-                <Loading />
-                ) : (
-                  )} */}
-            <DotsHorizontalIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem>
-            <RiTeamLine className="mr-2" />
-            참석 관리
-          </DropdownMenuItem>
-          <AttendanceAddMercenaryDrawer>
-            <Button
-              variant="ghost"
-              className="w-full flex justify-start pl-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FiUserPlus className="mr-2" />
-              용병 추가
-            </Button>
-          </AttendanceAddMercenaryDrawer>
-          <Link to="../mercenaries">
-            <DropdownMenuItem>
-              <RiTeamLine className="mr-2" />
-              용병 관리
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
-};
-
-const AttendanceAddMercenaryDrawer = ({ children }: PropsWithChildren) => {
+const MercenaryManageDrawer = ({ children }: PropsWithChildren) => {
   const loaderData = useLoaderData<typeof loader>();
   const attendances = loaderData.matchClub.attendances;
   const attendeds = attendances
@@ -222,12 +119,11 @@ const mercenaryColumns: ColumnDef<IMercenary>[] = [
   {
     id: "name",
     accessorFn: (v) => v.user?.name || v.name || "",
-    header({ table }) {
+    header() {
       return <div className="flex justify-center">이름</div>;
     },
     cell: ({ row }) => {
       const hp = row.original?.hp;
-      const user = row.original?.user;
       return (
         <div className="flex justify-start items-center truncate space-x-2">
           <Avatar>
@@ -239,12 +135,6 @@ const mercenaryColumns: ColumnDef<IMercenary>[] = [
           <div>
             <div className="flex space-x-2 items-center h-5">
               <span className="text-base font-semibold">{row.getValue("name")}</span>
-              {/* {user?.email && (
-                <>
-                  <Separator orientation="vertical" />
-                  <span className="text-sm">{user?.email}</span>
-                </>
-              )} */}
             </div>
             {hp && (
               <div className="flex space-x-2 items-center h-5">
@@ -259,7 +149,7 @@ const mercenaryColumns: ColumnDef<IMercenary>[] = [
   {
     id: "isAttended",
     accessorFn: (v) => v.isAttended,
-    header({ table }) {
+    header() {
       return <div className="flex justify-center">참석여부</div>;
     },
     cell: ({ row }) => <IsAttendedCellComponent payload={row.original} />,
@@ -288,7 +178,7 @@ const IsAttendedCellComponent = ({ payload }: { payload: IMercenary }) => {
   const handleOnchange = (value: boolean) => {
     startTransition(async () => {
       dispatch({ type: "changed", payload: value });
-      const res = await fetch("/api/attendances/mercenary/upsert", {
+      const res = await fetch("/api/attendances/mercenary", {
         body: JSON.stringify({
           matchClubId: params.matchClubId,
           mercenaryId: payload.id,
@@ -318,3 +208,5 @@ const IsAttendedCellComponent = ({ payload }: { payload: IMercenary }) => {
     </>
   );
 };
+
+export default MercenaryManageDrawer;

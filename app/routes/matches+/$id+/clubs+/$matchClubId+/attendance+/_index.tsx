@@ -3,14 +3,14 @@ import { MdEventAvailable } from "react-icons/md";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
+import AttendanceManageAction from "./_components/AttendanceManageAction";
 import {
-  AttendanceAddMercenaryAction,
   AttendanceGroupCard,
   AttendanceGroupCardContent,
   AttendanceGroupCardHeader,
   AttendanceGroupCardItem,
   AttendanceGroupCardTitle,
-} from "./_components";
+} from "./_components/_index";
 import { action, loader } from "./_data";
 import { AttendanceContext, useAttendance } from "./_hook";
 export { action, loader };
@@ -111,7 +111,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 {mercenaryAttedances.length > 0 && `(+${mercenaryAttedances.length})`}
                 {"ATTEND" === currentStatus && <FaCheck className="text-primary" />}
               </AttendanceGroupCardTitle>
-              <AttendanceAddMercenaryAction />
+              <AttendanceManageAction />
             </AttendanceGroupCardHeader>
             <AttendanceGroupCardContent>
               {attend.ATTEND.map((u) => (
@@ -133,7 +133,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   })}
                   isChecked={ma.isCheck}
                 >
-                  {ma.mercenary!.name ?? ma.mercenary!.name}
+                  {ma.mercenary!.user?.name ?? ma.mercenary!.name}
                 </AttendanceGroupCardItem>
               ))}
             </AttendanceGroupCardContent>
