@@ -38,13 +38,12 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
   }
   const { id, ...data } = result.data;
   try {
-    const res = await prisma.attendance.update({
+    await prisma.attendance.update({
       data: data,
       where: {
         id,
       },
     });
-    console.log("res - ", res);
     return Response.json({ success: "success" });
   } catch {
     return Response.json({ error: "Internal Server Error" });

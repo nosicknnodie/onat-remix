@@ -57,7 +57,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
   const myClubIds = loaderData.myClubIds ?? [];
   const matches = useMemo(() => loaderData.matches ?? [], [loaderData.matches]);
   const values = matches.sort(
-    (a, b) => new Date(a.stDate!).getTime() - new Date(b.stDate!).getTime(),
+    (a, b) => new Date(b.stDate!).getTime() - new Date(a.stDate!).getTime(),
   );
   return (
     <>

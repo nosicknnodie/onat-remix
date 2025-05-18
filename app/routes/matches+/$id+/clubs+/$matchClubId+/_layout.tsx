@@ -24,6 +24,9 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}>
           참석
         </ItemLink>
+        {matchClub?.isSelf && (
+          <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}>Team</ItemLink>
+        )}
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}>
           포지션
         </ItemLink>

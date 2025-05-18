@@ -283,6 +283,9 @@ model MatchClub {
   quarters      Quarter[]
   teams         Team[]
 
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
   @@index([clubId])
   @@index([matchId])
   @@unique([matchId, clubId])

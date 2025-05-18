@@ -9,7 +9,14 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
+import {
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useState,
+  useTransition,
+} from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -26,8 +33,9 @@ import { Switch } from "~/components/ui/switch";
 import { useAttendanceContext } from "../_hook";
 
 const CheckManageDrawer = ({ children }: PropsWithChildren) => {
+  const [open, setOpen] = useState(false);
   const params = useParams();
-  const { data: attendances } = useQuery({
+  const { data: attendances, refetch } = useQuery({
     queryKey: ["CHECK_MANAGE_DRAWER", params.matchClubId],
     queryFn: async () => {
       const res = await fetch(`/api/attendances?matchClubId=${params.matchClubId}`);
@@ -65,9 +73,15 @@ const CheckManageDrawer = ({ children }: PropsWithChildren) => {
     return hangul.search(name, search) >= 0;
   };
 
+  useEffect(() => {
+    if (open) {
+      refetch();
+    }
+  }, [open, refetch]);
+
   return (
     <>
-      <Drawer direction="right">
+      <Drawer direction="right" open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>{children}</DrawerTrigger>
         <DrawerContent className="">
           <div className="p-2 flex flex-col">
