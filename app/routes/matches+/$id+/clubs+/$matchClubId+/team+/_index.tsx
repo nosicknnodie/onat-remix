@@ -1,7 +1,8 @@
-import { Attendance, File, Player, Team, User } from "@prisma/client";
+import { Attendance, File, Mercenary, Player, Team, User } from "@prisma/client";
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { ComponentProps, Fragment, useState, useTransition } from "react";
+import { AiFillSkin } from "react-icons/ai";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -23,6 +24,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { prisma } from "~/libs/db/db.server";
+import { TeamAttendanceActions } from "./_actions";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   /**
@@ -56,7 +58,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
               where: {
                 isVote: true,
               },
-              include: { player: { include: { user: { include: { userImage: true } } } } },
+              include: {
+                player: { include: { user: { include: { userImage: true } } } },
+                mercenary: { include: { user: { include: { userImage: true } } } },
+              },
             },
           },
         },
@@ -256,15 +261,15 @@ const TeamPage = (_props: ITeamPageProps) => {
   );
 };
 
+export interface IAttendance extends Attendance {
+  player: (Player & { user: (User & { userImage: File | null }) | null }) | null;
+  mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
+}
+
 interface ITeamCardProps extends ComponentProps<typeof Card> {
   team:
     | (Team & {
-        attendances?: (
-          | (Attendance & {
-              player: (Player & { user: (User & { userImage: File | null }) | null }) | null;
-            })
-          | null
-        )[];
+        attendances?: (IAttendance | null)[];
       })
     | null;
 }
@@ -272,21 +277,27 @@ interface ITeamCardProps extends ComponentProps<typeof Card> {
 const TeamCard = ({ team }: ITeamCardProps) => {
   return (
     <>
-      <Card>
+      <Card style={{ backgroundColor: team?.color ? `${team?.color}0D` : undefined }}>
         <CardHeader>
-          <CardTitle>{team?.name}</CardTitle>
-          {/* <CardDescription>
-            {team?.color} {team?.seq}
-          </CardDescription> */}
+          <CardTitle className="flex gap-2">
+            <AiFillSkin color={team?.color} className="drop-shadow" />
+            {team?.name} ({team?.attendances?.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {team?.attendances?.map((attendance) => {
-            return (
-              <div key={attendance?.id}>
-                {attendance?.player?.user?.name}({attendance?.player?.nick})
-              </div>
-            );
-          })}
+          <div className="flex gap-2">
+            {team?.attendances?.map((attendance) => {
+              return (
+                <div key={attendance?.id}>
+                  <TeamAttendanceActions payload={attendance}>
+                    {attendance?.player?.user?.name ||
+                      attendance?.mercenary?.user?.name ||
+                      attendance?.mercenary?.name}
+                  </TeamAttendanceActions>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
     </>
