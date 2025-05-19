@@ -3,6 +3,7 @@ import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { ComponentProps, Fragment, useState, useTransition } from "react";
 import { AiFillSkin } from "react-icons/ai";
+import { FiEdit } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -24,17 +25,18 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { prisma } from "~/libs/db/db.server";
+import EditDialog from "./_EditDialog";
 import { TeamAttendanceActions } from "./_actions";
 
+/**
+ * [LOGIC]
+ * 1. 해당 매치가 isSelf일경우만
+ * 2. 매치에 팀이 생성되지 않은경우
+ * 3. 해당 클럽내의 이전 팀정보가 있는경우 이전 팀 정보에서 정보 가져오기
+ * 4. 이전 팀 정보의 내용을 토대로 팀을 생성
+ * 5. 최소 2개의 팀을 생성해야함
+ */
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  /**
-   * [LOGIC]
-   * 1. 해당 매치가 isSelf일경우만
-   * 2. 매치에 팀이 생성되지 않은경우
-   * 3. 해당 클럽내의 이전 팀정보가 있는경우 이전 팀 정보에서 정보 가져오기
-   * 4. 이전 팀 정보의 내용을 토대로 팀을 생성
-   * 5. 최소 2개의 팀을 생성해야함
-   */
   const matchId = params.id;
   const matchClubId = params.matchClubId;
   try {
@@ -156,7 +158,7 @@ const TeamPage = (_props: ITeamPageProps) => {
   const handleAddTeam = async () => {
     if (!selectedTeamId || selectedAttends?.length <= 0) return;
     startTransition(async () => {
-      await fetch("/api/team", {
+      await fetch("/api/attendances/team", {
         method: "POST",
         body: JSON.stringify({
           teamId: selectedTeamId,
@@ -181,6 +183,7 @@ const TeamPage = (_props: ITeamPageProps) => {
               <CardTitle>아직 팀이 없는 선수들</CardTitle>
               <CardDescription>
                 각 팀으로 이동시켜주세요. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.
+                이동후에 개별적으로 이동시킬 수 있습니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex">
@@ -248,7 +251,7 @@ const TeamPage = (_props: ITeamPageProps) => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-2">
         {teams?.map((team) => {
           return (
             <Fragment key={team.id}>
@@ -279,13 +282,24 @@ const TeamCard = ({ team }: ITeamCardProps) => {
     <>
       <Card style={{ backgroundColor: team?.color ? `${team?.color}0D` : undefined }}>
         <CardHeader>
-          <CardTitle className="flex gap-2">
-            <AiFillSkin color={team?.color} className="drop-shadow" />
-            {team?.name} ({team?.attendances?.length})
+          <CardTitle className="flex gap-2 justify-between items-center">
+            <div className="flex gap-2">
+              <AiFillSkin color={team?.color} className="drop-shadow" />
+              {team?.name} ({team?.attendances?.length})
+            </div>
+            <EditDialog payload={team}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
+              >
+                <FiEdit />
+              </Button>
+            </EditDialog>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {team?.attendances?.map((attendance) => {
               return (
                 <div key={attendance?.id}>

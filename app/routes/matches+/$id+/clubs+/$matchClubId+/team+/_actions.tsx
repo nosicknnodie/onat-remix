@@ -30,7 +30,7 @@ export const TeamAttendanceActions = ({ payload, children }: ITeamAttendanceActi
 
   const handleSelectedTeam = async (teamId: string) => {
     startTransition(async () => {
-      await fetch("/api/team", {
+      await fetch("/api/attendances/team", {
         method: "POST",
         body: JSON.stringify({
           teamId: teamId,
