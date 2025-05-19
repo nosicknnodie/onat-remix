@@ -1,5 +1,8 @@
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { PropsWithChildren, useTransition } from "react";
+import { FaCheckCircle } from "react-icons/fa";
+import { Loading } from "~/components/Loading";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -27,6 +30,10 @@ export const TeamAttendanceActions = ({ payload, children }: ITeamAttendanceActi
   const teams = loaderData.teams;
   const name =
     payload?.player?.user?.name || payload?.mercenary?.user?.name || payload?.mercenary?.name || "";
+  const isChecked = payload?.isCheck || false;
+
+  const imageUrl =
+    payload?.player?.user?.userImage?.url || payload?.mercenary?.user?.userImage?.url;
 
   const handleSelectedTeam = async (teamId: string) => {
     startTransition(async () => {
@@ -46,21 +53,30 @@ export const TeamAttendanceActions = ({ payload, children }: ITeamAttendanceActi
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            className="focus:outline-none focus:ring-0 focus-visible:ring-0 "
+            variant="outline"
+            size="sm"
+            className="focus:outline-none focus:ring-0 focus-visible:ring-0 space-x-2 relative"
             disabled={isPending}
           >
             <span className="sr-only">Open menu</span>
-            {children}
+            {isChecked && (
+              <FaCheckCircle className="text-green-500 text-sm ml-1 absolute -top-1 -right-1 bg-transparent" />
+            )}
+            <Avatar className="size-5">
+              <AvatarImage src={imageUrl || "/images/user_empty.png"} />
+              <AvatarFallback className="bg-primary-foreground">
+                <Loading size={16} />
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate max-w-[96px]">{children}</span>
+            {isPending && <Loading size={16} />}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>{`${name} 님`}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <InfoDrawer payload={payload}>정보확인</InfoDrawer>
-          <DropdownMenuItem asChild>
-            {/* <InfoDrawer player={payload}>정보확인</InfoDrawer> */}
-          </DropdownMenuItem>
+          <DropdownMenuItem asChild></DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>Team</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -76,9 +92,6 @@ export const TeamAttendanceActions = ({ payload, children }: ITeamAttendanceActi
               ))}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
-          {/* <DropdownMenuItem disabled>기록(개발중)</DropdownMenuItem>
-            <DropdownMenuItem disabled>출석정보(개발중)</DropdownMenuItem>
-            <DropdownMenuItem disabled>매치(개발중)</DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

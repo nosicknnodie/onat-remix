@@ -107,8 +107,9 @@ const AttendancePage = (_props: IAttendancePageProps) => {
           <AttendanceGroupCard className="bg-primary/5">
             <AttendanceGroupCardHeader>
               <AttendanceGroupCardTitle>
-                {statusIcons.ATTEND} 참석: {attend.ATTEND.length}
-                {mercenaryAttedances.length > 0 && `(+${mercenaryAttedances.length})`}
+                {statusIcons.ATTEND} 참석: {attend.ATTEND.length + mercenaryAttedances.length}
+                {mercenaryAttedances.length > 0 &&
+                  `(${attend.ATTEND.length}+${mercenaryAttedances.length})`}
                 {"ATTEND" === currentStatus && <FaCheck className="text-primary" />}
               </AttendanceGroupCardTitle>
               <AttendanceManageAction />

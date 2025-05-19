@@ -1,20 +1,14 @@
 import { Attendance, File, Mercenary, Player, Team, User } from "@prisma/client";
+import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { ComponentProps, Fragment, useState, useTransition } from "react";
 import { AiFillSkin } from "react-icons/ai";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiHelpCircle } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
 import {
@@ -24,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { prisma } from "~/libs/db/db.server";
 import EditDialog from "./_EditDialog";
 import { TeamAttendanceActions } from "./_actions";
@@ -180,17 +175,28 @@ const TeamPage = (_props: ITeamPageProps) => {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>아직 팀이 없는 선수들</CardTitle>
-              <CardDescription>
-                각 팀으로 이동시켜주세요. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.
-                이동후에 개별적으로 이동시킬 수 있습니다.
-              </CardDescription>
+              <CardTitle className="flex justify-start gap-2 items-center">
+                <p>아직 팀이 없는 선수들</p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <FiHelpCircle />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm p-4 space-y-2 bg-muted text-sm text-muted-foreground rounded-md shadow-lg border">
+                      <p>팀 구분은 스쿼트 편의를 위한것입니다.</p>
+                      <p>1. 각 팀으로 이동시켜주세요.</p>
+                      <p>2. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.</p>
+                      <p>3. 이동후에 개별적으로 이동시킬 수 있습니다.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex">
               {notTeamAttendances.map((attendance) => {
                 return (
                   <Fragment key={attendance.id}>
-                    <div className="px-2 py-1 space-x-1 flex items-center justify-center">
+                    <div className="px-2 py-1 space-x-2 flex items-center justify-center">
                       <Checkbox
                         id={`checkbox-${attendance.id}`}
                         onCheckedChange={() => handleSelectedAtted(attendance)}
@@ -223,7 +229,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                 );
               })}
             </CardContent>
-            <CardFooter className="flex justify-end gap-2">
+            <CardFooter className="flex flex-col sm:flex-row items-center gap-2">
               <Select
                 defaultValue={teams?.[0]?.id}
                 onValueChange={(value) => setSelectedTeamId(value)}
@@ -242,8 +248,8 @@ const TeamPage = (_props: ITeamPageProps) => {
                   })}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddTeam} disabled={isPending}>
-                + 이동
+              <Button onClick={handleAddTeam} disabled={isPending} className="shrink-0">
+                <ArrowRightIcon className="mr-1" /> 이동
                 {isPending && <Loading />}
               </Button>
             </CardFooter>
@@ -251,7 +257,7 @@ const TeamPage = (_props: ITeamPageProps) => {
         </div>
       )}
 
-      <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
         {teams?.map((team) => {
           return (
             <Fragment key={team.id}>
@@ -283,14 +289,16 @@ const TeamCard = ({ team }: ITeamCardProps) => {
       <Card style={{ backgroundColor: team?.color ? `${team?.color}0D` : undefined }}>
         <CardHeader>
           <CardTitle className="flex gap-2 justify-between items-center">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <AiFillSkin color={team?.color} className="drop-shadow" />
-              {team?.name} ({team?.attendances?.length})
+              <span className="text-lg">{team?.name}</span>
+              <span className="text-muted-foreground text-sm">({team?.attendances?.length})</span>
             </div>
             <EditDialog payload={team}>
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="팀 수정"
                 className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
               >
                 <FiEdit />
@@ -299,16 +307,16 @@ const TeamCard = ({ team }: ITeamCardProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid sm:grid-cols-4 max-sm:grid-cols-2 gap-2">
             {team?.attendances?.map((attendance) => {
               return (
-                <div key={attendance?.id}>
+                <Fragment key={attendance?.id}>
                   <TeamAttendanceActions payload={attendance}>
                     {attendance?.player?.user?.name ||
                       attendance?.mercenary?.user?.name ||
                       attendance?.mercenary?.name}
                   </TeamAttendanceActions>
-                </div>
+                </Fragment>
               );
             })}
           </div>
