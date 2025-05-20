@@ -55,21 +55,20 @@ export const TeamAttendanceActions = ({ payload, children }: ITeamAttendanceActi
           <Button
             variant="outline"
             size="sm"
-            className="focus:outline-none focus:ring-0 focus-visible:ring-0 space-x-2 relative"
+            className="focus:outline-none focus:ring-0 focus-visible:ring-0 gap-1 relative flex justify-between items-center"
             disabled={isPending}
           >
-            <span className="sr-only">Open menu</span>
             {isChecked && (
               <FaCheckCircle className="text-green-500 text-sm ml-1 absolute -top-1 -right-1 bg-transparent" />
             )}
-            <Avatar className="size-5">
+            <Avatar className="size-5 shrink-0">
               <AvatarImage src={imageUrl || "/images/user_empty.png"} />
               <AvatarFallback className="bg-primary-foreground">
                 <Loading size={16} />
               </AvatarFallback>
             </Avatar>
-            <span className="truncate max-w-[96px]">{children}</span>
-            {isPending && <Loading size={16} />}
+            <span className="truncate max-w-[96px] flex-1">{children}</span>
+            <div className="shrink-0">{isPending && <Loading size={16} />}</div>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

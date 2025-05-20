@@ -1,6 +1,5 @@
 import { Attendance, File, Mercenary, Player, User } from "@prisma/client";
-import { useParams } from "@remix-run/react";
-import { useQuery } from "@tanstack/react-query";
+import { useLoaderData } from "@remix-run/react";
 import {
   ColumnDef,
   Row,
@@ -9,14 +8,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import {
-  PropsWithChildren,
-  useEffect,
-  useMemo,
-  useOptimistic,
-  useState,
-  useTransition,
-} from "react";
+import { PropsWithChildren, useMemo, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -30,19 +22,13 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
+import { loader } from "../_data";
 import { useAttendanceContext } from "../_hook";
 
 const CheckManageDrawer = ({ children }: PropsWithChildren) => {
   const [open, setOpen] = useState(false);
-  const params = useParams();
-  const { data: attendances, refetch } = useQuery({
-    queryKey: ["CHECK_MANAGE_DRAWER", params.matchClubId],
-    queryFn: async () => {
-      const res = await fetch(`/api/attendances?matchClubId=${params.matchClubId}`);
-      const data = await res.json();
-      return data.attendances as IAttendance[];
-    },
-  });
+  const loaderData = useLoaderData<typeof loader>();
+  const attendances = loaderData.matchClub.attendances;
   const attendeds = attendances?.filter((att) => att.isVote);
   const [, startTransition] = useTransition();
   const [globalFilter, setGlobalFilter] = useState("");
@@ -72,12 +58,6 @@ const CheckManageDrawer = ({ children }: PropsWithChildren) => {
 
     return hangul.search(name, search) >= 0;
   };
-
-  useEffect(() => {
-    if (open) {
-      refetch();
-    }
-  }, [open, refetch]);
 
   return (
     <>
@@ -109,6 +89,7 @@ const CheckManageDrawer = ({ children }: PropsWithChildren) => {
                     getFilteredRowModel: getFilteredRowModel(),
                     getSortedRowModel: getSortedRowModel(),
                     globalFilterFn,
+                    getRowId: (row) => row.id,
                   }}
                 />
               </div>
@@ -171,24 +152,11 @@ const checkColumns: ColumnDef<IAttendance>[] = [
 const IsAttendedCellComponent = ({ payload }: { payload: IAttendance }) => {
   const context = useAttendanceContext();
   const [isPending, startTransition] = useTransition();
-  const [isCheck, setCheck] = useState<boolean>();
-  const [optimistic, dispatch] = useOptimistic(
-    isCheck,
-    (state, action: { type: string; payload: boolean }) => {
-      switch (action.type) {
-        case "changed":
-          return action.payload;
-        case "rollback":
-          return action.payload;
-        default:
-          return state;
-      }
-    },
-  );
+  const [isCheck, setCheck] = useState<boolean>(payload.isCheck);
 
   const handleOnchange = (value: boolean) => {
+    setCheck(value);
     startTransition(async () => {
-      dispatch({ type: "changed", payload: value });
       const res = await fetch("/api/attendances", {
         body: JSON.stringify({
           id: payload.id,
@@ -197,10 +165,9 @@ const IsAttendedCellComponent = ({ payload }: { payload: IAttendance }) => {
         method: "POST",
       }).then((res) => res.json());
       if (res.success) {
-        setCheck(value);
         context?.revalidate();
       } else {
-        dispatch({ type: "rollback", payload: !value });
+        setCheck(!value);
       }
     });
   };
@@ -208,13 +175,7 @@ const IsAttendedCellComponent = ({ payload }: { payload: IAttendance }) => {
   return (
     <>
       <div className="flex justify-center items-center">
-        <Switch
-          name="isVote"
-          defaultChecked={payload.isCheck}
-          checked={optimistic}
-          onCheckedChange={handleOnchange}
-          disabled={isPending}
-        />
+        <Switch checked={isCheck} onCheckedChange={handleOnchange} disabled={isPending} />
       </div>
     </>
   );
