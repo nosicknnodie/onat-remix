@@ -342,7 +342,7 @@ model Quarter {
   order         Int
   matchClubId       String
   matchClub         MatchClub     @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
-  assigned      Assigned[]
+  assigneds      Assigned[]
   
   @@index([matchClubId])
 }
