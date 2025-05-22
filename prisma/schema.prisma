@@ -296,6 +296,10 @@ model Team {
   seq             Int @default(0)
   name            String
   color           String
+
+  quartersAsTeam1        Quarter[] @relation("QuarterTeam1")
+  quartersAsTeam2        Quarter[] @relation("QuarterTeam2")
+  
   attendances     Attendance[]
   matchClubId         String
   matchClub           MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
@@ -340,6 +344,14 @@ model Attendance {
 model Quarter {
   id            String    @id @default(cuid())
   order         Int
+  isSelf        Boolean   @default(false)
+  // 자체전일 경우에만 설정
+  team1Id    String?
+  team2Id    String?
+  team1      Team? @relation("QuarterTeam1", fields: [team1Id], references: [id])
+  team2      Team? @relation("QuarterTeam2", fields: [team2Id], references: [id])
+
+
   matchClubId       String
   matchClub         MatchClub     @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigneds      Assigned[]

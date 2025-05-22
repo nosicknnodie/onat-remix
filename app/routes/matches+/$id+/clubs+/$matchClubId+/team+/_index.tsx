@@ -65,62 +65,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       },
     });
 
-    if (!matchClubId || !matchClub)
+    if (!matchClubId || !matchClub || !matchClub.isSelf)
       return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
     const teams = matchClub.teams;
     const attendances = matchClub.attendances;
-    if (teams.length < 2) {
-      const newTeam = await prisma.$transaction(async (tx) => {
-        let teams = null;
-        const beforeTeam = await tx.matchClub.findFirst({
-          where: {
-            clubId: matchClub?.clubId,
-            isSelf: true,
-          },
-          orderBy: {
-            match: {
-              stDate: "desc",
-            },
-          },
-          include: {
-            teams: true,
-          },
-        });
-
-        if (beforeTeam?.teams && beforeTeam?.teams?.length > 2) {
-          teams = await Promise.all(
-            beforeTeam.teams.map((team) => {
-              return tx.team.create({
-                data: {
-                  name: team.name,
-                  color: team.color,
-                  matchClubId: matchClubId,
-                },
-              });
-            }),
-          );
-        } else {
-          teams = await Promise.all([
-            tx.team.create({
-              data: {
-                name: "Team A",
-                color: "#000000",
-                matchClubId: matchClubId,
-              },
-            }),
-            tx.team.create({
-              data: {
-                name: "Team B",
-                color: "#ffffff",
-                matchClubId: matchClubId,
-              },
-            }),
-          ]);
-        }
-        return teams;
-      });
-      return { teams: newTeam, attendances };
-    }
     return { teams, attendances };
   } catch {
     return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
@@ -160,6 +108,7 @@ const TeamPage = (_props: ITeamPageProps) => {
           attendanceIds: selectedAttends.map((item) => item.id),
         }),
       });
+      setSelectedAttends([]);
       revalidate();
     });
   };

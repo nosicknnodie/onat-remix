@@ -1,12 +1,11 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { useQuery } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { prisma } from "~/libs/db/db.server";
-import { Actions } from "./_Actions";
 import { Board } from "./_Board";
+import { PositionContext } from "./_position.context";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
@@ -15,27 +14,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       id: matchClubId,
     },
     include: {
-      quarters: true,
+      quarters: { include: { team1: true, team2: true } },
       teams: true,
     },
   });
   if (!matchClub) return redirect("../");
-
-  if (matchClub.quarters.length === 0) {
-    const quarters = await Promise.all(
-      [1, 2, 3, 4].map((num) =>
-        prisma.quarter.create({
-          data: {
-            order: num,
-            matchClubId,
-          },
-        }),
-      ),
-    );
-    quarters.forEach((quarter) => {
-      matchClub.quarters.push({ ...quarter });
-    });
-  }
 
   return { matchClub };
 };
@@ -46,16 +29,16 @@ const PositionPage = (_props: IPositionPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof loader>();
   const matchClub = fetcher.data?.matchClub ?? loaderData.matchClub;
-  const [currentQuarter, setCurrentQuarter] = useState(1);
+  const [currentQuarterOrder, setCurrentQuarterOrder] = useState(1);
   const [isPending, startTransition] = useTransition();
-  const quarterId = matchClub.quarters.find((quarter) => quarter.order === currentQuarter)?.id;
-  const { data: quarters } = useQuery({
-    queryKey: ["quarters", quarterId],
-    queryFn: async () => {
-      return fetch(`/api/quarters/${quarterId}`).then((res) => res.json());
-    },
-    enabled: !!(fetcher.state === "idle"),
-  });
+  // const quarterId = matchClub.quarters.find((quarter) => quarter.order === currentQuarterOrder)?.id;
+  // const { data: quarters } = useQuery({
+  //   queryKey: ["quarters", quarterId],
+  //   queryFn: async () => {
+  //     return fetch(`/api/quarters/${quarterId}`).then((res) => res.json());
+  //   },
+  //   enabled: !!(fetcher.state === "idle"),
+  // });
   /**
    * 쿼터가 최대 쿼터보다 많으면 증가시킴
    * @param quarter
@@ -76,42 +59,36 @@ const PositionPage = (_props: IPositionPageProps) => {
         });
         fetcher.load(location.pathname);
       }
-      setCurrentQuarter(order);
+      setCurrentQuarterOrder(order);
     });
   };
   const isLoading = fetcher.state !== "idle" || isPending;
   return (
-    <div className="space-y-6">
-      <section className="flex justify-between items-center">
-        <div className="min-w-40"></div>
-        <div className="flex justify-center items-center">
-          <Button
-            variant="ghost"
-            disabled={currentQuarter === 1 || isLoading}
-            onClick={() => setCurrentQuarter((prev) => prev - 1)}
-          >
-            <FaArrowLeft />
-          </Button>
-          <div>{currentQuarter} Q</div>
-          <Button
-            variant="ghost"
-            disabled={isLoading}
-            onClick={() => handleSetQuarter(currentQuarter + 1)}
-          >
-            <FaArrowRight />
-          </Button>
-        </div>
-        <div className="min-w-40 flex justify-end">
-          <Actions teams={matchClub.teams}>
-            <Button className="" variant={"outline"}>
-              포지션설정
+    <PositionContext.Provider value={{ currentQuarterOrder }}>
+      <div className="lg:space-y-6 max-lg:space-y-2">
+        <section className="flex justify-center items-center">
+          <div className="flex justify-center items-center">
+            <Button
+              variant="ghost"
+              disabled={currentQuarterOrder === 1 || isLoading}
+              onClick={() => setCurrentQuarterOrder((prev) => prev - 1)}
+            >
+              <FaArrowLeft />
             </Button>
-          </Actions>
-        </div>
-      </section>
-      {/* 자체전일 경우와 매칭일경우 두가지 타입에 따라서 다름 */}
-      <Board teams={matchClub.teams} />
-    </div>
+            <div>{currentQuarterOrder} Q</div>
+            <Button
+              variant="ghost"
+              disabled={isLoading}
+              onClick={() => handleSetQuarter(currentQuarterOrder + 1)}
+            >
+              <FaArrowRight />
+            </Button>
+          </div>
+        </section>
+        {/* 자체전일 경우와 매칭일경우 두가지 타입에 따라서 다름 */}
+        <Board />
+      </div>
+    </PositionContext.Provider>
   );
 };
 

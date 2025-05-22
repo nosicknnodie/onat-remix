@@ -87,7 +87,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const { clubId, title, description, date, hour, minute, placeName, address, lat, lng, isSelf } =
     result.data;
-
+  const isSelfMatch = isSelf === "on";
   const matchDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
   try {
     const res = await prisma.$transaction(async (tx) => {
@@ -103,17 +103,91 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           createUserId: user.id,
         },
       });
-      await tx.matchClub.create({
+      const matchClub = await tx.matchClub.create({
         data: {
           matchId: txMatch.id,
           clubId,
-          isSelf: isSelf === "on",
+          isSelf: isSelfMatch,
         },
       });
+
+      /**
+       * 자체전일경우 팀을 생성해야함
+       */
+      if (isSelfMatch) {
+        const beforeTeam = await tx.matchClub.findFirst({
+          where: {
+            clubId: clubId,
+            isSelf: true,
+          },
+          orderBy: {
+            match: {
+              stDate: "desc",
+            },
+          },
+          include: {
+            teams: true,
+          },
+        });
+        if (beforeTeam?.teams && beforeTeam?.teams?.length > 2) {
+          await Promise.all(
+            beforeTeam.teams.map((team) => {
+              return tx.team.create({
+                data: {
+                  name: team.name,
+                  color: team.color,
+                  matchClubId: matchClub.id,
+                },
+              });
+            }),
+          );
+        } else {
+          await Promise.all([
+            tx.team.create({
+              data: {
+                name: "Team A",
+                color: "#000000",
+                matchClubId: matchClub.id,
+              },
+            }),
+            tx.team.create({
+              data: {
+                name: "Team B",
+                color: "#ffffff",
+                matchClubId: matchClub.id,
+              },
+            }),
+          ]);
+        }
+      }
+      const teams = await tx.team.findMany({
+        where: {
+          matchClubId: matchClub.id,
+        },
+      });
+
+      // 자체전인데 통신적인문제로 팀이 생성되지 않은경우
+      if (isSelfMatch && teams.length < 2) {
+        throw new Error("통신오류");
+      }
+      // 기본 쿼터 생성
+      await Promise.all(
+        [1, 2, 3, 4].map((num) =>
+          tx.quarter.create({
+            data: {
+              order: num,
+              matchClubId: matchClub.id,
+              isSelf: isSelfMatch,
+              ...(isSelfMatch && { team1Id: teams[0].id, team2Id: teams[1].id }),
+            },
+          }),
+        ),
+      );
       return txMatch;
     });
     return redirect("/matches/" + res.id);
-  } catch {
+  } catch (e) {
+    console.error("[matches/new:action] error - ", e);
     return new Response("잘못된 요청입니다.", { status: 400 });
   }
 };

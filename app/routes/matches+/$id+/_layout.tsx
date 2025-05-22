@@ -1,7 +1,7 @@
 import { Outlet, useRevalidator } from "@remix-run/react";
 
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link, UIMatch, useLoaderData, useMatches, useParams } from "@remix-run/react";
+import { Link, useLoaderData, useParams } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 
@@ -56,14 +56,14 @@ const MatchesIdLayoutPage = (_props: IMatchesIdLayoutPageProps) => {
   const user = useSession();
   const data = useLoaderData<typeof loader>();
   const { revalidate } = useRevalidator();
-  const [isPending, startTransition] = useTransition();
-  const matches = useMatches() as UIMatch<unknown, { breadcrumb?: React.ReactNode }>[];
-  const breadcrumbs = matches
-    .filter((match) => match.handle?.breadcrumb)
-    .map((match) => ({
-      name: match.handle.breadcrumb,
-      path: match.pathname.endsWith("/") ? match.pathname.slice(0, -1) : match.pathname,
-    }));
+  const [, startTransition] = useTransition();
+  // const matches = useMatches() as UIMatch<unknown, { breadcrumb?: React.ReactNode }>[];
+  // const breadcrumbs = matches
+  //   .filter((match) => match.handle?.breadcrumb)
+  //   .map((match) => ({
+  //     name: match.handle.breadcrumb,
+  //     path: match.pathname.endsWith("/") ? match.pathname.slice(0, -1) : match.pathname,
+  //   }));
   const matchClubId = params.matchClubId;
   const matchClub = matchClubId
     ? data?.match?.matchClubs?.find((mc) => mc.id === matchClubId)
@@ -71,7 +71,7 @@ const MatchesIdLayoutPage = (_props: IMatchesIdLayoutPageProps) => {
 
   const handleMatchClubIsSelfChange = (isSelf: boolean) => {
     startTransition(async () => {
-      await fetch("/api/matchClubs/" + matchClubId, {
+      await fetch("/api/matchClubs/" + matchClubId + "/isSelf", {
         method: "POST",
         body: JSON.stringify({
           isSelf: isSelf,

@@ -1,25 +1,51 @@
-import { Team } from "@prisma/client";
-import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+import { useLoaderData } from "@remix-run/react";
+import { AiFillSkin } from "react-icons/ai";
+import { Button } from "~/components/ui/button";
+import { Actions } from "./_Actions";
+import { loader } from "./_index";
+import { usePositionContext } from "./_position.context";
 
-interface IBoardProps {
-  teams: Team[];
-}
-
-export const Board = ({ teams }: IBoardProps) => {
-  const [leftBoardId, setLeftBoardId] = useState<string | undefined>(teams.at(0)?.id);
-  const [rightBoardId, setRightBoardId] = useState<string | undefined>(teams.at(1)?.id);
+export const Board = () => {
+  const loaderData = useLoaderData<typeof loader>();
+  const context = usePositionContext();
+  const teams = loaderData.matchClub.teams;
+  const currentQuarterOrder = context.currentQuarterOrder;
+  const currentQuarter = loaderData.matchClub.quarters.find(
+    (quarter) => quarter.order === currentQuarterOrder,
+  );
+  const team1 = currentQuarter?.team1;
+  const team2 = currentQuarter?.team2;
+  // const [leftBoardId, setLeftBoardId] = useState<string | undefined>(teams.at(0)?.id);
+  // const [rightBoardId, setRightBoardId] = useState<string | undefined>(teams.at(1)?.id);
 
   return (
     <>
       <section>
         <div className="w-full overflow-hidden pb-[154.41%] relative md:hidden">
+          {team1 && (
+            <Actions teamId={team1.id}>
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="z-20 absolute top-1 right-1 max-w-24 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <AiFillSkin color={team1?.color} className="drop-shadow mr-1" />
+                {team1.name}
+              </Button>
+            </Actions>
+          )}
+          {team2 && (
+            <Actions teamId={team2.id}>
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="z-20 absolute bottom-1 right-1 max-w-24 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <AiFillSkin color={team2.color} className="drop-shadow mr-1" />
+                {team2.name}
+              </Button>
+            </Actions>
+          )}
           {/* 모바일 */}
           <img
             src={"/images/test-vertical.svg"}
@@ -29,42 +55,28 @@ export const Board = ({ teams }: IBoardProps) => {
         </div>
         <div className="w-full overflow-hidden pb-[64.76%] relative max-md:hidden">
           {/* 데스크탑 */}
-          <Select value={leftBoardId} onValueChange={setLeftBoardId}>
-            <SelectTrigger className="z-20 absolute top-2 left-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none">
-              <SelectValue placeholder="Select a team" />
-            </SelectTrigger>
-            <SelectContent>
-              {teams?.map((team) => {
-                return (
-                  <SelectItem
-                    key={team.id}
-                    value={team.id}
-                    disabled={team.id === leftBoardId || team.id === rightBoardId}
-                  >
-                    {team.name}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-          <Select value={rightBoardId} onValueChange={setRightBoardId}>
-            <SelectTrigger className="z-20 absolute top-2 right-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none">
-              <SelectValue placeholder="Select a team" />
-            </SelectTrigger>
-            <SelectContent>
-              {teams?.map((team) => {
-                return (
-                  <SelectItem
-                    key={team.id}
-                    value={team.id}
-                    disabled={team.id === leftBoardId || team.id === rightBoardId}
-                  >
-                    {team.name}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+          {team1 && (
+            <Actions teamId={team1.id}>
+              <Button
+                variant={"outline"}
+                className="z-20 absolute top-2 left-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <AiFillSkin color={team1?.color} className="drop-shadow mr-1" />
+                {team1.name}
+              </Button>
+            </Actions>
+          )}
+          {team2 && (
+            <Actions teamId={team2.id}>
+              <Button
+                variant={"outline"}
+                className="z-20 absolute top-2 right-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <AiFillSkin color={team2.color} className="drop-shadow mr-1" />
+                {team2.name}
+              </Button>
+            </Actions>
+          )}
           <img
             src={"/images/test.svg"}
             alt="soccer field"
