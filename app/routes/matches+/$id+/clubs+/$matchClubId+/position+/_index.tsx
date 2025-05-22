@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
@@ -27,18 +27,10 @@ interface IPositionPageProps {}
 
 const PositionPage = (_props: IPositionPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const fetcher = useFetcher<typeof loader>();
-  const matchClub = fetcher.data?.matchClub ?? loaderData.matchClub;
+  const { revalidate } = useRevalidator();
+  const matchClub = loaderData.matchClub;
   const [currentQuarterOrder, setCurrentQuarterOrder] = useState(1);
   const [isPending, startTransition] = useTransition();
-  // const quarterId = matchClub.quarters.find((quarter) => quarter.order === currentQuarterOrder)?.id;
-  // const { data: quarters } = useQuery({
-  //   queryKey: ["quarters", quarterId],
-  //   queryFn: async () => {
-  //     return fetch(`/api/quarters/${quarterId}`).then((res) => res.json());
-  //   },
-  //   enabled: !!(fetcher.state === "idle"),
-  // });
   /**
    * 쿼터가 최대 쿼터보다 많으면 증가시킴
    * @param quarter
@@ -57,12 +49,12 @@ const PositionPage = (_props: IPositionPageProps) => {
             order: maxOrder + 1,
           }),
         });
-        fetcher.load(location.pathname);
+        revalidate();
       }
       setCurrentQuarterOrder(order);
     });
   };
-  const isLoading = fetcher.state !== "idle" || isPending;
+  const isLoading = isPending;
   return (
     <PositionContext.Provider value={{ currentQuarterOrder }}>
       <div className="lg:space-y-6 max-lg:space-y-2">

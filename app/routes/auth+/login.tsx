@@ -17,9 +17,7 @@ import { sendVerificationEmail } from "~/libs/mail";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "유효한 이메일을 입력하세요." }),
-  password: z
-    .string()
-    .min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
+  password: z.string().min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -34,7 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!result.success) {
     return Response.json(
       { errors: result.error.flatten().fieldErrors },
-      { status: 401, statusText: "Bad Request" }
+      { status: 401, statusText: "Bad Request" },
     );
   }
   try {
@@ -54,14 +52,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           errors: { password: "비밀번호가 맞지 않습니다." },
           values: _.omit(result.data, "password"),
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
     // 비밀번호가 맞지 않을 경우
-    const isValid = await bcrypt.compare(
-      result.data.password,
-      key.hashedPassword
-    );
+    const isValid = await bcrypt.compare(result.data.password, key.hashedPassword);
 
     if (!isValid) {
       return Response.json(
@@ -69,7 +64,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           errors: { password: "비밀번호가 맞지 않습니다." },
           values: _.omit(result.data, "password"),
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const user = key.user;
@@ -80,13 +75,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       await sendVerificationEmail(
         verificationToken.email,
         verificationToken.token,
-        `${protocol}//${host}`
+        `${protocol}//${host}`,
       );
       return Response.json({ success: "확인 이메일을 보냈습니다." });
     }
     // 세션 생성
     const session = await auth.createSession(key.userId, {});
     const sessionCookie = auth.createSessionCookie(session.id);
+
+    // 만료된 세션 삭제
+    await prisma.session.deleteMany({
+      where: {
+        userId: user?.id,
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
+
     // 홈으로 redirect
     return redirect("/", {
       headers: {
@@ -100,7 +106,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         errors: { password: "오류입니다." },
         values: _.omit(result.data, "password"),
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 };
@@ -108,8 +114,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const Login = () => {
   const actions = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting =
-    navigation.state === "submitting" || navigation.state === "loading";
+  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
   return (
     <div className="max-w-md w-full space-y-4 mt-6">
       <Form method="post" className="space-y-6">
@@ -118,10 +123,7 @@ const Login = () => {
           <span>로그인</span>
         </p>
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             이메일
           </label>
           <Input
@@ -134,10 +136,7 @@ const Login = () => {
           />
         </div>
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             비밀번호
           </label>
           <Input

@@ -15,10 +15,33 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   try {
-    await prisma.quarter.create({
-      data: result.data,
+    return await prisma.$transaction(async (tx) => {
+      const matchClub = await tx.matchClub.findUnique({
+        where: {
+          id: result.data.matchClubId,
+        },
+        include: {
+          quarters: true,
+          teams: true,
+        },
+      });
+
+      if (matchClub?.quarters.some((quarter) => quarter.order === result.data.order)) {
+        return Response.json({ error: "Quarter already exists" }, { status: 400 });
+      }
+      await tx.quarter.create({
+        data: {
+          matchClubId: result.data.matchClubId,
+          isSelf: matchClub?.isSelf,
+          order: result.data.order,
+          ...(matchClub?.isSelf && {
+            team1Id: matchClub.teams[0].id,
+            team2Id: matchClub.teams[1].id,
+          }),
+        },
+      });
+      return Response.json({ success: "success" });
     });
-    return Response.json({ success: "success" });
   } catch {
     return Response.json({ error: "Internal Server Error" });
   }
