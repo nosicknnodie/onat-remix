@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { PropsWithChildren } from "react";
 import { AiFillSkin } from "react-icons/ai";
 import {
@@ -41,7 +41,16 @@ export const Actions = ({ children, teamId }: IActionsProps) => {
             {currentTeam?.name}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>포지션 설정</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              to={{
+                pathname: "./setting",
+                search: `quarter=${currentQuarterOrder}&teamId=${teamId}`,
+              }}
+            >
+              포지션 설정
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>팀 선택</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>

@@ -1,0 +1,83 @@
+{
+  "LS": {
+    "className": "md:left-[75%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[25%]"
+  },
+  "ST": {
+    "className": "md:left-[75%] md:top-[50%] max-md:left-[50%] max-md:top-[25%]"
+  },
+  "RS": {
+    "className": "md:left-[75%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[25%]"
+  },
+  "LW": {
+    "className": "md:left-[65%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[35%]"
+  },
+  "LF": {
+    "className": "md:left-[65%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[35%]"
+  },
+  "CF": {
+    "className": "md:left-[65%] md:top-[50%] max-md:left-[50%] max-md:top-[35%]"
+  },
+  "RF": {
+    "className": "md:left-[65%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[35%]"
+  },
+  "RW": {
+    "className": "md:left-[65%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[35%]"
+  },
+  "LAM": {
+    "className": "md:left-[55%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[45%]"
+  },
+  "CAM": {
+    "className": "md:left-[55%] md:top-[50%] max-md:left-[50%] max-md:top-[45%]"
+  },
+  "RAM": {
+    "className": "md:left-[55%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[45%]"
+  },
+  "LM": {
+    "className": "md:left-[45%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[55%]"
+  },
+  "LCM": {
+    "className": "md:left-[45%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[55%]"
+  },
+  "CM": {
+    "className": "md:left-[45%] md:top-[50%] max-md:left-[50%] max-md:top-[55%]"
+  },
+  "RCM": {
+    "className": "md:left-[45%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[55%]"
+  },
+  "RM": {
+    "className": "md:left-[45%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[55%]"
+  },
+  "LWB": {
+    "className": "md:left-[35%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[65%]"
+  },
+  "LDM": {
+    "className": "md:left-[35%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[65%]"
+  },
+  "DM": {
+    "className": "md:left-[35%] md:top-[50%] max-md:left-[50%] max-md:top-[65%]"
+  },
+  "RDM": {
+    "className": "md:left-[35%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[65%]"
+  },
+  "RWB": {
+    "className": "md:left-[35%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[65%]"
+  },
+  "LB": {
+    "className": "md:left-[25%] md:top-[20%] max-md:left-[20%] max-md:top-[75%]"
+  },
+  "LCB": {
+    "className": "md:left-[25%] md:top-[35%] max-md:left-[35%] max-md:top-[75%]"
+  },
+  "SW": {
+    "className": "md:left-[20%] md:top-[50%] max-md:left-[50%] max-md:top-[80%]"
+  },
+  "RCB": {
+    "className": "md:left-[25%] md:top-[65%] max-md:left-[65%] max-md:top-[75%]"
+  },
+  "RB": {
+    "className": "md:left-[25%] md:top-[80%] max-md:left-[80%] max-md:top-[75%]"
+  },
+  "GK": {
+    "className": "md:left-[10%] md:top-[50%] max-md:left-[50%] max-md:top-[90%]"
+  }
+}
