@@ -15,6 +15,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       matchClubId,
     },
     include: {
+      team: true,
+      assigneds: true,
       player: { include: { user: { include: { userImage: true } } } },
       mercenary: { include: { user: { include: { userImage: true } } } },
     },
