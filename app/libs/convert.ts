@@ -101,3 +101,7 @@ export function formatPhoneNumber(phone: string): string {
 export function removePhoneHyphen(phone: string): string {
   return phone.replace(/-/g, "");
 }
+
+export function typedEntries<T extends Record<string, unknown>>(obj: T): [keyof T, T[keyof T]][] {
+  return Object.entries(obj) as [keyof T, T[keyof T]][];
+}

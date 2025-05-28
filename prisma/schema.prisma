@@ -348,8 +348,8 @@ model Quarter {
   // 자체전일 경우에만 설정
   team1Id    String?
   team2Id    String?
-  team1      Team? @relation("QuarterTeam1", fields: [team1Id], references: [id])
-  team2      Team? @relation("QuarterTeam2", fields: [team2Id], references: [id])
+  team1      Team? @relation("QuarterTeam1", fields: [team1Id], references: [id], onDelete: SetNull)
+  team2      Team? @relation("QuarterTeam2", fields: [team2Id], references: [id], onDelete: SetNull)
 
 
   matchClubId       String

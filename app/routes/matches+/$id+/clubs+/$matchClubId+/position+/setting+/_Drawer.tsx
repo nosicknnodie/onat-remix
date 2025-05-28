@@ -1,4 +1,4 @@
-import { Assigned, Attendance, File, Mercenary, PositionType, Team, User } from "@prisma/client";
+import { PositionType } from "@prisma/client";
 import { useLoaderData } from "@remix-run/react";
 import { PropsWithChildren, useState, useTransition } from "react";
 import { Loading } from "~/components/Loading";
@@ -10,7 +10,6 @@ import {
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "~/components/ui/drawer";
 import {
   Select,
@@ -23,24 +22,16 @@ import { cn } from "~/libs/utils";
 import { usePositionSettingContext } from "./_context";
 import { loader } from "./_index";
 
-interface IPositionSettingDrawerProps extends PropsWithChildren {
+interface IPositionSettingDrawerProps {
   positionType: PositionType;
-  assigned:
-    | (Assigned & {
-        attendance: Attendance & {
-          team: Team | null;
-          assigneds: Assigned[];
-          player: { user: (User & { userImage: File | null }) | null } | null;
-          mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
-        };
-      })
-    | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const PositionSettingDrawer = ({
-  children,
-  assigned,
   positionType,
+  open,
+  onOpenChange,
 }: IPositionSettingDrawerProps) => {
   const [isPending, startTransition] = useTransition();
   const loaderData = useLoaderData<typeof loader>();
@@ -55,12 +46,12 @@ export const PositionSettingDrawer = ({
       !attendance.assigneds.some((assigned) => assigned.quarterId === quarterId) &&
       attendance.teamId === teamId,
   );
-  // .map((attendance) => {
-  //   return {
-  //     ...attendance,
-  //     isAssigned: attendance.assigneds.some((assigned) => assigned.quarterId === quarterId),
-  //   };
-  // });
+  const assigned = context.assigneds?.find(
+    (_assigned) =>
+      _assigned.quarterId === quarterId &&
+      _assigned.teamId === teamId &&
+      _assigned.position === positionType,
+  );
   /**
    * 배정하기 핸들러
    */
@@ -92,8 +83,8 @@ export const PositionSettingDrawer = ({
 
   return (
     <>
-      <Drawer direction="right">
-        <DrawerTrigger asChild>{children}</DrawerTrigger>
+      <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
+        {/* <DrawerTrigger asChild>{children}</DrawerTrigger> */}
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Assigned, Attendance, File, Mercenary, Prisma, Team, User } from "@prisma/client";
 import { useParams } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
@@ -38,6 +38,16 @@ export const PositionSettingContext = React.createContext({ currentQuarter: null
   query: Awaited<ReturnType<typeof usePositionSettingQuery>>;
   currentQuarter: QuarterWithTeams | null;
   currentTeamId: string | null;
+  assigneds:
+    | (Assigned & {
+        attendance: Attendance & {
+          team: Team | null;
+          assigneds: Assigned[];
+          player: { user: (User & { userImage: File | null }) | null } | null;
+          mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
+        };
+      })[]
+    | undefined;
 });
 
 export const usePositionSettingQuery = () => {

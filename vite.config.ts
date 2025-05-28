@@ -30,6 +30,7 @@ export default defineConfig({
     tsconfigPaths(),
   ].filter(Boolean),
   server: {
+    host: true,
     watch: {
       usePolling: true,
     },

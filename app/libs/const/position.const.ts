@@ -60,7 +60,7 @@ export const PORMATION_POSITIONS: Record<PORMATION_TYPE, POSITION_TYPE[]> = {
   "5-4-1": ["GK", "LB", "LCB", "SW", "RCB", "RB", "LM", "LCM", "RCM", "RM", "ST"],
 };
 
-export const PORMATION_POSITION_CLASSNAME: { [key in POSITION_TYPE]: { className: string } } = {
+export const PORMATION_POSITION_CLASSNAME: Record<POSITION_TYPE, { className: string }> = {
   LS: {
     className: "md:left-[75%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[25%]",
   },

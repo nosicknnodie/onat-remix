@@ -19,6 +19,7 @@ import ProgressBar from "./components/ProgressBar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import Header from "./template/layout/Header";
+
 dayjs.locale("ko"); // 전역 locale 설정
 
 export const meta: MetaFunction = () => {
