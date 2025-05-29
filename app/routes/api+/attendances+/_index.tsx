@@ -40,9 +40,10 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
     return { error: result.error.flatten() };
   }
   const { id, ...data } = result.data;
+  const checkTime = data.isCheck ? new Date() : null;
   try {
     await prisma.attendance.update({
-      data: data,
+      data: { ...data, checkTime },
       where: {
         id,
       },
