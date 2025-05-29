@@ -27,9 +27,14 @@ import {
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import { PositionSettingDrawer } from "./_Drawer";
-import { PositionSettingContext, usePositionSettingQuery } from "./_context";
+import {
+  PositionSettingContext,
+  useOptimisticPositionUpdate,
+  usePositionSettingQuery,
+} from "./_context";
 const isTouchDevice = () => {
   return typeof window !== "undefined" ? "ontouchstart" in window : false;
 };
@@ -37,6 +42,8 @@ const isTouchDevice = () => {
 const bandendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
+  if (!user) return redirect("/auth/login");
   const matchClubId = params.matchClubId!;
   const matchClub = await prisma.matchClub.findUnique({
     where: {
@@ -72,6 +79,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const matchClub = loaderData.matchClub;
   const { revalidate } = useRevalidator();
+  const { mutateAsync } = useOptimisticPositionUpdate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
   const [currentQuarterOrder, setCurrentQuarterOrder] = useState(
@@ -154,18 +162,21 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const handlePositionChange =
     (position: POSITION_TYPE) =>
     <T extends NonNullable<typeof assigneds>[number] | null>(item: T) => {
-      console.log("position - ", position);
-      console.log("item - ", item);
       if (!item) return;
       startTransition(async () => {
-        await fetch("/api/assigneds/position", {
-          method: "POST",
-          body: JSON.stringify({
-            assignedId: item.id,
-            toPosition: position,
-          }),
+        await mutateAsync({
+          assignedId: item.id,
+          toPosition: position,
+          attendanceId: item.attendance.id,
         });
-        await query.refetch();
+        // await fetch("/api/assigneds/position", {
+        //   method: "POST",
+        //   body: JSON.stringify({
+        //     assignedId: item.id,
+        //     toPosition: position,
+        //   }),
+        // });
+        // await query.refetch();
       });
     };
 
@@ -290,7 +301,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                           onClick={handlePositionClick(position.key)}
                           className={({ isDragging }) => {
                             return cn(
-                              "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white",
+                              "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
                               {
                                 // ["outline outline-primary"]: position.assigned,
                                 ["opacity-50"]: isDragging,

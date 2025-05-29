@@ -1,6 +1,6 @@
 import { PositionType } from "@prisma/client";
 import { useLoaderData } from "@remix-run/react";
-import { PropsWithChildren, useState, useTransition } from "react";
+import { PropsWithChildren, useEffect, useState, useTransition } from "react";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -40,6 +40,7 @@ export const PositionSettingDrawer = ({
   const attendances = context.query.data?.attendances;
   const quarterId = context.currentQuarter?.id;
   const currentTeamId = context.currentTeamId;
+  // 배정가능 선수 리스트의 팀선택 상태
   const [teamId, setTeamId] = useState(currentTeamId);
   const attendancesData = attendances?.filter(
     (attendance) =>
@@ -49,7 +50,7 @@ export const PositionSettingDrawer = ({
   const assigned = context.assigneds?.find(
     (_assigned) =>
       _assigned.quarterId === quarterId &&
-      _assigned.teamId === teamId &&
+      _assigned.teamId === currentTeamId &&
       _assigned.position === positionType,
   );
   /**
@@ -77,9 +78,12 @@ export const PositionSettingDrawer = ({
           teamId: context?.currentTeamId,
         }),
       });
-      context.query.refetch();
+      await context.query.refetch();
     });
   };
+  useEffect(() => {
+    setTeamId(currentTeamId);
+  }, [currentTeamId]);
 
   return (
     <>
@@ -110,6 +114,7 @@ export const PositionSettingDrawer = ({
                       assigned.attendance.mercenary?.name ||
                       ""
                     }
+                    isLoading={isPending}
                     isAssigned={true}
                   />
                 </ul>
@@ -148,6 +153,7 @@ export const PositionSettingDrawer = ({
                     attendance.mercenary?.name ||
                     ""
                   }
+                  isLoading={isPending}
                   isAssigned={false}
                 />
               ))}
@@ -162,6 +168,7 @@ export const PositionSettingDrawer = ({
 interface IPositionsettingRowItem extends PropsWithChildren {
   imageUrl: string | null;
   name: string;
+  isLoading?: boolean;
   isAssigned: boolean;
   onClick?: () => void;
 }
@@ -170,6 +177,7 @@ const PositionSettingRowItem = ({
   imageUrl,
   name,
   isAssigned,
+  isLoading,
   onClick,
 }: IPositionsettingRowItem) => {
   return (
@@ -183,13 +191,17 @@ const PositionSettingRowItem = ({
       </Avatar>
       <div className="flex-1 font-medium">{name}</div>
       {/* 배정여부 */}
-      <Button size="sm" variant="ghost" onClick={onClick}>
+      <Button size="sm" variant="ghost" onClick={onClick} disabled={isLoading}>
         <span
-          className={cn("text-xs px-2 py-1 rounded", {
+          className={cn("text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center", {
             "bg-green-500 text-white": isAssigned,
           })}
         >
-          {isAssigned ? "배정됨" : "배정하기"}
+          {isAssigned ? (
+            <>{isLoading ? <Loading size={12} className="text-white text-center" /> : "배정됨"}</>
+          ) : (
+            "배정하기"
+          )}
         </span>
       </Button>
     </li>

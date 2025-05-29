@@ -49,7 +49,7 @@ export const POSITION_TEMPLATE_LIST = [
   "5-4-1",
 ];
 export const PORMATION_POSITIONS: Record<PORMATION_TYPE, POSITION_TYPE[]> = {
-  "4-3-3": ["GK", "LB", "LCB", "RCB", "RB", "LCM", "CM", "RCM", "LW", "CF", "RW"],
+  "4-3-3": ["GK", "LB", "LCB", "RCB", "RB", "LAM", "CM", "RAM", "LW", "CF", "RW"],
   "4-4-2": ["GK", "LB", "LCB", "RCB", "RB", "LM", "LCM", "RCM", "RM", "LS", "RS"],
   "4-2-3-1": ["GK", "LB", "LCB", "RCB", "RB", "LDM", "RDM", "LAM", "CAM", "RAM", "ST"],
   "4-1-4-1": ["GK", "LB", "LCB", "RCB", "RB", "DM", "LM", "LCM", "RCM", "RM", "ST"],
@@ -89,52 +89,52 @@ export const PORMATION_POSITION_CLASSNAME: Record<POSITION_TYPE, { className: st
     className: "md:left-[55%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[45%]",
   },
   CAM: {
-    className: "md:left-[55%] md:top-[50%] max-md:left-[50%] max-md:top-[45%]",
+    className: "md:left-[50%] md:top-[50%] max-md:left-[50%] max-md:top-[50%]",
   },
   RAM: {
     className: "md:left-[55%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[45%]",
   },
   LM: {
-    className: "md:left-[45%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[55%]",
+    className: "md:left-[45%] md:top-[20%] max-md:left-[20%] max-md:top-[55%]",
   },
   LCM: {
-    className: "md:left-[45%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[55%]",
-  },
-  CM: {
-    className: "md:left-[45%] md:top-[50%] max-md:left-[50%] max-md:top-[55%]",
+    className: "md:left-[45%] md:top-[38%] max-md:left-[38%] max-md:top-[55%]",
   },
   RCM: {
-    className: "md:left-[45%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[55%]",
+    className: "md:left-[45%] md:top-[62%] max-md:left-[62%] max-md:top-[55%]",
+  },
+  CM: {
+    className: "md:left-[40%] md:top-[50%] max-md:left-[50%] max-md:top-[60%]",
   },
   RM: {
-    className: "md:left-[45%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[55%]",
+    className: "md:left-[45%] md:top-[80%] max-md:left-[80%] max-md:top-[55%]",
   },
   LWB: {
-    className: "md:left-[35%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[65%]",
+    className: "md:left-[35%] md:top-[20%] max-md:left-[16.6%] max-md:top-[65%]",
   },
   LDM: {
-    className: "md:left-[35%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[65%]",
+    className: "md:left-[35%] md:top-[38%] max-md:left-[33.4%] max-md:top-[65%]",
   },
   DM: {
-    className: "md:left-[35%] md:top-[50%] max-md:left-[50%] max-md:top-[65%]",
+    className: "md:left-[30%] md:top-[50%] max-md:left-[50%] max-md:top-[70%]",
   },
   RDM: {
-    className: "md:left-[35%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[65%]",
+    className: "md:left-[35%] md:top-[62%] max-md:left-[66.6%] max-md:top-[65%]",
   },
   RWB: {
-    className: "md:left-[35%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[65%]",
+    className: "md:left-[35%] md:top-[80%] max-md:left-[83.4%] max-md:top-[65%]",
   },
   LB: {
     className: "md:left-[25%] md:top-[20%] max-md:left-[20%] max-md:top-[75%]",
   },
   LCB: {
-    className: "md:left-[25%] md:top-[35%] max-md:left-[35%] max-md:top-[75%]",
+    className: "md:left-[25%] md:top-[38%] max-md:left-[35%] max-md:top-[75%]",
   },
   SW: {
     className: "md:left-[20%] md:top-[50%] max-md:left-[50%] max-md:top-[80%]",
   },
   RCB: {
-    className: "md:left-[25%] md:top-[65%] max-md:left-[65%] max-md:top-[75%]",
+    className: "md:left-[25%] md:top-[62%] max-md:left-[65%] max-md:top-[75%]",
   },
   RB: {
     className: "md:left-[25%] md:top-[80%] max-md:left-[80%] max-md:top-[75%]",
