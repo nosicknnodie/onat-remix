@@ -15,49 +15,45 @@ const assignedSchema = z.object({
 export const action = async ({ request }: ActionFunctionArgs) => {
   const method = request.method.toUpperCase();
   const res = await parseRequestData(request);
-  const result = assignedSchema.safeParse(res);
-  // id는 수정/삭제 시 필요
-  const id = res.id;
+  const isArray = Array.isArray(res);
+  const parsedData = isArray
+    ? res.map((item: z.infer<typeof assignedSchema>) => assignedSchema.safeParse(item))
+    : [assignedSchema.safeParse(res)];
+  const hasErrors = parsedData.some((p) => !p.success);
 
-  if (["POST", "PUT", "PATCH"].includes(method) && !result.success) {
-    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
-  }
-  if (!result.success) {
-    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
+  if (["POST", "PUT", "PATCH"].includes(method) && hasErrors) {
+    return Response.json(
+      {
+        success: false,
+        errors: parsedData
+          .filter((p) => !p.success)
+          .map((p) => (p.success ? null : p.error.flatten())),
+      },
+      { status: 400 },
+    );
   }
 
   try {
     if (method === "POST") {
-      // 생성
-      const newAssigned = await prisma.assigned.create({
-        data: {
-          position: result.data.position,
-          attendanceId: result.data.attendanceId,
-          quarterId: result.data.quarterId,
-          teamId: result.data.teamId,
-        },
-      });
-      return Response.json({ success: true, assigned: newAssigned });
+      const created = await prisma.$transaction(
+        parsedData.map((p) => prisma.assigned.create({ data: p.data! })),
+      );
+      return Response.json({ success: true, assigned: created });
     } else if (method === "PUT" || method === "PATCH") {
-      // 수정
-      if (!id) {
-        return Response.json(
-          { success: false, errors: { id: "id is required for update" } },
-          { status: 400 },
-        );
-      }
-      const updatedAssigned = await prisma.assigned.update({
-        where: { id },
-        data: {
-          position: result.data.position,
-          attendanceId: result.data.attendanceId,
-          quarterId: result.data.quarterId,
-          teamId: result.data.teamId,
-        },
-      });
-      return Response.json({ success: true, assigned: updatedAssigned });
+      const updates = await prisma.$transaction(
+        parsedData.map((p) => {
+          const item = isArray ? res[parsedData.indexOf(p)] : res;
+          if (!item.id) throw new Error("id is required for update");
+          return prisma.assigned.update({
+            where: { id: item.id },
+            data: p.data!,
+          });
+        }),
+      );
+      return Response.json({ success: true, assigned: updates });
     } else if (method === "DELETE") {
       // 삭제
+      const id = res.id;
       if (!id) {
         return Response.json(
           { success: false, errors: { id: "id is required for delete" } },

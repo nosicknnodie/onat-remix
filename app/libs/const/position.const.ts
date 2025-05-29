@@ -143,3 +143,82 @@ export const PORMATION_POSITION_CLASSNAME: Record<POSITION_TYPE, { className: st
     className: "md:left-[10%] md:top-[50%] max-md:left-[50%] max-md:top-[90%]",
   },
 };
+
+const attackPositions: POSITION_TYPE[] = ["LS", "ST", "RS", "LW", "LF", "CF", "RF", "RW"];
+const middlePositions: POSITION_TYPE[] = [
+  "LAM",
+  "RAM",
+  "CAM",
+  "LM",
+  "LCM",
+  "RCM",
+  "RM",
+  "CM",
+  "LDM",
+  "RDM",
+  "DM",
+];
+const defensePositions: POSITION_TYPE[] = ["LB", "LCB", "SW", "RCB", "RB", "LWB", "RWB"];
+
+const leftPositions: POSITION_TYPE[] = [
+  "LB",
+  "LCB",
+  "LDM",
+  "LWB",
+  "LM",
+  "LCM",
+  "LAM",
+  "LW",
+  "LF",
+  "LS",
+];
+
+const centerPostions: POSITION_TYPE[] = ["CF", "ST", "CM", "CAM", "DM", "SW"];
+const rightPositions: POSITION_TYPE[] = [
+  "RB",
+  "RCB",
+  "RDM",
+  "RWB",
+  "RM",
+  "RCM",
+  "RAM",
+  "RW",
+  "RF",
+  "RS",
+];
+
+export const isAttackPosition = (position: POSITION_TYPE) => {
+  return attackPositions.includes(position);
+};
+export const isMiddlePosition = (position: POSITION_TYPE) => {
+  return middlePositions.includes(position);
+};
+export const isDefensePosition = (position: POSITION_TYPE) => {
+  return defensePositions.includes(position);
+};
+
+export const isLeftPosition = (position: POSITION_TYPE) => {
+  return leftPositions.includes(position);
+};
+export const isCenterPosition = (position: POSITION_TYPE) => {
+  return centerPostions.includes(position);
+};
+export const isRightPosition = (position: POSITION_TYPE) => {
+  return rightPositions.includes(position);
+};
+
+export const isDiffPosition = (beferPosition: POSITION_TYPE, afterPosition: POSITION_TYPE) => {
+  return (
+    (isAttackPosition(beferPosition) && isAttackPosition(afterPosition)) ||
+    (isMiddlePosition(afterPosition) && isMiddlePosition(beferPosition)) ||
+    (isDefensePosition(afterPosition) && isDefensePosition(beferPosition))
+  );
+};
+
+export const isRLDiffPostion = (beferPosition: POSITION_TYPE, afterPosition: POSITION_TYPE) => {
+  return (
+    (isLeftPosition(beferPosition) && isLeftPosition(afterPosition)) ||
+    (isRightPosition(beferPosition) && isRightPosition(afterPosition)) ||
+    (isCenterPosition(beferPosition) && isCenterPosition(afterPosition))
+  );
+};

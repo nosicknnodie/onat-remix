@@ -13,6 +13,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const attendances = await prisma.attendance.findMany({
     where: {
       matchClubId,
+      isVote: true,
     },
     include: {
       team: true,
