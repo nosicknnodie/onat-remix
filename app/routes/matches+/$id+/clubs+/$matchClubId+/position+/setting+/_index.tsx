@@ -289,7 +289,10 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
             return { ...attendance, toPosition: matchedEmptyPosition };
           }
         }
-        return { ...attendance, toPosition: mutableEmptyPositions.at(0) };
+        // rest postion에서 첫번째 포지션으로 지정
+        const lastToPosition = mutableEmptyPositions.at(0);
+        mutableEmptyPositions.splice(0, 1);
+        return { ...attendance, toPosition: lastToPosition };
       })
       .filter((attendance) => attendance.toPosition);
     startTransition(async () => {
