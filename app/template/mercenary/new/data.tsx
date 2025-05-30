@@ -52,5 +52,5 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     });
   }
 
-  return redirect("/matches/" + matchClub.matchId + "/clubs/" + matchClubId + "/mercenary");
+  return redirect("/matches/" + matchClub.matchId + "/clubs/" + matchClubId + "/mercenaries");
 };
