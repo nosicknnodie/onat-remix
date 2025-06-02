@@ -60,87 +60,144 @@ export const PORMATION_POSITIONS: Record<PORMATION_TYPE, POSITION_TYPE[]> = {
   "5-4-1": ["GK", "LB", "LCB", "SW", "RCB", "RB", "LM", "LCM", "RCM", "RM", "ST"],
 };
 
-export const PORMATION_POSITION_CLASSNAME: Record<POSITION_TYPE, { className: string }> = {
+export const PORMATION_POSITION_CLASSNAME: Record<
+  POSITION_TYPE,
+  { className: string; team1ClassName?: string; team2ClassName?: string }
+> = {
   LS: {
     className: "md:left-[75%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[25%]",
+    team1ClassName: "md:left-[47%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[53%]",
+    team2ClassName: "md:left-[53%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[47%]",
   },
   ST: {
     className: "md:left-[75%] md:top-[50%] max-md:left-[50%] max-md:top-[25%]",
+    team1ClassName: "md:left-[47%] md:top-[50%] max-md:left-[50%] max-md:top-[53%]",
+    team2ClassName: "md:left-[53%] md:top-[50%] max-md:left-[50%] max-md:top-[47%]",
   },
   RS: {
     className: "md:left-[75%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[25%]",
+    team1ClassName: "md:left-[47%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[53%]",
+    team2ClassName: "md:left-[53%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[47%]",
   },
   LW: {
     className: "md:left-[65%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[35%]",
+    team1ClassName: "md:left-[42%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[58%]",
+    team2ClassName: "md:left-[58%] md:top-[83.3%] max-md:left-[83.3%] max-md:top-[42%]",
   },
   LF: {
     className: "md:left-[65%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[35%]",
+    team1ClassName: "md:left-[42%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[58%]",
+    team2ClassName: "md:left-[58%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[42%]",
   },
   CF: {
     className: "md:left-[65%] md:top-[50%] max-md:left-[50%] max-md:top-[35%]",
+    team1ClassName: "md:left-[42%] md:top-[50%] max-md:left-[50%] max-md:top-[58%]",
+    team2ClassName: "md:left-[58%] md:top-[50%] max-md:left-[50%] max-md:top-[42%]",
   },
   RF: {
     className: "md:left-[65%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[35%]",
+    team1ClassName: "md:left-[42%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[58%]",
+    team2ClassName: "md:left-[58%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[42%]",
   },
   RW: {
     className: "md:left-[65%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[35%]",
+    team1ClassName: "md:left-[42%] md:top-[83.4%] max-md:left-[83.4%] max-md:top-[58%]",
+    team2ClassName: "md:left-[58%] md:top-[16.6%] max-md:left-[16.6%] max-md:top-[42%]",
   },
   LAM: {
     className: "md:left-[55%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[45%]",
+    team1ClassName: "md:left-[37%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[63%]",
+    team2ClassName: "md:left-[63%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[37%]",
   },
   CAM: {
     className: "md:left-[50%] md:top-[50%] max-md:left-[50%] max-md:top-[50%]",
+    team1ClassName: "md:left-[35%] md:top-[50%] max-md:left-[50%] max-md:top-[65%]",
+    team2ClassName: "md:left-[65%] md:top-[50%] max-md:left-[50%] max-md:top-[35%]",
   },
   RAM: {
     className: "md:left-[55%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[45%]",
+    team1ClassName: "md:left-[37%] md:top-[66.6%] max-md:left-[66.6%] max-md:top-[63%]",
+    team2ClassName: "md:left-[63%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[37%]",
   },
   LM: {
     className: "md:left-[45%] md:top-[20%] max-md:left-[20%] max-md:top-[55%]",
+    team1ClassName: "md:left-[32%] md:top-[20%] max-md:left-[20%] max-md:top-[68%]",
+    team2ClassName: "md:left-[68%] md:top-[80%] max-md:left-[80%] max-md:top-[32%]",
   },
   LCM: {
     className: "md:left-[45%] md:top-[38%] max-md:left-[38%] max-md:top-[55%]",
+    team1ClassName: "md:left-[32%] md:top-[38%] max-md:left-[38%] max-md:top-[68%]",
+    team2ClassName: "md:left-[68%] md:top-[62%] max-md:left-[62%] max-md:top-[32%]",
   },
   RCM: {
     className: "md:left-[45%] md:top-[62%] max-md:left-[62%] max-md:top-[55%]",
+    team1ClassName: "md:left-[32%] md:top-[62%] max-md:left-[62%] max-md:top-[68%]",
+    team2ClassName: "md:left-[68%] md:top-[38%] max-md:left-[38%] max-md:top-[32%]",
   },
   CM: {
     className: "md:left-[40%] md:top-[50%] max-md:left-[50%] max-md:top-[60%]",
+    team1ClassName: "md:left-[30%] md:top-[50%] max-md:left-[50%] max-md:top-[70%]",
+    team2ClassName: "md:left-[70%] md:top-[50%] max-md:left-[50%] max-md:top-[30%]",
   },
   RM: {
     className: "md:left-[45%] md:top-[80%] max-md:left-[80%] max-md:top-[55%]",
+    team1ClassName: "md:left-[32%] md:top-[80%] max-md:left-[80%] max-md:top-[68%]",
+    team2ClassName: "md:left-[68%] md:top-[20%] max-md:left-[20%] max-md:top-[32%]",
   },
   LWB: {
     className: "md:left-[35%] md:top-[20%] max-md:left-[16.6%] max-md:top-[65%]",
+    team1ClassName: "md:left-[27%] md:top-[20%] max-md:left-[20%] max-md:top-[73%]",
+    team2ClassName: "md:left-[73%] md:top-[80%] max-md:left-[80%] max-md:top-[27%]",
   },
   LDM: {
     className: "md:left-[35%] md:top-[38%] max-md:left-[33.4%] max-md:top-[65%]",
+    team1ClassName: "md:left-[27%] md:top-[38%] max-md:left-[38%] max-md:top-[73%]",
+    team2ClassName: "md:left-[73%] md:top-[62%] max-md:left-[62%] max-md:top-[27%]",
   },
   DM: {
     className: "md:left-[30%] md:top-[50%] max-md:left-[50%] max-md:top-[70%]",
+    team1ClassName: "md:left-[25%] md:top-[50%] max-md:left-[50%] max-md:top-[75%]",
+    team2ClassName: "md:left-[75%] md:top-[50%] max-md:left-[50%] max-md:top-[25%]",
   },
   RDM: {
     className: "md:left-[35%] md:top-[62%] max-md:left-[66.6%] max-md:top-[65%]",
+    team1ClassName: "md:left-[27%] md:top-[62%] max-md:left-[62%] max-md:top-[73%]",
+    team2ClassName: "md:left-[73%] md:top-[38%] max-md:left-[38%] max-md:top-[27%]",
   },
   RWB: {
     className: "md:left-[35%] md:top-[80%] max-md:left-[83.4%] max-md:top-[65%]",
+    team1ClassName: "md:left-[27%] md:top-[80%] max-md:left-[80%] max-md:top-[73%]",
+    team2ClassName: "md:left-[73%] md:top-[20%] max-md:left-[20%] max-md:top-[27%]",
   },
   LB: {
     className: "md:left-[25%] md:top-[20%] max-md:left-[20%] max-md:top-[75%]",
+    team1ClassName: "md:left-[22%] md:top-[20%] max-md:left-[20%] max-md:top-[78%]",
+    team2ClassName: "md:left-[78%] md:top-[80%] max-md:left-[80%] max-md:top-[22%]",
   },
   LCB: {
     className: "md:left-[25%] md:top-[38%] max-md:left-[35%] max-md:top-[75%]",
+    team1ClassName: "md:left-[22%] md:top-[38%] max-md:left-[38%] max-md:top-[78%]",
+    team2ClassName: "md:left-[78%] md:top-[62%] max-md:left-[62%] max-md:top-[22%]",
   },
   SW: {
     className: "md:left-[20%] md:top-[50%] max-md:left-[50%] max-md:top-[80%]",
+    team1ClassName: "md:left-[20%] md:top-[50%] max-md:left-[50%] max-md:top-[80%]",
+    team2ClassName: "md:left-[80%] md:top-[50%] max-md:left-[50%] max-md:top-[20%]",
   },
   RCB: {
     className: "md:left-[25%] md:top-[62%] max-md:left-[65%] max-md:top-[75%]",
+    team1ClassName: "md:left-[22%] md:top-[62%] max-md:left-[62%] max-md:top-[78%]",
+    team2ClassName: "md:left-[78%] md:top-[38%] max-md:left-[38%] max-md:top-[22%]",
   },
   RB: {
     className: "md:left-[25%] md:top-[80%] max-md:left-[80%] max-md:top-[75%]",
+    team1ClassName: "md:left-[22%] md:top-[80%] max-md:left-[80%] max-md:top-[78%]",
+    team2ClassName: "md:left-[78%] md:top-[20%] max-md:left-[20%] max-md:top-[22%]",
   },
   GK: {
     className: "md:left-[10%] md:top-[50%] max-md:left-[50%] max-md:top-[90%]",
+    team1ClassName: "md:left-[5%] md:top-[50%] max-md:left-[50%] max-md:top-[95%]",
+    team2ClassName: "md:left-[95%] md:top-[50%] max-md:left-[50%] max-md:top-[5%]",
   },
 };
 

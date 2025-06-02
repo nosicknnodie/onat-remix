@@ -5,7 +5,7 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { prisma } from "~/libs/db/db.server";
 import { Board } from "./_Board";
-import { PositionContext } from "./_position.context";
+import { PositionContext, usePositionQuery } from "./_position.context";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
@@ -31,6 +31,7 @@ const PositionPage = (_props: IPositionPageProps) => {
   const matchClub = loaderData.matchClub;
   const [currentQuarterOrder, setCurrentQuarterOrder] = useState(1);
   const [isPending, startTransition] = useTransition();
+  const query = usePositionQuery();
   /**
    * 쿼터가 최대 쿼터보다 많으면 증가시킴
    * @param quarter
@@ -56,7 +57,7 @@ const PositionPage = (_props: IPositionPageProps) => {
   };
   const isLoading = isPending;
   return (
-    <PositionContext.Provider value={{ currentQuarterOrder }}>
+    <PositionContext.Provider value={{ currentQuarterOrder, query }}>
       <div className="lg:space-y-6 max-lg:space-y-2">
         <section className="flex justify-center items-center">
           <div className="flex justify-center items-center">

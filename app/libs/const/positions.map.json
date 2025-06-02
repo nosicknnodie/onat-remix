@@ -1,6 +1,7 @@
 {
   "LS": {
     "className": "md:left-[75%] md:top-[33.4%] max-md:left-[33.4%] max-md:top-[25%]"
+    ,"teamMatchClassName": ""
   },
   "ST": {
     "className": "md:left-[75%] md:top-[50%] max-md:left-[50%] max-md:top-[25%]"
