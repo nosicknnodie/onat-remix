@@ -11,14 +11,14 @@ import { usePositionContext, usePositionUpdate } from "./_position.context";
 export const Board = () => {
   const loaderData = useLoaderData<typeof loader>();
   const context = usePositionContext();
-  const currentQuarterOrder = context.currentQuarterOrder;
+  const currentQuarterOrder = context?.currentQuarterOrder;
   const currentQuarter = loaderData.matchClub.quarters.find(
     (quarter) => quarter.order === currentQuarterOrder
   );
   const team1 = currentQuarter?.team1;
   const team2 = currentQuarter?.team2;
 
-  const assigneds = context.query.data?.attendances
+  const assigneds = context?.query.data?.attendances
     .flatMap((attendance) =>
       attendance.assigneds.map((assigned) => ({
         ...assigned,
