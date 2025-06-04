@@ -2,6 +2,7 @@ import { PositionType } from "@prisma/client";
 import { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
+import { redis } from "~/libs/db/redis.server";
 import { parseRequestData } from "~/libs/requestData";
 
 const assignedSchema = z.object({
@@ -38,6 +39,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const created = await prisma.$transaction(
         parsedData.map((p) => prisma.assigned.create({ data: p.data! })),
       );
+      await redis.publish(
+        `position:${parsedData.at(0)?.data?.quarterId}`,
+        JSON.stringify({
+          type: "POSITION_CREATED",
+          assigneds: created,
+        }),
+      );
       return Response.json({ success: true, assigned: created });
     } else if (method === "PUT" || method === "PATCH") {
       const updates = await prisma.$transaction(
@@ -50,17 +58,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           });
         }),
       );
+      await redis.publish(
+        `position:${parsedData.at(0)?.data?.quarterId}`,
+        JSON.stringify({
+          type: "POSITION_UPDATED",
+          assigneds: updates,
+        }),
+      );
       return Response.json({ success: true, assigned: updates });
     } else if (method === "DELETE") {
-      // 삭제
-      const id = res.id;
-      if (!id) {
+      const data = parsedData.map((p) => p.data);
+      const ids = data.filter((p) => p?.id).map((p) => p!.id!);
+
+      if (ids.length === 0) {
         return Response.json(
           { success: false, errors: { id: "id is required for delete" } },
           { status: 400 },
         );
       }
-      await prisma.assigned.delete({ where: { id } });
+
+      const deleted = await prisma.$transaction(
+        ids.map((id) => prisma.assigned.delete({ where: { id } })),
+      );
+
+      await redis.publish(
+        `position:${data.at(0)?.quarterId}`,
+        JSON.stringify({
+          type: "POSITION_REMOVED",
+          assignedIds: deleted.map((a) => a.id),
+        }),
+      );
+
       return Response.json({ success: true });
     } else {
       return Response.json({ success: false, errors: "Method Not Allowed" }, { status: 405 });

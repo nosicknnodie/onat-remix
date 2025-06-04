@@ -20,7 +20,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   });
   if (!matchClub) return redirect("../");
 
-  return { matchClub };
+  return { matchClub, env: { WS_SERVER_URL: process.env.WS_SERVER_URL } };
 };
 
 interface IPositionPageProps {}
@@ -38,7 +38,9 @@ const PositionPage = (_props: IPositionPageProps) => {
    */
   const handleSetQuarter = (order: number) => {
     startTransition(async () => {
-      const quarterId = matchClub.quarters.find((quarter) => quarter.order === order)?.id;
+      const quarterId = matchClub.quarters.find(
+        (quarter) => quarter.order === order
+      )?.id;
       if (!quarterId) {
         const maxOrder = matchClub.quarters.reduce((max, q) => {
           return q.order > max ? q.order : max;
@@ -55,6 +57,7 @@ const PositionPage = (_props: IPositionPageProps) => {
       setCurrentQuarterOrder(order);
     });
   };
+
   const isLoading = isPending;
   return (
     <PositionContext.Provider value={{ currentQuarterOrder, query }}>

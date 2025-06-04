@@ -2,6 +2,7 @@ import { PositionType } from "@prisma/client";
 import { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
+import { redis } from "~/libs/db/redis.server";
 import { parseRequestData } from "~/libs/requestData";
 
 const assignedSchema = z.object({
@@ -12,11 +13,15 @@ const assignedSchema = z.object({
 export const action = async ({ request }: ActionFunctionArgs) => {
   const value = await parseRequestData(request);
   const result = assignedSchema.safeParse(value);
+
   if (!result.success) {
-    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
+    return Response.json(
+      { success: false, errors: result.error.flatten() },
+      { status: 400 }
+    );
   }
   try {
-    await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx) => {
       const assigned = await tx.assigned.findUnique({
         where: {
           id: result.data.assignedId,
@@ -30,15 +35,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           quarterId: assigned.quarterId,
         },
       });
+      let wasAssignedUpdate = undefined;
       if (wasAssigned) {
-        await tx.assigned.update({
+        wasAssignedUpdate = await tx.assigned.update({
           where: { id: wasAssigned.id },
           data: {
             position: assigned.position,
           },
         });
       }
-      return await tx.assigned.update({
+      const update = await tx.assigned.update({
         where: {
           id: result.data.assignedId,
         },
@@ -46,7 +52,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           position: result.data.toPosition,
         },
       });
+      return [update, wasAssignedUpdate];
     });
+    const updateds = updated.filter(Boolean);
+    await redis.publish(
+      `position:${updateds?.at(0)?.quarterId}`,
+      JSON.stringify({
+        type: "POSITION_UPDATED",
+        assigneds: updateds,
+      })
+    );
     // await prisma.assigned.update({
     //   where: {
     //     id: result.data.assignedId,
@@ -58,6 +73,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return Response.json({ success: "success" });
   } catch (error) {
     console.error(error);
-    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
+    return Response.json(
+      { success: false, errors: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 };
