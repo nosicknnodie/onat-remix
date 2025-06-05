@@ -9,10 +9,7 @@ import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
 import { useState, useTransition } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { Preview } from "react-dnd-preview";
-import { TouchBackend } from "react-dnd-touch-backend";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { RiArrowGoBackLine } from "react-icons/ri";
 import DragButton from "~/components/dnd/DragButton";
@@ -44,11 +41,11 @@ import {
   useOptimisticPositionUpdate,
   usePositionSettingQuery,
 } from "./_context";
-const isTouchDevice = () => {
-  return typeof window !== "undefined" ? "ontouchstart" in window : false;
-};
+// const isTouchDevice = () => {
+//   return typeof window !== "undefined" ? "ontouchstart" in window : false;
+// };
 
-const bandendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
+// const bandendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -107,13 +104,6 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   );
   const [isLoading, startTransition] = useTransition();
 
-  // const { data: quarterData } = useQuery<{ quarter: QuarterWithAssigneds }>({
-  //   queryKey: ["MATCH_POSITION_SETTING_QUARTER", currentQuarter?.id],
-  //   queryFn: async () => {
-  //     if (!currentQuarter) return null;
-  //     return fetch("/api/quarters/" + currentQuarter.id).then((res) => res.json());
-  //   },
-  // });
   const query = usePositionSettingQuery();
   const attendancesData = query.data;
 
@@ -424,107 +414,98 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                   자동배치
                 </Button>
               </div>
-              <DndProvider
-                backend={bandendForDND}
-                options={{
-                  enableKeyboardEvents: true,
-                  enableMouseEvents: true,
-                  enableTouchEvents: true,
-                }}
-              >
-                {isTouchDevice() && (
-                  <Preview
-                    generator={({ ref, style, item }) => {
-                      const assigned = item as {
-                        attendance: {
-                          player: {
-                            user: { name: string };
-                          };
-                          mercenary: { user: { name: string }; name: string };
-                        };
-                      };
-                      return (
-                        <div
-                          ref={ref as unknown as React.Ref<HTMLDivElement>}
-                          // className={cn(customClassName)}
-                          className="z-30 rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white overflow-hidden"
-                          style={style}
-                        >
-                          {assigned.attendance.player?.user?.name ||
-                            assigned.attendance.mercenary?.user?.name ||
-                            assigned.attendance.mercenary?.name ||
-                            ""}
-                        </div>
-                      );
-                    }}
-                  />
-                )}
-                {positions.map((position) => {
-                  return (
-                    <DropDiv
-                      layoutId={position.assigned?.id}
-                      key={[position.key, position.assigned?.id].join("-")}
-                      canDrop={({ item }: { item: typeof position.assigned }) =>
-                        item?.position !== position.assigned?.position
-                      }
-                      onDrop={handlePositionChange(position.key)}
-                      className={cn(
-                        "absolute z-20 md:-ml-8 md:-mt-8 max-md:-ml-6 max-md:-mt-6",
-                        position.className,
-                        {
-                          ["invisible"]: !(
-                            position.assigned || position.isFormation
-                          ),
-                        }
-                      )}
-                    >
-                      {position.assigned ? (
-                        <>
-                          <DragButton
-                            item={position.assigned}
-                            variant={"ghost"}
-                            onClick={handlePositionClick(position.key)}
-                            className={({ isDragging }) => {
-                              return cn(
-                                "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
-                                {
-                                  // ["outline outline-primary"]: position.assigned,
-                                  ["opacity-50"]: isDragging,
-                                }
-                              );
-                            }}
-                          >
-                            {position.assigned
-                              ? position.assigned.attendance.player?.user
-                                  ?.name ||
-                                position.assigned.attendance.mercenary?.user
-                                  ?.name ||
-                                position.assigned.attendance.mercenary?.name
-                              : position.key}
-                          </DragButton>
-                        </>
-                      ) : (
-                        <Button
-                          onClick={handlePositionClick(position.key)}
-                          variant={"ghost"}
-                          className={cn(
-                            "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs w-full h-full flex justify-center items-center bg-white shadow-md"
-                          )}
-                        >
-                          {position.key}
-                        </Button>
-                      )}
-                      {/* </PositionSettingDrawer> */}
-                    </DropDiv>
-                  );
-                })}
 
-                <PositionSettingDrawer
-                  positionType={selectedPositionType}
-                  open={drawerOpen}
-                  onOpenChange={setDrawerOpen}
-                ></PositionSettingDrawer>
-              </DndProvider>
+              {typeof window !== "undefined" && "ontouchstart" in window && (
+                <Preview
+                  generator={({ ref, style, item }) => {
+                    const assigned = item as {
+                      attendance: {
+                        player: {
+                          user: { name: string };
+                        };
+                        mercenary: { user: { name: string }; name: string };
+                      };
+                    };
+                    return (
+                      <div
+                        ref={ref as unknown as React.Ref<HTMLDivElement>}
+                        // className={cn(customClassName)}
+                        className="z-30 rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white overflow-hidden"
+                        style={style}
+                      >
+                        {assigned.attendance.player?.user?.name ||
+                          assigned.attendance.mercenary?.user?.name ||
+                          assigned.attendance.mercenary?.name ||
+                          ""}
+                      </div>
+                    );
+                  }}
+                />
+              )}
+              {positions.map((position) => {
+                return (
+                  <DropDiv
+                    layoutId={position.assigned?.id}
+                    key={[position.key, position.assigned?.id].join("-")}
+                    canDrop={({ item }: { item: typeof position.assigned }) => {
+                      return position.key !== item?.position;
+                    }}
+                    onDrop={handlePositionChange(position.key)}
+                    className={cn(
+                      "absolute z-20 md:-ml-8 md:-mt-8 max-md:-ml-6 max-md:-mt-6",
+                      position.className,
+                      {
+                        ["invisible"]: !(
+                          position.assigned || position.isFormation
+                        ),
+                      }
+                    )}
+                  >
+                    {position.assigned ? (
+                      <>
+                        <DragButton
+                          item={position.assigned}
+                          variant={"ghost"}
+                          onClick={handlePositionClick(position.key)}
+                          className={({ isDragging }) => {
+                            return cn(
+                              "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
+                              {
+                                // ["outline outline-primary"]: position.assigned,
+                                ["opacity-30"]: isDragging,
+                              }
+                            );
+                          }}
+                        >
+                          {position.assigned
+                            ? position.assigned.attendance.player?.user?.name ||
+                              position.assigned.attendance.mercenary?.user
+                                ?.name ||
+                              position.assigned.attendance.mercenary?.name
+                            : position.key}
+                        </DragButton>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={handlePositionClick(position.key)}
+                        variant={"ghost"}
+                        className={cn(
+                          "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs w-full h-full flex justify-center items-center bg-white shadow-md"
+                        )}
+                      >
+                        {position.key}
+                      </Button>
+                    )}
+                    {/* </PositionSettingDrawer> */}
+                  </DropDiv>
+                );
+              })}
+
+              <PositionSettingDrawer
+                positionType={selectedPositionType}
+                open={drawerOpen}
+                onOpenChange={setDrawerOpen}
+              ></PositionSettingDrawer>
             </div>
           </section>
         </div>

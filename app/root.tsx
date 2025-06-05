@@ -1,4 +1,8 @@
-import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type {
+  LinksFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -13,6 +17,9 @@ import dayjs from "dayjs";
 import "dayjs/locale/ko"; // 한국어 locale import
 import { User } from "lucia";
 import { type ReactNode, useEffect, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { TouchBackend } from "react-dnd-touch-backend";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 import { getUser } from "~/libs/db/lucia.server";
 import ProgressBar from "./components/ProgressBar";
@@ -23,7 +30,10 @@ import Header from "./template/layout/Header";
 dayjs.locale("ko"); // 전역 locale 설정
 
 export const meta: MetaFunction = () => {
-  return [{ title: "ONSOA | 홈" }, { name: "description", content: "축구 관리앱 입니다." }];
+  return [
+    { title: "ONSOA | 홈" },
+    { name: "description", content: "축구 관리앱 입니다." },
+  ];
 };
 
 export const links: LinksFunction = () => [
@@ -49,7 +59,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = getUser(request);
   return data({
     user,
-    env: { PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY: process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY },
+    env: {
+      PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY:
+        process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
+    },
   });
 }
 
@@ -83,6 +96,10 @@ export default function App() {
   const data = useLoaderData<typeof loader>();
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const appKey = data?.env?.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
+  const backendForDND =
+    typeof window !== "undefined" && "ontouchstart" in window
+      ? TouchBackend
+      : HTML5Backend;
   useKakaoLoader({
     appkey: appKey,
   });
@@ -93,9 +110,18 @@ export default function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <UserContext.Provider value={user}>
-          <Header />
-          <ProgressBar />
-          <Outlet />
+          <DndProvider
+            backend={backendForDND}
+            options={{
+              enableKeyboardEvents: true,
+              enableMouseEvents: true,
+              enableTouchEvents: true,
+            }}
+          >
+            <Header />
+            <ProgressBar />
+            <Outlet />
+          </DndProvider>
         </UserContext.Provider>
       </QueryClientProvider>
     </>
