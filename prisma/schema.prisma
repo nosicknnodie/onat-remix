@@ -310,6 +310,12 @@ model Team {
   @@index([matchClubId])
 }
 
+enum AttendanceState {
+  NORMAL    // 기본값
+  EXCUSED   // 불참.
+  RETIRED   // 떠남.
+}
+
 model Attendance {
   id          String    @id @default(cuid())
   isVote      Boolean   @default(false)   // 참석투표 여부
@@ -317,6 +323,8 @@ model Attendance {
 
   isCheck     Boolean   @default(false)   // 출석체크
   checkTime   DateTime?                   // 출석체크 시간
+
+  state       AttendanceState @default(NORMAL)
   
   playerId        String?   // 선수 fkey
   mercenaryId     String?   // 용병 fkey

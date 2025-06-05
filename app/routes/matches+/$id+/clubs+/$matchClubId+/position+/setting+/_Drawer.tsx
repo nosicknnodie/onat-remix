@@ -1,4 +1,4 @@
-import { PositionType } from "@prisma/client";
+import { Assigned, PositionType } from "@prisma/client";
 import { useLoaderData } from "@remix-run/react";
 import { PropsWithChildren, useEffect, useState, useTransition } from "react";
 import { Loading } from "~/components/Loading";
@@ -18,6 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  isAttackPosition,
+  isDefensePosition,
+  isMiddlePosition,
+} from "~/libs/const/position.const";
 import { cn } from "~/libs/utils";
 import { usePositionSettingContext } from "./_context";
 import { loader } from "./_index";
@@ -44,19 +49,22 @@ export const PositionSettingDrawer = ({
   const [teamId, setTeamId] = useState(currentTeamId);
   const attendancesData = attendances?.filter(
     (attendance) =>
-      !attendance.assigneds.some((assigned) => assigned.quarterId === quarterId) &&
-      attendance.teamId === teamId,
+      !attendance.assigneds.some(
+        (assigned) => assigned.quarterId === quarterId
+      ) && attendance.teamId === teamId
   );
   const assigned = context.assigneds?.find(
     (_assigned) =>
       _assigned.quarterId === quarterId &&
       _assigned.teamId === currentTeamId &&
-      _assigned.position === positionType,
+      _assigned.position === positionType
   );
   /**
    * 배정하기 핸들러
    */
-  const handleSelectPosition = (attendance: NonNullable<typeof attendancesData>[number]) => {
+  const handleSelectPosition = (
+    attendance: NonNullable<typeof attendancesData>[number]
+  ) => {
     startTransition(async () => {
       if (assigned) {
         await fetch("/api/assigneds", {
@@ -94,7 +102,14 @@ export const PositionSettingDrawer = ({
             <DrawerTitle>
               포지션설정{" "}
               {currentTeamId && (
-                <>({matchClub.teams.find((team) => team.id === currentTeamId)?.name})</>
+                <>
+                  (
+                  {
+                    matchClub.teams.find((team) => team.id === currentTeamId)
+                      ?.name
+                  }
+                  )
+                </>
               )}
             </DrawerTitle>
             <DrawerDescription>
@@ -104,10 +119,15 @@ export const PositionSettingDrawer = ({
           <div className="p-4 space-y-2">
             {assigned && (
               <>
-                <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
+                <h3 className="mb-2 text-base font-semibold">
+                  현재 위치 배정선수
+                </h3>
                 <ul className="divide-y divide-gray-200">
                   <PositionSettingRowItem
-                    imageUrl={assigned?.attendance?.player?.user?.userImage?.url || null}
+                    imageUrl={
+                      assigned?.attendance?.player?.user?.userImage?.url || null
+                    }
+                    assigneds={assigned?.attendance?.assigneds}
                     name={
                       assigned?.attendance?.player?.user?.name ||
                       assigned.attendance.mercenary?.user?.name ||
@@ -142,6 +162,7 @@ export const PositionSettingDrawer = ({
                 <PositionSettingRowItem
                   onClick={() => handleSelectPosition(attendance)}
                   key={attendance.id}
+                  assigneds={attendance.assigneds}
                   imageUrl={
                     attendance?.player?.user?.userImage?.url ||
                     attendance?.mercenary?.user?.userImage?.url ||
@@ -170,6 +191,7 @@ interface IPositionsettingRowItem extends PropsWithChildren {
   name: string;
   isLoading?: boolean;
   isAssigned: boolean;
+  assigneds: Assigned[];
   onClick?: () => void;
 }
 
@@ -178,32 +200,82 @@ const PositionSettingRowItem = ({
   name,
   isAssigned,
   isLoading,
+  assigneds,
   onClick,
 }: IPositionsettingRowItem) => {
+  const loaderData = useLoaderData<typeof loader>();
+  const quarters = loaderData.matchClub.quarters.sort(
+    (a, b) => a.order - b.order
+  );
   return (
-    <li className={cn("flex items-center gap-3 py-3 px-2", { "bg-green-50": isAssigned })}>
-      {/* 프로필 이미지 */}
-      <Avatar>
-        <AvatarImage src={imageUrl || "/images/user_empty.png"} alt={name || "Player"} />
-        <AvatarFallback className="bg-primary-foreground">
-          <Loading />
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 font-medium">{name}</div>
-      {/* 배정여부 */}
-      <Button size="sm" variant="ghost" onClick={onClick} disabled={isLoading}>
-        <span
-          className={cn("text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center", {
-            "bg-green-500 text-white": isAssigned,
-          })}
+    <li
+      className={cn("flex flex-col gap-1 p-2 rounded-md", {
+        "bg-green-50": isAssigned,
+      })}
+    >
+      <div className={cn("flex items-center gap-2")}>
+        {/* 프로필 이미지 */}
+        <Avatar>
+          <AvatarImage
+            src={imageUrl || "/images/user_empty.png"}
+            alt={name || "Player"}
+          />
+          <AvatarFallback className="bg-primary-foreground">
+            <Loading />
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 font-medium">{name}</div>
+        {/* 배정여부 */}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onClick}
+          disabled={isLoading}
         >
-          {isAssigned ? (
-            <>{isLoading ? <Loading size={12} className="text-white text-center" /> : "배정됨"}</>
-          ) : (
-            "배정하기"
-          )}
+          <span
+            className={cn(
+              "text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center",
+              {
+                "bg-green-500 text-white": isAssigned,
+              }
+            )}
+          >
+            {isAssigned ? (
+              <>
+                {isLoading ? (
+                  <Loading size={12} className="text-white text-center" />
+                ) : (
+                  "배정됨"
+                )}
+              </>
+            ) : (
+              "배정하기"
+            )}
+          </span>
+        </Button>
+      </div>
+      <div className="flex gap-1 w-full items-center">
+        <span className="rounded flex-1 text-xs text-center">
+          ({assigneds.length}/{quarters.length})
         </span>
-      </Button>
+        {quarters.map((quarter) => {
+          const position = assigneds.find(
+            (assigned) => assigned.quarterId === quarter.id
+          )?.position;
+          return (
+            <span
+              key={quarter.id}
+              className={cn("h-2 rounded flex-1 border", {
+                "bg-red-500": position && isAttackPosition(position),
+                "bg-yellow-400": position && isMiddlePosition(position),
+                "bg-blue-500": position && isDefensePosition(position),
+                "bg-green-500": position && position === "GK",
+                "bg-gray-200": !position,
+              })}
+            ></span>
+          );
+        })}
+      </div>
     </li>
   );
 };
