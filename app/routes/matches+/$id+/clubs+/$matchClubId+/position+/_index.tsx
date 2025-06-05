@@ -60,10 +60,6 @@ const PositionPage = (_props: IPositionPageProps) => {
 
   const isLoading = isPending;
 
-  // 아직 로딩 중이거나 오류 발생 시 context 전달하지 않음
-  if (query.isLoading || query.isError) {
-    return <div>Loading...</div>;
-  }
   return (
     <PositionContext.Provider value={{ currentQuarterOrder, query }}>
       <div className="lg:space-y-6 max-lg:space-y-2">

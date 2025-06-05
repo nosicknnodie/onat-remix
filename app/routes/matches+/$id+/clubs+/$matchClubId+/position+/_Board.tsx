@@ -52,8 +52,6 @@ export const Board = () => {
     });
   usePositionUpdate({
     url: `${loaderData.env.WS_SERVER_URL}/position?id=${currentQuarter?.id}`,
-    maxRetries: 3,
-    retryDelay: 10000,
   });
 
   return (
