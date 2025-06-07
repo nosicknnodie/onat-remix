@@ -217,9 +217,11 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     const notAttendance = attendancesData?.attendances
       .filter(
         (attendance) =>
+          attendance.state === "NORMAL" &&
           !attendance.assigneds.some(
             (assigned) => assigned.quarterId === currentQuarter?.id
-          ) && attendance.teamId === currentTeamId
+          ) &&
+          attendance.teamId === currentTeamId
         // assigned.quarterId !== currentQuarter?.id && assigned.attendance.teamId === currentTeamId,
       )
       .sort((a, b) => {
@@ -349,7 +351,13 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
           <section className="flex justify-between items-center relative">
             <div className="min-w-28 flex items-center gap-x-2">
               <Button variant={"outline"} asChild>
-                <Link to={"../"} className="space-x-2">
+                <Link
+                  to={{
+                    pathname: "../",
+                    search: `quarterOrder=${currentQuarter?.order}`,
+                  }}
+                  className="space-x-2"
+                >
                   <RiArrowGoBackLine />
                   <span className="max-md:hidden">돌아가기</span>
                 </Link>

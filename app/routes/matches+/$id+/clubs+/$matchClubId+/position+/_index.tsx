@@ -1,5 +1,9 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
+import {
+  useLoaderData,
+  useRevalidator,
+  useSearchParams,
+} from "@remix-run/react";
 import { useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
@@ -27,9 +31,13 @@ interface IPositionPageProps {}
 
 const PositionPage = (_props: IPositionPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const quarterOrder = searchParams.get("quarterOrder");
   const { revalidate } = useRevalidator();
   const matchClub = loaderData.matchClub;
-  const [currentQuarterOrder, setCurrentQuarterOrder] = useState(1);
+  const [currentQuarterOrder, setCurrentQuarterOrder] = useState(
+    Number(quarterOrder || 1)
+  );
   const [isPending, startTransition] = useTransition();
   const query = usePositionQuery();
   /**

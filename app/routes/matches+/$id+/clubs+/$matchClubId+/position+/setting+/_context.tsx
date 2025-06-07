@@ -1,4 +1,12 @@
-import { Assigned, Attendance, File, Mercenary, Prisma, Team, User } from "@prisma/client";
+import {
+  Assigned,
+  Attendance,
+  File,
+  Mercenary,
+  Prisma,
+  Team,
+  User,
+} from "@prisma/client";
 import { useParams } from "@remix-run/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
@@ -35,20 +43,25 @@ type AttendanceWithAssigned = Prisma.AttendanceGetPayload<{
     };
   };
 }>;
-export const PositionSettingContext = React.createContext({ currentQuarter: null } as {
+
+export interface IAssignedWithAttendance extends Assigned {
+  attendance: Attendance & {
+    team: Team | null;
+    assigneds: Assigned[];
+    player: { user: (User & { userImage: File | null }) | null } | null;
+    mercenary:
+      | (Mercenary & { user: (User & { userImage: File | null }) | null })
+      | null;
+  };
+}
+
+export const PositionSettingContext = React.createContext({
+  currentQuarter: null,
+} as {
   query: Awaited<ReturnType<typeof usePositionSettingQuery>>;
   currentQuarter: QuarterWithTeams | null;
   currentTeamId: string | null;
-  assigneds:
-    | (Assigned & {
-        attendance: Attendance & {
-          team: Team | null;
-          assigneds: Assigned[];
-          player: { user: (User & { userImage: File | null }) | null } | null;
-          mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
-        };
-      })[]
-    | undefined;
+  assigneds: IAssignedWithAttendance[] | undefined;
 });
 
 export const usePositionSettingQuery = () => {
@@ -92,10 +105,16 @@ export const useOptimisticPositionUpdate = () => {
     onMutate: async (_value) => {
       const oldData: { attendances: AttendanceWithAssigned[] } | undefined =
         queryClient.getQueryData(["ATTENDANCES", matchClubId]);
-      await queryClient.cancelQueries({ queryKey: ["ATTENDANCES", matchClubId] });
-      const currentData = oldData?.attendances.find((item) => item.id === _value.attendanceId);
+      await queryClient.cancelQueries({
+        queryKey: ["ATTENDANCES", matchClubId],
+      });
+      const currentData = oldData?.attendances.find(
+        (item) => item.id === _value.attendanceId
+      );
       if (!currentData) return;
-      const currentAssigned = currentData.assigneds.find((item) => item.id === _value.assignedId);
+      const currentAssigned = currentData.assigneds.find(
+        (item) => item.id === _value.assignedId
+      );
       if (!currentAssigned) return;
       const teamId = currentAssigned.teamId;
       const fromPosition = currentAssigned.position;
@@ -109,7 +128,7 @@ export const useOptimisticPositionUpdate = () => {
             (assigned) =>
               assigned.quarterId === quarterId &&
               assigned.teamId === teamId &&
-              assigned.position === toPosition,
+              assigned.position === toPosition
           );
           if (findOne) {
             return {
@@ -144,4 +163,5 @@ export const useOptimisticPositionUpdate = () => {
   });
 };
 
-export const usePositionSettingContext = () => React.useContext(PositionSettingContext);
+export const usePositionSettingContext = () =>
+  React.useContext(PositionSettingContext);

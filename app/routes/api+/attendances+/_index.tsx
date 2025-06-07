@@ -1,3 +1,4 @@
+import { AttendanceState } from "@prisma/client";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import z from "zod";
 import { prisma } from "~/libs/db/db.server";
@@ -29,6 +30,7 @@ const AttendanceValidate = z.object({
   id: z.string(),
   isVote: z.boolean().optional(),
   isCheck: z.boolean().optional(),
+  state: z.nativeEnum(AttendanceState).optional(),
 });
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
