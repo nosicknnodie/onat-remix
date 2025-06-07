@@ -2,6 +2,9 @@ import { motion } from "framer-motion";
 import { ComponentProps } from "react";
 import { useDrop } from "react-dnd";
 import { cn } from "~/libs/utils";
+
+const MotionDiv = motion.div;
+
 interface IDropDivProps<TItem>
   extends Omit<ComponentProps<typeof motion.div>, "onDrop"> {
   canDrop?: ({ item }: { item: TItem }) => boolean;
@@ -37,7 +40,7 @@ const DropDiv = <TItem,>({
   );
   return (
     <>
-      <motion.div
+      <MotionDiv
         ref={dropRef as unknown as React.Ref<HTMLDivElement>}
         className={cn(className, {
           "outline outline-primary rounded-full": isOver && _canDrop,
