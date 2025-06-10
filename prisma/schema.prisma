@@ -304,9 +304,9 @@ model Team {
   matchClubId         String
   matchClub           MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigned        Assigned[]
+  goals           Goal[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
-
   @@index([matchClubId])
 }
 
@@ -363,6 +363,7 @@ model Quarter {
   matchClubId       String
   matchClub         MatchClub     @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigneds      Assigned[]
+  goals       Goal[]
   
   @@index([matchClubId])
 }
@@ -379,6 +380,9 @@ model Assigned {
   attendance    Attendance  @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @default(now()) @updatedAt
+
+  goals         Goal[]     
+  asists        Goal[]  @relation("AssistAssigned")
 
   @@index([attendanceId])
   @@index([quarterId])
@@ -443,4 +447,36 @@ enum PositionType {
   RCB
   RB
   GK
+}
+
+
+model Goal {
+  id            String   @id @default(cuid())
+
+  assignedId    String
+  assigned      Assigned @relation(fields: [assignedId], references: [id], onDelete: Cascade)
+
+  assistAssignedId String?  // 어시스트도 Assigned 기반으로 추적
+  assistAssigned   Assigned? @relation("AssistAssigned", fields: [assistAssignedId], references: [id], onDelete: SetNull)
+  
+  teamId        String?
+  team          Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  quarterId     String
+  quarter       Quarter  @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+
+  isOwnGoal     Boolean   @default(false)
+  goalType      GoalType @default(NORMAL)
+
+  createdAt     DateTime  @default(now())
+
+  @@index([assignedId])
+  @@index([assistAssignedId])
+}
+
+enum GoalType {
+  NORMAL
+  PK
+  HEADER
+  OWNGOAL
 }
