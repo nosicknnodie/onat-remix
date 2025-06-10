@@ -1,9 +1,21 @@
 import { Quarter, Team } from "@prisma/client";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
+import { useTransition } from "react";
 import { FaFutbol } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { prisma } from "~/libs/db/db.server";
@@ -101,6 +113,7 @@ const RecordPage = (_props: IRecordPageProps) => {
               return (
                 <GoalComponent
                   key={goal.id}
+                  id={goal.id}
                   name={name}
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
@@ -124,6 +137,7 @@ const RecordPage = (_props: IRecordPageProps) => {
               return (
                 <GoalComponent
                   key={goal.id}
+                  id={goal.id}
                   name={name}
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
@@ -203,14 +217,27 @@ const QuarterRecordComponent = ({
 };
 
 const GoalComponent = ({
+  id,
   name,
   imageUrl,
   isOwner,
 }: {
+  id: string;
   name: string;
   imageUrl?: string;
   isOwner?: boolean;
 }) => {
+  const [isPending, startTransition] = useTransition();
+  const { revalidate } = useRevalidator();
+  const handleDelGoal = (id: string) => {
+    startTransition(async () => {
+      await fetch("/api/goal", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      });
+      revalidate();
+    });
+  };
   return (
     <>
       <div className="flex items-center gap-1">
@@ -226,6 +253,34 @@ const GoalComponent = ({
             "text-destructive": isOwner,
           })}
         />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size={"icon"}
+              className="w-3 h-3 text-destructive"
+              disabled={isPending}
+            >
+              x
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>골기록 삭제</AlertDialogTitle>
+              <AlertDialogDescription>
+                <span className="font-semibold">{name}</span>
+                님의 골 기록을
+                <span className="text-destructive"> 삭제</span>하시겠습니까?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDelGoal(id)}>
+                삭제
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </>
   );

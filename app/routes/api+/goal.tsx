@@ -15,32 +15,57 @@ const goalSchema = z.object({
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await parseRequestData(request);
+  const method = request.method.toUpperCase();
+  if (method === "POST") {
+    const parsed = goalSchema.safeParse(data);
+    if (!parsed.success) {
+      return Response.json(
+        { success: false, errors: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
 
-  const parsed = goalSchema.safeParse(data);
-  if (!parsed.success) {
-    return Response.json(
-      { success: false, errors: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
+    try {
+      await prisma.goal.create({
+        data: {
+          assignedId: data.assignedId,
+          assistAssignedId: data.assistAssignedId,
+          teamId: data.teamId,
+          quarterId: data.quarterId,
+          isOwnGoal: data.isOwnGoal,
+          goalType: data.goalType,
+        },
+      });
+      return Response.json({ success: "success" });
+    } catch (error) {
+      console.error(error);
+      return Response.json(
+        { success: false, errors: "Internal Server Error" },
+        { status: 500 }
+      );
+    }
+  } else if (method === "DELETE") {
+    const id = data.id;
+    if (!id) {
+      return Response.json(
+        { success: false, errors: "id is required" },
+        { status: 400 }
+      );
+    }
 
-  try {
-    await prisma.goal.create({
-      data: {
-        assignedId: data.assignedId,
-        assistAssignedId: data.assistAssignedId,
-        teamId: data.teamId,
-        quarterId: data.quarterId,
-        isOwnGoal: data.isOwnGoal,
-        goalType: data.goalType,
-      },
-    });
-    return Response.json({ success: "success" });
-  } catch (error) {
-    console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    try {
+      await prisma.goal.delete({
+        where: {
+          id,
+        },
+      });
+      return Response.json({ success: "success" });
+    } catch (error) {
+      console.error(error);
+      return Response.json(
+        { success: false, errors: "Internal Server Error" },
+        { status: 500 }
+      );
+    }
   }
 };
