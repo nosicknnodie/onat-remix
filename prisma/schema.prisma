@@ -63,6 +63,7 @@ model User {
   playerLogs    PlayerLog[]
   comments      Comment[]
   matchs        Match[]
+  evaluations   Evaluation[]
 
   session Session[]
   key     Key[]
@@ -282,6 +283,7 @@ model MatchClub {
   attendances   Attendance[]
   quarters      Quarter[]
   teams         Team[]
+  evaluations   Evaluation[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
@@ -337,6 +339,7 @@ model Attendance {
   matchClub   MatchClub       @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
 
   assigneds   Assigned[]
+  evaluations Evaluation[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
 
@@ -479,4 +482,24 @@ enum GoalType {
   PK
   HEADER
   OWNGOAL
+}
+
+// 평가
+model Evaluation {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  attendanceId   String
+  attendance     Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  matchClubId    String
+  matchClub      MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
+
+  score          Int      // 1, 2, 3 중 하나
+  liked          Boolean  // 좋아요 여부
+
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, matchClubId, attendanceId])
 }
