@@ -496,8 +496,8 @@ model Evaluation {
   matchClubId    String
   matchClub      MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
 
-  score          Int      // 1, 2, 3 중 하나
-  liked          Boolean  // 좋아요 여부
+  score          Int      @default(0)       // 0~60 중 하나
+  liked          Boolean  @default(false)   // 좋아요 여부
 
   createdAt      DateTime @default(now())
 

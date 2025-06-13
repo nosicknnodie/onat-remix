@@ -1,8 +1,10 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useOutletContext } from "@remix-run/react";
+import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { FaRegThumbsUp } from "react-icons/fa";
+import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
+import { RiExpandLeftLine } from "react-icons/ri";
 import "swiper/css";
 import "swiper/css/effect-coverflow";
 import { EffectCoverflow } from "swiper/modules";
@@ -11,6 +13,7 @@ import { Loading } from "~/components/Loading";
 import StarRating from "~/components/StarRating";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Tooltip,
@@ -18,14 +21,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { useSession } from "~/contexts/AuthUserContext";
 import {
   isAttackPosition,
   isDefensePosition,
   isMiddlePosition,
 } from "~/libs/const/position.const";
 import { prisma } from "~/libs/db/db.server";
+import { getRatingAttendances } from "~/libs/queries/atttendances";
 import { cn } from "~/libs/utils";
-import { loader as layoutLoader } from "../../_layout";
+import { loader as layoutLoader } from "../../../_layout";
+import { RightDrawer } from "./_RightDrawer";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
@@ -37,35 +43,159 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       quarters: { include: { team1: true, team2: true } },
     },
   });
-  const attendances = await prisma.attendance.findMany({
-    where: {
-      matchClubId: matchClubId,
-      isVote: true,
-    },
-    include: {
-      assigneds: { include: { goals: { where: { isOwnGoal: false } } } },
-      player: {
-        // where: { status: "APPROVED" },
-        include: { user: { include: { userImage: true } } },
-      },
-      mercenary: { include: { user: { include: { userImage: true } } } },
-    },
-  });
+  const attendances = await getRatingAttendances({ matchClubId });
   return { attendances, matchClub };
 };
 
 interface IRatingPageProps {}
 
 const RatingPage = (_props: IRatingPageProps) => {
+  const user = useSession();
+  const params = useParams();
   const outletData =
     useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();
+
   const loaderData = useLoaderData<typeof loader>();
   const [activeIndex, setActiveIndex] = useState(0);
-  const attendances = loaderData.attendances;
+  const { data } = useQuery<Awaited<ReturnType<typeof loader>>>({
+    queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
+    queryFn: async () => {
+      return await fetch(
+        "/api/attendances/rating?matchClubId=" + params.matchClubId
+      ).then((res) => res.json());
+    },
+    initialData: loaderData,
+  });
+  const attendances = data.attendances;
   const match = outletData.match;
   const quarters = loaderData.matchClub?.quarters.sort(
     (a, b) => a.order - b.order
   );
+  const queryClient = useQueryClient();
+
+  // update score
+  const updateEvaluation = useMutation({
+    mutationFn: async ({
+      attendanceId,
+      score,
+    }: {
+      attendanceId: string;
+      score: number;
+    }) => {
+      const res = await fetch("/api/evaluations/score", {
+        method: "POST",
+        body: JSON.stringify({
+          matchClubId: params.matchClubId,
+          attendanceId,
+          score,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update score");
+    },
+
+    onMutate: async ({ attendanceId, score }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
+      });
+
+      const prevData = queryClient.getQueryData<
+        Awaited<ReturnType<typeof loader>>
+      >(["MATCH_RATING_QUERY", params.matchClubId]);
+
+      if (prevData) {
+        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], {
+          ...prevData,
+          attendances: prevData.attendances.map((att) =>
+            att.id === attendanceId
+              ? {
+                  ...att,
+                  evaluations: att.evaluations.map((ev) =>
+                    ev.userId === user?.id ? { ...ev, score } : ev
+                  ),
+                }
+              : att
+          ),
+        });
+      }
+
+      return { prevData };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.prevData) {
+        queryClient.setQueryData(
+          ["MATCH_RATING_QUERY", params.matchClubId],
+          context.prevData
+        );
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
+      });
+    },
+  });
+
+  // update like
+  const toggleLike = useMutation({
+    mutationFn: async ({
+      attendanceId,
+      liked,
+    }: {
+      attendanceId: string;
+      liked: boolean;
+    }) => {
+      await fetch("/api/evaluations/like", {
+        method: "POST",
+        body: JSON.stringify({
+          matchClubId: params.matchClubId,
+          attendanceId,
+          liked,
+        }),
+      });
+    },
+    onMutate: async ({ attendanceId, liked }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
+      });
+
+      const prevData = queryClient.getQueryData<
+        Awaited<ReturnType<typeof loader>>
+      >(["MATCH_RATING_QUERY", params.matchClubId]);
+
+      if (prevData) {
+        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], {
+          ...prevData,
+          attendances: prevData.attendances.map((att) =>
+            att.id === attendanceId
+              ? {
+                  ...att,
+                  evaluations: att.evaluations.map((ev) =>
+                    ev.userId === user?.id ? { ...ev, liked } : ev
+                  ),
+                }
+              : att
+          ),
+        });
+      }
+
+      return { prevData };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prevData) {
+        queryClient.setQueryData(
+          ["MATCH_RATING_QUERY", params.matchClubId],
+          context.prevData
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
+      });
+    },
+  });
   return (
     <>
       <div className="w-full">
@@ -87,7 +217,7 @@ const RatingPage = (_props: IRatingPageProps) => {
             }}
             modules={[EffectCoverflow]}
             effect="coverflow"
-            grabCursor={true}
+            // grabCursor={true}
             coverflowEffect={{
               rotate: 0,
               stretch: 0,
@@ -114,6 +244,9 @@ const RatingPage = (_props: IRatingPageProps) => {
               const isPerception = attendance.checkTime
                 ? new Date(match.stDate) < new Date(attendance.checkTime)
                 : true;
+              const evaluation = attendance.evaluations.find(
+                (evaluation) => evaluation.userId === user?.id
+              );
               return (
                 <SwiperSlide
                   className="w-72 h-full relative flex items-center py-4"
@@ -130,7 +263,19 @@ const RatingPage = (_props: IRatingPageProps) => {
                     )}
                   >
                     <CardHeader className="flex-shrink-0">
-                      <CardTitle>{name} 님의 정보 카드</CardTitle>
+                      <CardTitle className="flex justify-between items-center">
+                        <span>{name}'s 정보</span>
+                        <RightDrawer attendance={attendance}>
+                          <Button
+                            size={"sm"}
+                            variant="ghost"
+                            className="text-gray-500"
+                          >
+                            Detail
+                            <RiExpandLeftLine className="ml-2" />
+                          </Button>
+                        </RightDrawer>
+                      </CardTitle>
                       <div className="flex gap-x-2">
                         <Badge variant={isPlayer ? "default" : "outline"}>
                           {isPlayer ? "회원" : "용병"}
@@ -205,15 +350,33 @@ const RatingPage = (_props: IRatingPageProps) => {
                       <div className="flex-1 flex justify-between items-center">
                         <StarRating
                           id={`${attendance.id}-star-id`}
-                          score={60}
+                          score={evaluation?.score || 0}
                           width={30}
                           isHighLight
                           onClick={(e, score) => {
-                            console.log("score - ", score);
+                            updateEvaluation.mutate({
+                              attendanceId: attendance.id,
+                              score,
+                            });
                           }}
                         />
                         <div>
-                          <FaRegThumbsUp size={30} className="text-primary" />
+                          <Button
+                            variant={"ghost"}
+                            disabled={toggleLike.isPending}
+                            onClick={() => {
+                              toggleLike.mutate({
+                                attendanceId: attendance.id,
+                                liked: !evaluation?.liked,
+                              });
+                            }}
+                          >
+                            {evaluation?.liked ? (
+                              <FaThumbsUp size={30} className="text-primary" />
+                            ) : (
+                              <FaRegThumbsUp size={30} className="text-muted" />
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
