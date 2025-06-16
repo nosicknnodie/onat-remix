@@ -14,24 +14,42 @@ export type IMatchClubIdLayoutOutletContext = IParentLayoutOutletContext & {
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const outletData = useOutletContext<IParentLayoutOutletContext>();
   const params = useParams();
-  const matchClub = outletData?.match?.matchClubs?.find((mc) => mc.id === params.matchClubId);
+  const matchClub = outletData?.match?.matchClubs?.find(
+    (mc) => mc.id === params.matchClubId
+  );
   return (
     <>
       <div className="flex gap-x-4 p-2">
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}`} end>
           정보
         </ItemLink>
-        <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}>
+        <ItemLink
+          to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}
+        >
           참석
         </ItemLink>
         {matchClub?.isSelf && (
-          <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}>Team</ItemLink>
+          <ItemLink
+            to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}
+          >
+            Team
+          </ItemLink>
         )}
-        <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}>
+        <ItemLink
+          to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}
+        >
           포지션
         </ItemLink>
-        <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}>기록</ItemLink>
-        <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}>MOM</ItemLink>
+        <ItemLink
+          to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}
+        >
+          기록
+        </ItemLink>
+        <ItemLink
+          to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}
+        >
+          평점등록
+        </ItemLink>
       </div>
       <Outlet context={{ ...outletData, matchClub }} />
     </>
