@@ -1,7 +1,8 @@
-import { Club } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import { Badge } from "~/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,31 +17,63 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 
-type LoaderData = {
-  clubs: (Club & {
-    image?: { url: string } | null;
-    emblem?: { url: string } | null;
-  })[];
-};
+type Club = Prisma.ClubGetPayload<{
+  include: {
+    image: { select: { url: true } };
+    emblem: { select: { url: true } };
+  };
+}>;
 
-export async function loader(_args: LoaderFunctionArgs) {
-  const clubs = await prisma.club.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      image: { select: { url: true } },
-      emblem: { select: { url: true } },
-    },
-  });
-  return Response.json({ clubs });
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await getUser(request);
+  const [clubs, players] = await Promise.all([
+    prisma.club.findMany({
+      where: {
+        OR: [
+          { isPublic: true },
+          {
+            players: {
+              some: {
+                userId: user?.id,
+                status: { in: ["APPROVED", "PENDING"] },
+              },
+            },
+          },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        image: { select: { url: true } },
+        emblem: { select: { url: true } },
+      },
+    }),
+    prisma.player.findMany({
+      where: {
+        userId: user?.id,
+      },
+    }),
+  ]);
+  const myClubs = clubs.filter((c) => players.some((p) => p.clubId === c.id));
+
+  const publicClubs = clubs.filter((c) => !myClubs.includes(c));
+
+  const categorized = {
+    my: myClubs,
+    public: publicClubs,
+  };
+
+  return { categorized, players };
 }
 
 interface IClubsPageProps {}
 
 const ClubsPage = (_props: IClubsPageProps) => {
-  const data = useLoaderData<LoaderData>();
+  const loaderData = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -74,12 +107,68 @@ const ClubsPage = (_props: IClubsPageProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="grid max-sm:grid-cols-1 sm:grid-cols-3 gap-4">
-          {data.clubs.map((club) => (
+        <Tabs defaultValue="my" className="w-full">
+          <TabsList className="bg-transparent  space-x-2">
+            <TabsTrigger
+              value="my"
+              className={cn(
+                "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
+                "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
+                "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+              )}
+            >
+              나의 클럽
+            </TabsTrigger>
+            <TabsTrigger
+              value="public"
+              className={cn(
+                "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
+                "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
+                "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+              )}
+            >
+              공개 클럽
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="my">
+            <ClubList clubs={loaderData.categorized.my} />
+          </TabsContent>
+          <TabsContent value="public">
+            <ClubList clubs={loaderData.categorized.public} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
+  );
+};
+
+const ClubList = ({ clubs }: { clubs: Club[] }) => {
+  const loaderData = useLoaderData<typeof loader>();
+  const players = loaderData.players;
+  return (
+    <>
+      <div className="grid max-sm:grid-cols-1 sm:grid-cols-3 gap-4">
+        {clubs.length === 0 && (
+          <div className="col-span-3 text-center">
+            <p>클럽이 없습니다.</p>
+          </div>
+        )}
+        {clubs.map((club) => {
+          const myPlayer = players.find((p) => p.clubId === club.id);
+          const isStatePending = myPlayer?.status === "PENDING";
+          return (
             <div
               key={club.id}
-              className="border rounded-lg shadow-sm overflow-hidden"
+              className="border rounded-lg shadow-sm overflow-hidden relative"
             >
+              {isStatePending && (
+                <Badge
+                  className="absolute top-2 right-2 text-xs"
+                  variant="destructive"
+                >
+                  가입대기
+                </Badge>
+              )}
               <Link to={`/clubs/${club.id}`}>
                 <img
                   src={club.image?.url || "/images/club-default-image.webp"}
@@ -114,8 +203,8 @@ const ClubsPage = (_props: IClubsPageProps) => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </>
   );
