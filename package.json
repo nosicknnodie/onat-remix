@@ -50,6 +50,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@remix-run/css-bundle": "^2.16.5",
     "@remix-run/express": "^2.16.5",
+    "@remix-run/dev": "^2.16.5",
     "@remix-run/node": "^2.16.5",
     "@remix-run/react": "^2.16.5",
     "@remix-run/serve": "^2.16.5",
@@ -113,7 +114,7 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^3",
-    "@remix-run/dev": "^2.16.5",
+    
     "@storybook/addon-essentials": "^8.6.12",
     "@storybook/addon-onboarding": "^8.6.12",
     "@storybook/blocks": "^8.6.12",

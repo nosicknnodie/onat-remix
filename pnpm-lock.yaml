@@ -110,6 +110,9 @@ importers:
       '@remix-run/css-bundle':
         specifier: ^2.16.5
         version: 2.16.5
+      '@remix-run/dev':
+        specifier: ^2.16.5
+        version: 2.16.5(@remix-run/react@2.16.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@remix-run/serve@2.16.5(typescript@5.8.3))(@types/node@20.17.30)(typescript@5.8.3)(vite@5.4.18(@types/node@20.17.30))
       '@remix-run/express':
         specifier: ^2.16.5
         version: 2.16.5(express@5.1.0)(typescript@5.8.3)
@@ -297,9 +300,6 @@ importers:
       '@chromatic-com/storybook':
         specifier: ^3
         version: 3.2.6(react@19.1.0)(storybook@8.6.12(prettier@3.5.3))
-      '@remix-run/dev':
-        specifier: ^2.16.5
-        version: 2.16.5(@remix-run/react@2.16.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@remix-run/serve@2.16.5(typescript@5.8.3))(@types/node@20.17.30)(typescript@5.8.3)(vite@5.4.18(@types/node@20.17.30))
       '@storybook/addon-essentials':
         specifier: ^8.6.12
         version: 8.6.12(@types/react@19.1.1)(storybook@8.6.12(prettier@3.5.3))
