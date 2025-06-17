@@ -243,7 +243,9 @@ const RatingPage = (_props: IRatingPageProps) => {
               // 지각여부
               const isPerception = attendance.checkTime
                 ? new Date(match.stDate) < new Date(attendance.checkTime)
-                : true;
+                : new Date(match.stDate) < new Date()
+                  ? true
+                  : false;
               const evaluation = attendance.evaluations.find(
                 (evaluation) => evaluation.userId === user?.id
               );

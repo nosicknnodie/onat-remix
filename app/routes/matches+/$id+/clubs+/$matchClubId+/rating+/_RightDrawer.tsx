@@ -50,7 +50,9 @@ export const RightDrawer = ({ attendance, children }: IRightDrawerProps) => {
   // 지각여부
   const isPerception = attendance.checkTime
     ? new Date(match.stDate) < new Date(attendance.checkTime)
-    : true;
+    : new Date(match.stDate) < new Date()
+      ? true
+      : false;
   return (
     <>
       <Drawer direction="right">
