@@ -18,14 +18,18 @@ const Header = () => {
   return (
     <div
       className={cn(
-        "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30",
+        "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30"
       )}
     >
       <div className="max-w-screen-lg flex justify-between w-full items-center">
         <div>
           <Link to={"/"} className="">
             <div className="px-4 py-0.5">
-              <img src="/images/logo-onsoa.png" alt="logo" className="h-8 cursor-pointer" />
+              <img
+                src="/images/logo-onsoa.png"
+                alt="logo"
+                className="h-8 cursor-pointer"
+              />
             </div>
             {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
               ONSOA
@@ -35,6 +39,7 @@ const Header = () => {
         <div className="space-x-2 flex">
           <ListItem to="/clubs" title="클럽" />
           <ListItem to="/matches" title="매치" />
+          <ListItem to="/communities" title="커뮤니티" />
           {/* <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
@@ -111,7 +116,9 @@ const Header = () => {
                 <DropdownMenuContent>
                   <DropdownMenuLabel className="flex space-x-2">
                     <span className="text-sm">{user?.name}</span>
-                    <span className="truncate text-sm font-medium">{user?.email}</span>
+                    <span className="truncate text-sm font-medium">
+                      {user?.email}
+                    </span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -121,7 +128,9 @@ const Header = () => {
                   </DropdownMenuItem>
                   <form action="/api/auth/logout" method="post">
                     <button type="submit" className="w-full">
-                      <DropdownMenuItem className="text-sm">로그아웃</DropdownMenuItem>
+                      <DropdownMenuItem className="text-sm">
+                        로그아웃
+                      </DropdownMenuItem>
                     </button>
                   </form>
                 </DropdownMenuContent>
@@ -140,7 +149,9 @@ const Header = () => {
             <div className="flex space-x-3">
               <Link
                 to="/auth/login"
-                className={cn("px-1 py-0.5 text-inherit rounded-md flex items-center gap-1")}
+                className={cn(
+                  "px-1 py-0.5 text-inherit rounded-md flex items-center gap-1"
+                )}
               >
                 Sign in
               </Link>{" "}
@@ -238,7 +249,12 @@ const Header = () => {
   );
 };
 
-const ListItem = ({ className, title, children, ...props }: ComponentProps<typeof NavLink>) => {
+const ListItem = ({
+  className,
+  title,
+  children,
+  ...props
+}: ComponentProps<typeof NavLink>) => {
   return (
     <NavLink
       className={({ isActive }) =>
@@ -248,7 +264,7 @@ const ListItem = ({ className, title, children, ...props }: ComponentProps<typeo
           {
             "text-primary font-bold after:absolute after:-right-0 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
               isActive,
-          },
+          }
         )
       }
       {...props}
