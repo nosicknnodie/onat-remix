@@ -1,0 +1,130 @@
+import { BoardType } from "@prisma/client";
+import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import { z } from "zod";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { prisma } from "~/libs/db/db.server";
+import { parseRequestData } from "~/libs/requestData";
+
+const boardScheme = z.object({
+  name: z.string().min(1, "name is required"),
+  slug: z.string().min(1, "slug is required"),
+  type: z.nativeEnum(BoardType),
+});
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const data = await parseRequestData(request);
+  const result = boardScheme.safeParse(data);
+  if (!result.success) {
+    return Response.json(
+      { success: false, errors: result.error.flatten() },
+      { status: 400 }
+    );
+  }
+  try {
+    const res = await prisma.board.create({
+      data: {
+        name: result.data.name,
+        slug: result.data.slug,
+        type: result.data.type,
+      },
+    });
+    if (res.id) {
+      return redirect("../");
+    }
+  } catch (error) {
+    console.error(error);
+    return Response.json(
+      { success: false, errors: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+  return null;
+};
+
+interface ICommunitiesNewPageProps {}
+
+const CommunitiesNewPage = (_props: ICommunitiesNewPageProps) => {
+  return (
+    <>
+      <div className="w-full">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink to="/admin">Admin</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink to="../">커뮤니티 관리</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>게시판 생성</BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <form method="post">
+          <Card>
+            <CardHeader>
+              <CardTitle>게시판 생성</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">게시판명</Label>
+                <Input id="name" name="name" placeholder="게시판명" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug</Label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  placeholder="url pathname ex) board"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="type">게시판 타입</Label>
+                <Select name="type" defaultValue="TEXT">
+                  <SelectTrigger>
+                    <SelectValue placeholder="게시판 타입" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TEXT">일반</SelectItem>
+                    <SelectItem value="GALLERY">갤러리</SelectItem>
+                    <SelectItem value="VIDEO">비디오</SelectItem>
+                    <SelectItem value="NOTICE">공지</SelectItem>
+                    <SelectItem value="LINK">링크 및 자료</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit">저장</Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </div>
+    </>
+  );
+};
+
+export default CommunitiesNewPage;

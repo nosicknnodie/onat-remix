@@ -31,6 +31,11 @@ enum FilePurposeType {
   DOCUMENT
 }
 
+enum UserRoleType {
+  NORMAL
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -38,6 +43,7 @@ model User {
   emailVerified DateTime? @map("email_verified")
   password      String?
 
+  role          UserRoleType @default(NORMAL)
   userImageId   String? // 현재 설정된 프로필 이미지
   userImage     File? @relation("UserImage", fields: [userImageId], references: [id])
   uploadedImages   File[] @relation("UploadedImages")
@@ -64,6 +70,9 @@ model User {
   comments      Comment[]
   matchs        Match[]
   evaluations   Evaluation[]
+  postComments  PostComment[]
+  posts         Post[]
+  postLike      PostLike[]
 
   session Session[]
   key     Key[]
@@ -502,4 +511,82 @@ model Evaluation {
   createdAt      DateTime @default(now())
 
   @@unique([userId, matchClubId, attendanceId])
+}
+
+enum BoardType {
+  TEXT      // 일반 텍스트 게시판
+  GALLERY   // 이미지 중심
+  VIDEO     // 영상 중심
+  NOTICE    // 공지
+  LINK      // 링크 또는 자료
+}
+
+model Board {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String?     @unique
+  isUse     Boolean    @default(true)
+  type      BoardType  @default(TEXT)
+  posts     Post[]
+  createdAt DateTime   @default(now())
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  isDeleted Boolean  @default(false)
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  comments  PostComment[]
+  likes     PostLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([authorId])
+  @@index([boardId])
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  isDeleted Boolean  @default(false)
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  parentId  String?        // 대댓글 기능
+  parent    PostComment?   @relation("ReplyToComment", fields: [parentId], references: [id], onDelete: SetNull)
+  replies   PostComment[]  @relation("ReplyToComment")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model PostLike {
+  id       String @id @default(cuid())
+
+  postId   String
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
 }

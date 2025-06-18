@@ -11,6 +11,7 @@ import {
   ScrollRestoration,
   data,
   useLoaderData,
+  useLocation,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -25,6 +26,7 @@ import { getUser } from "~/libs/db/lucia.server";
 import ProgressBar from "./components/ProgressBar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
+import AdminHeader from "./template/layout/AdminHeader";
 import Header from "./template/layout/Header";
 
 dayjs.locale("ko"); // 전역 locale 설정
@@ -94,6 +96,7 @@ const queryClient = new QueryClient();
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
+  const location = useLocation(); // 👈 여기가 핵심
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const appKey = data?.env?.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
   const backendForDND =
@@ -106,6 +109,7 @@ export default function App() {
   useEffect(() => {
     data.user.then(setUser);
   }, [data.user]);
+  const isAdminRoute = location.pathname.startsWith("/admin");
   return (
     <>
       <QueryClientProvider client={queryClient}>
@@ -118,7 +122,7 @@ export default function App() {
               enableTouchEvents: true,
             }}
           >
-            <Header />
+            {isAdminRoute ? <AdminHeader /> : <Header />}
             <ProgressBar />
             <Outlet />
           </DndProvider>
