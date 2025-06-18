@@ -31,8 +31,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 const CommunitiesPage = (_props: ICommunitiesPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const boards = loaderData.boards?.sort((a, b) => {
-    if (a.isUse === b.isUse) return 0;
-    return a.isUse ? -1 : 1;
+    if (a.isUse && !b.isUse) return -1;
+    if (!a.isUse && b.isUse) return 1;
+
+    // Both are same in isUse
+    if (a.isUse && b.isUse) {
+      return a.order - b.order;
+    }
+
+    return 0;
   });
   return (
     <>

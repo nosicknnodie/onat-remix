@@ -1,5 +1,10 @@
 import { BoardType } from "@prisma/client";
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  redirect,
+} from "@remix-run/node";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import {
   Breadcrumb,
@@ -28,14 +33,21 @@ import {
 import { prisma } from "~/libs/db/db.server";
 import { parseRequestData } from "~/libs/requestData";
 
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const id = params.id;
+  const board = await prisma.board.findUnique({ where: { id } });
+  return { board };
+};
+
 const boardScheme = z.object({
   name: z.string().min(1, "name is required"),
   slug: z.string().min(1, "slug is required"),
   type: z.nativeEnum(BoardType),
-  order: z.number().min(1, "order is required"),
+  order: z.string().min(1, "order is required"),
 });
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const id = params.id;
   const data = await parseRequestData(request);
   const result = boardScheme.safeParse(data);
   if (!result.success) {
@@ -45,16 +57,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
   try {
-    const res = await prisma.board.create({
+    const res = await prisma.board.update({
+      where: {
+        id,
+      },
       data: {
         name: result.data.name,
         slug: result.data.slug,
         type: result.data.type,
-        order: result.data.order,
+        order: Number(result.data.order),
       },
     });
     if (res.id) {
-      return redirect("../");
+      return redirect("/admin/communities");
     }
   } catch (error) {
     console.error(error);
@@ -66,9 +81,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return null;
 };
 
-interface ICommunitiesNewPageProps {}
+interface ICommunityEditPageProps {}
 
-const CommunitiesNewPage = (_props: ICommunitiesNewPageProps) => {
+const CommunityEditPage = (_props: ICommunityEditPageProps) => {
+  const loaderData = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  console.log("actionData - ", actionData);
+  const board = loaderData.board;
   return (
     <>
       <div className="w-full">
@@ -82,26 +101,36 @@ const CommunitiesNewPage = (_props: ICommunitiesNewPageProps) => {
               <BreadcrumbLink to="../">커뮤니티 관리</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>게시판 생성</BreadcrumbItem>
+            <BreadcrumbItem>게시판 수정</BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         <form method="post">
           <Card>
             <CardHeader>
-              <CardTitle>게시판 생성</CardTitle>
+              <CardTitle>게시판 수정</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">게시판명</Label>
-                <Input id="name" name="name" placeholder="게시판명" />
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="게시판명"
+                  defaultValue={board?.name}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug</Label>
-                <Input id="slug" name="slug" placeholder="ex) board" />
+                <Input
+                  id="slug"
+                  name="slug"
+                  placeholder="ex) board"
+                  defaultValue={board?.slug ?? undefined}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">게시판 타입</Label>
-                <Select name="type" defaultValue="TEXT">
+                <Select name="type" defaultValue={board?.type}>
                   <SelectTrigger>
                     <SelectValue placeholder="게시판 타입" />
                   </SelectTrigger>
@@ -121,6 +150,7 @@ const CommunitiesNewPage = (_props: ICommunitiesNewPageProps) => {
                   id="order"
                   name="order"
                   placeholder="ex) 1"
+                  defaultValue={board?.order}
                 />
               </div>
             </CardContent>
@@ -134,4 +164,4 @@ const CommunitiesNewPage = (_props: ICommunitiesNewPageProps) => {
   );
 };
 
-export default CommunitiesNewPage;
+export default CommunityEditPage;

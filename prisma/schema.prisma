@@ -525,6 +525,7 @@ model Board {
   id        String     @id @default(cuid())
   name      String
   slug      String?     @unique
+  order     Int        @default(0)
   isUse     Boolean    @default(true)
   type      BoardType  @default(TEXT)
   posts     Post[]

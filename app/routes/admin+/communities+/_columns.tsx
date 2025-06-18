@@ -1,7 +1,7 @@
 import { Board } from "@prisma/client";
 import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { useRevalidator } from "@remix-run/react";
+import { Link, useRevalidator } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useTransition } from "react";
 import {
@@ -47,6 +47,20 @@ export const boardColumns: ColumnDef<Board>[] = [
       return (
         <div className="flex justify-center items-center space-x-2">
           <span>{row.getValue("slug")}</span>
+        </div>
+      );
+    },
+  },
+  {
+    id: "order",
+    accessorFn: (v) => v.order,
+    header({ table }) {
+      return <div className="flex justify-center">우선순위</div>;
+    },
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-center items-center space-x-2">
+          <span>{row.getValue("order")}</span>
         </div>
       );
     },
@@ -108,34 +122,39 @@ const Actions = ({ payload }: { payload: Board }) => {
             <DropdownMenuLabel>{payload.name}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {payload.isUse && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full flex justify-start pl-2 text-destructive"
-                    disabled={isPending}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    삭제
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>삭제 요청</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {payload.name} 게시판을 삭제 하시겠습니까?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>
-                      확인
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <>
+                <Link to={`./${payload.id}`}>
+                  <DropdownMenuLabel>수정</DropdownMenuLabel>
+                </Link>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full flex justify-start pl-2 text-destructive"
+                      disabled={isPending}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      삭제
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>삭제 요청</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {payload.name} 게시판을 삭제 하시겠습니까?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>
+                        확인
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
