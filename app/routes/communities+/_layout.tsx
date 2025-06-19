@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import ItemLink from "~/components/ItemLink";
 import {
   Breadcrumb,
@@ -8,14 +8,22 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const boards = await prisma.board.findMany({ where: { isUse: true } });
+  const boards = await prisma.board.findMany({
+    where: { isUse: true },
+    orderBy: { order: "asc" },
+  });
 
   return { boards };
 };
+
+export interface ILayoutContext {
+  boards: Awaited<ReturnType<typeof loader>>["boards"];
+}
 
 interface ILayoutProps {}
 
@@ -40,19 +48,28 @@ const Layout = (_props: ILayoutProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="flex gap-x-4 p-2">
-          <ItemLink to={`/communities`} end>
-            전체
-          </ItemLink>
-          {boards?.map((board) => {
-            return (
-              <ItemLink key={board.id} to={`/communities/${board.slug}`}>
-                {board.name}
-              </ItemLink>
-            );
-          })}
+        <div className="flex justify-between">
+          <div className="flex gap-x-4 p-2">
+            <ItemLink to={`/communities`} end>
+              전체
+            </ItemLink>
+            {boards?.map((board) => {
+              return (
+                <ItemLink key={board.id} to={`/communities/${board.slug}`}>
+                  {board.name}
+                </ItemLink>
+              );
+            })}
+          </div>
+          <div>
+            <Link to={`/communities/new`}>
+              <Button variant={"outline"} size={"sm"}>
+                새글 쓰기
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Outlet />
+        <Outlet context={{ boards }} />
       </main>
     </>
   );

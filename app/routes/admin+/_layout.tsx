@@ -7,7 +7,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) {
     // 로그인 안된 사용자는 로그인 페이지로 리디렉트
-    throw redirect("/login");
+    throw redirect("/auth/login");
   }
   if (user.role !== "ADMIN") {
     // 관리자가 않은 사용자는 404 페이지로 리디렉트
