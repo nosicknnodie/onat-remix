@@ -66,6 +66,46 @@ export const boardColumns: ColumnDef<Board>[] = [
     },
   },
   {
+    id: "readRole",
+    accessorFn: (v) => v.readRole,
+    header({ table }) {
+      return <div className="flex justify-center">읽기 권한</div>;
+    },
+    cell: ({ row }) => {
+      const payload = row.original;
+      const readRole = payload.readRole
+        ? payload.readRole === "NORMAL"
+          ? "일반 회원"
+          : "관리자"
+        : "전체";
+      return (
+        <div className="flex justify-center items-center space-x-2">
+          <span>{readRole}</span>
+        </div>
+      );
+    },
+  },
+  {
+    id: "writeRole",
+    accessorFn: (v) => v.writeRole,
+    header({ table }) {
+      return <div className="flex justify-center">쓰기 권한</div>;
+    },
+    cell: ({ row }) => {
+      const payload = row.original;
+      const writeRole = payload.writeRole
+        ? payload.writeRole === "NORMAL"
+          ? "일반 회원"
+          : "관리자"
+        : "전체";
+      return (
+        <div className="flex justify-center items-center space-x-2">
+          <span>{writeRole}</span>
+        </div>
+      );
+    },
+  },
+  {
     id: "type",
     accessorFn: (v) => v.type,
     header({ table }) {

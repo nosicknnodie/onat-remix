@@ -1,10 +1,10 @@
-import { BoardType } from "@prisma/client";
+import { BoardType, UserRoleType } from "@prisma/client";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import {
   Breadcrumb,
@@ -39,11 +39,18 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   return { board };
 };
 
+const toNullableRole = (role: string | null): UserRoleType | null => {
+  if (role === "ALL") return null;
+  return role as UserRoleType;
+};
+
 const boardScheme = z.object({
   name: z.string().min(1, "name is required"),
   slug: z.string().min(1, "slug is required"),
   type: z.nativeEnum(BoardType),
   order: z.string().min(1, "order is required"),
+  readRole: z.union([z.nativeEnum(UserRoleType), z.literal("ALL")]),
+  writeRole: z.union([z.nativeEnum(UserRoleType), z.literal("ALL")]),
 });
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -66,6 +73,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         slug: result.data.slug,
         type: result.data.type,
         order: Number(result.data.order),
+        readRole: toNullableRole(result.data.readRole),
+        writeRole: toNullableRole(result.data.writeRole),
       },
     });
     if (res.id) {
@@ -85,8 +94,8 @@ interface ICommunityEditPageProps {}
 
 const CommunityEditPage = (_props: ICommunityEditPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  console.log("actionData - ", actionData);
+  // const actionData = useActionData<typeof action>();
+  // console.log("actionData - ", actionData);
   const board = loaderData.board;
   return (
     <>
@@ -140,6 +149,32 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
                     <SelectItem value="VIDEO">비디오</SelectItem>
                     <SelectItem value="NOTICE">공지</SelectItem>
                     <SelectItem value="LINK">링크 및 자료</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="readRole">읽기 권한</Label>
+                <Select name="readRole" defaultValue="ALL">
+                  <SelectTrigger>
+                    <SelectValue placeholder="읽기 권한" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">전체</SelectItem>
+                    <SelectItem value="NORMAL">회원</SelectItem>
+                    <SelectItem value="ADMIN">관리자</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="writeRole">쓰기 권한</Label>
+                <Select name="writeRole" defaultValue="ALL">
+                  <SelectTrigger>
+                    <SelectValue placeholder="쓰기 권한" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">전체</SelectItem>
+                    <SelectItem value="NORMAL">회원</SelectItem>
+                    <SelectItem value="ADMIN">관리자</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -528,6 +528,11 @@ model Board {
   order     Int        @default(0)
   isUse     Boolean    @default(true)
   type      BoardType  @default(TEXT)
+
+  // 권한 필드 추가
+  readRole    UserRoleType?  @default(NORMAL) // 읽기 권한 (NULL은 전체 공개)
+  writeRole   UserRoleType?  @default(NORMAL) // 쓰기 권한 (NULL은 전체 작성 가능)
+
   posts     Post[]
   createdAt DateTime   @default(now())
 }
