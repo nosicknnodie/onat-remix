@@ -5,7 +5,7 @@ import {
 } from "@remix-run/node";
 import { useOutletContext } from "@remix-run/react";
 import { useState } from "react";
-import { MarkdownEditor } from "~/components/MarkdownEditor";
+import { Editor } from "~/components/lexical/Editor";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -80,7 +80,7 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
           <div className="space-y-2">
             <Label htmlFor="content">내용</Label>
             <input type="hidden" name="content" value={content} />
-            <MarkdownEditor value={content} onChange={setContent} />
+            <Editor onChange={setContent} />
           </div>
         </CardContent>
       </Card>

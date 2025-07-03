@@ -31,9 +31,9 @@ body {
   --input: 0 0% 96.47%;
   --ring: 151.33 66.86% 66.86%;
   --chart-1: 151.33 66.86% 66.86%;
-  --chart-2: 217.22 91.22% 59.80%;
+  --chart-2: 217.22 91.22% 59.8%;
   --chart-3: 258.31 89.53% 66.27%;
-  --chart-4: 37.69 92.13% 50.20%;
+  --chart-4: 37.69 92.13% 50.2%;
   --chart-5: 160.12 84.08% 39.41%;
   --sidebar: 0 0% 98.82%;
   --sidebar-foreground: 0 0% 43.92%;
@@ -49,11 +49,16 @@ body {
   --radius: 0.5rem;
   --shadow-2xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
-  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
-  --shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
-  --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
-  --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
+  --shadow-sm:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
+  --shadow:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
+  --shadow-md:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
+  --shadow-lg:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
+  --shadow-xl:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
   --tracking-normal: 0.025em;
 }
@@ -79,14 +84,14 @@ body {
   --input: 0 0% 14.12%;
   --ring: 141.89 69.16% 58.04%;
   --chart-1: 141.89 69.16% 58.04%;
-  --chart-2: 213.12 93.90% 67.84%;
+  --chart-2: 213.12 93.9% 67.84%;
   --chart-3: 255.14 91.74% 76.27%;
   --chart-4: 43.26 96.41% 56.27%;
   --chart-5: 172.46 66.01% 50.39%;
   --sidebar: 0 0% 7.06%;
   --sidebar-foreground: 0 0% 53.73%;
-  --sidebar-primary: 154.90 100.00% 19.22%;
-  --sidebar-primary-foreground: 152.73 19.30% 88.82%;
+  --sidebar-primary: 154.9 100% 19.22%;
+  --sidebar-primary-foreground: 152.73 19.3% 88.82%;
   --sidebar-accent: 0 0% 19.22%;
   --sidebar-accent-foreground: 0 0% 98.04%;
   --sidebar-border: 0 0% 16.08%;
@@ -97,11 +102,16 @@ body {
   --radius: 0.5rem;
   --shadow-2xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
-  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
-  --shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
-  --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
-  --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
+  --shadow-sm:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
+  --shadow:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
+  --shadow-md:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
+  --shadow-lg:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
+  --shadow-xl:
+    0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
 }
 
@@ -109,7 +119,11 @@ body {
   letter-spacing: var(--tracking-normal);
 }
 
-
+/* global.css 또는 컴포넌트 CSS에 추가 */
+.toastui-editor-ww-preview .placeholder,
+.toastui-editor-md-preview .placeholder {
+  display: none !important;
+}
 
 @layer base {
   * {
