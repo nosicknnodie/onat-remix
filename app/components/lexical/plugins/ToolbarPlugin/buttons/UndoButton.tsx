@@ -12,19 +12,14 @@ const UndoButton = (_props: IUndoButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.canUndo ? "default" : "ghost"}
         size="icon"
         disabled={!toolbarState.canUndo}
-        className={cn("", { "bg-primary/5": toolbarState.canUndo })}
         onClick={() => {
           activeEditor.dispatchCommand(UNDO_COMMAND, undefined);
         }}
       >
-        <FaUndo
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.canUndo,
-          })}
-        />
+        <FaUndo className={cn("size-4", {})} />
       </Button>
     </>
   );

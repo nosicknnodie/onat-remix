@@ -310,20 +310,27 @@ export default function ToolbarPlugin() {
       <UndoButton />
       <RedoButton />
       <Separator orientation="vertical" className="h-8" />
+
       {toolbarState.blockType in blockTypeToBlockName &&
         activeEditor === editor && <ElementFormatDropdown />}
-      <CodeLanguageDropDown />
       <Separator orientation="vertical" className="h-8" />
+      <CodeLanguageDropDown />
       <BoldButton />
       <ItalicButton />
       <UnderlineButton />
       <StrikethroughButton />
       <InsertCodeButton />
-      <Separator orientation="vertical" className="h-8" />
+      <Divider />
       <LeftAlignButton />
       <CenterAlignButton />
       <RightAlignButton />
-      <Separator orientation="vertical" className="h-8" />
+      <Divider />
     </div>
   );
 }
+
+const Divider = () => {
+  const { toolbarState } = useToolbarState();
+  if (toolbarState.blockType === "code") return null;
+  return <Separator orientation="vertical" className="h-8" />;
+};

@@ -13,13 +13,13 @@ const CenterAlignButton = (_props: ICenterAlignButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.elementFormat === "center" ? "default" : "ghost"}
         size="icon"
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center");
         }}
       >
-        <MdFormatAlignCenter className={cn("size-4 text-gray-500", {})} />
+        <MdFormatAlignCenter className={cn("size-4", {})} />
       </Button>
     </>
   );

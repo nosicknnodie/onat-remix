@@ -13,18 +13,13 @@ const BoldButton = (_props: IBoldButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.isBold ? "default" : "ghost"}
         size="icon"
-        className={cn("", { "bg-primary/5": toolbarState.isBold })}
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
         }}
       >
-        <VscBold
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.isBold,
-          })}
-        />
+        <VscBold className={cn("size-4", {})} />
       </Button>
     </>
   );

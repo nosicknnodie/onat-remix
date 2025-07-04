@@ -12,19 +12,14 @@ const RedoButton = (_props: IRedoButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.canRedo ? "default" : "ghost"}
         size="icon"
         disabled={!toolbarState.canRedo}
-        className={cn("", { "bg-primary/5": toolbarState.canRedo })}
         onClick={() => {
           activeEditor.dispatchCommand(REDO_COMMAND, undefined);
         }}
       >
-        <FaRedo
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.canRedo,
-          })}
-        />
+        <FaRedo className={cn("size-4", {})} />
       </Button>
     </>
   );

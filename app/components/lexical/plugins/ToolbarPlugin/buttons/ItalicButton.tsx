@@ -14,18 +14,13 @@ const ItalicButton = (_props: IItalicButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.isItalic ? "default" : "ghost"}
         size="icon"
-        className={cn("", { "bg-primary/5": toolbarState.isItalic })}
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
         }}
       >
-        <VscItalic
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.isItalic,
-          })}
-        />
+        <VscItalic className={cn("size-4", {})} />
       </Button>
     </>
   );

@@ -13,18 +13,13 @@ const InsertCodeButton = (_props: IInsertCodeButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.isCode ? "default" : "ghost"}
         size="icon"
-        className={cn("", { "bg-primary/5": toolbarState.isCode })}
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
         }}
       >
-        <VscCode
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.isCode,
-          })}
-        />
+        <VscCode className={cn("size-4", {})} />
       </Button>
     </>
   );

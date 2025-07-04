@@ -13,18 +13,13 @@ const UnderlineButton = (_props: IUnderlineButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.isUnderline ? "default" : "ghost"}
         size="icon"
-        className={cn("", { "bg-primary/5": toolbarState.isUnderline })}
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
         }}
       >
-        <HiOutlineUnderline
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.isUnderline,
-          })}
-        />
+        <HiOutlineUnderline className={cn("size-4", {})} />
       </Button>
     </>
   );

@@ -13,13 +13,13 @@ const RightAlignButton = (_props: IRightAlignButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.elementFormat === "right" ? "default" : "ghost"}
         size="icon"
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right");
         }}
       >
-        <MdFormatAlignRight className={cn("size-4 text-gray-500", {})} />
+        <MdFormatAlignRight className={cn("size-4", {})} />
       </Button>
     </>
   );

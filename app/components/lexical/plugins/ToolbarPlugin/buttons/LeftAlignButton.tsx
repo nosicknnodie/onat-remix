@@ -13,13 +13,13 @@ const LeftAlignButton = (_props: ILeftAlignButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.elementFormat === "left" ? "default" : "ghost"}
         size="icon"
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left");
         }}
       >
-        <MdFormatAlignLeft className={cn("size-4 text-gray-500", {})} />
+        <MdFormatAlignLeft className={cn("size-4", {})} />
       </Button>
     </>
   );

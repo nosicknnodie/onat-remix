@@ -13,18 +13,13 @@ const StrikethroughButton = (_props: IStrikethroughButtonProps) => {
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant={toolbarState.isStrikethrough ? "default" : "ghost"}
         size="icon"
-        className={cn("", { "bg-primary/5": toolbarState.isStrikethrough })}
         onClick={() => {
           activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
         }}
       >
-        <GoStrikethrough
-          className={cn("size-4 text-gray-500", {
-            "font-bold text-black": toolbarState.isStrikethrough,
-          })}
-        />
+        <GoStrikethrough className={cn("size-4", {})} />
       </Button>
     </>
   );
