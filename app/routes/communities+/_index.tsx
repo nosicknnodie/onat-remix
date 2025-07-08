@@ -37,6 +37,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       posts: {
         take: 5,
         orderBy: { createdAt: "desc" },
+        where: { state: "PUBLISHED" },
         include: {
           _count: { select: { comments: { where: { parentId: null } } } },
         },

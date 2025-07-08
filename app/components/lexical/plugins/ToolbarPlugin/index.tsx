@@ -306,25 +306,32 @@ export default function ToolbarPlugin() {
   }, [$updateToolbar, activeEditor, editor, updateToolbarState]);
 
   return (
-    <div className="min-h-8 w-full flex gap-1 items-center" ref={toolbarRef}>
-      <UndoButton />
-      <RedoButton />
-      <Separator orientation="vertical" className="h-8" />
-
-      {toolbarState.blockType in blockTypeToBlockName &&
-        activeEditor === editor && <ElementFormatDropdown />}
-      <Separator orientation="vertical" className="h-8" />
-      <CodeLanguageDropDown />
-      <BoldButton />
-      <ItalicButton />
-      <UnderlineButton />
-      <StrikethroughButton />
-      <InsertCodeButton />
-      <Divider />
-      <LeftAlignButton />
-      <CenterAlignButton />
-      <RightAlignButton />
-      <Divider />
+    <div className="min-h-8 flex flex-wrap gap-1 items-center" ref={toolbarRef}>
+      <div className="flex">
+        <UndoButton />
+        <RedoButton />
+        <Separator orientation="vertical" className="h-8" />
+      </div>
+      <div className="flex">
+        {toolbarState.blockType in blockTypeToBlockName &&
+          activeEditor === editor && <ElementFormatDropdown />}
+        <Separator orientation="vertical" className="h-8" />
+      </div>
+      <div className="flex">
+        <CodeLanguageDropDown />
+        <BoldButton />
+        <ItalicButton />
+        <UnderlineButton />
+        <StrikethroughButton />
+        <InsertCodeButton />
+        <Divider />
+      </div>
+      <div className="flex">
+        <LeftAlignButton />
+        <CenterAlignButton />
+        <RightAlignButton />
+        <Divider />
+      </div>
     </div>
   );
 }

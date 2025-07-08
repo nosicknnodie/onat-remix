@@ -17,7 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.802.0",
     "@aws-sdk/s3-request-presigner": "^3.802.0",
-    "@hookform/resolvers": "^3.3.4",
+    "@hookform/resolvers": "^3.10.0",
     "@lexical/code": "^0.32.1",
     "@lexical/hashtag": "^0.32.1",
     "@lexical/html": "^0.32.1",

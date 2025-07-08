@@ -1,5 +1,4 @@
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
-import { $generateHtmlFromNodes } from "@lexical/html";
 import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
@@ -14,8 +13,10 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { $getRoot, EditorState, LexicalEditor } from "lexical";
-import { useCallback, useState } from "react";
+import { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
+import { useCallback, useEffect, useState } from "react";
+import { cn } from "~/libs/utils";
+import { Skeleton } from "../ui/skeleton";
 import { CodeHighlightingPlugin } from "./plugins/CodeHighlightPlugin";
 import MarkdownPlugin from "./plugins/MarkdownShortcutPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
@@ -23,16 +24,16 @@ import {
   ActiveEditorProvider,
   ToolbarContext,
 } from "./plugins/ToolbarPlugin/Context";
-import TreeViewPlugin from "./plugins/TreeViewPlugin";
 import "./theme/code-highlight.css";
 
 interface Props {
-  onChange?: (html: string) => void;
+  initialEditorState?: SerializedEditorState | null;
+  onChange?: (root: SerializedEditorState) => void;
+  className?: string;
 }
 
-export function Editor({ onChange }: Props) {
-  const [html, setHtml] = useState("");
-  const [markdown, setMarkdown] = useState("");
+export function Editor({ onChange, initialEditorState, className }: Props) {
+  const [isMounted, setIsMounted] = useState(false);
   const initialConfig = {
     namespace: "LexicalEditor",
     theme: {
@@ -108,48 +109,30 @@ export function Editor({ onChange }: Props) {
       HorizontalRuleNode,
       AutoLinkNode,
       LinkNode,
-      // ListNode,
-      // ListItemNode,
-      // CodeNode,
-      // AutoLinkNode,
-      // LinkNode,
-      // HorizontalRuleNode,
-      // MarkdownLineNode,
     ],
+    editorState: (editor: LexicalEditor) => {
+      if (initialEditorState) {
+        const parsed = editor.parseEditorState(initialEditorState);
+        editor.setEditorState(parsed);
+      }
+    },
   };
 
   const handleEditorChange = useCallback(
     (editorState: EditorState, editor: LexicalEditor) => {
-      editorState.read(async () => {
-        const editorStateJSON = editorState.toJSON();
-        console.log("🧱 Node Map:", editorStateJSON.root);
-        const markdownLines = $getRoot().getChildren();
-        const markdownContents: string[] = [];
-
-        for (const node of markdownLines) {
-          if (
-            "getTextContent" in node &&
-            typeof node.getTextContent === "function"
-          ) {
-            markdownContents.push(node.getTextContent());
-          } else {
-            markdownContents.push("");
-          }
-        }
-
-        const markdownString = markdownContents.join("\n");
-        setMarkdown(markdownString);
-
-        const htmlString = $generateHtmlFromNodes(editor, null);
-        setHtml(htmlString);
-
-        onChange?.(markdownString);
-      });
+      onChange?.(editorState.toJSON());
     },
     [onChange]
   );
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+  if (!isMounted) return <Skeleton className="h-[500px] w-full" />;
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
           <ToolbarContext>
@@ -175,24 +158,12 @@ export function Editor({ onChange }: Props) {
               <ListPlugin />
               <CheckListPlugin />
               <CodeHighlightingPlugin />
-              <TreeViewPlugin />
+              {/* <TreeViewPlugin /> */}
               <OnChangePlugin onChange={handleEditorChange} />
             </div>
           </ToolbarContext>
         </ActiveEditorProvider>
       </LexicalComposer>
-      <div className="mt-2 min-h-8 text-sm text-gray-500 whitespace-pre-wrap border rounded-md relative p-2">
-        <div className="absolute top-0 left-12 -translate-x-1/2 -translate-y-1/2 bg-white px-2">
-          Markdown
-        </div>
-        {markdown}
-      </div>
-      <div className="mt-2 min-h-8 text-sm text-gray-500 whitespace-pre-wrap border rounded-md relative p-2">
-        <div className="absolute top-0 left-12 -translate-x-1/2 -translate-y-1/2 bg-white px-2">
-          HTML
-        </div>
-        {html}
-      </div>
     </div>
   );
 }

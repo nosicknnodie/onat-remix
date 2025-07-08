@@ -19,7 +19,7 @@ model File {
   owner      User[] @relation("UserImage")
   clubImages      Club[] @relation("ClubImage")
   clubEmblems      Club[] @relation("ClubEmblem")
-
+  posts      Post[] @relation("PostFiles")
 }
 
 enum FilePurposeType {
@@ -540,17 +540,19 @@ model Board {
 model Post {
   id        String   @id @default(cuid())
   title     String
-  content   String   @db.Text
-  isDeleted Boolean  @default(false)
+  content   Json?
+  state     PostState @default(DRAFT)
 
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  boardId   String
-  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String?
+  board     Board?    @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   comments  PostComment[]
   likes     PostLike[]
+
+  files     File[] @relation("PostFiles")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -595,4 +597,10 @@ model PostLike {
 
   @@unique([postId, userId])
   @@index([postId])
+}
+
+enum PostState {
+  DRAFT
+  PUBLISHED
+  DELETED
 }

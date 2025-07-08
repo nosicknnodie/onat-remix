@@ -10,6 +10,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       include: {
         posts: {
           orderBy: { createdAt: "desc" },
+          where: { state: "PUBLISHED" },
           include: {
             _count: { select: { comments: { where: { parentId: null } } } },
           },

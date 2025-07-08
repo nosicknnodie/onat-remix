@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import ItemLink from "~/components/ItemLink";
 import {
   Breadcrumb,
@@ -62,11 +62,11 @@ const Layout = (_props: ILayoutProps) => {
             })}
           </div>
           <div>
-            <Link to={`/communities/new`}>
+            <ItemLink to={`/communities/new`}>
               <Button variant={"outline"} size={"sm"}>
                 새글 쓰기
               </Button>
-            </Link>
+            </ItemLink>
           </div>
         </div>
         <Outlet context={{ boards }} />

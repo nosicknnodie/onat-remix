@@ -15,7 +15,7 @@ importers:
         specifier: ^3.802.0
         version: 3.802.0
       '@hookform/resolvers':
-        specifier: ^3.3.4
+        specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.55.0(react@19.1.0))
       '@lexical/code':
         specifier: ^0.32.1
