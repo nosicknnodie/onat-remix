@@ -77,9 +77,11 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
                     return (
                       <li
                         key={post.id}
-                        className="hover:bg-primary-foreground px-2 py-0.5 rounded-md"
+                        className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md"
                       >
-                        {post.title} ({post._count.comments})
+                        {post.title}{" "}
+                        {post._count.comments > 0 &&
+                          `(${post._count.comments})`}
                       </li>
                     );
                   })}

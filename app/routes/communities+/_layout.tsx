@@ -1,5 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, UIMatch, useLoaderData, useMatches } from "@remix-run/react";
+import { Fragment } from "react/jsx-runtime";
 import ItemLink from "~/components/ItemLink";
 import {
   Breadcrumb,
@@ -30,6 +31,10 @@ interface ILayoutProps {}
 const Layout = (_props: ILayoutProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const boards = loaderData.boards;
+  const matches = useMatches() as UIMatch<
+    unknown,
+    { breadcrumb?: ((match: any) => React.ReactNode) | React.ReactNode }
+  >[];
   return (
     <>
       <main
@@ -46,6 +51,23 @@ const Layout = (_props: ILayoutProps) => {
             <BreadcrumbItem>
               <BreadcrumbLink to="/communities">커뮤니티</BreadcrumbLink>
             </BreadcrumbItem>
+            {matches.map((match) => {
+              if (match.handle?.breadcrumb) {
+                return (
+                  <Fragment key={match.pathname}>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink to={match.pathname}>
+                        {typeof match.handle.breadcrumb === "function"
+                          ? match.handle.breadcrumb(match)
+                          : match.handle.breadcrumb}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                  </Fragment>
+                );
+              }
+              return null;
+            })}
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex justify-between">
