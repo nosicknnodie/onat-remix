@@ -1,8 +1,10 @@
 import { Link, NavLink } from "@remix-run/react";
 import type { ComponentProps } from "react";
 import { FaUser } from "react-icons/fa";
+import { IoIosMenu } from "react-icons/io";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,18 +13,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { useSidebar } from "~/components/ui/sidebar";
 import { useSession } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
 const Header = () => {
   const user = useSession();
+  const { toggleSidebar } = useSidebar();
   return (
     <div
       className={cn(
         "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30"
       )}
     >
-      <div className="max-w-screen-lg flex justify-between w-full items-center">
-        <div>
+      <div className="max-w-screen-2xl flex justify-between w-full items-center">
+        <div className="flex">
+          <div className="sm:hidden">
+            <Button variant={"ghost"} size={"icon"} onClick={toggleSidebar}>
+              <IoIosMenu />
+            </Button>
+          </div>
           <Link to={"/"} className="">
             <div className="px-4 py-0.5">
               <img
@@ -37,9 +46,9 @@ const Header = () => {
           </Link>
         </div>
         <div className="space-x-2 flex">
-          <ListItem to="/clubs" title="클럽" />
+          {/* <ListItem to="/clubs" title="클럽" />
           <ListItem to="/matches" title="매치" />
-          <ListItem to="/communities" title="커뮤니티" />
+          <ListItem to="/communities" title="커뮤니티" /> */}
           {/* <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>

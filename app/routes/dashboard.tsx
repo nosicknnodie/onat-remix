@@ -9,6 +9,7 @@ import {
 import { useSession } from "~/contexts/AuthUserContext";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
+import MainSideMenu from "~/template/layout/MainSideMenu";
 interface IDashBoardPageProps {}
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -27,54 +28,57 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
     <>
       <main
         className={cn(
-          "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex justify-center items-start "
+          "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex flex-col"
         )}
       >
-        <Card className="mx-auto w-full">
-          <CardHeader className="flex flex-row items-center gap-4">
-            <img
-              src={user.userImage?.url ?? "/images/user_empty.png"}
-              alt="Profile"
-              className="w-20 h-20 rounded-full object-cover"
-            />
-            <div>
-              <CardTitle>{user.name ?? "이름 없음"}</CardTitle>
-              <CardDescription>{user.email}</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-            <div className="flex gap-1">
-              <span className="font-medium">포지션:</span>
-              <span>{user.position1 ?? ""}</span>
-              <span>{user.position2 ?? ""}</span>
-              <span>{user.position3 ?? ""}</span>
-            </div>
-            <div>
-              <span className="font-medium">지역:</span> {user.si ?? ""}{" "}
-              {user.gun ?? ""}
-            </div>
-            <div>
-              <span className="font-medium">성별:</span>{" "}
-              {
+        <MainSideMenu />
+        <div className="flex-1 flex w-full">
+          <Card className="mx-auto flex-1">
+            <CardHeader className="flex flex-row items-center gap-4">
+              <img
+                src={user.userImage?.url ?? "/images/user_empty.png"}
+                alt="Profile"
+                className="w-20 h-20 rounded-full object-cover"
+              />
+              <div>
+                <CardTitle>{user.name ?? "이름 없음"}</CardTitle>
+                <CardDescription>{user.email}</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+              <div className="flex gap-1">
+                <span className="font-medium">포지션:</span>
+                <span>{user.position1 ?? ""}</span>
+                <span>{user.position2 ?? ""}</span>
+                <span>{user.position3 ?? ""}</span>
+              </div>
+              <div>
+                <span className="font-medium">지역:</span> {user.si ?? ""}{" "}
+                {user.gun ?? ""}
+              </div>
+              <div>
+                <span className="font-medium">성별:</span>{" "}
                 {
-                  MALE: "남자",
-                  FEMALE: "여자",
-                  NO: "선택 안함",
-                }[user.gender ?? "NO"]
-              }
-            </div>
-            <div>
-              <span className="font-medium">키:</span>{" "}
-              {user.height ? `${user.height} cm` : "미입력"}
-            </div>
-            <div>
-              <span className="font-medium">생년월일:</span>{" "}
-              {user.birth
-                ? new Date(user.birth).toLocaleDateString("ko-KR")
-                : "미입력"}
-            </div>
-          </CardContent>
-        </Card>
+                  {
+                    MALE: "남자",
+                    FEMALE: "여자",
+                    NO: "선택 안함",
+                  }[user.gender ?? "NO"]
+                }
+              </div>
+              <div>
+                <span className="font-medium">키:</span>{" "}
+                {user.height ? `${user.height} cm` : "미입력"}
+              </div>
+              <div>
+                <span className="font-medium">생년월일:</span>{" "}
+                {user.birth
+                  ? new Date(user.birth).toLocaleDateString("ko-KR")
+                  : "미입력"}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         {/* 
           1. 다가오는 매치 정보
             - 다음 경기 일정, 시간, 장소

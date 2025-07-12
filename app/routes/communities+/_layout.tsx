@@ -12,6 +12,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
+import MainSideMenu from "~/template/layout/MainSideMenu";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const boards = await prisma.board.findMany({
@@ -42,6 +43,7 @@ const Layout = (_props: ILayoutProps) => {
           "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex flex-col "
         )}
       >
+        <MainSideMenu />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>

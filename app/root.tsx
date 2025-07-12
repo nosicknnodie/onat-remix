@@ -24,6 +24,7 @@ import { TouchBackend } from "react-dnd-touch-backend";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 import { getUser } from "~/libs/db/lucia.server";
 import ProgressBar from "./components/ProgressBar";
+import { SidebarProvider } from "./components/ui/sidebar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
 import AdminHeader from "./template/layout/AdminHeader";
@@ -122,9 +123,11 @@ export default function App() {
               enableTouchEvents: true,
             }}
           >
-            {isAdminRoute ? <AdminHeader /> : <Header />}
-            <ProgressBar />
-            <Outlet />
+            <SidebarProvider>
+              {isAdminRoute ? <AdminHeader /> : <Header />}
+              <ProgressBar />
+              <Outlet />
+            </SidebarProvider>
           </DndProvider>
         </UserContext.Provider>
       </QueryClientProvider>
