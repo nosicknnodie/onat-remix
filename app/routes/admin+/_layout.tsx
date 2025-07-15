@@ -2,8 +2,6 @@ import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 import { getUser } from "~/libs/db/lucia.server";
 import AdminSideMenu from "~/template/layout/AdminSideMenu";
-import Main from "~/template/layout/Main";
-import MainInner from "~/template/layout/MainInner";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -23,12 +21,12 @@ interface IAdminLayoutProps {}
 const AdminLayout = (_props: IAdminLayoutProps) => {
   return (
     <>
-      <Main>
+      <main className="mx-auto w-full max-w-screen-2xl p-4 md:p-6 lg:p-8 flex justify-center">
         <AdminSideMenu />
-        <MainInner>
+        <div className="flex-1 min-w-0 flex justify-start flex-col max-w-screen-lg w-full">
           <Outlet />
-        </MainInner>
-      </Main>
+        </div>
+      </main>
     </>
   );
 };

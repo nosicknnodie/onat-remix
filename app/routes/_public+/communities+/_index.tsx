@@ -1,6 +1,6 @@
 import { BoardType } from "@prisma/client";
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, NavLink, useLoaderData } from "@remix-run/react";
 import {
   FaBullhorn,
   FaLink,
@@ -75,14 +75,16 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
                 <ul className="space-y-1 text-gray-700 text-sm">
                   {board.posts.map((post) => {
                     return (
-                      <li
+                      <NavLink
                         key={post.id}
-                        className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md"
+                        to={`/communities/${board.slug}/${post.id}`}
                       >
-                        {post.title}{" "}
-                        {post._count.comments > 0 &&
-                          `(${post._count.comments})`}
-                      </li>
+                        <li className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md">
+                          {post.title}{" "}
+                          {post._count.comments > 0 &&
+                            `(${post._count.comments})`}
+                        </li>
+                      </NavLink>
                     );
                   })}
                 </ul>

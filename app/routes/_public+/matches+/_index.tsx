@@ -1,5 +1,4 @@
 import { Prisma } from "@prisma/client";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -16,26 +15,12 @@ import { Fragment } from "react/jsx-runtime";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -120,7 +105,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
   return (
     <>
       <div className="flex flex-col justify-start w-full space-y-2">
-        <Breadcrumb>
+        {/* <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink to="/">Home</BreadcrumbLink>
@@ -148,7 +133,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
               </DropdownMenu>
             </BreadcrumbItem>
           </BreadcrumbList>
-        </Breadcrumb>
+        </Breadcrumb> */}
         <div className="space-y-8">
           {/* 나의 클럽 섹션 */}
           <Tabs defaultValue="my" className="w-full">

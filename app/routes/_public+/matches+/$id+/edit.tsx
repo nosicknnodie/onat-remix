@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/node";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useAtomCallback } from "jotai/utils";
@@ -6,7 +10,13 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -23,6 +33,8 @@ import { IKakaoLocalType, INITIAL_CENTER } from "~/libs/map";
 import HistoryPlaceDownList from "../_components/HistoryPlaceDownList";
 import SearchPlace from "../_components/SearchPlace";
 import { placeHistoryAtom } from "../_libs/state";
+
+export const handle = { breadcrumb: "매치 수정" };
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -80,9 +92,21 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return new Response("잘못된 요청입니다.", { status: 400 });
   }
 
-  const { title, description, date, hour, minute, placeName, address, lat, lng } = result.data;
+  const {
+    title,
+    description,
+    date,
+    hour,
+    minute,
+    placeName,
+    address,
+    lat,
+    lng,
+  } = result.data;
 
-  const matchDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
+  const matchDate = new Date(
+    `${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`
+  );
   try {
     await prisma.match.update({
       where: {
@@ -159,7 +183,13 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                   >
                     매치명
                   </Label>
-                  <Input id="title" name="title" type="text" defaultValue={match.title} required />
+                  <Input
+                    id="title"
+                    name="title"
+                    type="text"
+                    defaultValue={match.title}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label
@@ -193,7 +223,10 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                       className="w-36 max-sm:w-full"
                     />
                     <div className="flex gap-x-2">
-                      <Select name="hour" defaultValue={dayjs(match.stDate).hour().toString()}>
+                      <Select
+                        name="hour"
+                        defaultValue={dayjs(match.stDate).hour().toString()}
+                      >
                         <SelectTrigger className="w-36">
                           <SelectValue />
                         </SelectTrigger>
@@ -205,7 +238,10 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Select name="minute" defaultValue={dayjs(match.stDate).minute().toString()}>
+                      <Select
+                        name="minute"
+                        defaultValue={dayjs(match.stDate).minute().toString()}
+                      >
                         <SelectTrigger className="w-36">
                           <SelectValue />
                         </SelectTrigger>
@@ -232,8 +268,14 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                         <FaSearch />
                       </Button>
                     </SearchPlace>
-                    <HistoryPlaceDownList onSetPlace={handleSearchPlaceSubmit} />
-                    <input type="hidden" name="address" value={place?.address_name ?? ""} />
+                    <HistoryPlaceDownList
+                      onSetPlace={handleSearchPlaceSubmit}
+                    />
+                    <input
+                      type="hidden"
+                      name="address"
+                      value={place?.address_name ?? ""}
+                    />
                     <input type="hidden" name="lat" value={place?.y ?? ""} />
                     <input type="hidden" name="lng" value={place?.x ?? ""} />
                   </div>

@@ -1,22 +1,7 @@
 import { Prisma } from "@prisma/client";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { Badge } from "~/components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -78,35 +63,6 @@ const ClubsPage = (_props: IClubsPageProps) => {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <Breadcrumb className="flex-shrink-0">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink to="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              클럽
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
-                    )}
-                  >
-                    <span className="sr-only">Open menu</span>
-                    <DotsHorizontalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link to="/clubs/new">클럽 생성</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
         <Tabs defaultValue="my" className="w-full">
           <TabsList className="bg-transparent  space-x-2">
             <TabsTrigger

@@ -7,7 +7,13 @@ import { Fragment } from "react/jsx-runtime";
 import ItemLink from "~/components/ItemLink";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -15,12 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
+import { IMatchClubIdLayoutOutletContext } from "./_layout";
 
 interface IMatchClubIdPageProps {}
 
 const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
-  const data = useOutletContext<IMatchesIdLayoutPageLoaderReturnType>();
+  const data = useOutletContext<IMatchClubIdLayoutOutletContext>();
   const params = useParams();
   const navigate = useNavigate();
   const [selectedMatchClubId, setSelectedMatchClubId] = useState<string>("");
@@ -46,8 +52,12 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
             <CardHeader>
               {/* 오른쪽: 매치 제목/설명 */}
               <div className="">
-                <CardTitle className="text-base sm:text-lg">{match.title}</CardTitle>
-                <CardDescription className="">{match.description}</CardDescription>
+                <CardTitle className="text-base sm:text-lg">
+                  {match.title}
+                </CardTitle>
+                <CardDescription className="">
+                  {match.description}
+                </CardDescription>
               </div>
               {/* 왼쪽: 클럽 정보 */}
             </CardHeader>
@@ -56,11 +66,15 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
                 <div>
                   <p className="flex items-center gap-2 ">
                     <HiLocationMarker className="text-base text-primary" />
-                    <span className="text-foreground text-sm">{match.placeName}</span>
+                    <span className="text-foreground text-sm">
+                      {match.placeName}
+                    </span>
                   </p>
                   <p className="flex items-center gap-2">
                     <HiHome className="text-base text-primary" />
-                    <span className="text-foreground text-sm">{match.address}</span>
+                    <span className="text-foreground text-sm">
+                      {match.address}
+                    </span>
                   </p>
                   <p className="flex items-center gap-2">
                     <HiClock className="text-base text-primary" />
@@ -89,7 +103,10 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
                     >
                       <Avatar>
                         <AvatarImage
-                          src={matchClub.club?.emblem?.url ?? "/images/club-default-emblem.webp"}
+                          src={
+                            matchClub.club?.emblem?.url ??
+                            "/images/club-default-emblem.webp"
+                          }
                         />
                         <AvatarFallback className="bg-primary">
                           <Loading />
@@ -101,7 +118,10 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
                 </Fragment>
               ))}
             </div>
-            <Select value={selectedMatchClubId} onValueChange={handleSelectedMatchClubIdChange}>
+            <Select
+              value={selectedMatchClubId}
+              onValueChange={handleSelectedMatchClubIdChange}
+            >
               <SelectTrigger className="min-w-24 max-w-52">
                 <SelectValue placeholder="클럽 선택" />
               </SelectTrigger>

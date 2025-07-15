@@ -3,13 +3,6 @@ import { CameraIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -34,6 +27,10 @@ import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server"; // prisma 경로에 맞게 수정하세요
 import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
+
+export const handle = {
+  breadcrumb: "클럽 생성",
+};
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -106,19 +103,6 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink to="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink to="/clubs">클럽</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>클럽 생성</BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
         <div>
           <Card>
             <CardHeader>

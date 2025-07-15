@@ -1,13 +1,13 @@
 import { Board } from "@prisma/client";
-import { NavLink } from "@remix-run/react";
+import { useLocation, useNavigate } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
-import { useMemo } from "react";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { FiFileText, FiImage, FiLink, FiVideo } from "react-icons/fi";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
 import { MdCampaign, MdGroups2 } from "react-icons/md";
 import { TbSoccerField } from "react-icons/tb";
+import { Fragment } from "react/jsx-runtime";
 import { Button } from "~/components/ui/button";
 import {
   Sidebar,
@@ -22,9 +22,10 @@ import {
 } from "~/components/ui/sidebar";
 import { Skeleton } from "~/components/ui/skeleton";
 interface IMainSideMenuProps {}
-
 const MainSideMenu = (_props: IMainSideMenuProps) => {
   const { open, toggleSidebar, setOpenMobile } = useSidebar();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { data, isLoading } = useQuery({
     queryKey: ["BOARDS_MENU_QUERY"],
     queryFn: async () => {
@@ -32,16 +33,9 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
     },
   });
   const boards = data?.boards;
-  const applicationMenus = useMemo(
-    () => [
-      { title: "DashBoard", url: "/", icon: HiOutlineSquares2X2 },
-      { title: "클럽", url: "/clubs", icon: MdGroups2 },
-      { title: "매치", url: "/matches", icon: TbSoccerField },
-    ],
-    []
-  );
+
   const communityMenus = [
-    { title: "전체", url: "/communities", icon: Home },
+    { title: "전체", url: "/communities", icon: Home, end: true },
     ...(boards?.map((board: Board) => ({
       title: board.name,
       url: `/communities/${board.slug}`,
@@ -52,8 +46,14 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
         NOTICE: MdCampaign,
         LINK: FiLink,
       }[board.type],
+      end: false,
     })) || []),
   ];
+  const handleMenuClick = (url: string) => {
+    setOpenMobile(false);
+    navigate(url);
+  };
+
   return (
     <>
       <Sidebar collapsible="icon">
@@ -74,19 +74,33 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {applicationMenus.map((menu) => (
-                  <SidebarMenuItem key={menu.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={menu.url}
-                        onClick={() => setOpenMobile(false)}
-                      >
-                        <menu.icon />
-                        {menu.title}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => handleMenuClick("/dashboard")}
+                    isActive={location.pathname.startsWith("/dashboard")}
+                  >
+                    <HiOutlineSquares2X2 />
+                    Dashboard
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => handleMenuClick("/clubs")}
+                    isActive={location.pathname.startsWith("/clubs")}
+                  >
+                    <MdGroups2 />
+                    클럽
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => handleMenuClick("/matches")}
+                    isActive={location.pathname.startsWith("/matches")}
+                  >
+                    <TbSoccerField />
+                    매치
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -96,24 +110,34 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
               <SidebarMenu>
                 {!isLoading &&
                   communityMenus.map((menu) => (
-                    <SidebarMenuItem key={menu.title}>
-                      <SidebarMenuButton asChild>
-                        <NavLink
-                          to={menu.url}
-                          onClick={() => setOpenMobile(false)}
-                        >
-                          <menu.icon />
-                          {menu.title}
-                        </NavLink>
+                    <SidebarMenuItem key={menu.url}>
+                      <SidebarMenuButton
+                        onClick={() => handleMenuClick(menu.url)}
+                        isActive={
+                          menu.end
+                            ? location.pathname === menu.url
+                            : location.pathname.startsWith(menu.url)
+                        }
+                      >
+                        <menu.icon />
+                        {menu.title}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
-                {isLoading &&
-                  communityMenus.map((menu) => (
-                    <SidebarMenuItem key={menu.title}>
-                      <Skeleton className="w-full h-6" />
+                {isLoading && (
+                  <Fragment>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <Skeleton className="w-full h-full" />
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))}
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <Skeleton className="w-full h-full" />
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </Fragment>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
