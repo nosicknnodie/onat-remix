@@ -22,9 +22,9 @@ import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
-export const handle = {
-  breadcrumb: (match: any) => {
-    const data = match.data;
+
+const Breadcrumb = ({ match }: { match: any }) => {
+  const data = match.data;
     const params = match.params;
     const matchClubId = params.matchClubId;
     const matchClub = data.matchClub;
@@ -72,7 +72,10 @@ export const handle = {
         </DropdownMenu>
       </>
     );
-  },
+}
+
+export const handle = {
+  breadcrumb: (match: any) => <Breadcrumb match={match} />,
 };
 
 interface IMatchClubIdLayoutProps {}

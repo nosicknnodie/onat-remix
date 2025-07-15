@@ -20,12 +20,12 @@ const Header = () => {
   const user = useSession();
   const { toggleSidebar } = useSidebar();
   return (
-    <div
+    <header
       className={cn(
         "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30"
       )}
     >
-      <div className="max-w-screen-2xl flex justify-between w-full items-center">
+      <div className="flex justify-between w-full items-center">
         <div className="flex">
           <div className="md:hidden">
             <Button variant={"ghost"} size={"icon"} onClick={toggleSidebar}>
@@ -104,7 +104,7 @@ const Header = () => {
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

@@ -66,6 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY:
         process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
     },
+    
   });
 }
 

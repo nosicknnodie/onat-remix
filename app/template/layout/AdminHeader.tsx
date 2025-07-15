@@ -21,7 +21,7 @@ const Header = () => {
         "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30"
       )}
     >
-      <div className="max-w-screen-2xl flex justify-between w-full items-center">
+      <div className="flex justify-between w-full items-center">
         <div>
           <Link to={"/admin"} className="">
             <div className="px-4 py-0.5 flex items-center gap-x-2">
