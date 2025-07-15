@@ -30,7 +30,7 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
       <Main>
         <MainSideMenu />
         <MainInner>
-          <Card className="mx-auto flex-1">
+          <Card className="mx-auto w-full">
             <CardHeader className="flex flex-row items-center gap-4">
               <img
                 src={user.userImage?.url ?? "/images/user_empty.png"}

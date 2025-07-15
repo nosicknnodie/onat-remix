@@ -8,7 +8,7 @@ const MainInner = ({ className, ..._props }: IMainInnerProps) => {
     <>
       <div
         className={cn(
-          "flex-1 min-w-0 flex justify-start max-w-screen-lg w-full",
+          "flex-1 min-w-0 flex justify-start flex-col max-w-screen-lg w-full",
           className
         )}
         {..._props}

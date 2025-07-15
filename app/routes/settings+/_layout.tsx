@@ -18,7 +18,7 @@ const Layout = (_props: ILayoutProps) => {
     <>
       <Main>
         <MainSideMenu />
-        <MainInner className="flex-col">
+        <MainInner>
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>

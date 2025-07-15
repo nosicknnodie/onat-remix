@@ -34,9 +34,6 @@ const Header = () => {
             </div>
           </Link>
         </div>
-        <div className="space-x-2 flex">
-          <ListItem to="/admin/communities" title="커뮤니티 관리" />
-        </div>
         <div className="flex">
           {user ? (
             <>
