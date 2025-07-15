@@ -242,7 +242,7 @@ const MatchesNew = (_props: IMatchesNewProps) => {
             <CardDescription>매치를 생성합니다.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form method="post" onSubmit={handleSubmit}>
+            <form method="post" onSubmit={() => handleSubmit()}>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label

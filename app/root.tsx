@@ -80,11 +80,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <Links />
       </head>
       <body className="min-h-screen bg-background font-pretendard antialiased">
-        <div className="dark:bg-boxdark-2 dark:text-bodydark">
           <div className="flex h-screen overflow-hidden">
             <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
               {children}
-            </div>
           </div>
         </div>
         <ScrollRestoration />
@@ -123,10 +121,11 @@ export default function App() {
               enableMouseEvents: true,
               enableTouchEvents: true,
             }}
-          >
+          > 
+            <ProgressBar />
             <SidebarProvider>
               {isAdminRoute ? <AdminHeader /> : <Header />}
-              <ProgressBar />
+             
               <Outlet />
             </SidebarProvider>
           </DndProvider>

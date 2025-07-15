@@ -10,10 +10,8 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { cn } from "~/libs/utils";
 
-export const handle = {
-  breadcrumb: () => {
-    return (
-      <>
+const Breadcrumb = () => {
+  return  <>
         <BreadcrumbLink to="/matches">매치</BreadcrumbLink>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -34,8 +32,11 @@ export const handle = {
           </DropdownMenuContent>
         </DropdownMenu>
       </>
-    );
-  },
+}
+
+
+export const handle = {
+  breadcrumb: () => <Breadcrumb />,
 };
 
 interface ILayoutProps {}
