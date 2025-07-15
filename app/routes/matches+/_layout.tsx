@@ -1,19 +1,18 @@
 import { Outlet } from "@remix-run/react";
-import { cn } from "~/libs/utils";
+import Main from "~/template/layout/Main";
+import MainInner from "~/template/layout/MainInner";
 import MainSideMenu from "~/template/layout/MainSideMenu";
 interface ILayoutProps {}
 
 const Layout = (_props: ILayoutProps) => {
   return (
     <>
-      <main
-        className={cn(
-          "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex flex-col "
-        )}
-      >
+      <Main>
         <MainSideMenu />
-        <Outlet />
-      </main>
+        <MainInner>
+          <Outlet />
+        </MainInner>
+      </Main>
     </>
   );
 };

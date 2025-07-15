@@ -8,7 +8,8 @@ import {
 } from "~/components/ui/card";
 import { useSession } from "~/contexts/AuthUserContext";
 import { getUser } from "~/libs/db/lucia.server";
-import { cn } from "~/libs/utils";
+import Main from "~/template/layout/Main";
+import MainInner from "~/template/layout/MainInner";
 import MainSideMenu from "~/template/layout/MainSideMenu";
 interface IDashBoardPageProps {}
 
@@ -26,13 +27,9 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
   if (!user) return null;
   return (
     <>
-      <main
-        className={cn(
-          "mx-auto w-full max-w-screen-lg p-1 md:p-2 2xl:p-3 flex flex-col"
-        )}
-      >
+      <Main>
         <MainSideMenu />
-        <div className="flex-1 flex w-full">
+        <MainInner>
           <Card className="mx-auto flex-1">
             <CardHeader className="flex flex-row items-center gap-4">
               <img
@@ -78,7 +75,7 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </MainInner>
         {/* 
           1. 다가오는 매치 정보
             - 다음 경기 일정, 시간, 장소
@@ -103,7 +100,7 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
 
           ⚠️ 위 내용은 우선순위 순으로 차례차례 구현 예정
         */}
-      </main>
+      </Main>
     </>
   );
 };

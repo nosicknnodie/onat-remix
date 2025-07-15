@@ -1,5 +1,5 @@
 import { Board } from "@prisma/client";
-import { Link } from "@remix-run/react";
+import { NavLink } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
 import { useMemo } from "react";
@@ -24,7 +24,7 @@ import {
 interface IMainSideMenuProps {}
 
 const MainSideMenu = (_props: IMainSideMenuProps) => {
-  const { open, toggleSidebar } = useSidebar();
+  const { open, toggleSidebar, setOpenMobile } = useSidebar();
   const { data, isLoading } = useQuery({
     queryKey: ["BOARDS_MENU_QUERY"],
     queryFn: async () => {
@@ -77,10 +77,13 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
                 {applicationMenus.map((menu) => (
                   <SidebarMenuItem key={menu.title}>
                     <SidebarMenuButton asChild>
-                      <Link to={menu.url}>
+                      <NavLink
+                        to={menu.url}
+                        onClick={() => setOpenMobile(false)}
+                      >
                         <menu.icon />
                         {menu.title}
-                      </Link>
+                      </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -95,10 +98,13 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
                   communityMenus.map((menu) => (
                     <SidebarMenuItem key={menu.title}>
                       <SidebarMenuButton asChild>
-                        <Link to={menu.url}>
+                        <NavLink
+                          to={menu.url}
+                          onClick={() => setOpenMobile(false)}
+                        >
                           <menu.icon />
                           {menu.title}
-                        </Link>
+                        </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}

@@ -4,12 +4,7 @@ import {
   LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import {
-  useActionData,
-  useLoaderData,
-  useOutletContext,
-} from "@remix-run/react";
-import { SerializedEditorState } from "lexical";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,11 +33,6 @@ import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
 import { cn } from "~/libs/utils";
-import { ILayoutContext } from "./_layout";
-
-const isSerializedEditorState = (json: any): json is SerializedEditorState => {
-  return json?.root?.type === "root" && Array.isArray(json.root.children);
-};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -75,7 +65,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
       return draftPost;
     });
-    return { post: res };
+    const boards = await prisma.board.findMany({
+      where: { isUse: true },
+      orderBy: { order: "asc" },
+    });
+    return { post: res, boards };
   } catch (error) {
     console.error(error);
     return redirect("../");
@@ -134,7 +128,6 @@ interface ICommunityNewPageProps {}
 const CommunityNewPage = (_props: ICommunityNewPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const outletData = useOutletContext<ILayoutContext>();
   const user = useSession();
   const formRef = useRef<HTMLFormElement>(null);
   const post = loaderData.post;
@@ -149,7 +142,7 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
     },
   });
 
-  const boards = outletData?.boards
+  const boards = loaderData?.boards
     .filter((board) =>
       board.isUse && board.writeRole === "ADMIN" ? user?.role === "ADMIN" : true
     )

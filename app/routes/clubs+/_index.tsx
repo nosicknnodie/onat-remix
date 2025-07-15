@@ -147,7 +147,7 @@ const ClubList = ({ clubs }: { clubs: Club[] }) => {
   const players = loaderData.players;
   return (
     <>
-      <div className="grid max-sm:grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid max-sm:grid-cols-1 sm:max-xl:grid-cols-3 xl:grid-cols-4 gap-4">
         {clubs.length === 0 && (
           <div className="col-span-3 text-center">
             <p>클럽이 없습니다.</p>
