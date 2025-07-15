@@ -18,9 +18,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
   useSidebar,
 } from "~/components/ui/sidebar";
+import { Skeleton } from "~/components/ui/skeleton";
 interface IMainSideMenuProps {}
 
 const MainSideMenu = (_props: IMainSideMenuProps) => {
@@ -111,7 +111,7 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
                 {isLoading &&
                   communityMenus.map((menu) => (
                     <SidebarMenuItem key={menu.title}>
-                      <SidebarMenuSkeleton />
+                      <Skeleton className="w-full h-6" />
                     </SidebarMenuItem>
                   ))}
               </SidebarMenu>

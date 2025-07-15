@@ -116,6 +116,7 @@
     "react-resizable-panels": "^1.0.10",
     "react-spinners": "^0.13.8",
     "recharts": "^2.11.0",
+    "remix-utils": "^8.7.0",
     "sharp": "^0.34.1",
     "slugify": "^1.6.6",
     "sonner": "^1.7.4",
