@@ -1,27 +1,13 @@
 import { NavLink, Outlet } from "@remix-run/react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
 import { cn } from "~/libs/utils";
+
+export const handle = { breadcrumb: "회원정보 수정" };
 
 interface ILayoutProps {}
 
 const Layout = (_props: ILayoutProps) => {
   return (
     <>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>회원정보 수정</BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <div className="flex flex-col w-full ">
         <nav className="border-b w-full">
           <ul className="flex gap-6 px-6 py-4 text-base w-full">
