@@ -18,6 +18,7 @@ import {
 } from "~/components/ui/card";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
+import Settings from "../_components/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -61,34 +62,39 @@ const PostView = (_props: IPostViewProps) => {
       <div>
         <Card className="w-full border-none shadow-none">
           <CardHeader className="relative space-y-4">
-            <div className="flex items-center gap-x-2">
-              <Link to={"../"} className="max-md:hidden">
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="hover:text-primary"
-                  asChild
-                >
-                  <FaArrowAltCircleLeft className="size-8 text-muted" />
-                </Button>
-              </Link>
-              {/* 아바타 이미지 */}
-              <Avatar className="size-8">
-                <AvatarImage
-                  src={post?.author.userImage?.url || "/images/user_empty.png"}
-                ></AvatarImage>
-                <AvatarFallback className="bg-primary-foreground">
-                  <Loading />
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs">{post.author.name}</span>
-              <span className="text-muted-foreground text-xs">•</span>
-              <span className="text-muted-foreground text-xs">
-                {formatDistance(post.createdAt, new Date(), {
-                  addSuffix: true,
-                  locale: ko,
-                })}
-              </span>
+            <div className="flex justify-between">
+              <div className="flex items-center gap-x-2">
+                <Link to={"../"} className="max-md:hidden">
+                  <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    className="hover:text-primary"
+                    asChild
+                  >
+                    <FaArrowAltCircleLeft className="size-8 text-muted" />
+                  </Button>
+                </Link>
+                {/* 아바타 이미지 */}
+                <Avatar className="size-8">
+                  <AvatarImage
+                    src={
+                      post?.author.userImage?.url || "/images/user_empty.png"
+                    }
+                  ></AvatarImage>
+                  <AvatarFallback className="bg-primary-foreground">
+                    <Loading />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs">{post.author.name}</span>
+                <span className="text-muted-foreground text-xs">•</span>
+                <span className="text-muted-foreground text-xs">
+                  {formatDistance(post.createdAt, new Date(), {
+                    addSuffix: true,
+                    locale: ko,
+                  })}
+                </span>
+              </div>
+              <Settings board={post.board} post={post} />
             </div>
             <CardTitle className="text-2xl">{post.title}</CardTitle>
           </CardHeader>

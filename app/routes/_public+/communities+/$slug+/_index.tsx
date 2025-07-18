@@ -19,8 +19,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
+import Settings from "./_components/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -79,25 +81,13 @@ const SlugPage = (_props: ISlugPageProps) => {
     setType(board?.type === "NOTICE" ? "compact" : "card");
   }, [board?.type]);
   return (
-    <>
-      {/* <div className="flex justify-between py-2">
-        <div className="flex gap-x-4 p-2"></div>
-        <div>
-          <ItemLink to={`/communities/new`}>
-            <Button variant={"outline"} size={"sm"}>
-              새글 쓰기
-            </Button>
-          </ItemLink>
-        </div>
-      </div>
-      <Separator /> */}
-      {type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}
-    </>
+    <>{type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}</>
   );
 };
 
 const CompactTypeComponent = () => {
   const loaderData = useLoaderData<typeof loader>();
+  const board = loaderData.board;
   const posts = loaderData.posts;
   return (
     <>
@@ -106,11 +96,15 @@ const CompactTypeComponent = () => {
           {posts?.map((post) => {
             return (
               <Fragment key={post.id}>
-                <Card className="w-full border-0 rounded-none shadow-none border-b">
+                <Separator />
+                <Card className="w-full border-0 shadow-none hover:bg-primary/5">
                   <CardHeader className="px-6 py-4 pb-2">
-                    <Link to={`./${post.id}`}>
-                      <CardTitle className="text-lg">{post.title}</CardTitle>
-                    </Link>
+                    <CardTitle className="text-lg flex justify-between">
+                      <Link to={`./${post.id}`} className="flex-1">
+                        {post.title}
+                      </Link>
+                      <Settings board={board} post={post} />
+                    </CardTitle>
                   </CardHeader>
                   {/* <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
                     <Link to={`./${post.id}`}>
@@ -178,6 +172,7 @@ const CompactTypeComponent = () => {
 
 const CardTypeComponent = () => {
   const loaderData = useLoaderData<typeof loader>();
+  const board = loaderData.board;
   const posts = loaderData.posts;
   return (
     <>
@@ -186,29 +181,33 @@ const CardTypeComponent = () => {
           {posts?.map((post) => {
             return (
               <Fragment key={post.id}>
-                <Card className="w-full">
+                <Separator />
+                <Card className="w-full border-0 shadow-none hover:bg-primary/5">
                   <CardHeader className=" space-y-4">
-                    <div className="flex items-center gap-x-2">
-                      {/* 아바타 이미지 */}
-                      <Avatar className="size-5">
-                        <AvatarImage
-                          src={
-                            post.author.userImage?.url ||
-                            "/images/user_empty.png"
-                          }
-                        ></AvatarImage>
-                        <AvatarFallback className="bg-primary-foreground">
-                          <Loading />
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs">{post.author.name}</span>
-                      <span className="text-muted-foreground text-xs">•</span>
-                      <span className="text-muted-foreground text-xs">
-                        {formatDistance(post.createdAt, new Date(), {
-                          addSuffix: true,
-                          locale: ko,
-                        })}
-                      </span>
+                    <div className="flex items-center gap-x-2 justify-between">
+                      <div className="flex-1 flex items-center gap-x-2">
+                        {/* 아바타 이미지 */}
+                        <Avatar className="size-5">
+                          <AvatarImage
+                            src={
+                              post.author.userImage?.url ||
+                              "/images/user_empty.png"
+                            }
+                          ></AvatarImage>
+                          <AvatarFallback className="bg-primary-foreground">
+                            <Loading />
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs">{post.author.name}</span>
+                        <span className="text-muted-foreground text-xs">•</span>
+                        <span className="text-muted-foreground text-xs">
+                          {formatDistance(post.createdAt, new Date(), {
+                            addSuffix: true,
+                            locale: ko,
+                          })}
+                        </span>
+                      </div>
+                      <Settings board={board} post={post} />
                     </div>
                     <Link to={`./${post.id}`}>
                       <CardTitle className="text-lg">{post.title}</CardTitle>
