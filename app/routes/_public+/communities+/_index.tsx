@@ -9,6 +9,8 @@ import {
   FaRegPlayCircle,
 } from "react-icons/fa";
 import { Fragment } from "react/jsx-runtime";
+import ItemLink from "~/components/ItemLink";
+import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
 
@@ -54,6 +56,17 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
   const boards = loaderData.boards;
   return (
     <>
+      <div className="flex justify-between py-2">
+        <div className="flex gap-x-4 p-2"></div>
+        <div>
+          <ItemLink to={`/communities/new`}>
+            <Button variant={"outline"} size={"sm"}>
+              새글 쓰기
+            </Button>
+          </ItemLink>
+        </div>
+      </div>
+      <Separator />
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start grid grid-cols-1 md:grid-cols-2 gap-8">
         {boards.map((board) => {
           return (

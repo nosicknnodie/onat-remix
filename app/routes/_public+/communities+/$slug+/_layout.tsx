@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -16,7 +16,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const handle = {
-  breadcrumb: (match: { data: any }) => match.data?.board?.name || "게시판",
+  breadcrumb: (match: { data: any }) => (
+    <Link to={`/communities/${match.data?.board?.slug}`}>
+      {match.data?.board?.name || "게시판"}
+    </Link>
+  ),
 };
 
 export default function Layout() {

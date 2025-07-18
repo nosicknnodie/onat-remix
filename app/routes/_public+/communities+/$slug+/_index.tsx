@@ -1,6 +1,24 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import { formatDistance } from "date-fns";
+import { ko } from "date-fns/locale";
+import { AiOutlineLike } from "react-icons/ai";
+import { FaRegComment } from "react-icons/fa6";
 import { Fragment } from "react/jsx-runtime";
+import ItemLink from "~/components/ItemLink";
+import { Preview } from "~/components/lexical/Preview";
+import { Loading } from "~/components/Loading";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -13,6 +31,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
           orderBy: { createdAt: "desc" },
           where: { state: "PUBLISHED" },
           include: {
+            author: {
+              include: {
+                userImage: true,
+              },
+            },
             _count: { select: { comments: { where: { parentId: null } } } },
           },
         },
@@ -32,17 +55,81 @@ const SlugPage = (_props: ISlugPageProps) => {
   const posts = loaderData.posts;
   return (
     <>
-      <div className="w-full md:p-2 2xl:p-3 justify-center items-start grid grid-cols-1 md:grid-cols-2 gap-8">
-        <ul className="space-y-1 text-gray-700 text-sm">
+      <div className="flex justify-between py-2">
+        <div className="flex gap-x-4 p-2"></div>
+        <div>
+          <ItemLink to={`/communities/new`}>
+            <Button variant={"outline"} size={"sm"}>
+              새글 쓰기
+            </Button>
+          </ItemLink>
+        </div>
+      </div>
+      <Separator />
+      <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
+        <ul className="space-y-2 text-gray-700 text-sm">
           {posts?.map((post) => {
             return (
               <Fragment key={post.id}>
-                <Link to={`./${post.id}`}>
-                  <li className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md">
-                    {post.title}{" "}
-                    {post._count.comments > 0 && `(${post._count.comments})`}
-                  </li>
-                </Link>
+                <Card className="w-full">
+                  <CardHeader className=" space-y-4">
+                    <div className="flex items-center gap-x-2">
+                      {/* 아바타 이미지 */}
+                      <Avatar className="size-5">
+                        <AvatarImage
+                          src={
+                            post.author.userImage?.url ||
+                            "/images/user_empty.png"
+                          }
+                        ></AvatarImage>
+                        <AvatarFallback className="bg-primary-foreground">
+                          <Loading />
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{post.author.name}</span>
+                      <span className="text-muted-foreground text-xs">•</span>
+                      <span className="text-muted-foreground text-xs">
+                        {formatDistance(post.createdAt, new Date(), {
+                          addSuffix: true,
+                          locale: ko,
+                        })}
+                      </span>
+                    </div>
+                    <Link to={`./${post.id}`}>
+                      <CardTitle className="text-lg">{post.title}</CardTitle>
+                    </Link>
+                  </CardHeader>
+                  <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
+                    <Link to={`./${post.id}`}>
+                      <Preview editorState={post.content as any} />
+                    </Link>
+                  </CardContent>
+                  <CardFooter className="space-x-2">
+                    <Badge variant={"outline"} className="space-x-2">
+                      <Button
+                        variant={"ghost"}
+                        size={"icon"}
+                        className="h-4 w-4"
+                      >
+                        <AiOutlineLike />
+                      </Button>
+                      <span>112</span>
+                    </Badge>
+                    <Badge variant={"outline"} className="space-x-2">
+                      <Button
+                        variant={"ghost"}
+                        size={"icon"}
+                        className="h-4 w-4"
+                        asChild
+                      >
+                        <Link to={`./${post.id}`}>
+                          <FaRegComment />
+                        </Link>
+                      </Button>
+                      <span>{post._count.comments}</span>
+                    </Badge>
+                  </CardFooter>
+                </Card>
               </Fragment>
             );
           })}
