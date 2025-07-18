@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
-import { AiOutlineLike } from "react-icons/ai";
+import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { FaArrowAltCircleLeft, FaRegComment } from "react-icons/fa";
 import { View } from "~/components/lexical/View";
 import { Loading } from "~/components/Loading";
@@ -17,8 +17,10 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
   const id = params.id;
   const slug = params.slug;
   try {
@@ -27,7 +29,14 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       include: {
         board: true,
         author: { include: { userImage: true } },
-        _count: { select: { comments: { where: { parentId: null } } } },
+        likes: {
+          where: {
+            userId: user?.id,
+          },
+        },
+        _count: {
+          select: { comments: { where: { parentId: null } }, likes: true },
+        },
       },
     });
     return { post };
@@ -91,9 +100,13 @@ const PostView = (_props: IPostViewProps) => {
           <CardFooter className="space-x-2">
             <Badge variant={"outline"} className="space-x-2">
               <Button variant={"ghost"} size={"icon"} className="h-4 w-4">
-                <AiOutlineLike />
+                {post.likes.length > 0 ? (
+                  <AiFillLike className="text-primary" />
+                ) : (
+                  <AiOutlineLike />
+                )}
               </Button>
-              <span>112</span>
+              <span>{post._count.likes}</span>
             </Badge>
             <Badge variant={"outline"} className="space-x-2">
               <Button

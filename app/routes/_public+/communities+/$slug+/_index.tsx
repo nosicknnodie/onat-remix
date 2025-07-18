@@ -2,7 +2,8 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
-import { AiOutlineLike } from "react-icons/ai";
+import { useEffect, useState } from "react";
+import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa6";
 import { Fragment } from "react/jsx-runtime";
 import ItemLink from "~/components/ItemLink";
@@ -20,8 +21,10 @@ import {
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
   const slug = params.slug;
   try {
     const res = await prisma.board.findUnique({
@@ -36,12 +39,19 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
                 userImage: true,
               },
             },
-            _count: { select: { comments: { where: { parentId: null } } } },
+            likes: {
+              where: {
+                userId: user?.id,
+              },
+            },
+            _count: {
+              select: { comments: { where: { parentId: null } }, likes: true },
+            },
           },
         },
       },
     });
-    return { posts: res?.posts };
+    return { posts: res?.posts, board: res };
   } catch (error) {
     console.error(error);
     return { success: false, errors: "Internal Server Error" };
@@ -52,7 +62,13 @@ interface ISlugPageProps {}
 
 const SlugPage = (_props: ISlugPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const posts = loaderData.posts;
+  const board = loaderData.board;
+  const [type, setType] = useState<"compact" | "card">(
+    board?.type === "NOTICE" ? "compact" : "card"
+  );
+  useEffect(() => {
+    setType(board?.type === "NOTICE" ? "compact" : "card");
+  }, [board?.type]);
   return (
     <>
       <div className="flex justify-between py-2">
@@ -66,6 +82,100 @@ const SlugPage = (_props: ISlugPageProps) => {
         </div>
       </div>
       <Separator />
+      {type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}
+    </>
+  );
+};
+
+const CompactTypeComponent = () => {
+  const loaderData = useLoaderData<typeof loader>();
+  const posts = loaderData.posts;
+  return (
+    <>
+      <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
+        <ul className="space-y-2 text-gray-700 text-sm">
+          {posts?.map((post) => {
+            return (
+              <Fragment key={post.id}>
+                <Card className="w-full border-0 rounded-none shadow-none border-b">
+                  <CardHeader className="px-6 py-4 pb-2">
+                    <Link to={`./${post.id}`}>
+                      <CardTitle className="text-lg">{post.title}</CardTitle>
+                    </Link>
+                  </CardHeader>
+                  {/* <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
+                    <Link to={`./${post.id}`}>
+                      <Preview editorState={post.content as any} />
+                    </Link>
+                  </CardContent> */}
+                  <CardFooter className="flex justify-between">
+                    <div className="flex items-center gap-x-2">
+                      {/* 아바타 이미지 */}
+                      <Avatar className="size-5">
+                        <AvatarImage
+                          src={
+                            post.author.userImage?.url ||
+                            "/images/user_empty.png"
+                          }
+                        ></AvatarImage>
+                        <AvatarFallback className="bg-primary-foreground">
+                          <Loading />
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{post.author.name}</span>
+                      <span className="text-muted-foreground text-xs">•</span>
+                      <span className="text-muted-foreground text-xs">
+                        {formatDistance(post.createdAt, new Date(), {
+                          addSuffix: true,
+                          locale: ko,
+                        })}
+                      </span>
+                    </div>
+                    <div className="space-x-2">
+                      <Badge variant={"outline"} className="space-x-2">
+                        <Button
+                          variant={"ghost"}
+                          size={"icon"}
+                          className="h-4 w-4"
+                        >
+                          {post.likes.length > 0 ? (
+                            <AiFillLike className="text-primary" />
+                          ) : (
+                            <AiOutlineLike />
+                          )}
+                        </Button>
+                        <span>{post._count.likes}</span>
+                      </Badge>
+                      <Badge variant={"outline"} className="space-x-2">
+                        <Button
+                          variant={"ghost"}
+                          size={"icon"}
+                          className="h-4 w-4"
+                          asChild
+                        >
+                          <Link to={`./${post.id}`}>
+                            <FaRegComment />
+                          </Link>
+                        </Button>
+                        <span>{post._count.comments}</span>
+                      </Badge>
+                    </div>
+                  </CardFooter>
+                </Card>
+              </Fragment>
+            );
+          })}
+        </ul>
+      </div>
+    </>
+  );
+};
+
+const CardTypeComponent = () => {
+  const loaderData = useLoaderData<typeof loader>();
+  const posts = loaderData.posts;
+  return (
+    <>
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
         <ul className="space-y-2 text-gray-700 text-sm">
           {posts?.map((post) => {
@@ -111,9 +221,13 @@ const SlugPage = (_props: ISlugPageProps) => {
                         size={"icon"}
                         className="h-4 w-4"
                       >
-                        <AiOutlineLike />
+                        {post.likes.length > 0 ? (
+                          <AiFillLike className="text-primary" />
+                        ) : (
+                          <AiOutlineLike />
+                        )}
                       </Button>
-                      <span>112</span>
+                      <span>{post._count.likes}</span>
                     </Badge>
                     <Badge variant={"outline"} className="space-x-2">
                       <Button

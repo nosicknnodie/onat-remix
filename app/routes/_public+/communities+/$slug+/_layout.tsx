@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -24,10 +24,9 @@ export const handle = {
 };
 
 export default function Layout() {
-  const loaderData = useLoaderData<typeof loader>();
   return (
     <>
-      <Outlet context={{ board: loaderData.board }} />
+      <Outlet />
     </>
   );
 }

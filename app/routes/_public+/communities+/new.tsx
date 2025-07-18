@@ -116,7 +116,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         content: JSON.parse(result.data.content),
       },
     });
-    return redirect("./");
+    const board = await prisma.board.findUnique({
+      where: {
+        id: result.data.boardId,
+      },
+    });
+    return redirect("/communities/" + board?.slug + "/" + res.id);
   } catch (error) {
     console.error(error);
     return { success: false, error: "Internal Server Error" };

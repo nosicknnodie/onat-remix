@@ -1,5 +1,7 @@
 import { Outlet, UIMatch, useMatches } from "@remix-run/react";
 import { Fragment } from "react/jsx-runtime";
+import { Loading } from "~/components/Loading";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,6 +18,7 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
     unknown,
     { breadcrumb?: ((match: any) => React.ReactNode) | React.ReactNode }
   >[];
+  const breadcrumbs = matches.filter((match) => match.handle?.breadcrumb);
   return (
     <>
       <main className="mx-auto w-full max-w-screen-2xl p-4 md:p-6 lg:p-8 flex justify-center">
@@ -24,22 +27,26 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink to="/">Home</BreadcrumbLink>
+                <BreadcrumbLink to="/">
+                  <Avatar className="size-6 rounded-full">
+                    <AvatarImage src="/apple-touch-icon.png" alt="logo" />
+                    <AvatarFallback className="bg-primary-foreground">
+                      <Loading />
+                    </AvatarFallback>
+                  </Avatar>
+                </BreadcrumbLink>
               </BreadcrumbItem>
-              {matches.map((match) => {
-                if (match.handle?.breadcrumb) {
-                  return (
-                    <Fragment key={match.pathname}>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        {typeof match.handle.breadcrumb === "function"
-                          ? match.handle.breadcrumb(match)
-                          : match.handle.breadcrumb}
-                      </BreadcrumbItem>
-                    </Fragment>
-                  );
-                }
-                return null;
+              {breadcrumbs.map((match, i) => {
+                return (
+                  <Fragment key={match.pathname}>
+                    {i > 0 && <BreadcrumbSeparator />}
+                    <BreadcrumbItem>
+                      {typeof match.handle.breadcrumb === "function"
+                        ? match.handle.breadcrumb(match)
+                        : match.handle.breadcrumb}
+                    </BreadcrumbItem>
+                  </Fragment>
+                );
               })}
             </BreadcrumbList>
           </Breadcrumb>
