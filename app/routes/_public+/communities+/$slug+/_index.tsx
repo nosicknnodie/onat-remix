@@ -19,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 
@@ -58,6 +57,16 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
 };
 
+export const handle = {
+  right: () => (
+    <ItemLink to={`/communities/new`}>
+      <Button variant={"outline"} size={"sm"}>
+        새글 쓰기
+      </Button>
+    </ItemLink>
+  ),
+};
+
 interface ISlugPageProps {}
 
 const SlugPage = (_props: ISlugPageProps) => {
@@ -71,7 +80,7 @@ const SlugPage = (_props: ISlugPageProps) => {
   }, [board?.type]);
   return (
     <>
-      <div className="flex justify-between py-2">
+      {/* <div className="flex justify-between py-2">
         <div className="flex gap-x-4 p-2"></div>
         <div>
           <ItemLink to={`/communities/new`}>
@@ -81,7 +90,7 @@ const SlugPage = (_props: ISlugPageProps) => {
           </ItemLink>
         </div>
       </div>
-      <Separator />
+      <Separator /> */}
       {type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}
     </>
   );
@@ -111,7 +120,7 @@ const CompactTypeComponent = () => {
                   <CardFooter className="flex justify-between">
                     <div className="flex items-center gap-x-2">
                       {/* 아바타 이미지 */}
-                      <Avatar className="size-5">
+                      <Avatar className="size-6">
                         <AvatarImage
                           src={
                             post.author.userImage?.url ||
@@ -132,21 +141,17 @@ const CompactTypeComponent = () => {
                       </span>
                     </div>
                     <div className="space-x-2">
-                      <Badge variant={"outline"} className="space-x-2">
-                        <Button
-                          variant={"ghost"}
-                          size={"icon"}
-                          className="h-4 w-4"
-                        >
+                      <Button variant={"ghost"} className="p-0 h-fit">
+                        <Badge variant={"outline"} className="space-x-2">
                           {post.likes.length > 0 ? (
                             <AiFillLike className="text-primary" />
                           ) : (
                             <AiOutlineLike />
                           )}
-                        </Button>
-                        <span>{post._count.likes}</span>
-                      </Badge>
-                      <Badge variant={"outline"} className="space-x-2">
+                          <span>{post._count.likes}</span>
+                        </Badge>
+                      </Button>
+                      <Badge variant={"outline"} className="space-x-2 ">
                         <Button
                           variant={"ghost"}
                           size={"icon"}
@@ -215,20 +220,16 @@ const CardTypeComponent = () => {
                     </Link>
                   </CardContent>
                   <CardFooter className="space-x-2">
-                    <Badge variant={"outline"} className="space-x-2">
-                      <Button
-                        variant={"ghost"}
-                        size={"icon"}
-                        className="h-4 w-4"
-                      >
+                    <Button variant={"ghost"} className="p-0 h-fit">
+                      <Badge variant={"outline"} className="space-x-2">
                         {post.likes.length > 0 ? (
                           <AiFillLike className="text-primary" />
                         ) : (
                           <AiOutlineLike />
                         )}
-                      </Button>
-                      <span>{post._count.likes}</span>
-                    </Badge>
+                        <span>{post._count.likes}</span>
+                      </Badge>
+                    </Button>
                     <Badge variant={"outline"} className="space-x-2">
                       <Button
                         variant={"ghost"}

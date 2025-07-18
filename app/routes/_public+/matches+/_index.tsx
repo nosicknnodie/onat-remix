@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -14,6 +15,7 @@ import {
 import { Fragment } from "react/jsx-runtime";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,10 +23,41 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
+
+export const handle = {
+  right: (match: any) => {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className={cn(
+              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+            )}
+          >
+            <span className="sr-only">Open menu</span>
+            <DotsHorizontalIcon className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link to="/matches/new">매치 생성</Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  },
+};
 
 type MatchWithClub = Prisma.MatchGetPayload<{
   include: {
@@ -136,7 +169,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
         </Breadcrumb> */}
         <div className="space-y-8">
           {/* 나의 클럽 섹션 */}
-          <Tabs defaultValue="my" className="w-full">
+          <Tabs defaultValue="my" className="flex-1">
             <TabsList className="bg-transparent  space-x-2">
               <TabsTrigger
                 value="my"

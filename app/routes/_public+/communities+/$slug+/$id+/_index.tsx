@@ -61,8 +61,8 @@ const PostView = (_props: IPostViewProps) => {
       <div>
         <Card className="w-full border-none shadow-none">
           <CardHeader className="relative space-y-4">
-            <div className="absolute top-0 left-0 -translate-x-full translate-y-full">
-              <Link to={"../"}>
+            <div className="flex items-center gap-x-2">
+              <Link to={"../"} className="max-md:hidden">
                 <Button
                   variant={"ghost"}
                   size={"icon"}
@@ -72,10 +72,8 @@ const PostView = (_props: IPostViewProps) => {
                   <FaArrowAltCircleLeft className="size-8 text-muted" />
                 </Button>
               </Link>
-            </div>
-            <div className="flex items-center gap-x-2">
               {/* 아바타 이미지 */}
-              <Avatar className="size-5">
+              <Avatar className="size-8">
                 <AvatarImage
                   src={post?.author.userImage?.url || "/images/user_empty.png"}
                 ></AvatarImage>
@@ -92,22 +90,22 @@ const PostView = (_props: IPostViewProps) => {
                 })}
               </span>
             </div>
-            <CardTitle className="text-lg">{post.title}</CardTitle>
+            <CardTitle className="text-2xl">{post.title}</CardTitle>
           </CardHeader>
           <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
             <View editorState={post.content as any} />
           </CardContent>
-          <CardFooter className="space-x-2">
-            <Badge variant={"outline"} className="space-x-2">
-              <Button variant={"ghost"} size={"icon"} className="h-4 w-4">
+          <CardFooter className="space-x-4">
+            <Button variant={"ghost"} size={"icon"}>
+              <Badge variant={"outline"} className="space-x-2">
                 {post.likes.length > 0 ? (
                   <AiFillLike className="text-primary" />
                 ) : (
                   <AiOutlineLike />
                 )}
-              </Button>
-              <span>{post._count.likes}</span>
-            </Badge>
+                <span>{post._count.likes}</span>
+              </Badge>
+            </Button>
             <Badge variant={"outline"} className="space-x-2">
               <Button
                 variant={"ghost"}

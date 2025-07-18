@@ -29,7 +29,7 @@ const Header = () => {
         <div className="flex">
           <div className="md:hidden">
             <Button variant={"ghost"} size={"icon"} onClick={toggleSidebar}>
-              <IoIosMenu />
+              <IoIosMenu className="size-6" />
             </Button>
           </div>
           <Link to={"/"} className="">

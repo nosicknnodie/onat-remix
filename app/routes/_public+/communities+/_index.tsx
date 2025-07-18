@@ -31,6 +31,16 @@ const getBoardIcon = (type: BoardType) => {
   }
 };
 
+export const handle = {
+  right: () => (
+    <ItemLink to={`/communities/new`}>
+      <Button variant={"outline"} size={"sm"}>
+        새글 쓰기
+      </Button>
+    </ItemLink>
+  ),
+};
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const boards = await prisma.board.findMany({
     where: { isUse: true },
@@ -56,17 +66,6 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
   const boards = loaderData.boards;
   return (
     <>
-      <div className="flex justify-between py-2">
-        <div className="flex gap-x-4 p-2"></div>
-        <div>
-          <ItemLink to={`/communities/new`}>
-            <Button variant={"outline"} size={"sm"}>
-              새글 쓰기
-            </Button>
-          </ItemLink>
-        </div>
-      </div>
-      <Separator />
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start grid grid-cols-1 md:grid-cols-2 gap-8">
         {boards.map((board) => {
           return (

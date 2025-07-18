@@ -36,6 +36,14 @@ export const handle = {
         <BreadcrumbLink to={"/clubs/" + params.id}>
           {data.club.name}
         </BreadcrumbLink>
+      </>
+    );
+  },
+  right: (match: any) => {
+    const data = match.data;
+    const params = match.params;
+    return (
+      <>
         {(data.player?.role === "MANAGER" ||
           data.player?.role === "MASTER") && (
           <DropdownMenu>

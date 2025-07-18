@@ -22,60 +22,59 @@ import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
-
 const Breadcrumb = ({ match }: { match: any }) => {
   const data = match.data;
-    const params = match.params;
-    const matchClubId = params.matchClubId;
-    const matchClub = data.matchClub;
-    const { revalidate } = useRevalidator();
-    const [, startTransition] = useTransition();
-    const handleMatchClubIsSelfChange = (isSelf: boolean) => {
-      startTransition(async () => {
-        await fetch("/api/matchClubs/" + matchClubId + "/isSelf", {
-          method: "POST",
-          body: JSON.stringify({
-            isSelf: isSelf,
-          }),
-        });
-        revalidate();
+  const params = match.params;
+  const matchClubId = params.matchClubId;
+  const matchClub = data.matchClub;
+  const { revalidate } = useRevalidator();
+  const [, startTransition] = useTransition();
+  const handleMatchClubIsSelfChange = (isSelf: boolean) => {
+    startTransition(async () => {
+      await fetch("/api/matchClubs/" + matchClubId + "/isSelf", {
+        method: "POST",
+        body: JSON.stringify({
+          isSelf: isSelf,
+        }),
       });
-    };
-    return (
-      <>
-        {data.matchClub?.club?.name}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
-              )}
-            >
-              <span className="sr-only">Open menu</span>
-              <DotsHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to={`/matches/${params.id}/edit`}>매치 수정</Link>
-            </DropdownMenuItem>
-            {matchClubId && (
-              <DropdownMenuCheckboxItem
-                checked={matchClub?.isSelf}
-                onClick={() => handleMatchClubIsSelfChange(!matchClub?.isSelf)}
-              >
-                자체전 여부
-              </DropdownMenuCheckboxItem>
+      revalidate();
+    });
+  };
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className={cn(
+              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </>
-    );
-}
+          >
+            <span className="sr-only">Open menu</span>
+            <DotsHorizontalIcon className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link to={`/matches/${params.id}/edit`}>매치 수정</Link>
+          </DropdownMenuItem>
+          {matchClubId && (
+            <DropdownMenuCheckboxItem
+              checked={matchClub?.isSelf}
+              onClick={() => handleMatchClubIsSelfChange(!matchClub?.isSelf)}
+            >
+              자체전 여부
+            </DropdownMenuCheckboxItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+};
 
 export const handle = {
-  breadcrumb: (match: any) => <Breadcrumb match={match} />,
+  breadcrumb: (match: any) => match.data.matchClub?.club?.name,
+  right: (match: any) => <Breadcrumb match={match} />,
 };
 
 interface IMatchClubIdLayoutProps {}
