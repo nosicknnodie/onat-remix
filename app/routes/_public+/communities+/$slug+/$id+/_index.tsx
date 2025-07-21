@@ -102,7 +102,7 @@ const PostView = (_props: IPostViewProps) => {
             <View editorState={post.content as any} />
           </CardContent>
           <CardFooter className="space-x-4">
-            <Button variant={"ghost"} size={"icon"}>
+            <Button variant={"ghost"} size={"icon"} className="w-fit h-fit">
               <Badge variant={"outline"} className="space-x-2">
                 {post.likes.length > 0 ? (
                   <AiFillLike className="text-primary" />

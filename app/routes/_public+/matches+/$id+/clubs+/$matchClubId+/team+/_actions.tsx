@@ -23,17 +23,24 @@ interface ITeamAttendanceActionsProps extends PropsWithChildren {
   payload: IAttendance | null;
 }
 
-export const TeamAttendanceActions = ({ payload, children }: ITeamAttendanceActionsProps) => {
+export const TeamAttendanceActions = ({
+  payload,
+  children,
+}: ITeamAttendanceActionsProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const [isPending, startTransition] = useTransition();
   const { revalidate } = useRevalidator();
   const teams = loaderData.teams;
   const name =
-    payload?.player?.user?.name || payload?.mercenary?.user?.name || payload?.mercenary?.name || "";
+    payload?.player?.user?.name ||
+    payload?.mercenary?.user?.name ||
+    payload?.mercenary?.name ||
+    "";
   const isChecked = payload?.isCheck || false;
 
   const imageUrl =
-    payload?.player?.user?.userImage?.url || payload?.mercenary?.user?.userImage?.url;
+    payload?.player?.user?.userImage?.url ||
+    payload?.mercenary?.user?.userImage?.url;
 
   const handleSelectedTeam = async (teamId: string) => {
     startTransition(async () => {

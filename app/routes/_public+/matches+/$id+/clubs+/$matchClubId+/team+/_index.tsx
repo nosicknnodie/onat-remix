@@ -1,4 +1,11 @@
-import { Attendance, File, Mercenary, Player, Team, User } from "@prisma/client";
+import {
+  Attendance,
+  File,
+  Mercenary,
+  Player,
+  Team,
+  User,
+} from "@prisma/client";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
@@ -8,7 +15,13 @@ import { FiEdit, FiHelpCircle } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
 import {
@@ -18,7 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { prisma } from "~/libs/db/db.server";
 import EditDialog from "./_EditDialog";
 import { TeamAttendanceActions } from "./_actions";
@@ -57,7 +75,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
               },
               include: {
                 player: { include: { user: { include: { userImage: true } } } },
-                mercenary: { include: { user: { include: { userImage: true } } } },
+                mercenary: {
+                  include: { user: { include: { userImage: true } } },
+                },
               },
             },
           },
@@ -83,14 +103,20 @@ const TeamPage = (_props: ITeamPageProps) => {
   const teams = loaderData.teams;
   const attendances = loaderData.attendances;
   const notTeamAttendances = attendances.filter(
-    (attendance) => !teams.some((team) => team.id === attendance.teamId),
+    (attendance) => !teams.some((team) => team.id === attendance.teamId)
   );
   const [isPending, startTransition] = useTransition();
-  const [selectedAttends, setSelectedAttends] = useState<typeof attendances>([]);
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(teams?.[0]?.id ?? null);
+  const [selectedAttends, setSelectedAttends] = useState<typeof attendances>(
+    []
+  );
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(
+    teams?.[0]?.id ?? null
+  );
 
   // 팀없는 선수들 체크했을경우 attends 에 모아두기
-  const handleSelectedAtted = async (attendance: (typeof attendances)[number]) => {
+  const handleSelectedAtted = async (
+    attendance: (typeof attendances)[number]
+  ) => {
     setSelectedAttends((prev) => {
       if (prev?.some((item) => item.id === attendance.id)) {
         return prev.filter((item) => item.id !== attendance.id);
@@ -134,7 +160,9 @@ const TeamPage = (_props: ITeamPageProps) => {
                     <TooltipContent className="max-w-sm p-4 space-y-2 bg-muted text-sm text-muted-foreground rounded-md shadow-lg border">
                       <p>팀 구분은 스쿼트 편의를 위한것입니다.</p>
                       <p>1. 각 팀으로 이동시켜주세요.</p>
-                      <p>2. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.</p>
+                      <p>
+                        2. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.
+                      </p>
                       <p>3. 이동후에 개별적으로 이동시킬 수 있습니다.</p>
                     </TooltipContent>
                   </Tooltip>
@@ -197,7 +225,11 @@ const TeamPage = (_props: ITeamPageProps) => {
                   })}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddTeam} disabled={isPending} className="shrink-0">
+              <Button
+                onClick={handleAddTeam}
+                disabled={isPending}
+                className="shrink-0"
+              >
                 <ArrowRightIcon className="mr-1" /> 이동
                 {isPending && <Loading />}
               </Button>
@@ -220,8 +252,12 @@ const TeamPage = (_props: ITeamPageProps) => {
 };
 
 export interface IAttendance extends Attendance {
-  player: (Player & { user: (User & { userImage: File | null }) | null }) | null;
-  mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
+  player:
+    | (Player & { user: (User & { userImage: File | null }) | null })
+    | null;
+  mercenary:
+    | (Mercenary & { user: (User & { userImage: File | null }) | null })
+    | null;
 }
 
 interface ITeamCardProps extends ComponentProps<typeof Card> {
@@ -235,13 +271,19 @@ interface ITeamCardProps extends ComponentProps<typeof Card> {
 const TeamCard = ({ team }: ITeamCardProps) => {
   return (
     <>
-      <Card style={{ backgroundColor: team?.color ? `${team?.color}0D` : undefined }}>
+      <Card
+        style={{
+          backgroundColor: team?.color ? `${team?.color}0D` : undefined,
+        }}
+      >
         <CardHeader>
           <CardTitle className="flex gap-2 justify-between items-center">
             <div className="flex gap-2 items-center">
               <AiFillSkin color={team?.color} className="drop-shadow" />
               <span className="text-lg">{team?.name}</span>
-              <span className="text-muted-foreground text-sm">({team?.attendances?.length})</span>
+              <span className="text-muted-foreground text-sm">
+                ({team?.attendances?.length})
+              </span>
             </div>
             <EditDialog payload={team}>
               <Button
@@ -256,7 +298,7 @@ const TeamCard = ({ team }: ITeamCardProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-2">
+          <div className="grid xl:grid-cols-4 md:max-xl:grid-cols-3 gap-1">
             {team?.attendances?.map((attendance) => {
               return (
                 <Fragment key={attendance?.id}>
