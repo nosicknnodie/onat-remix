@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
-import { AiFillLike, AiOutlineLike } from "react-icons/ai";
+import _ from "lodash";
 import { FaArrowAltCircleLeft, FaRegComment } from "react-icons/fa";
 import { View } from "~/components/lexical/View";
 import { Loading } from "~/components/Loading";
@@ -18,6 +18,8 @@ import {
 } from "~/components/ui/card";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
+import CommentInput from "../_components/CommentInput";
+import PostVoteBadgeButton from "../_components/PostVoteBadgeButton";
 import Settings from "../_components/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -35,12 +37,27 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
             userId: user?.id,
           },
         },
+        votes: true,
         _count: {
           select: { comments: { where: { parentId: null } }, likes: true },
         },
       },
     });
-    return { post };
+    // const posts = res?.posts.map((post) => {
+    //   return {
+    //     ..._.omit(post, "votes"),
+    //     sumVote: post.votes.reduce((acc, v) => acc + v.vote, 0),
+    //     currentVote: post.votes.find((vote) => vote.userId === user?.id),
+    //   };
+    // });
+    if (!post) return { success: false, errors: "Not Found" };
+    return {
+      post: {
+        ..._.omit(post, "votes"),
+        sumVote: post.votes.reduce((acc, v) => acc + v.vote, 0),
+        currentVote: post.votes.find((vote) => vote.userId === user?.id),
+      },
+    };
   } catch (error) {
     return { success: false, errors: "Internal Server Error" };
   }
@@ -102,16 +119,8 @@ const PostView = (_props: IPostViewProps) => {
             <View editorState={post.content as any} />
           </CardContent>
           <CardFooter className="space-x-4">
-            <Button variant={"ghost"} size={"icon"} className="w-fit h-fit">
-              <Badge variant={"outline"} className="space-x-2">
-                {post.likes.length > 0 ? (
-                  <AiFillLike className="text-primary" />
-                ) : (
-                  <AiOutlineLike />
-                )}
-                <span>{post._count.likes}</span>
-              </Badge>
-            </Button>
+            <PostVoteBadgeButton post={post} />
+            {/* <PostLikeBadgeButton post={post} /> */}
             <Badge variant={"outline"} className="space-x-2">
               <Button
                 variant={"ghost"}
@@ -124,6 +133,9 @@ const PostView = (_props: IPostViewProps) => {
               <span>{post._count.comments}</span>
             </Badge>
           </CardFooter>
+          <CardContent>
+            <CommentInput />
+          </CardContent>
         </Card>
       </div>
     </>

@@ -9,7 +9,7 @@ import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import FormError from "~/components/FormError";
-import { Editor } from "~/components/lexical/Editor";
+import { PostEditor } from "~/components/lexical/PostEditor";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -237,7 +237,7 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
                       type="hidden"
                     />
                     <FormControl>
-                      <Editor
+                      <PostEditor
                         onChange={(value) =>
                           field.onChange(JSON.stringify(value))
                         }

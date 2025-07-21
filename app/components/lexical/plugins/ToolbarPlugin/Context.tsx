@@ -66,6 +66,7 @@ const INITIAL_TOOLBAR_STATE = {
   isLowercase: false,
   isUppercase: false,
   isCapitalize: false,
+  isToolbarVisible: true,
   rootType: "root" as keyof typeof rootTypeToRootName,
 };
 
@@ -88,8 +89,13 @@ const Context = createContext<ContextShape | undefined>(undefined);
  * @param props
  * @returns
  */
-export const ToolbarContext = (props: PropsWithChildren) => {
-  const [toolbarState, setToolbarState] = useState(INITIAL_TOOLBAR_STATE);
+export const ToolbarContext = ({
+  config,
+  children,
+}: PropsWithChildren & { config?: Record<string, unknown> }) => {
+  const [toolbarState, setToolbarState] = useState(
+    Object.assign(INITIAL_TOOLBAR_STATE, config)
+  );
   const selectionFontSize = toolbarState.fontSize;
   const updateToolbarState = useCallback(
     <Key extends ToolbarStateKey>(key: Key, value: ToolbarStateValue<Key>) => {
@@ -109,9 +115,7 @@ export const ToolbarContext = (props: PropsWithChildren) => {
       updateToolbarState,
     };
   }, [toolbarState, updateToolbarState]);
-  return (
-    <Context.Provider value={contextValue}>{props.children}</Context.Provider>
-  );
+  return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 };
 
 export const useToolbarState = () => {

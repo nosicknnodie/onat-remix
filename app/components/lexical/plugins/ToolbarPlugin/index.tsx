@@ -305,6 +305,8 @@ export default function ToolbarPlugin() {
     );
   }, [$updateToolbar, activeEditor, editor, updateToolbarState]);
 
+  if (!toolbarState.isToolbarVisible) return null;
+
   return (
     <div className="min-h-8 flex flex-wrap gap-1 items-center" ref={toolbarRef}>
       <div className="flex">

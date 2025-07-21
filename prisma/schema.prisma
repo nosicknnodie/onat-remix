@@ -72,7 +72,8 @@ model User {
   evaluations   Evaluation[]
   postComments  PostComment[]
   posts         Post[]
-  postLike      PostLike[]
+  postLikes     PostLike[]
+  postVotes     PostVote[]
 
   session Session[]
   key     Key[]
@@ -551,6 +552,7 @@ model Post {
 
   comments  PostComment[]
   likes     PostLike[]
+  votes     PostVote[]
 
   files     File[] @relation("PostFiles")
 
@@ -563,7 +565,7 @@ model Post {
 
 model PostComment {
   id        String   @id @default(cuid())
-  content   String   @db.Text
+  content   Json?   
   isDeleted Boolean  @default(false)
 
   postId    String
@@ -582,6 +584,22 @@ model PostComment {
   @@index([postId])
   @@index([authorId])
   @@index([parentId])
+}
+
+model PostVote {
+  id       String @id @default(cuid())
+
+  postId   String
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  vote      Int
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
 }
 
 model PostLike {

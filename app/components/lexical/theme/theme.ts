@@ -23,8 +23,8 @@ export const theme = {
     nested: {
       listitem: "list-none",
     },
-    ol: "list-decimal list-outside p-0 m-0",
-    ul: "list-disc list-outside p-0 m-0",
+    ol: "list-decimal list-inside p-0 m-0",
+    ul: "list-disc list-inside p-0 m-0",
   },
   code: "editor-code",
   codeHighlight: {

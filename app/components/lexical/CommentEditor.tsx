@@ -14,6 +14,7 @@ import { cn } from "~/libs/utils";
 import { Skeleton } from "../ui/skeleton";
 import { nodes } from "./nodes/nodes";
 import { CodeHighlightingPlugin } from "./plugins/CodeHighlightPlugin";
+import FooterToolbarPlugin from "./plugins/FooterToolbarPlugin";
 import MarkdownPlugin from "./plugins/MarkdownShortcutPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import {
@@ -25,11 +26,21 @@ import { theme } from "./theme/theme";
 
 interface Props {
   initialEditorState?: SerializedEditorState | null;
+  placeholder?: string;
   onChange?: (root: SerializedEditorState) => void;
   className?: string;
+  onCancel?: () => void;
+  onSubmit?: (root?: SerializedEditorState) => void;
 }
 
-export function Editor({ onChange, initialEditorState, className }: Props) {
+export function CommentEditor({
+  onChange,
+  initialEditorState,
+  className,
+  placeholder,
+  onCancel,
+  onSubmit,
+}: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const initialConfig = {
     namespace: "LexicalEditor",
@@ -61,17 +72,17 @@ export function Editor({ onChange, initialEditorState, className }: Props) {
     <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
-          <ToolbarContext>
+          <ToolbarContext config={{ isToolbarVisible: false }}>
             <ToolbarPlugin />
             <div className="relative  p-2">
               <RichTextPlugin
                 contentEditable={
                   <ContentEditable
-                    className="min-h-[10rem] w-full focus:outline-none"
-                    aria-placeholder="내용을 입력해 주세요."
+                    className="min-h-[5rem] w-full focus:outline-none"
+                    aria-placeholder={placeholder || "내용을 입력해 주세요."}
                     placeholder={(isEditable: boolean) => (
                       <div className="text-gray-300 absolute top-2 left-2">
-                        내용을 입력해주세요.
+                        {placeholder || "내용을 입력해주세요."}
                       </div>
                     )}
                   />
@@ -84,7 +95,7 @@ export function Editor({ onChange, initialEditorState, className }: Props) {
               <ListPlugin />
               <CheckListPlugin />
               <CodeHighlightingPlugin />
-              {/* <TreeViewPlugin /> */}
+              <FooterToolbarPlugin onCancel={onCancel} onSubmit={onSubmit} />
               <OnChangePlugin onChange={handleEditorChange} />
             </div>
           </ToolbarContext>

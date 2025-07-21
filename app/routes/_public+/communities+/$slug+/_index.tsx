@@ -2,8 +2,8 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
+import _ from "lodash";
 import { useEffect, useState } from "react";
-import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa6";
 import { Fragment } from "react/jsx-runtime";
 import ItemLink from "~/components/ItemLink";
@@ -22,6 +22,7 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
+import PostVoteBadgeButton from "./_components/PostVoteBadgeButton";
 import Settings from "./_components/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -40,10 +41,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
                 userImage: true,
               },
             },
+            votes: true,
             likes: {
               where: {
                 userId: user?.id,
               },
+              take: 1,
             },
             _count: {
               select: { comments: { where: { parentId: null } }, likes: true },
@@ -52,7 +55,16 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         },
       },
     });
-    return { posts: res?.posts, board: res };
+    const posts = res?.posts.map((post) => {
+      return {
+        ..._.omit(post, "votes"),
+        sumVote: post.votes.reduce((acc, v) => acc + v.vote, 0),
+        currentVote: post.votes.find((vote) => vote.userId === user?.id),
+      };
+    });
+    if (!posts) return { success: false, errors: "Not Found" };
+
+    return { posts, board: res };
   } catch (error) {
     console.error(error);
     return { success: false, errors: "Internal Server Error" };
@@ -135,16 +147,8 @@ const CompactTypeComponent = () => {
                       </span>
                     </div>
                     <div className="space-x-2">
-                      <Button variant={"ghost"} className="p-0 h-fit">
-                        <Badge variant={"outline"} className="space-x-2">
-                          {post.likes.length > 0 ? (
-                            <AiFillLike className="text-primary" />
-                          ) : (
-                            <AiOutlineLike />
-                          )}
-                          <span>{post._count.likes}</span>
-                        </Badge>
-                      </Button>
+                      <PostVoteBadgeButton post={post} />
+                      {/* <PostLikeBadgeButton post={post} /> */}
                       <Badge variant={"outline"} className="space-x-2 ">
                         <Button
                           variant={"ghost"}
@@ -219,16 +223,7 @@ const CardTypeComponent = () => {
                     </Link>
                   </CardContent>
                   <CardFooter className="space-x-2">
-                    <Button variant={"ghost"} className="p-0 h-fit">
-                      <Badge variant={"outline"} className="space-x-2">
-                        {post.likes.length > 0 ? (
-                          <AiFillLike className="text-primary" />
-                        ) : (
-                          <AiOutlineLike />
-                        )}
-                        <span>{post._count.likes}</span>
-                      </Badge>
-                    </Button>
+                    <PostVoteBadgeButton post={post} />
                     <Badge variant={"outline"} className="space-x-2">
                       <Button
                         variant={"ghost"}
