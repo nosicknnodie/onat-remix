@@ -1,13 +1,20 @@
-import { SerializedEditorState } from "lexical";
+import { LexicalEditor, SerializedEditorState } from "lexical";
 import { useState } from "react";
 // import { Editor } from "~/components/lexical/PostEditor";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
 import { cn } from "~/libs/utils";
 
-interface ICommentInputProps {}
+interface ICommentInputProps {
+  className?: string;
+  onSubmit?: (
+    root?: SerializedEditorState,
+    editor?: LexicalEditor
+  ) => Promise<void | boolean>;
+}
 
-const CommentInput = (_props: ICommentInputProps) => {
+const CommentInput = ({ className, onSubmit }: ICommentInputProps) => {
   const [isTextMode, setIsTextMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   if (!isTextMode)
     return (
       <>
@@ -26,12 +33,25 @@ const CommentInput = (_props: ICommentInputProps) => {
   const handleCancel = () => {
     setIsTextMode(false);
   };
-  const handleSubmit = (root?: SerializedEditorState) => {
-    console.log("root - ", root);
+  const handleSubmit = async (
+    root?: SerializedEditorState,
+    editor?: LexicalEditor
+  ) => {
+    setIsSubmitting(true);
+    const result = await onSubmit?.(root, editor);
+    setIsSubmitting(false);
+    if (result !== false) {
+      setIsTextMode(false);
+    }
   };
   return (
     <>
-      <div className="border border-primary rounded-3xl overflow-hidden p-4">
+      <div
+        className={cn(
+          "border border-primary rounded-3xl overflow-hidden p-4",
+          className
+        )}
+      >
         <CommentEditor
           onCancel={handleCancel}
           onSubmit={handleSubmit}

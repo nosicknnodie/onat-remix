@@ -74,6 +74,7 @@ model User {
   posts         Post[]
   postLikes     PostLike[]
   postVotes     PostVote[]
+  commentVotes  CommentVote[]
 
   session Session[]
   key     Key[]
@@ -565,6 +566,11 @@ model Post {
 
 model PostComment {
   id        String   @id @default(cuid())
+  indexId   String
+  depth     Int      @default(0)
+  path      String
+  voteCount Int      @default(0)
+
   content   Json?   
   isDeleted Boolean  @default(false)
 
@@ -578,13 +584,35 @@ model PostComment {
   parent    PostComment?   @relation("ReplyToComment", fields: [parentId], references: [id], onDelete: SetNull)
   replies   PostComment[]  @relation("ReplyToComment")
 
+  votes     CommentVote[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
+  @@unique([parentId, indexId])
+  @@index([path])
   @@index([postId])
   @@index([authorId])
   @@index([parentId])
 }
+
+model CommentVote {
+  id          String   @id @default(cuid())
+
+  commentId   String
+  comment     PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  vote        Int    // 예: +1 (upvote), -1 (downvote)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+}
+
 
 model PostVote {
   id       String @id @default(cuid())

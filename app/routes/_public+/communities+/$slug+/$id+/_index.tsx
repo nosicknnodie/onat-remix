@@ -1,7 +1,9 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { useMutation } from "@tanstack/react-query";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
+import { LexicalEditor, SerializedEditorState } from "lexical";
 import _ from "lodash";
 import { FaArrowAltCircleLeft, FaRegComment } from "react-icons/fa";
 import { View } from "~/components/lexical/View";
@@ -43,13 +45,6 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         },
       },
     });
-    // const posts = res?.posts.map((post) => {
-    //   return {
-    //     ..._.omit(post, "votes"),
-    //     sumVote: post.votes.reduce((acc, v) => acc + v.vote, 0),
-    //     currentVote: post.votes.find((vote) => vote.userId === user?.id),
-    //   };
-    // });
     if (!post) return { success: false, errors: "Not Found" };
     return {
       post: {
@@ -63,17 +58,56 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
 };
 
-// export const handle = {
-//   breadcrumb: (match: { data: any }) => match.data?.post?.title || "View",
-// };
 interface IPostViewProps {}
 
 const PostView = (_props: IPostViewProps) => {
   const loaderData = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
   const post = loaderData.post;
   if (!post) {
     return <div>게시글이 존재하지 않습니다.</div>;
   }
+
+  const mutation = useMutation({
+    mutationFn: async ({ root }: { root: SerializedEditorState }) => {
+      const res = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: root, postId: post.id }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result?.errors || "댓글 등록 실패");
+      return result;
+    },
+  });
+  const handleInputComment = async (
+    root?: SerializedEditorState,
+    editor?: LexicalEditor
+  ) => {
+    if (!root) return;
+    const res = await mutation.mutateAsync({ root });
+    if (!res.success) return false;
+    editor?.update(() => {
+      editor.setEditorState(
+        editor.parseEditorState({
+          root: {
+            type: "root",
+            children: [
+              {
+                type: "paragraph",
+                version: 1,
+              },
+            ],
+            direction: "ltr",
+            format: "",
+            indent: 0,
+            version: 1,
+          },
+        })
+      );
+    });
+  };
+
   return (
     <>
       <div>
@@ -134,7 +168,7 @@ const PostView = (_props: IPostViewProps) => {
             </Badge>
           </CardFooter>
           <CardContent>
-            <CommentInput />
+            <CommentInput onSubmit={handleInputComment} />
           </CardContent>
         </Card>
       </div>

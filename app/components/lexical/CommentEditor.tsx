@@ -30,7 +30,8 @@ interface Props {
   onChange?: (root: SerializedEditorState) => void;
   className?: string;
   onCancel?: () => void;
-  onSubmit?: (root?: SerializedEditorState) => void;
+  onSubmit?: (root?: SerializedEditorState, editor?: LexicalEditor) => void;
+  isSubmitting?: boolean;
 }
 
 export function CommentEditor({
@@ -40,6 +41,7 @@ export function CommentEditor({
   placeholder,
   onCancel,
   onSubmit,
+  isSubmitting,
 }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const initialConfig = {
@@ -72,7 +74,7 @@ export function CommentEditor({
     <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
-          <ToolbarContext config={{ isToolbarVisible: false }}>
+          <ToolbarContext config={{ isToolbarVisible: false, isSubmitting }}>
             <ToolbarPlugin />
             <div className="relative  p-2">
               <RichTextPlugin
