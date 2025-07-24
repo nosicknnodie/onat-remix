@@ -147,7 +147,7 @@ const PostView = (_props: IPostViewProps) => {
     <>
       <div>
         <Card className="w-full border-none shadow-none">
-          <CardHeader className="relative space-y-4">
+          <CardHeader className="relative space-y-4 max-md:p-1">
             <div className="flex justify-between">
               <div className="flex items-center gap-x-2">
                 <Link to={"../"} className="max-md:hidden">
@@ -184,10 +184,10 @@ const PostView = (_props: IPostViewProps) => {
             </div>
             <CardTitle className="text-2xl">{post.title}</CardTitle>
           </CardHeader>
-          <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
+          <CardContent className="w-full break-words whitespace-pre-wrap text-sm max-md:p-1">
             <View editorState={post.content as any} />
           </CardContent>
-          <CardFooter className="space-x-4">
+          <CardFooter className="space-x-4 max-md:p-2">
             <PostVoteBadgeButton post={post} />
             {/* <PostLikeBadgeButton post={post} /> */}
             <Badge variant={"outline"} className="space-x-2">
@@ -202,7 +202,7 @@ const PostView = (_props: IPostViewProps) => {
               <span>{post._count.comments}</span>
             </Badge>
           </CardFooter>
-          <CardContent>
+          <CardContent className="max-md:p-1">
             {!isTextMode ? (
               <button
                 onClick={() => setIsTextMode(true)}
@@ -221,10 +221,12 @@ const PostView = (_props: IPostViewProps) => {
                 }}
               />
             )}
-            {/* 코멘트 리스트 */}
-            {comments?.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} />
-            ))}
+            <div className="py-2">
+              {/* 코멘트 리스트 */}
+              {comments?.map((comment) => (
+                <CommentItem key={comment.id} comment={comment} />
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -305,8 +307,8 @@ function CommentItem({ comment }: { comment: CommentTreeNode }) {
     });
   };
   return (
-    <div className="flex gap-2 p-2">
-      <div className="h-10 flex items-center">
+    <div className="flex">
+      <div className="h-10 flex items-center max-md:max-w-6">
         <Avatar className="size-8">
           <AvatarImage
             src={comment.author.userImage?.url || "/images/user_empty.png"}
@@ -317,7 +319,7 @@ function CommentItem({ comment }: { comment: CommentTreeNode }) {
         </Avatar>
       </div>
       <div className="w-full">
-        <div className="h-10 flex items-center gap-2 px-2">
+        <div className="h-10 flex items-center gap-2 ml-2 text-sm">
           <span>{comment.author.name}</span>
           <span className="text-muted-foreground text-xs">•</span>
           <span className="text-muted-foreground text-xs">
@@ -327,7 +329,7 @@ function CommentItem({ comment }: { comment: CommentTreeNode }) {
             })}
           </span>
         </div>
-        <div className="w-full p-2 rounded-lg">
+        <div className="w-full rounded-lg ml-2">
           <View editorState={comment.content as any} className="min-h-0 " />
         </div>
         <div className="flex gap-2">
