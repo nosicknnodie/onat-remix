@@ -1,8 +1,75 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { generateShortId } from "~/libs/id";
 import { parseRequestData } from "~/libs/requestData";
+
+type PostCommentWithAuthor = Awaited<
+  ReturnType<typeof prisma.postComment.findMany>
+>[number];
+
+type CommentTreeNode = PostCommentWithAuthor & {
+  children: CommentTreeNode[];
+};
+
+function buildCommentTree(
+  comments: PostCommentWithAuthor[]
+): CommentTreeNode[] {
+  const map = new Map<string, CommentTreeNode>();
+  const roots: CommentTreeNode[] = [];
+
+  comments.forEach((comment) => {
+    map.set(comment.id, { ...comment, children: [] });
+  });
+
+  comments.forEach((comment) => {
+    const node = map.get(comment.id)!;
+    if (comment.parentId) {
+      const parent = map.get(comment.parentId);
+      if (parent) {
+        parent.children.push(node);
+      } else {
+        // parent가 삭제되었거나 없는 경우 root 처리
+        roots.push(node);
+      }
+    } else {
+      roots.push(node);
+    }
+  });
+
+  return roots;
+}
+
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
+  const postId = params.id;
+
+  if (!postId) {
+    throw new Response("Post ID is required", { status: 400 });
+  }
+
+  const flatComments = await prisma.postComment.findMany({
+    where: { postId },
+    orderBy: { path: "asc" },
+    include: {
+      votes: true,
+      author: { include: { userImage: true } },
+    },
+  });
+
+  const comments = flatComments.map((comment) => {
+    return {
+      ..._.omit(comment, "votes"),
+      sumVote: comment.votes.reduce((acc, v) => acc + v.vote, 0),
+      currentVote: comment.votes.find((vote) => vote.userId === user?.id),
+    };
+  });
+
+  const commentTree = buildCommentTree(comments);
+
+  return Response.json({ success: true, comments: commentTree });
+};
 
 // POST /api/posts/$id/comments
 export async function action({ params, request }: ActionFunctionArgs) {

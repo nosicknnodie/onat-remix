@@ -581,8 +581,6 @@ model PostComment {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   parentId  String?        // 대댓글 기능
-  parent    PostComment?   @relation("ReplyToComment", fields: [parentId], references: [id], onDelete: SetNull)
-  replies   PostComment[]  @relation("ReplyToComment")
 
   votes     CommentVote[]
 
