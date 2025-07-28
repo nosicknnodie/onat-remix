@@ -1,19 +1,8 @@
 import { Board } from "@prisma/client";
-import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link, useRevalidator } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useTransition } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { confirm } from "~/libs/confirm";
 export const boardColumns: ColumnDef<Board>[] = [
   {
     id: "name",
@@ -166,34 +156,22 @@ const Actions = ({ payload }: { payload: Board }) => {
                 <Link to={`./${payload.id}`}>
                   <DropdownMenuLabel>수정</DropdownMenuLabel>
                 </Link>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full flex justify-start pl-2 text-destructive"
-                      disabled={isPending}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      삭제
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>삭제 요청</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {payload.name} 게시판을 삭제 하시겠습니까?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>취소</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
-                        확인
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="ghost"
+                  className="w-full flex justify-start pl-2 text-destructive"
+                  disabled={isPending}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirm({
+                      title: "삭제 요청",
+                      description: (
+                        <>{payload.name} 게시판을 삭제 하시겠습니까?</>
+                      ),
+                    }).onConfirm(handleDelete);
+                  }}
+                >
+                  삭제
+                </Button>
               </>
             )}
           </DropdownMenuContent>

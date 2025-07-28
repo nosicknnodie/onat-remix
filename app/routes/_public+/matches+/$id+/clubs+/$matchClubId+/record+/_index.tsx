@@ -5,19 +5,9 @@ import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useTransition } from "react";
 import { FaFutbol } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { confirm } from "~/libs/confirm";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 import { RightDrawer } from "./_Drawer";
@@ -253,34 +243,27 @@ const GoalComponent = ({
             "text-destructive": isOwner,
           })}
         />
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size={"icon"}
-              className="w-3 h-3 text-destructive"
-              disabled={isPending}
-            >
-              x
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>골기록 삭제</AlertDialogTitle>
-              <AlertDialogDescription>
-                <span className="font-semibold">{name}</span>
-                님의 골 기록을
-                <span className="text-destructive"> 삭제</span>하시겠습니까?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleDelGoal(id)}>
-                삭제
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button
+          variant="ghost"
+          size={"icon"}
+          className="w-3 h-3 text-destructive"
+          disabled={isPending}
+          onClick={() => {
+            confirm({
+              title: "골기록 삭제",
+              description: (
+                <>
+                  <span className="font-semibold">{name}</span>
+                  님의 골 기록을
+                  <span className="text-destructive"> 삭제</span>하시겠습니까?
+                </>
+              ),
+              confirmText: "삭제",
+            }).onConfirm(() => handleDelGoal(id));
+          }}
+        >
+          x
+        </Button>
       </div>
     </>
   );

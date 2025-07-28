@@ -2,17 +2,7 @@ import { Board, File, Post, User } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link, useRevalidator } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
-import { PropsWithChildren } from "react";
 import { Loading } from "~/components/Loading";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts/AuthUserContext";
+import { confirm } from "~/libs/confirm";
 import { cn } from "~/libs/utils";
 
 interface ISettingsProps {
@@ -71,46 +62,24 @@ const Settings = ({ board, post }: ISettingsProps) => {
                   Edit
                 </Link>
               </DropdownMenuItem>
-              <DeleteAlertAction handleDelete={handleDelete}>
-                <Button
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  className="text-destructive w-full h-full justify-start pl-2"
-                >
-                  삭제
-                </Button>
-              </DeleteAlertAction>
+              <Button
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  confirm({
+                    title: "삭제",
+                    description: "게시글을 삭제 하시겠습니까?",
+                    confirmText: "삭제",
+                  }).onConfirm(handleDelete);
+                }}
+                className="text-destructive w-full h-full justify-start pl-2"
+              >
+                삭제
+              </Button>
             </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-    </>
-  );
-};
-
-interface IDeleteAlertActionProps extends PropsWithChildren {
-  handleDelete: () => void;
-}
-
-const DeleteAlertAction = ({
-  handleDelete,
-  children,
-}: IDeleteAlertActionProps) => {
-  return (
-    <>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>삭제</AlertDialogHeader>
-          <div>게시글을 삭제 하시겠습니까?</div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };

@@ -257,6 +257,9 @@ importers:
       nodemailer:
         specifier: ^6.9.8
         version: 6.10.0
+      overlay-kit:
+        specifier: ^1.8.4
+        version: 1.8.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       quill:
         specifier: ^2.0.3
         version: 2.0.3
@@ -5202,6 +5205,12 @@ packages:
 
   outdent@0.8.0:
     resolution: {integrity: sha512-KiOAIsdpUTcAXuykya5fnVVT+/5uS0Q1mrkRHcF89tpieSmY33O/tmc54CqwA+bfhbtEfZUNLHaPUiB9X3jt1A==}
+
+  overlay-kit@1.8.4:
+    resolution: {integrity: sha512-CqFrMWStiLDqW6jr8Zj9O/n8eSBAnrHe2w6M77cFiEn724xmigk56sPcYtQXCYDcbvwV47oJjoKQQvfutL5yFw==}
+    peerDependencies:
+      react: ^16.8 || ^17 || ^18 || ^19
+      react-dom: ^16.8 || ^17 || ^18 || ^19
 
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
@@ -12355,6 +12364,11 @@ snapshots:
       wcwidth: 1.0.1
 
   outdent@0.8.0: {}
+
+  overlay-kit@1.8.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   p-limit@3.1.0:
     dependencies:

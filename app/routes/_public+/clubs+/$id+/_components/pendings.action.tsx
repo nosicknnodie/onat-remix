@@ -2,18 +2,8 @@ import { Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useOutletContext } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
-import { ComponentProps, PropsWithChildren } from "react";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { confirm } from "~/libs/confirm";
 import { IClubLayoutLoaderData } from "../_layout";
 import InfoDrawer from "./InfoDrawer";
 import { IPlayer } from "./members.columns";
@@ -80,74 +71,37 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
             </DropdownMenuItem>
             {(isMaster || isManager) && (
               <>
-                <AlertDialogItem
-                  title="승인 확인"
-                  description={`${payload?.user?.name} 님을 승인 확인하시겠습니까?`}
-                  onClick={handleResolve}
+                <Button
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirm({
+                      title: "승인",
+                      description: `${payload?.user?.name} 님을 승인하시겠습니까?`,
+                    }).onConfirm(handleResolve);
+                  }}
+                  className="w-full justify-start flex py-2 px-2 h-8"
                 >
-                  <Button
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className="w-full justify-start flex py-2 px-2 h-8"
-                  >
-                    승인
-                  </Button>
-                </AlertDialogItem>
-                <AlertDialogItem
-                  title="승인 거절 확인"
-                  description={`${payload?.user?.name} 님을 승인 거절하시겠습니까?`}
-                  onClick={handleReject}
+                  승인
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirm({
+                      title: "승인 거절 확인",
+                      description: `${payload?.user?.name} 님을 승인 거절하시겠습니까?`,
+                    }).onConfirm(handleReject);
+                  }}
+                  className="w-full justify-start flex py-1 px-2 h-8"
                 >
-                  <Button
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className="w-full justify-start flex py-1 px-2 h-8"
-                  >
-                    거절
-                  </Button>
-                </AlertDialogItem>
+                  거절
+                </Button>
               </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </>
-  );
-};
-
-interface IAlertDialogItemProps
-  extends PropsWithChildren,
-    ComponentProps<typeof Dialog> {
-  title?: string;
-  description?: string;
-  onClick?: () => Promise<void>;
-}
-const AlertDialogItem = ({
-  children,
-  title,
-  description,
-  onClick,
-  ...props
-}: IAlertDialogItemProps) => {
-  return (
-    <>
-      <Dialog {...props}>
-        <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline">취소</Button>
-            <Button onClick={onClick}>확인</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

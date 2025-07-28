@@ -17,6 +17,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import "dayjs/locale/ko"; // 한국어 locale import
 import { User } from "lucia";
+import { OverlayProvider } from "overlay-kit";
 import { type ReactNode, useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -66,7 +67,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY:
         process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
     },
-    
   });
 }
 
@@ -80,9 +80,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <Links />
       </head>
       <body className="min-h-screen bg-background font-pretendard antialiased">
-          <div className="flex h-screen overflow-hidden">
-            <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-              {children}
+        <div className="flex h-screen overflow-hidden">
+          <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+            {children}
           </div>
         </div>
         <ScrollRestoration />
@@ -112,25 +112,27 @@ export default function App() {
   const isAdminRoute = location.pathname.startsWith("/admin");
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <UserContext.Provider value={user}>
-          <DndProvider
-            backend={backendForDND}
-            options={{
-              enableKeyboardEvents: true,
-              enableMouseEvents: true,
-              enableTouchEvents: true,
-            }}
-          > 
-            <ProgressBar />
-            <SidebarProvider>
-              {isAdminRoute ? <AdminHeader /> : <Header />}
-             
-              <Outlet />
-            </SidebarProvider>
-          </DndProvider>
-        </UserContext.Provider>
-      </QueryClientProvider>
+      <OverlayProvider>
+        <QueryClientProvider client={queryClient}>
+          <UserContext.Provider value={user}>
+            <DndProvider
+              backend={backendForDND}
+              options={{
+                enableKeyboardEvents: true,
+                enableMouseEvents: true,
+                enableTouchEvents: true,
+              }}
+            >
+              <ProgressBar />
+              <SidebarProvider>
+                {isAdminRoute ? <AdminHeader /> : <Header />}
+
+                <Outlet />
+              </SidebarProvider>
+            </DndProvider>
+          </UserContext.Provider>
+        </QueryClientProvider>
+      </OverlayProvider>
     </>
   );
 }
