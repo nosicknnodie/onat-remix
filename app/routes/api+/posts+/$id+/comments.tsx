@@ -3,6 +3,7 @@ import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { generateShortId } from "~/libs/id";
+import { isMobile } from "~/libs/isMobile";
 import { parseRequestData } from "~/libs/requestData";
 
 type PostCommentWithAuthor = Awaited<
@@ -49,8 +50,20 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     throw new Response("Post ID is required", { status: 400 });
   }
 
+  const data = await parseRequestData(request);
+  const path = data?.path as string | undefined;
+
+  const _isMobile = isMobile(request);
+  const limitDepth = _isMobile ? 3 : 5;
+
   const flatComments = await prisma.postComment.findMany({
-    where: { postId },
+    where: {
+      postId,
+      ...(path && { path: { startsWith: path } }),
+      depth: {
+        lte: path ? path.split(".").length - 1 + limitDepth : limitDepth,
+      },
+    },
     orderBy: { path: "asc" },
     include: {
       votes: true,
@@ -68,7 +81,13 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
   const commentTree = buildCommentTree(comments);
 
-  return Response.json({ success: true, comments: commentTree });
+  return Response.json({
+    success: true,
+    comments: commentTree,
+    isMobile: _isMobile,
+    startDepth: path ? path.split(".").length - 1 : 0,
+    limitDepth: path ? path.split(".").length - 1 + limitDepth : limitDepth,
+  });
 };
 
 // POST /api/posts/$id/comments

@@ -9,10 +9,10 @@ interface ICommentInputProps {
   parentId?: string;
   onCancel?: () => void;
   placeholder?: string;
+  initialEditorState?: SerializedEditorState | null;
   onSubmit?: (
     root?: SerializedEditorState,
-    editor?: LexicalEditor,
-    parentId?: string
+    editor?: LexicalEditor
   ) => Promise<void | boolean>;
 }
 
@@ -20,8 +20,8 @@ const CommentInput = ({
   className,
   onSubmit,
   onCancel,
-  parentId,
   placeholder,
+  initialEditorState,
 }: ICommentInputProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,7 +33,7 @@ const CommentInput = ({
     editor?: LexicalEditor
   ) => {
     setIsSubmitting(true);
-    await onSubmit?.(root, editor, parentId);
+    await onSubmit?.(root, editor);
     setIsSubmitting(false);
   };
   return (
@@ -47,6 +47,7 @@ const CommentInput = ({
         <CommentEditor
           onCancel={handleCancel}
           onSubmit={handleSubmit}
+          initialEditorState={initialEditorState}
           placeholder={placeholder || "코멘트를 입력하세요."}
           isSubmitting={isSubmitting}
         />

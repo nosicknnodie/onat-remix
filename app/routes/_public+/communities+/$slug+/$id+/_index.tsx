@@ -6,7 +6,8 @@ import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
 import { LexicalEditor, SerializedEditorState } from "lexical";
 import _ from "lodash";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { CiCirclePlus } from "react-icons/ci";
 import { FaArrowAltCircleLeft, FaRegComment } from "react-icons/fa";
 import { View } from "~/components/lexical/View";
 import { Loading } from "~/components/Loading";
@@ -20,10 +21,12 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import CommentInput from "../_components/CommentInput";
+import CommentSettings from "../_components/CommentSettings";
 import CommentVoteBadgeButton from "../_components/CommentVoteBadgeButton";
 import PostVoteBadgeButton from "../_components/PostVoteBadgeButton";
 import Settings from "../_components/Settings";
@@ -68,6 +71,7 @@ const PostView = (_props: IPostViewProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const [isTextMode, setIsTextMode] = useState(false);
+  const [path, setPath] = useState<string | undefined>(undefined);
   const post = loaderData.post;
   if (!post) {
     return <div>게시글이 존재하지 않습니다.</div>;
@@ -92,15 +96,21 @@ const PostView = (_props: IPostViewProps) => {
     },
   });
 
-  const { data, refetch } = useQuery<CommentTreeNode[]>({
-    queryKey: ["COMMENTS_QUERY", post.id],
-    queryFn: async () => {
+  const { data, refetch } = useQuery<{
+    comments: CommentTreeNode[];
+    success: boolean;
+    isMobile: boolean;
+    limitDepth: number;
+    startDepth: number;
+  }>({
+    queryKey: ["COMMENTS_QUERY", post.id, path],
+    queryFn: async ({ queryKey }) => {
       try {
-        const res = await fetch(`/api/posts/${post.id}/comments`).then((res) =>
-          res.json()
-        );
+        const res = await fetch(
+          `/api/posts/${post.id}/comments${path ? `?path=${queryKey[2]}` : ""}`
+        ).then((res) => res.json());
         if (res.success) {
-          return res.comments;
+          return res;
         } else {
           throw new Error(res.errors);
         }
@@ -109,9 +119,32 @@ const PostView = (_props: IPostViewProps) => {
       }
     },
   });
-  const comments = data?.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  // Helper to recursively sort a comment tree node array by createdAt descending
+  function sortCommentTreeRedditLike(
+    nodes: CommentTreeNode[]
+  ): CommentTreeNode[] {
+    return nodes
+      .map((node) => ({
+        ...node,
+        children: sortCommentTreeRedditLike(node.children),
+      }))
+      .sort((a, b) => {
+        // 1. 삭제 여부 (false가 우선 → !a.isDeleted)
+        if (a.isDeleted !== b.isDeleted) {
+          return Number(a.isDeleted) - Number(b.isDeleted);
+        }
+        // 2. score (높은 순)
+        if (b.sumVote !== a.sumVote) {
+          return b.sumVote - a.sumVote;
+        }
+        // 3. 최신 댓글이 위
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+  }
+
+  const comments = data ? sortCommentTreeRedditLike(data.comments) : [];
   const handleInputComment = async (
     root?: SerializedEditorState,
     editor?: LexicalEditor,
@@ -222,9 +255,25 @@ const PostView = (_props: IPostViewProps) => {
               />
             )}
             <div className="py-2">
+              {(data?.startDepth || 0) > 0 && (
+                <Button
+                  variant={"ghost"}
+                  className="text-xs space-x-2"
+                  onClick={() => setPath(undefined)}
+                >
+                  <FaArrowAltCircleLeft />
+                  <span>전체 코멘트</span>
+                </Button>
+              )}
               {/* 코멘트 리스트 */}
               {comments?.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  limitDepth={data?.limitDepth}
+                  isMobile={data?.isMobile}
+                  onMoreReplies={(path) => setPath(path)}
+                />
               ))}
             </div>
           </CardContent>
@@ -248,12 +297,24 @@ export type CommentTreeNode = PostCommentWithAuthor & {
   children: CommentTreeNode[];
 };
 
-function CommentItem({ comment }: { comment: CommentTreeNode }) {
+function CommentItem({
+  comment,
+  isMobile,
+  limitDepth,
+  onMoreReplies,
+}: {
+  comment: CommentTreeNode;
+  isMobile?: boolean;
+  limitDepth?: number;
+  onMoreReplies?: (path: string) => void;
+}) {
   const loaderData = useLoaderData<typeof loader>();
   const post = loaderData.post;
+  const session = useSession();
   const queryClient = useQueryClient();
   const [isReplying, setIsReplying] = useState(false);
-
+  const [isEditorMode, setIsEditorMode] = useState(false);
+  const [isPending, startTransition] = useTransition();
   if (!post) return null;
 
   const mutation = useMutation({
@@ -276,11 +337,10 @@ function CommentItem({ comment }: { comment: CommentTreeNode }) {
   });
   const handleInputComment = async (
     root?: SerializedEditorState,
-    editor?: LexicalEditor,
-    parentId?: string
+    editor?: LexicalEditor
   ) => {
     if (!root) return;
-    const res = await mutation.mutateAsync({ root, parentId });
+    const res = await mutation.mutateAsync({ root, parentId: comment.id });
     if (!res.success) return false;
     editor?.update(() => {
       editor.setEditorState(
@@ -306,8 +366,42 @@ function CommentItem({ comment }: { comment: CommentTreeNode }) {
       queryKey: ["COMMENTS_QUERY", post.id],
     });
   };
+  const handleEditComment = async (
+    root?: SerializedEditorState,
+    editor?: LexicalEditor
+  ) => {
+    startTransition(async () => {
+      if (!root) return;
+      const res = await fetch(`/api/comments/${comment.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: root }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        console.error(result);
+        return;
+      }
+      await queryClient.invalidateQueries({
+        queryKey: ["COMMENTS_QUERY", post.id],
+      });
+      setIsEditorMode(false);
+    });
+  };
+
+  if (
+    comment.isDeleted &&
+    comment.children.length === 0 &&
+    comment.authorId !== session?.id
+  )
+    return null;
+
   return (
-    <div className="flex">
+    <div
+      className={cn("flex", {
+        "mt-2": comment.isDeleted,
+      })}
+    >
       <div className="h-10 flex items-center max-md:max-w-6">
         <Avatar className="size-8">
           <AvatarImage
@@ -319,41 +413,92 @@ function CommentItem({ comment }: { comment: CommentTreeNode }) {
         </Avatar>
       </div>
       <div className="w-full">
-        <div className="h-10 flex items-center gap-2 ml-2 text-sm">
-          <span>{comment.author.name}</span>
-          <span className="text-muted-foreground text-xs">•</span>
-          <span className="text-muted-foreground text-xs">
-            {formatDistance(comment.createdAt, new Date(), {
-              addSuffix: true,
-              locale: ko,
-            })}
-          </span>
-        </div>
-        <div className="w-full rounded-lg ml-2">
-          <View editorState={comment.content as any} className="min-h-0 " />
-        </div>
-        <div className="flex gap-2">
-          <CommentVoteBadgeButton comment={comment} />
-          <Button
-            variant={"ghost"}
-            onClick={() => setIsReplying((v) => !v)}
-            className="text-xs text-gray-500 flex items-center gap-2 rounded-lg"
-          >
-            <FaRegComment />
-            Reply
-          </Button>
-        </div>
-        {isReplying && (
-          <CommentInput
-            parentId={comment.id}
-            onCancel={() => setIsReplying(false)}
-            onSubmit={handleInputComment}
-            placeholder={`@${comment.author.name} Reply...`}
-          />
+        {comment.isDeleted && (
+          <div className="h-10 flex items-center gap-2 ml-2 text-sm">
+            <span className="text-xs italic">삭제된 댓글입니다.</span>
+            <span className="text-muted-foreground text-xs">•</span>
+            <span className="text-muted-foreground text-xs">
+              {formatDistance(comment.createdAt, new Date(), {
+                addSuffix: true,
+                locale: ko,
+              })}
+            </span>
+          </div>
         )}
-        {comment.children.map((child) => (
-          <CommentItem key={child.id} comment={child} />
-        ))}
+        {!comment.isDeleted && (
+          <>
+            <div className="h-10 flex items-center gap-2 ml-2 text-sm">
+              <span>{comment.author.name}</span>
+              <span className="text-muted-foreground text-xs">•</span>
+              <span className="text-muted-foreground text-xs">
+                {formatDistance(comment.createdAt, new Date(), {
+                  addSuffix: true,
+                  locale: ko,
+                })}
+              </span>
+            </div>
+            {isEditorMode && (
+              <CommentInput
+                onCancel={() => setIsEditorMode(false)}
+                onSubmit={handleEditComment}
+                initialEditorState={comment.content as any}
+              />
+            )}
+            {!isEditorMode && (
+              <>
+                <div className="w-full rounded-lg ml-2">
+                  <View
+                    editorState={comment.content as any}
+                    className="min-h-0 "
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <CommentVoteBadgeButton comment={comment} />
+                  <Button
+                    variant={"ghost"}
+                    onClick={() => setIsReplying((v) => !v)}
+                    className="text-xs text-gray-500 flex items-center gap-2 rounded-lg"
+                  >
+                    <FaRegComment />
+                    Reply
+                  </Button>
+                  <CommentSettings
+                    comment={comment}
+                    onEditorOpen={() => setIsEditorMode(true)}
+                  />
+                </div>
+              </>
+            )}
+            {isReplying && !isEditorMode && (
+              <CommentInput
+                onCancel={() => setIsReplying(false)}
+                onSubmit={handleInputComment}
+                placeholder={`@${comment.author.name} Reply...`}
+              />
+            )}
+          </>
+        )}
+        {comment.depth + 1 >= (limitDepth ?? 3) &&
+          comment.children.length > 0 && (
+            <Button
+              variant={"ghost"}
+              className="italic text-xs space-x-2 -ml-4"
+              onClick={() => onMoreReplies?.(comment.path)}
+            >
+              <CiCirclePlus />
+              <span>more reply {comment.children.length}</span>
+            </Button>
+          )}
+        {comment.depth + 1 < (limitDepth ?? 3) &&
+          comment.children.map((child) => (
+            <CommentItem
+              key={child.id}
+              comment={child}
+              isMobile={isMobile}
+              limitDepth={limitDepth}
+              onMoreReplies={onMoreReplies}
+            />
+          ))}
       </div>
     </div>
   );

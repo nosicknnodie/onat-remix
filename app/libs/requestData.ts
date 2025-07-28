@@ -1,6 +1,14 @@
 export async function parseRequestData(
   request: Request
 ): Promise<Record<string, any>> {
+  const url = new URL(request.url);
+  const params: Record<string, string> = {};
+  url.searchParams.forEach((value, key) => {
+    params[key] = value;
+  });
+
+  // 이건 GET일 때만 동작
+  if (request.method === "GET") return params;
   const contentType = request.headers.get("content-type") || "";
 
   if (
@@ -14,6 +22,10 @@ export async function parseRequestData(
     });
     return data;
   } else {
-    return await request.json(); // any
+    try {
+      return await request.json(); // any
+    } catch {
+      return {};
+    }
   }
 }
