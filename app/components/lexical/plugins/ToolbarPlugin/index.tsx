@@ -35,6 +35,7 @@ import { Separator } from "~/components/ui/separator";
 import BoldButton from "./buttons/BoldButton";
 import CenterAlignButton from "./buttons/CenterAlignButton";
 import InsertCodeButton from "./buttons/InsertCodeButton";
+import InsertImageButton from "./buttons/InsertImageButton";
 import ItalicButton from "./buttons/ItalicButton";
 import LeftAlignButton from "./buttons/LeftAlignButton";
 import RedoButton from "./buttons/RedoButton";
@@ -333,6 +334,9 @@ export default function ToolbarPlugin() {
         <CenterAlignButton />
         <RightAlignButton />
         <Divider />
+      </div>
+      <div className="flex">
+        <InsertImageButton />
       </div>
     </div>
   );

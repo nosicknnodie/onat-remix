@@ -140,6 +140,17 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
     formRef.current?.submit();
   };
 
+  const handleOnUploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("subId", post.id); // post.id는 문자열이어야 합니다
+    const res = await fetch("/api/upload/post-image", {
+      method: "POST",
+      body: formData,
+    });
+    return await res.json();
+  };
+
   return (
     <>
       <Card>
@@ -244,6 +255,7 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
                         initialEditorState={
                           field.value ? JSON.parse(field.value) : undefined
                         }
+                        onUploadImage={handleOnUploadImage}
                         className={cn({
                           "ring-red-500 ring-1": fieldState.invalid,
                         })}

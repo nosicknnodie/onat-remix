@@ -34,6 +34,8 @@ import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
 import { cn } from "~/libs/utils";
 
+export const handle = { breadcrumb: "새글 쓰기" };
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
@@ -167,6 +169,17 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
     formRef.current?.submit();
   };
 
+  const handleOnUploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("subId", post.id); // post.id는 문자열이어야 합니다
+    const res = await fetch("/api/upload/post-image", {
+      method: "POST",
+      body: formData,
+    });
+    return await res.json();
+  };
+
   return (
     <>
       <Card>
@@ -276,6 +289,7 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
                         initialEditorState={
                           field.value ? JSON.parse(field.value) : undefined
                         }
+                        onUploadImage={handleOnUploadImage}
                         className={cn({
                           "ring-red-500 ring-1": fieldState.invalid,
                         })}

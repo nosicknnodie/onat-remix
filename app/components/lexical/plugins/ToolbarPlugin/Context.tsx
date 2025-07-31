@@ -16,6 +16,10 @@ export const MIN_ALLOWED_FONT_SIZE = 8;
 export const MAX_ALLOWED_FONT_SIZE = 72;
 export const DEFAULT_FONT_SIZE = 15;
 
+type IHandlerOnUpload = (
+  file: File
+) => Promise<{ success: string; url: string } | null> | undefined;
+
 const rootTypeToRootName = {
   root: "Root",
   table: "Table",
@@ -69,6 +73,7 @@ const INITIAL_TOOLBAR_STATE = {
   isToolbarVisible: true,
   isSubmitting: false,
   rootType: "root" as keyof typeof rootTypeToRootName,
+  onUploadImage: undefined as IHandlerOnUpload | undefined,
 };
 
 type ToolbarState = typeof INITIAL_TOOLBAR_STATE;

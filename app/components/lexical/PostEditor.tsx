@@ -14,6 +14,8 @@ import { cn } from "~/libs/utils";
 import { Skeleton } from "../ui/skeleton";
 import { nodes } from "./nodes/nodes";
 import { CodeHighlightingPlugin } from "./plugins/CodeHighlightPlugin";
+import DragDropPaste from "./plugins/DragDropPastePlugin";
+import ImagesPlugin from "./plugins/ImagesPlugin";
 import MarkdownPlugin from "./plugins/MarkdownShortcutPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import {
@@ -28,6 +30,7 @@ interface Props {
   placeholder?: string;
   onChange?: (root: SerializedEditorState) => void;
   className?: string;
+  onUploadImage?: (file: File) => Promise<{ success: string; url: string }>;
 }
 
 export function PostEditor({
@@ -35,6 +38,7 @@ export function PostEditor({
   initialEditorState,
   className,
   placeholder,
+  onUploadImage,
 }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const initialConfig = {
@@ -67,7 +71,9 @@ export function PostEditor({
     <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
-          <ToolbarContext>
+          <ToolbarContext
+            config={{ isEditable: true, isToolbarVisible: true, onUploadImage }}
+          >
             <ToolbarPlugin />
             <div className="relative  p-2">
               <RichTextPlugin
@@ -90,6 +96,8 @@ export function PostEditor({
               <ListPlugin />
               <CheckListPlugin />
               <CodeHighlightingPlugin />
+              <ImagesPlugin />
+              <DragDropPaste />
               <OnChangePlugin onChange={handleEditorChange} />
             </div>
           </ToolbarContext>

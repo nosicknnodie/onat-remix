@@ -83,7 +83,6 @@ const options: Record<
     icon: <VscListOrdered className="size-4" />,
     onClick: (editor, blockType) => {
       if (blockType !== "number") {
-        console.log("blockType - ", blockType);
         editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
       } else {
         formatParagraph(editor);
