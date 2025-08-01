@@ -23,6 +23,7 @@ import {
   ActiveEditorProvider,
   ToolbarContext,
 } from "./plugins/ToolbarPlugin/Context";
+import YouTubePlugin from "./plugins/YouTubePlugin";
 import "./theme/code-highlight.css";
 import { theme } from "./theme/theme";
 
@@ -105,6 +106,7 @@ export function CommentEditor({
               <CodeHighlightingPlugin />
               <ImagesPlugin />
               <DragDropPaste />
+              <YouTubePlugin />
               <FooterToolbarPlugin onCancel={onCancel} onSubmit={onSubmit} />
               <OnChangePlugin onChange={handleEditorChange} />
             </div>

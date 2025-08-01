@@ -43,6 +43,7 @@ import RightAlignButton from "./buttons/RightAlignButton";
 import StrikethroughButton from "./buttons/StrikethroughButton";
 import UnderlineButton from "./buttons/UnderlineButton";
 import UndoButton from "./buttons/UndoButton";
+import YoutubeButton from "./buttons/YoutubeButton";
 import CodeLanguageDropDown from "./CodeLanguageDropDown";
 import {
   blockTypeToBlockName,
@@ -337,6 +338,7 @@ export default function ToolbarPlugin() {
       </div>
       <div className="flex">
         <InsertImageButton />
+        <YoutubeButton />
       </div>
     </div>
   );

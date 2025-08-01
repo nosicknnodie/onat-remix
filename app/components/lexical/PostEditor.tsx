@@ -22,6 +22,7 @@ import {
   ActiveEditorProvider,
   ToolbarContext,
 } from "./plugins/ToolbarPlugin/Context";
+import YouTubePlugin from "./plugins/YouTubePlugin";
 import "./theme/code-highlight.css";
 import { theme } from "./theme/theme";
 
@@ -98,6 +99,7 @@ export function PostEditor({
               <CodeHighlightingPlugin />
               <ImagesPlugin />
               <DragDropPaste />
+              <YouTubePlugin />
               <OnChangePlugin onChange={handleEditorChange} />
             </div>
           </ToolbarContext>
