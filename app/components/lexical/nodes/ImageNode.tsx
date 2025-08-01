@@ -1,5 +1,6 @@
 import { DecoratorNode, NodeKey, SerializedLexicalNode, Spread } from "lexical";
 import { JSX } from "react";
+import NodeImage from "../components/NodeImage";
 
 export interface ImagePayload {
   key?: NodeKey;
@@ -91,36 +92,12 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   }
 
   decorate(): JSX.Element {
-    if (this.__uploadState === "pending") {
-      return (
-        <div className="relative w-[300px] h-[200px]">
-          <img
-            src={this.__src}
-            alt={this.__altText || ""}
-            className="w-full h-full object-cover blur-sm opacity-70 rounded"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white text-sm bg-black/50 px-3 py-1 rounded">
-              업로드 중...
-            </span>
-          </div>
-        </div>
-      );
-    } else if (this.__uploadState === "error") {
-      return (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <span className="text-red-500 bg-white/70 px-2 py-1 rounded">
-            업로드 실패
-          </span>
-        </div>
-      );
-    }
-
     return (
-      <img
+      <NodeImage
         src={this.__src}
         alt={this.__altText || ""}
         className="max-w-full h-auto rounded"
+        state={this.__uploadState}
       />
     );
   }

@@ -51,7 +51,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         orderBy: { createdAt: "desc" },
         where: { state: "PUBLISHED" },
         include: {
-          _count: { select: { comments: { where: { parentId: null } } } },
+          _count: {
+            select: {
+              comments: { where: { parentId: null, isDeleted: false } },
+            },
+          },
         },
       },
     },

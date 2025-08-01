@@ -48,7 +48,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         },
         votes: true,
         _count: {
-          select: { comments: { where: { parentId: null } }, likes: true },
+          select: {
+            comments: { where: { parentId: null, isDeleted: false } },
+            likes: true,
+          },
         },
       },
     });

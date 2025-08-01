@@ -49,7 +49,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
               take: 1,
             },
             _count: {
-              select: { comments: { where: { parentId: null } }, likes: true },
+              select: {
+                comments: { where: { parentId: null, isDeleted: false } },
+                likes: true,
+              },
             },
           },
         },

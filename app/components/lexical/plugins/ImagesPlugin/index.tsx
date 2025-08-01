@@ -125,8 +125,6 @@ const InserImageFile = ({ onSubmit }: { onSubmit: () => void }) => {
         onInserted: (node) => {
           if (!$isImageNode(node)) return;
 
-          const formData = new FormData();
-          formData.append("file", file);
           try {
             toolbarState.onUploadImage?.(file)?.then((params) => {
               activeEditor.update(() => {
