@@ -133,6 +133,7 @@ const InserImageFile = ({ onSubmit }: { onSubmit: () => void }) => {
                 if (params?.success) {
                   const writable = node.getWritable();
                   if ($isImageNode(writable)) {
+                    writable.__imageId = params.id;
                     writable.__src = params.url;
                     writable.__uploadState = "success";
                   }

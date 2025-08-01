@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
   region: "ap-northeast-2", // 개인서버라 의미없긴함.
@@ -10,11 +14,25 @@ const s3 = new S3Client({
   forcePathStyle: true,
 });
 
+export async function deletePublicImage(key: string) {
+  const bucket = "onat-public-image";
+  const command = new DeleteObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
+
+  await s3.send(command);
+}
+
 export async function sendBufferToPublicImage({
   key,
   body,
   contentType,
-}: { key: string; body: Buffer; contentType: string }) {
+}: {
+  key: string;
+  body: Buffer;
+  contentType: string;
+}) {
   const bucket = "onat-public-image";
   const command = new PutObjectCommand({
     Bucket: bucket,
@@ -22,7 +40,6 @@ export async function sendBufferToPublicImage({
     Body: body,
     ContentType: contentType,
   });
-
   await s3.send(command);
   const publicUrl = `https://minio-api.onsoa.net/${bucket}/${key}`;
   return publicUrl;

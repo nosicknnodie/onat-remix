@@ -18,7 +18,7 @@ export const DEFAULT_FONT_SIZE = 15;
 
 type IHandlerOnUpload = (
   file: File
-) => Promise<{ success: string; url: string } | null> | undefined;
+) => Promise<{ success: string; url: string; id: string } | null> | undefined;
 
 const rootTypeToRootName = {
   root: "Root",

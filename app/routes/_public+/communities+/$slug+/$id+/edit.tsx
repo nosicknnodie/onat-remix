@@ -30,6 +30,7 @@ import {
 } from "~/components/ui/select";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
+import { deletePublicImage } from "~/libs/db/s3.server";
 import { parseRequestData } from "~/libs/requestData";
 import { cn } from "~/libs/utils";
 
@@ -89,14 +90,70 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     };
   }
   try {
+    const contentJSON = JSON.parse(result.data.content);
+    const extractImageIds = (node: any): string[] => {
+      if (!node || typeof node !== "object") return [];
+      let ids: string[] = [];
+
+      if (node.type === "image" && node.imageId) {
+        ids.push(node.imageId);
+      }
+
+      if (node.root) {
+        ids = ids.concat(extractImageIds(node.root));
+      } else if (node.children && Array.isArray(node.children)) {
+        for (const child of node.children) {
+          ids = ids.concat(extractImageIds(child));
+        }
+      }
+
+      return ids;
+    };
+
+    const usedImageIds = extractImageIds(contentJSON);
     const post = await prisma.post.findUnique({
       where: {
         id: id,
       },
+      include: {
+        files: true,
+      },
     });
+    const notUsedImages =
+      post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
+
     if (post?.authorId !== user.id) {
       return { error: "게시글 권한이 없습니다." };
     }
+
+    /**
+     * Delete Not Used Images
+     */
+    if (notUsedImages.length > 0) {
+      const successfullyDeletedIds: string[] = [];
+
+      for (const file of notUsedImages) {
+        try {
+          if (file.key) {
+            await deletePublicImage(file.key);
+            successfullyDeletedIds.push(file.id);
+          }
+        } catch (err) {
+          console.error("이미지 삭제 실패:", file.key, err);
+        }
+      }
+
+      if (successfullyDeletedIds.length > 0) {
+        await prisma.file.deleteMany({
+          where: {
+            id: {
+              in: successfullyDeletedIds,
+            },
+          },
+        });
+      }
+    }
+
     const res = await prisma.post.update({
       where: {
         id: id,

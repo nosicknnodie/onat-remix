@@ -56,6 +56,7 @@ export const action: ActionFunction = async ({ request }) => {
   const res = await prisma.file.create({
     data: {
       url: publicUrl,
+      key: key,
       uploaderId: user.id,
       mimeType: ext,
       size: webpBuffer.length,
