@@ -32,16 +32,16 @@ const StarRating = ({
           <span key={v} className="relative">
             {v === 0 && (
               <span
-                className="absolute -left-1/2 top-0 h-full w-1/2 bg-transparent"
+                className="absolute -left-1/2 top-0 h-full w-1/2 bg-transparent cursor-pointer"
                 onClick={(e) => onClick && onClick(e, 0)}
               ></span>
             )}
             <span
-              className="absolute left-0 top-0 h-full w-1/2 bg-transparent"
+              className="absolute left-0 top-0 h-full w-1/2 bg-transparent cursor-pointer"
               onClick={(e) => onClick && onClick(e, v * 20 + 10)}
             ></span>
             <span
-              className="absolute left-1/2 top-0 h-full w-1/2 bg-transparent"
+              className="absolute left-1/2 top-0 h-full w-1/2 bg-transparent cursor-pointer"
               onClick={(e) => onClick && onClick(e, v * 20 + 20)}
             ></span>
             <StarIcon

@@ -4,12 +4,14 @@ import { Link, NavLink, useLoaderData } from "@remix-run/react";
 import {
   FaBullhorn,
   FaLink,
+  FaRegComment,
   FaRegFileAlt,
   FaRegImages,
   FaRegPlayCircle,
 } from "react-icons/fa";
 import { Fragment } from "react/jsx-runtime";
 import ItemLink from "~/components/ItemLink";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
@@ -95,10 +97,12 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
                         key={post.id}
                         to={`/communities/${board.slug}/${post.id}`}
                       >
-                        <li className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md">
-                          {post.title}{" "}
-                          {post._count.comments > 0 &&
-                            `(${post._count.comments})`}
+                        <li className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md flex justify-between">
+                          <span>{post.title}</span>
+                          <Badge variant={"outline"} className="space-x-2">
+                            <FaRegComment />
+                            <span>{post._count.comments}</span>
+                          </Badge>
                         </li>
                       </NavLink>
                     );

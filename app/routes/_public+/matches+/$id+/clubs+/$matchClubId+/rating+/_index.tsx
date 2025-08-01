@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 import { RiExpandLeftLine } from "react-icons/ri";
 import "swiper/css";
@@ -57,6 +57,11 @@ const RatingPage = (_props: IRatingPageProps) => {
 
   const loaderData = useLoaderData<typeof loader>();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const { data } = useQuery<Awaited<ReturnType<typeof loader>>>({
     queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
     queryFn: async () => {
@@ -196,6 +201,8 @@ const RatingPage = (_props: IRatingPageProps) => {
       });
     },
   });
+  if (!isMounted) return null;
+
   return (
     <>
       <div className="w-full">
@@ -206,7 +213,10 @@ const RatingPage = (_props: IRatingPageProps) => {
             onActiveIndexChange={(swiper) => {
               setActiveIndex(swiper.realIndex);
             }}
+            watchSlidesProgress={true}
             loop={true}
+            slideToClickedSlide={true}
+            loopAdditionalSlides={5}
             breakpoints={{
               0: {
                 slidesPerView: 1.5, // 모바일
@@ -252,7 +262,7 @@ const RatingPage = (_props: IRatingPageProps) => {
               return (
                 <SwiperSlide
                   className="w-72 h-full relative flex items-center py-4"
-                  key={attendance.id}
+                  key={`key-${attendance.id}-${i}`}
                 >
                   <Card
                     className={cn(
@@ -355,7 +365,9 @@ const RatingPage = (_props: IRatingPageProps) => {
                           score={evaluation?.score || 0}
                           width={30}
                           isHighLight
+                          disabled={!isActived}
                           onClick={(e, score) => {
+                            console.log("score - ", score);
                             updateEvaluation.mutate({
                               attendanceId: attendance.id,
                               score,
@@ -365,8 +377,9 @@ const RatingPage = (_props: IRatingPageProps) => {
                         <div>
                           <Button
                             variant={"ghost"}
-                            disabled={toggleLike.isPending}
+                            disabled={toggleLike.isPending || !isActived}
                             onClick={() => {
+                              console.log("123123 - ", 123123);
                               toggleLike.mutate({
                                 attendanceId: attendance.id,
                                 liked: !evaluation?.liked,
