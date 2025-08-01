@@ -14,7 +14,9 @@ import { cn } from "~/libs/utils";
 import { Skeleton } from "../ui/skeleton";
 import { nodes } from "./nodes/nodes";
 import { CodeHighlightingPlugin } from "./plugins/CodeHighlightPlugin";
+import DragDropPaste from "./plugins/DragDropPastePlugin";
 import FooterToolbarPlugin from "./plugins/FooterToolbarPlugin";
+import ImagesPlugin from "./plugins/ImagesPlugin";
 import MarkdownPlugin from "./plugins/MarkdownShortcutPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import {
@@ -32,6 +34,7 @@ interface Props {
   onCancel?: () => void;
   onSubmit?: (root?: SerializedEditorState, editor?: LexicalEditor) => void;
   isSubmitting?: boolean;
+  onUploadImage?: (file: File) => Promise<{ success: string; url: string }>;
 }
 
 export function CommentEditor({
@@ -42,6 +45,7 @@ export function CommentEditor({
   onCancel,
   onSubmit,
   isSubmitting,
+  onUploadImage,
 }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const initialConfig = {
@@ -74,7 +78,9 @@ export function CommentEditor({
     <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
-          <ToolbarContext config={{ isToolbarVisible: false, isSubmitting }}>
+          <ToolbarContext
+            config={{ isToolbarVisible: false, isSubmitting, onUploadImage }}
+          >
             <ToolbarPlugin />
             <div className="relative  p-2">
               <RichTextPlugin
@@ -97,6 +103,8 @@ export function CommentEditor({
               <ListPlugin />
               <CheckListPlugin />
               <CodeHighlightingPlugin />
+              <ImagesPlugin />
+              <DragDropPaste />
               <FooterToolbarPlugin onCancel={onCancel} onSubmit={onSubmit} />
               <OnChangePlugin onChange={handleEditorChange} />
             </div>

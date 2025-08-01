@@ -14,6 +14,7 @@ model File {
   mimeType   String
   purpose    FilePurposeType  @default(PROFILE)
   size       Int
+  isTemp     Boolean  @default(false)
   uploaderId String?
   uploader   User?  @relation("UploadedImages", fields: [uploaderId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
@@ -21,6 +22,7 @@ model File {
   clubImages      Club[] @relation("ClubImage")
   clubEmblems      Club[] @relation("ClubEmblem")
   posts      Post[] @relation("PostFiles")
+  comments   PostComment[] @relation("CommentFiles")
 }
 
 enum FilePurposeType {
@@ -30,6 +32,7 @@ enum FilePurposeType {
   POST_IMAGE
   MATCH_PHOTO
   DOCUMENT
+  COMMENT_IMAGE
 }
 
 enum UserRoleType {
@@ -584,6 +587,7 @@ model PostComment {
   parentId  String?        // 대댓글 기능
 
   votes     CommentVote[]
+  files     File[]   @relation("CommentFiles")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

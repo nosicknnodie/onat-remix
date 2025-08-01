@@ -110,6 +110,29 @@ export async function action({ params, request }: ActionFunctionArgs) {
     const depth = parent ? parent.depth + 1 : 0;
     const path = parent ? `${parent.path}.${indexId}` : indexId;
 
+    // Image Upload
+    const contentJSON = content;
+    const extractImageIds = (node: any): string[] => {
+      if (!node || typeof node !== "object") return [];
+      let ids: string[] = [];
+
+      if (node.type === "image" && node.imageId) {
+        ids.push(node.imageId);
+      }
+
+      if (node.root) {
+        ids = ids.concat(extractImageIds(node.root));
+      } else if (node.children && Array.isArray(node.children)) {
+        for (const child of node.children) {
+          ids = ids.concat(extractImageIds(child));
+        }
+      }
+
+      return ids;
+    };
+
+    const usedImageIds = extractImageIds(contentJSON);
+
     const comment = await prisma.postComment.create({
       data: {
         postId,
@@ -119,8 +142,21 @@ export async function action({ params, request }: ActionFunctionArgs) {
         path,
         depth,
         content,
+        files: {
+          connect: usedImageIds.map((id) => ({ id })),
+        },
       },
     });
+    if (comment) {
+      await prisma.file.updateMany({
+        where: {
+          id: { in: usedImageIds },
+        },
+        data: {
+          isTemp: false,
+        },
+      });
+    }
 
     return Response.json({ success: true, comment });
   } catch (error) {

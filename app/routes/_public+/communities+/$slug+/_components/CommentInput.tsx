@@ -36,6 +36,16 @@ const CommentInput = ({
     await onSubmit?.(root, editor);
     setIsSubmitting(false);
   };
+  const handleInsertImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload/comment-image", {
+      method: "POST",
+      body: formData,
+    });
+    return await res.json();
+  };
+
   return (
     <>
       <div
@@ -47,6 +57,7 @@ const CommentInput = ({
         <CommentEditor
           onCancel={handleCancel}
           onSubmit={handleSubmit}
+          onUploadImage={handleInsertImage}
           initialEditorState={initialEditorState}
           placeholder={placeholder || "코멘트를 입력하세요."}
           isSubmitting={isSubmitting}
