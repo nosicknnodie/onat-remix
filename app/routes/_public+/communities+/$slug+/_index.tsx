@@ -29,8 +29,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   const slug = params.slug;
   try {
-    const res = await prisma.board.findUnique({
-      where: { slug },
+    const res = await prisma.board.findFirst({
+      where: {
+        slug: slug!,
+        clubId: null,
+      },
       include: {
         posts: {
           orderBy: { createdAt: "desc" },

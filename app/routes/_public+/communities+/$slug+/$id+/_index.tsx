@@ -216,7 +216,6 @@ const PostView = (_props: IPostViewProps) => {
                   })}
                 </span>
               </div>
-              <Settings board={post.board} post={post} />
             </div>
             <CardTitle className="text-2xl">{post.title}</CardTitle>
           </CardHeader>
@@ -237,6 +236,7 @@ const PostView = (_props: IPostViewProps) => {
               </Button>
               <span>{post._count.comments}</span>
             </Badge>
+            <Settings board={post.board} post={post} />
           </CardFooter>
           <CardContent className="max-md:p-1">
             {!isTextMode ? (

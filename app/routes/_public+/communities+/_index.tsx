@@ -45,7 +45,7 @@ export const handle = {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const boards = await prisma.board.findMany({
-    where: { isUse: true },
+    where: { isUse: true, clubId: null },
     orderBy: { order: "asc" },
     include: {
       posts: {

@@ -298,7 +298,7 @@ const TeamCard = ({ team }: ITeamCardProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid xl:grid-cols-4 md:max-xl:grid-cols-3 gap-1">
+          <div className="grid xl:grid-cols-4 md:max-xl:grid-cols-3 max-md:grid-cols-2 gap-2">
             {team?.attendances?.map((attendance) => {
               return (
                 <Fragment key={attendance?.id}>

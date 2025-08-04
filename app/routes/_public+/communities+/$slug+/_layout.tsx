@@ -5,8 +5,8 @@ import { prisma } from "~/libs/db/db.server";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const slug = params.slug;
   try {
-    const res = await prisma.board.findUnique({
-      where: { slug },
+    const res = await prisma.board.findFirst({
+      where: { slug, clubId: null },
     });
     return { board: res };
   } catch (error) {

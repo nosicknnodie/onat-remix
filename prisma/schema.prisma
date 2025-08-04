@@ -155,6 +155,7 @@ model Club {
   players       Player[]      // 회원 선수
   matchClubs    MatchClub[]       // 매치
   mercenarys    Mercenary[]     // 용병
+  boards        Board[]       // 게시판
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
@@ -530,10 +531,13 @@ enum BoardType {
 model Board {
   id        String     @id @default(cuid())
   name      String
-  slug      String?     @unique
+  slug      String?
   order     Int        @default(0)
   isUse     Boolean    @default(true)
   type      BoardType  @default(TEXT)
+
+  clubId    String?
+  clubs     Club?      @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   // 권한 필드 추가
   readRole    UserRoleType?  @default(NORMAL) // 읽기 권한 (NULL은 전체 공개)
@@ -541,6 +545,8 @@ model Board {
 
   posts     Post[]
   createdAt DateTime   @default(now())
+
+  @@unique([slug, clubId])
 }
 
 model Post {
