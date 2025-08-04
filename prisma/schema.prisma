@@ -526,6 +526,7 @@ enum BoardType {
   VIDEO     // 영상 중심
   NOTICE    // 공지
   LINK      // 링크 또는 자료
+  ARCHIVE   // 자료실
 }
 
 model Board {

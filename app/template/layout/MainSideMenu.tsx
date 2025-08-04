@@ -3,9 +3,8 @@ import { useLocation, useNavigate } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
-import { FiFileText, FiImage, FiLink, FiVideo } from "react-icons/fi";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
-import { MdCampaign, MdGroups2 } from "react-icons/md";
+import { MdGroups2 } from "react-icons/md";
 import { TbSoccerField } from "react-icons/tb";
 import { Fragment } from "react/jsx-runtime";
 import { Button } from "~/components/ui/button";
@@ -21,6 +20,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import { Skeleton } from "~/components/ui/skeleton";
+import { getBoardIcon } from "~/libs/getBoardIcons";
 interface IMainSideMenuProps {}
 const MainSideMenu = (_props: IMainSideMenuProps) => {
   const { open, toggleSidebar, setOpenMobile } = useSidebar();
@@ -35,17 +35,16 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
   const boards = data?.boards;
 
   const communityMenus = [
-    { title: "전체", url: "/communities", icon: Home, end: true },
+    {
+      title: "전체",
+      url: "/communities",
+      icon: <Home className="text-primary" />,
+      end: true,
+    },
     ...(boards?.map((board: Board) => ({
       title: board.name,
       url: `/communities/${board.slug}`,
-      icon: {
-        TEXT: FiFileText,
-        GALLERY: FiImage,
-        VIDEO: FiVideo,
-        NOTICE: MdCampaign,
-        LINK: FiLink,
-      }[board.type],
+      icon: getBoardIcon(board.type),
       end: false,
     })) || []),
   ];
@@ -119,7 +118,7 @@ const MainSideMenu = (_props: IMainSideMenuProps) => {
                             : location.pathname.startsWith(menu.url)
                         }
                       >
-                        <menu.icon />
+                        {menu.icon}
                         {menu.title}
                       </SidebarMenuButton>
                     </SidebarMenuItem>

@@ -69,6 +69,36 @@ export async function action({ request }: ActionFunctionArgs) {
           gun: gun || null,
           ownerUserId: user.id,
           createUserId: user.id,
+          boards: {
+            createMany: {
+              data: [
+                {
+                  name: "공지사항",
+                  slug: "notice",
+                  order: 0,
+                  type: "NOTICE",
+                },
+                {
+                  name: "자유게시판",
+                  slug: "free",
+                  order: 10,
+                  type: "TEXT",
+                },
+                {
+                  name: "갤러리",
+                  slug: "gallery",
+                  order: 20,
+                  type: "GALLERY",
+                },
+                {
+                  name: "자료실",
+                  slug: "archive",
+                  order: 30,
+                  type: "ARCHIVE",
+                },
+              ],
+            },
+          },
         },
       });
       await tx.player.create({

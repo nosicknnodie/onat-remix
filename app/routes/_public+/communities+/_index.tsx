@@ -1,37 +1,13 @@
-import { BoardType } from "@prisma/client";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, NavLink, useLoaderData } from "@remix-run/react";
-import {
-  FaBullhorn,
-  FaLink,
-  FaRegComment,
-  FaRegFileAlt,
-  FaRegImages,
-  FaRegPlayCircle,
-} from "react-icons/fa";
+import { FaRegComment } from "react-icons/fa";
 import { Fragment } from "react/jsx-runtime";
 import ItemLink from "~/components/ItemLink";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
-
-const getBoardIcon = (type: BoardType) => {
-  switch (type) {
-    case "TEXT":
-      return <FaRegFileAlt className="text-primary" />;
-    case "GALLERY":
-      return <FaRegImages className="text-primary" />;
-    case "VIDEO":
-      return <FaRegPlayCircle className="text-primary" />;
-    case "NOTICE":
-      return <FaBullhorn className="text-primary" />;
-    case "LINK":
-      return <FaLink className="text-primary" />;
-    default:
-      return null;
-  }
-};
+import { getBoardIcon } from "~/libs/getBoardIcons";
 
 export const handle = {
   right: () => (

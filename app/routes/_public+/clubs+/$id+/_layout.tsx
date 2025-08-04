@@ -8,12 +8,10 @@ import {
   useMatches,
   useParams,
 } from "@remix-run/react";
-import { FaComments } from "react-icons/fa";
-import { MdCampaign, MdPhotoLibrary } from "react-icons/md";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 
-import { Club, File, Player } from "@prisma/client";
+import { Board, Club, File, Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { ChevronDown } from "lucide-react";
 import FormError from "~/components/FormError";
@@ -30,6 +28,7 @@ import {
 import { NavigationMenuLink } from "~/components/ui/navigation-menu";
 import { useSession } from "~/contexts/AuthUserContext";
 import { getUser } from "~/libs/db/lucia.server";
+import { getBoardIcon } from "~/libs/getBoardIcons";
 import JoinDialog from "~/template/club/JoinDialog";
 
 export const handle = {
@@ -99,6 +98,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       include: {
         image: { select: { url: true } },
         emblem: { select: { url: true } },
+        boards: true,
       },
     }),
     user
@@ -129,6 +129,7 @@ export type IClubLayoutLoaderData = {
   club: Club & {
     image?: File | null;
     emblem?: File | null;
+    boards?: Board[];
   };
   player: (Player & { user: { userImage: string } }) | null;
 };
@@ -166,6 +167,9 @@ const Layout = (_props: ILayoutProps) => {
   const isJoinPending = user && data.player && data.player.status === "PENDING";
   // 거절
   const isRejected = user && data.player && data.player.status === "REJECTED";
+
+  const boards = data.club.boards;
+
   return (
     <>
       <div className="flex flex-col gap-2 w-full">
@@ -275,16 +279,18 @@ const Layout = (_props: ILayoutProps) => {
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild>
-                <Link
-                  to={`/clubs/${data.club.id}/boards/notice`}
-                  className="space-x-1 flex"
-                >
-                  <MdCampaign className="text-primary" />
-                  <span>공지사항</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              {boards?.map((board) => (
+                <DropdownMenuItem key={board.id} asChild>
+                  <Link
+                    to={`/clubs/${data.club.id}/boards/${board.slug}`}
+                    className="space-x-1 flex"
+                  >
+                    {getBoardIcon(board.type)}
+                    <span>{board.name}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              {/* <DropdownMenuItem asChild>
                 <Link
                   to={`/clubs/${data.club.id}/boards/free`}
                   className="space-x-1"
@@ -301,7 +307,7 @@ const Layout = (_props: ILayoutProps) => {
                   <MdPhotoLibrary className="text-primary" />{" "}
                   <span>사진게시판</span>
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
           {/* <ItemLink to={`/clubs/${data.club.id}/boards`}>게시판</ItemLink> */}
