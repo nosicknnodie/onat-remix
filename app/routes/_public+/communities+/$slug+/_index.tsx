@@ -22,8 +22,8 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import PostVoteBadgeButton from "./_components/PostVoteBadgeButton";
-import Settings from "./_components/Settings";
+import PostVoteBadgeButton from "../../../../template/post/PostVoteBadgeButton";
+import Settings from "../../../../template/post/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -121,7 +121,10 @@ const CompactTypeComponent = () => {
                       <Link to={`./${post.id}`} className="flex-1">
                         {post.title}
                       </Link>
-                      <Settings board={board} post={post} />
+                      <Settings
+                        post={post}
+                        editTo={`/communities/${board?.slug}/${post.id}/edit`}
+                      />
                     </CardTitle>
                   </CardHeader>
                   {/* <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
@@ -217,7 +220,10 @@ const CardTypeComponent = () => {
                           })}
                         </span>
                       </div>
-                      <Settings board={board} post={post} />
+                      <Settings
+                        post={post}
+                        editTo={`/communities/${board?.slug}/${post.id}/edit`}
+                      />
                     </div>
                     <Link to={`./${post.id}`}>
                       <CardTitle className="text-lg">{post.title}</CardTitle>

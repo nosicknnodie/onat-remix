@@ -6,14 +6,14 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const clubId = params.id;
   const slug = params.slug;
 
-  const board = await prisma.board.findMany({
+  const boards = await prisma.board.findMany({
     where: {
       slug,
       clubId,
     },
   });
 
-  if (board.length === 0) {
+  if (boards.length === 0) {
     await prisma.board.createMany({
       data: [
         {

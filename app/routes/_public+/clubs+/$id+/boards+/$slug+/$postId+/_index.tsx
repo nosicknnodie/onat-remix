@@ -25,15 +25,15 @@ import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
-import CommentInput from "../../../../../template/post/CommentInput";
-import CommentSettings from "../../../../../template/post/CommentSettings";
-import CommentVoteBadgeButton from "../../../../../template/post/CommentVoteBadgeButton";
-import PostVoteBadgeButton from "../../../../../template/post/PostVoteBadgeButton";
-import Settings from "../../../../../template/post/Settings";
+import CommentInput from "~/template/post/CommentInput";
+import CommentSettings from "~/template/post/CommentSettings";
+import CommentVoteBadgeButton from "~/template/post/CommentVoteBadgeButton";
+import PostVoteBadgeButton from "~/template/post/PostVoteBadgeButton";
+import Settings from "~/template/post/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  const id = params.id;
+  const id = params.postId;
   const slug = params.slug;
   try {
     const post = await prisma.post.findUnique({
@@ -238,7 +238,7 @@ const PostView = (_props: IPostViewProps) => {
             </Badge>
             <Settings
               post={post}
-              editTo={`/communities/${post.board?.slug}/${post?.id}/edit`}
+              editTo={`/clubs/${post.board?.clubId}/boards/${post.board?.slug}/${post?.id}/edit`}
             />
           </CardFooter>
           <CardContent className="max-md:p-1">

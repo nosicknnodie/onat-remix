@@ -28,18 +28,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { deletePublicImage } from "~/libs/db/s3.server";
 import { parseRequestData } from "~/libs/requestData";
 import { cn } from "~/libs/utils";
 
-export const handle = { breadcrumb: "새글 쓰기" };
+export const handle = {
+  breadcrumb: (match: { data: any }) => "수정",
+};
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
+  const slug = params.slug;
+  const id = params.postId;
   /**
    * TODO:
    * 1. user Id 를 기반으로 state 필드가 draft 인것이 있는지 확인해서 first 인것 가져오기
@@ -48,28 +51,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
    */
 
   try {
-    const res = await prisma.$transaction(async (tx) => {
-      const draftPost = await tx.post.findFirst({
-        where: {
-          authorId: user.id,
-          state: "DRAFT",
-        },
-      });
-
-      if (!draftPost) {
-        const post = await tx.post.create({
-          data: {
-            authorId: user.id,
-            title: "",
-            state: "DRAFT",
-          },
-        });
-        return post;
-      }
-      return draftPost;
+    const res = await prisma.post.findUnique({
+      where: {
+        id,
+        authorId: user.id,
+      },
     });
+    if (!res) return redirect("../");
     const boards = await prisma.board.findMany({
-      where: { isUse: true, clubId: null },
+      where: { isUse: true },
       orderBy: { order: "asc" },
     });
     return { post: res, boards };
@@ -80,15 +70,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 const postScheme = z.object({
-  id: z.string().min(1, "ID 는 필수 입니다."),
   boardId: z.string().nonempty("게시판 선택은 필수 입니다."),
   title: z.string().nonempty("제목은 한글자 이상 필수입니다."),
   content: z.string().nonempty("내용은 한글자 이상 필수입니다."),
 });
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
+  const id = params.postId;
+  const clubId = params.id;
   const data = await parseRequestData(request);
 
   const result = postScheme.safeParse(data);
@@ -120,20 +111,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return ids;
     };
 
+    const usedImageIds = extractImageIds(contentJSON);
     const post = await prisma.post.findUnique({
       where: {
-        id: result.data.id,
+        id: id,
       },
       include: {
         files: true,
       },
     });
+    const notUsedImages =
+      post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
+
     if (post?.authorId !== user.id) {
       return { error: "게시글 권한이 없습니다." };
     }
-    const usedImageIds = extractImageIds(contentJSON);
-    const notUsedImages =
-      post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
+
     /**
      * Delete Not Used Images
      */
@@ -164,14 +157,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const res = await prisma.post.update({
       where: {
-        id: result.data.id,
+        id: id,
       },
       data: {
         boardId: result.data.boardId,
         state: "PUBLISHED",
         title: result.data.title,
         content: JSON.parse(result.data.content),
-        createdAt: new Date(),
       },
     });
     const board = await prisma.board.findUnique({
@@ -179,48 +171,31 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         id: result.data.boardId,
       },
     });
-    return redirect("/communities/" + board?.slug + "/" + res.id);
+    return redirect(
+      "/clubs/" + clubId + "/boards/" + board?.slug + "/" + res?.id
+    );
   } catch (error) {
     console.error(error);
     return { success: false, error: "Internal Server Error" };
   }
 };
 
-interface ICommunityNewPageProps {}
+interface ICommunityEditPageProps {}
 
-const CommunityNewPage = (_props: ICommunityNewPageProps) => {
+const CommunityEditPage = (_props: ICommunityEditPageProps) => {
+  const formRef = useRef<HTMLFormElement>(null);
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const user = useSession();
-  const formRef = useRef<HTMLFormElement>(null);
   const post = loaderData.post;
-
+  const boards = loaderData.boards;
   const form = useForm<z.infer<typeof postScheme>>({
     resolver: zodResolver(postScheme),
     defaultValues: {
-      id: post?.id,
       boardId: post?.boardId || "",
       title: post?.title || "",
       content: post?.content ? JSON.stringify(post?.content) : undefined,
     },
   });
-
-  const boards = loaderData?.boards
-    .filter((board) =>
-      board.isUse && board.writeRole === "ADMIN" ? user?.role === "ADMIN" : true
-    )
-    .sort((a, b) => {
-      if (a.isUse && !b.isUse) return -1;
-      if (!a.isUse && b.isUse) return 1;
-
-      // Both are same in isUse
-      if (a.isUse && b.isUse) {
-        return a.order - b.order;
-      }
-
-      return 0;
-    });
-
   const handleOnValid = () => {
     formRef.current?.submit();
   };
@@ -240,7 +215,7 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>글쓰기</CardTitle>
+          <CardTitle>게시글 수정</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -250,11 +225,6 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
               method="post"
               className="space-y-2"
             >
-              <input
-                type="hidden"
-                name="id"
-                value={form.getValues("id") ?? ""}
-              />
               <FormField
                 name="boardId"
                 control={form.control}
@@ -375,4 +345,4 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
   );
 };
 
-export default CommunityNewPage;
+export default CommunityEditPage;

@@ -1,4 +1,4 @@
-import { Board, File, Post, User } from "@prisma/client";
+import { File, Post, User } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link, useRevalidator } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
@@ -15,11 +15,11 @@ import { confirm } from "~/libs/confirm";
 import { cn } from "~/libs/utils";
 
 interface ISettingsProps {
-  board?: Board | null;
+  editTo: string;
   post?: (Post & { author?: User & { userImage?: File | null } }) | null;
 }
 
-const Settings = ({ board, post }: ISettingsProps) => {
+const Settings = ({ post, editTo }: ISettingsProps) => {
   const user = useSession();
   const { revalidate } = useRevalidator();
   const { mutateAsync, isPending } = useMutation({
@@ -36,6 +36,10 @@ const Settings = ({ board, post }: ISettingsProps) => {
       console.error(error);
     }
   };
+
+  // 작성자가 아니면 null
+  if (user?.id !== post?.authorId) return null;
+
   return (
     <>
       <DropdownMenu>
@@ -58,9 +62,7 @@ const Settings = ({ board, post }: ISettingsProps) => {
           {user?.id === post?.authorId && (
             <>
               <DropdownMenuItem asChild>
-                <Link to={`/communities/${board?.slug}/${post?.id}/edit`}>
-                  Edit
-                </Link>
+                <Link to={editTo}>Edit</Link>
               </DropdownMenuItem>
               <Button
                 variant="ghost"

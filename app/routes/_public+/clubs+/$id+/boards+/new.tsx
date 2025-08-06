@@ -37,9 +37,10 @@ import { cn } from "~/libs/utils";
 
 export const handle = { breadcrumb: "새글 쓰기" };
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
+  const clubId = params.id;
   /**
    * TODO:
    * 1. user Id 를 기반으로 state 필드가 draft 인것이 있는지 확인해서 first 인것 가져오기
@@ -69,7 +70,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       return draftPost;
     });
     const boards = await prisma.board.findMany({
-      where: { isUse: true, clubId: null },
+      where: { isUse: true, clubId },
       orderBy: { order: "asc" },
     });
     return { post: res, boards };
@@ -86,8 +87,9 @@ const postScheme = z.object({
   content: z.string().nonempty("내용은 한글자 이상 필수입니다."),
 });
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
   const user = await getUser(request);
+  const clubId = params.id;
   if (!user) return redirect("/auth/login");
   const data = await parseRequestData(request);
 
@@ -179,16 +181,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         id: result.data.boardId,
       },
     });
-    return redirect("/communities/" + board?.slug + "/" + res.id);
+    return redirect(
+      "/clubs/" + clubId + "/boards/" + board?.slug + "/" + res.id
+    );
   } catch (error) {
     console.error(error);
     return { success: false, error: "Internal Server Error" };
   }
 };
 
-interface ICommunityNewPageProps {}
+interface IBoardNewPageProps {}
 
-const CommunityNewPage = (_props: ICommunityNewPageProps) => {
+const BoardNewPage = (_props: IBoardNewPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const user = useSession();
@@ -375,4 +379,4 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
   );
 };
 
-export default CommunityNewPage;
+export default BoardNewPage;
