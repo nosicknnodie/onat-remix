@@ -62,7 +62,7 @@ const Settings = ({ post, editTo }: ISettingsProps) => {
           {user?.id === post?.authorId && (
             <>
               <DropdownMenuItem asChild>
-                <Link to={editTo}>Edit</Link>
+                <Link to={editTo}>수정</Link>
               </DropdownMenuItem>
               <Button
                 variant="ghost"
