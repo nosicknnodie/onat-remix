@@ -4,10 +4,12 @@ import {
   Link,
   Outlet,
   useLoaderData,
+  useNavigate,
   useOutletContext,
   useParams,
   useRevalidator,
 } from "@remix-run/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import ItemLink from "~/components/ItemLink";
 import { Button } from "~/components/ui/button";
@@ -18,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { confirm } from "~/libs/confirm";
 import { prisma } from "~/libs/db/db.server";
 import { cn } from "~/libs/utils";
 import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
@@ -27,8 +30,10 @@ const Breadcrumb = ({ match }: { match: any }) => {
   const params = match.params;
   const matchClubId = params.matchClubId;
   const matchClub = data.matchClub;
+  const navigate = useNavigate();
   const { revalidate } = useRevalidator();
   const [, startTransition] = useTransition();
+  const queryClient = useQueryClient();
   const handleMatchClubIsSelfChange = (isSelf: boolean) => {
     startTransition(async () => {
       await fetch("/api/matchClubs/" + matchClubId + "/isSelf", {
@@ -37,7 +42,9 @@ const Breadcrumb = ({ match }: { match: any }) => {
           isSelf: isSelf,
         }),
       });
+      queryClient.invalidateQueries();
       revalidate();
+      navigate(`/matches/${params.id}/clubs/${matchClubId}`);
     });
   };
   return (
@@ -61,7 +68,17 @@ const Breadcrumb = ({ match }: { match: any }) => {
           {matchClubId && (
             <DropdownMenuCheckboxItem
               checked={matchClub?.isSelf}
-              onClick={() => handleMatchClubIsSelfChange(!matchClub?.isSelf)}
+              onClick={() =>
+                confirm({
+                  title: "매칭 타입변경 주의",
+                  description:
+                    "타입 변경시 포지션 및 골기록이 초기화됩니다. 타입을 변경하시겠습니까?",
+                  confirmText: "타입 변경",
+                  cancelText: "취소",
+                }).onConfirm(() =>
+                  handleMatchClubIsSelfChange(!matchClub?.isSelf)
+                )
+              }
             >
               자체전 여부
             </DropdownMenuCheckboxItem>

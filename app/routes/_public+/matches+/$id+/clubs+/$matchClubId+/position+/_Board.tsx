@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { motion } from "framer-motion";
 import { AiFillSkin } from "react-icons/ai";
 import { Button } from "~/components/ui/button";
@@ -15,6 +15,7 @@ export const Board = () => {
   const currentQuarter = loaderData.matchClub.quarters.find(
     (quarter) => quarter.order === currentQuarterOrder
   );
+  const isSelf = currentQuarter?.isSelf || loaderData.matchClub.isSelf;
   const team1 = currentQuarter?.team1;
   const team2 = currentQuarter?.team2;
 
@@ -81,6 +82,24 @@ export const Board = () => {
               </Button>
             </Actions>
           )}
+
+          {!isSelf && (
+            <Button
+              variant={"outline"}
+              asChild
+              className="z-20 absolute top-2 right-2"
+            >
+              <Link
+                to={{
+                  pathname: "./setting",
+                  search: `quarter=${currentQuarterOrder}`,
+                }}
+              >
+                포지션 설정
+              </Link>
+            </Button>
+          )}
+
           {assigneds?.map((assigned) => {
             const name =
               assigned.attendance.player?.user?.name ||

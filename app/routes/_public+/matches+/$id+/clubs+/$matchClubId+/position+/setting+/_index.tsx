@@ -8,7 +8,7 @@ import {
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Preview } from "react-dnd-preview";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { RiArrowGoBackLine } from "react-icons/ri";
@@ -144,11 +144,11 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     .filter(
       (assigned) =>
         assigned.quarterId === currentQuarter?.id &&
-        assigned.teamId === currentTeamId
+        (currentTeamId === null || assigned.teamId === currentTeamId)
     );
 
   const positions = typedEntries(PORMATION_POSITION_CLASSNAME).map(
-    ([position, { className }]) => {
+    ([position, { className }], i) => {
       const assigned =
         assigneds?.find((assigned) => assigned.position === position) || null;
       let isFormation =
@@ -221,7 +221,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
           !attendance.assigneds.some(
             (assigned) => assigned.quarterId === currentQuarter?.id
           ) &&
-          attendance.teamId === currentTeamId
+          (currentTeamId === null || attendance.teamId === currentTeamId)
         // assigned.quarterId !== currentQuarter?.id && assigned.attendance.teamId === currentTeamId,
       )
       .sort((a, b) => {
@@ -341,6 +341,15 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
       }
     });
   };
+
+  useEffect(() => {
+    setCurrentQuarterOrder(Number(searchParams.get("quarter")));
+    setCurrentTeamId(searchParams.get("teamId") || null);
+    return () => {
+      setCurrentTeamId(null);
+      setCurrentQuarterOrder(1);
+    };
+  }, [searchParams]);
 
   return (
     <>
