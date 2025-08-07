@@ -127,7 +127,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     ? await prisma.player.findFirst({
         where: {
           userId: user.id,
-          clubId: params.matchClubId,
+          clubId: matchClub?.clubId || "",
           status: "APPROVED",
         },
       })
@@ -153,34 +153,34 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const role = loaderData.role;
   const matchClub = loaderData.matchClub;
   const outletData = useOutletContext<IMatchesIdLayoutPageLoaderReturnType>();
+  console.log("role - ", role);
   return (
     <>
       <div className="flex gap-x-4 p-2">
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}`} end>
           정보
         </ItemLink>
-        {role.isPlayer ||
-          (role.isMercenary && (
-            <>
+        {(role.isPlayer || role.isMercenary) && (
+          <>
+            <ItemLink
+              to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}
+            >
+              참석
+            </ItemLink>
+            {matchClub?.isSelf && (
               <ItemLink
-                to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}
+                to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}
               >
-                참석
+                Team
               </ItemLink>
-              {matchClub?.isSelf && (
-                <ItemLink
-                  to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}
-                >
-                  Team
-                </ItemLink>
-              )}
-              <ItemLink
-                to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}
-              >
-                포지션
-              </ItemLink>
-            </>
-          ))}
+            )}
+            <ItemLink
+              to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}
+            >
+              포지션
+            </ItemLink>
+          </>
+        )}
         {role.isPlayer && (
           <>
             <ItemLink

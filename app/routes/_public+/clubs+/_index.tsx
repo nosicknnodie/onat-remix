@@ -62,7 +62,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           {
             players: {
               some: {
-                userId: user?.id,
+                userId: user?.id || "",
                 status: { in: ["APPROVED", "PENDING"] },
               },
             },
