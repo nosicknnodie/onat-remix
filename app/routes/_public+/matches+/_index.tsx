@@ -30,33 +30,38 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 
+const RightComponent = (match: any) => {
+  const session = useSession();
+  if (!session) return null;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className={cn(
+            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+          )}
+        >
+          <span className="sr-only">Open menu</span>
+          <DotsHorizontalIcon className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/matches/new">매치 생성</Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 export const handle = {
-  right: (match: any) => {
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn(
-              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
-            )}
-          >
-            <span className="sr-only">Open menu</span>
-            <DotsHorizontalIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link to="/matches/new">매치 생성</Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  },
+  right: (match: any) => <RightComponent {...match} />,
 };
 
 type MatchWithClub = Prisma.MatchGetPayload<{
@@ -133,6 +138,7 @@ interface IMatchsPageProps {}
 
 const MatchsPage = (_props: IMatchsPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
+  const session = useSession();
   const myClubIds = loaderData.myClubIds ?? [];
   const categorized = loaderData.categorized;
   return (
@@ -169,18 +175,20 @@ const MatchsPage = (_props: IMatchsPageProps) => {
         </Breadcrumb> */}
         <div className="space-y-8">
           {/* 나의 클럽 섹션 */}
-          <Tabs defaultValue="my" className="flex-1">
+          <Tabs defaultValue={session ? "my" : "public"} className="flex-1">
             <TabsList className="bg-transparent  space-x-2">
-              <TabsTrigger
-                value="my"
-                className={cn(
-                  "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
-                  "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
-                )}
-              >
-                나의 클럽 매치
-              </TabsTrigger>
+              {session && (
+                <TabsTrigger
+                  value="my"
+                  className={cn(
+                    "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
+                    "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
+                    "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                  )}
+                >
+                  나의 클럽 매치
+                </TabsTrigger>
+              )}
               <TabsTrigger
                 value="public"
                 className={cn(

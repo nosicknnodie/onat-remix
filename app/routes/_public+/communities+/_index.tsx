@@ -6,17 +6,24 @@ import ItemLink from "~/components/ItemLink";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { getBoardIcon } from "~/libs/getBoardIcons";
 
-export const handle = {
-  right: () => (
+const RightComponent = () => {
+  const user = useSession();
+  if (!user) return null;
+  return (
     <ItemLink to={`/communities/new`}>
       <Button variant={"outline"} size={"sm"}>
         새글 쓰기
       </Button>
     </ItemLink>
-  ),
+  );
+};
+
+export const handle = {
+  right: () => <RightComponent />,
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

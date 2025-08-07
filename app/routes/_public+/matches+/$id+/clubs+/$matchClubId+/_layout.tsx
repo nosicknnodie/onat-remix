@@ -22,12 +22,14 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { confirm } from "~/libs/confirm";
 import { prisma } from "~/libs/db/db.server";
+import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
 const Breadcrumb = ({ match }: { match: any }) => {
   const data = match.data;
   const params = match.params;
+  const role = data.role;
   const matchClubId = params.matchClubId;
   const matchClub = data.matchClub;
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ const Breadcrumb = ({ match }: { match: any }) => {
       navigate(`/matches/${params.id}/clubs/${matchClubId}`);
     });
   };
+  if (!role.isAdmin) return null;
   return (
     <>
       <DropdownMenu>
@@ -99,6 +102,7 @@ export type IMatchClubIdLayoutOutletContext =
   IMatchesIdLayoutPageLoaderReturnType & Awaited<ReturnType<typeof loader>>;
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
   const matchClub = await prisma.matchClub.findUnique({
     where: {
       id: params.matchClubId,
@@ -119,12 +123,34 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       },
     },
   });
-  return { matchClub };
+  const player = user
+    ? await prisma.player.findFirst({
+        where: {
+          userId: user.id,
+          clubId: params.matchClubId,
+          status: "APPROVED",
+        },
+      })
+    : null;
+  const mercenary = user
+    ? matchClub?.attendances.find((a) => a.mercenary?.userId === user.id)
+    : null;
+  const isPlayer = !!player;
+  const isMercenary = !!mercenary;
+  const isAdmin =
+    !!player && (player.role === "MANAGER" || player.role === "MASTER");
+  const role = {
+    isPlayer,
+    isAdmin,
+    isMercenary,
+  };
+  return { matchClub, role };
 };
 
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const params = useParams();
+  const role = loaderData.role;
   const matchClub = loaderData.matchClub;
   const outletData = useOutletContext<IMatchesIdLayoutPageLoaderReturnType>();
   return (
@@ -133,33 +159,42 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}`} end>
           정보
         </ItemLink>
-        <ItemLink
-          to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}
-        >
-          참석
-        </ItemLink>
-        {matchClub?.isSelf && (
-          <ItemLink
-            to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}
-          >
-            Team
-          </ItemLink>
+        {role.isPlayer ||
+          (role.isMercenary && (
+            <>
+              <ItemLink
+                to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}
+              >
+                참석
+              </ItemLink>
+              {matchClub?.isSelf && (
+                <ItemLink
+                  to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}
+                >
+                  Team
+                </ItemLink>
+              )}
+              <ItemLink
+                to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}
+              >
+                포지션
+              </ItemLink>
+            </>
+          ))}
+        {role.isPlayer && (
+          <>
+            <ItemLink
+              to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}
+            >
+              기록
+            </ItemLink>
+            <ItemLink
+              to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}
+            >
+              평점등록
+            </ItemLink>
+          </>
         )}
-        <ItemLink
-          to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}
-        >
-          포지션
-        </ItemLink>
-        <ItemLink
-          to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}
-        >
-          기록
-        </ItemLink>
-        <ItemLink
-          to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}
-        >
-          평점등록
-        </ItemLink>
       </div>
       <Outlet context={{ ...outletData, ...loaderData }} />
     </>

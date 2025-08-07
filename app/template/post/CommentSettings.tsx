@@ -45,6 +45,10 @@ const CommentSettings = ({ comment, onEditorOpen }: ICommentSettingsProps) => {
       console.error(error);
     }
   };
+
+  // 작성자가 아니면 null
+  if (user?.id !== comment?.authorId) return null;
+
   return (
     <>
       <DropdownMenu>

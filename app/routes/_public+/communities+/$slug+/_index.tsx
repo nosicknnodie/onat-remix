@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import { useSession } from "~/contexts/AuthUserContext";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import PostVoteBadgeButton from "../../../../template/post/PostVoteBadgeButton";
@@ -77,14 +78,20 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
 };
 
-export const handle = {
-  right: () => (
+const RightComponent = () => {
+  const user = useSession();
+  if (!user) return null;
+  return (
     <ItemLink to={`/communities/new`}>
       <Button variant={"outline"} size={"sm"}>
         새글 쓰기
       </Button>
     </ItemLink>
-  ),
+  );
+};
+
+export const handle = {
+  right: () => <RightComponent />,
 };
 
 interface ISlugPageProps {}

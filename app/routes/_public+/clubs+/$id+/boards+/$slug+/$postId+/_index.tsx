@@ -73,6 +73,7 @@ interface IPostViewProps {}
 const PostView = (_props: IPostViewProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
+  const session = useSession();
   const [isTextMode, setIsTextMode] = useState(false);
   const [path, setPath] = useState<string | undefined>(undefined);
   const post = loaderData.post;
@@ -242,23 +243,27 @@ const PostView = (_props: IPostViewProps) => {
             />
           </CardFooter>
           <CardContent className="max-md:p-1">
-            {!isTextMode ? (
-              <button
-                onClick={() => setIsTextMode(true)}
-                className={cn(
-                  "rounded-3xl w-full flex justify-start items-center border borderㅊ-primary/30 py-4 px-4 text-sm cursor-text",
-                  "hover:border-primary hover:bg-primary/5 focus-within:border-primary focus-within:bg-primary/5"
+            {session && (
+              <>
+                {!isTextMode ? (
+                  <button
+                    onClick={() => setIsTextMode(true)}
+                    className={cn(
+                      "rounded-3xl w-full flex justify-start items-center border borderㅊ-primary/30 py-4 px-4 text-sm cursor-text",
+                      "hover:border-primary hover:bg-primary/5 focus-within:border-primary focus-within:bg-primary/5"
+                    )}
+                  >
+                    게시물 토론에 참여 합니다.
+                  </button>
+                ) : (
+                  <CommentInput
+                    onSubmit={handleInputComment}
+                    onCancel={() => {
+                      setIsTextMode(false);
+                    }}
+                  />
                 )}
-              >
-                게시물 토론에 참여 합니다.
-              </button>
-            ) : (
-              <CommentInput
-                onSubmit={handleInputComment}
-                onCancel={() => {
-                  setIsTextMode(false);
-                }}
-              />
+              </>
             )}
             <div className="py-2">
               {(data?.startDepth || 0) > 0 && (
@@ -460,14 +465,16 @@ function CommentItem({
                 </div>
                 <div className="flex gap-2">
                   <CommentVoteBadgeButton comment={comment} />
-                  <Button
-                    variant={"ghost"}
-                    onClick={() => setIsReplying((v) => !v)}
-                    className="text-xs text-gray-500 flex items-center gap-2 rounded-lg"
-                  >
-                    <FaRegComment />
-                    Reply
-                  </Button>
+                  {session && (
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => setIsReplying((v) => !v)}
+                      className="text-xs text-gray-500 flex items-center gap-2 rounded-lg"
+                    >
+                      <FaRegComment />
+                      Reply
+                    </Button>
+                  )}
                   <CommentSettings
                     comment={comment}
                     onEditorOpen={() => setIsEditorMode(true)}

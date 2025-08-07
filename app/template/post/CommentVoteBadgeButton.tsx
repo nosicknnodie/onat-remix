@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { useSession } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
 type PostCommentWithExtras = PostComment & {
   author: User & {
@@ -26,6 +27,8 @@ const CommentVoteBadgeButton = ({ comment }: ICommentVoteBadgeButtonProps) => {
   const fetcher = useFetcher<{ sum: number; vote: number }>();
   const [vote, setVote] = useState(comment.currentVote?.vote ?? 0);
   const [score, setScore] = useState(comment.sumVote);
+  const user = useSession();
+  const isDisabled = !user;
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
@@ -51,6 +54,7 @@ const CommentVoteBadgeButton = ({ comment }: ICommentVoteBadgeButtonProps) => {
         <Button
           variant={"ghost"}
           size={"icon"}
+          disabled={isDisabled}
           onClick={() => handleVote(1)}
           className={cn("rounded-full hover:text-primary hover:bg-primary/10", {
             "text-primary": vote === 1,
@@ -63,6 +67,7 @@ const CommentVoteBadgeButton = ({ comment }: ICommentVoteBadgeButtonProps) => {
           variant={"ghost"}
           size={"icon"}
           onClick={() => handleVote(-1)}
+          disabled={isDisabled}
           className={cn(
             "rounded-full hover:text-destructive hover:bg-destructive/10",
             { "text-destructive": vote === -1 }

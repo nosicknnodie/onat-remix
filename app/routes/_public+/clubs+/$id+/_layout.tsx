@@ -132,6 +132,13 @@ const Layout = (_props: ILayoutProps) => {
   const data = useLoaderData<IClubLayoutLoaderData>();
   const user = useSession();
 
+  // 회원
+  const isInJoined = !!data.player;
+  // 관리자
+  const isAdmin =
+    !!data.player &&
+    (data.player.role === "MANAGER" || data.player.role === "MASTER");
+
   const isJoined = !!user && !data.player;
   // 재가입버튼
   const isReJoined =
@@ -214,10 +221,16 @@ const Layout = (_props: ILayoutProps) => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu> */}
-          <ItemLink to={`/clubs/${data.club.id}/boards`}>게시판</ItemLink>
-          <ItemLink to={`/clubs/${data.club.id}/matches`}>매치</ItemLink>
-          <ItemLink to={`/clubs/${data.club.id}/members`}>멤버</ItemLink>
-          <ItemLink to={`/clubs/${data.club.id}/pendings`}>승인대기</ItemLink>
+          {isInJoined && (
+            <>
+              <ItemLink to={`/clubs/${data.club.id}/boards`}>게시판</ItemLink>
+              <ItemLink to={`/clubs/${data.club.id}/matches`}>매치</ItemLink>
+              <ItemLink to={`/clubs/${data.club.id}/members`}>멤버</ItemLink>
+            </>
+          )}
+          {isAdmin && (
+            <ItemLink to={`/clubs/${data.club.id}/pendings`}>승인대기</ItemLink>
+          )}
         </div>
         <Outlet context={{ club: data.club, player: data.player }} />
       </div>
