@@ -6,6 +6,7 @@ import _ from "lodash";
 import { useEffect, useState } from "react";
 import { FaRegComment } from "react-icons/fa6";
 import { Fragment } from "react/jsx-runtime";
+import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import ItemLink from "~/components/ItemLink";
 import { Preview } from "~/components/lexical/Preview";
 import { Loading } from "~/components/Loading";
@@ -21,14 +22,16 @@ import {
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { useSession } from "~/contexts/AuthUserContext";
+import { InfiniteListProvider, useInfiniteList } from "~/contexts/infinite";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import PostVoteBadgeButton from "../../../../template/post/PostVoteBadgeButton";
-import Settings from "../../../../template/post/Settings";
-
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   const slug = params.slug;
+  const url = new URL(request.url);
+  const take = Math.min(Number(url.searchParams.get("take")) || 20, 50);
+  const cursor = url.searchParams.get("cursor");
   try {
     const res = await prisma.board.findFirst({
       where: {
@@ -39,6 +42,8 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         posts: {
           orderBy: { createdAt: "desc" },
           where: { state: "PUBLISHED" },
+          take: take + 1,
+          ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
           include: {
             author: {
               include: {
@@ -62,16 +67,24 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         },
       },
     });
-    const posts = res?.posts.map((post) => {
+    const posts = res?.posts ?? [];
+    const hasMore = posts.length > take;
+    const sliced = hasMore ? posts.slice(0, take) : posts;
+    const nextCursor = hasMore ? sliced[sliced.length - 1].id : null;
+    const exportPosts = sliced.map((post) => {
       return {
         ..._.omit(post, "votes"),
         sumVote: post.votes.reduce((acc, v) => acc + v.vote, 0),
         currentVote: post.votes.find((vote) => vote.userId === user?.id),
       };
     });
-    if (!posts) return { success: false, errors: "Not Found" };
+    if (!exportPosts) return { success: false, errors: "Not Found" };
 
-    return { posts, board: res };
+    return {
+      posts: exportPosts,
+      board: res,
+      pageInfo: { hasMore, nextCursor, take },
+    };
   } catch (error) {
     console.error(error);
     return { success: false, errors: "Internal Server Error" };
@@ -106,19 +119,34 @@ const SlugPage = (_props: ISlugPageProps) => {
     setType(board?.type === "NOTICE" ? "compact" : "card");
   }, [board?.type]);
   return (
-    <>{type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}</>
+    <InfiniteListProvider
+      key={board?.id}
+      slug={board?.slug!}
+      type={type}
+      keySelector={(post) => String(post.id)}
+      initialItems={loaderData.posts || []}
+      initialPageInfo={
+        loaderData.pageInfo || { hasMore: false, nextCursor: null, take: 20 }
+      }
+    >
+      {type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}
+    </InfiniteListProvider>
   );
 };
-
+type LoaderData = Awaited<ReturnType<typeof loader>>;
+// 성공 케이스만 추출해서 posts/pageInfo의 undefined를 제거
+type LoaderSuccess = Extract<LoaderData, { posts: unknown }>;
+type Post = LoaderSuccess["posts"][number];
 const CompactTypeComponent = () => {
-  const loaderData = useLoaderData<typeof loader>();
-  const board = loaderData.board;
-  const posts = loaderData.posts;
+  const context = useInfiniteList<Post>();
+  const items = context.state.items;
+  const pageInfo = context.state.pageInfo;
+
   return (
     <>
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
         <ul className="space-y-2 text-gray-700 text-sm">
-          {posts?.map((post) => {
+          {items?.map((post) => {
             return (
               <Fragment key={post.id}>
                 <Separator />
@@ -128,10 +156,10 @@ const CompactTypeComponent = () => {
                       <Link to={`./${post.id}`} className="flex-1">
                         {post.title}
                       </Link>
-                      <Settings
+                      {/* <Settings
                         post={post}
                         editTo={`/communities/${board?.slug}/${post.id}/edit`}
-                      />
+                      /> */}
                     </CardTitle>
                   </CardHeader>
                   {/* <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
@@ -184,6 +212,10 @@ const CompactTypeComponent = () => {
               </Fragment>
             );
           })}
+          <InfiniteSentinel
+            hasMore={pageInfo?.hasMore || false}
+            onLoadMore={() => context.loadMore()}
+          />
         </ul>
       </div>
     </>
@@ -191,14 +223,14 @@ const CompactTypeComponent = () => {
 };
 
 const CardTypeComponent = () => {
-  const loaderData = useLoaderData<typeof loader>();
-  const board = loaderData.board;
-  const posts = loaderData.posts;
+  const context = useInfiniteList<Post>();
+  const items = context.state.items;
+  const pageInfo = context.state.pageInfo;
   return (
     <>
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
         <ul className="space-y-2 text-gray-700 text-sm">
-          {posts?.map((post) => {
+          {items?.map((post) => {
             return (
               <Fragment key={post.id}>
                 <Separator />
@@ -227,10 +259,10 @@ const CardTypeComponent = () => {
                           })}
                         </span>
                       </div>
-                      <Settings
+                      {/* <Settings
                         post={post}
                         editTo={`/communities/${board?.slug}/${post.id}/edit`}
-                      />
+                      /> */}
                     </div>
                     <Link to={`./${post.id}`}>
                       <CardTitle className="text-lg">{post.title}</CardTitle>
@@ -261,6 +293,10 @@ const CardTypeComponent = () => {
               </Fragment>
             );
           })}
+          <InfiniteSentinel
+            hasMore={pageInfo?.hasMore || false}
+            onLoadMore={() => context.loadMore()}
+          />
         </ul>
       </div>
     </>
