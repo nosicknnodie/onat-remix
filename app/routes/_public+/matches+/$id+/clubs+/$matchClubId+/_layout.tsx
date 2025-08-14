@@ -24,6 +24,7 @@ import { confirm } from "~/libs/confirm";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
+import CommentSection from "~/template/match-comment/CommentSection";
 import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
 const Breadcrumb = ({ match }: { match: any }) => {
@@ -153,7 +154,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const role = loaderData.role;
   const matchClub = loaderData.matchClub;
   const outletData = useOutletContext<IMatchesIdLayoutPageLoaderReturnType>();
-  console.log("role - ", role);
   return (
     <>
       <div className="flex gap-x-4 p-2">
@@ -197,6 +197,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         )}
       </div>
       <Outlet context={{ ...outletData, ...loaderData }} />
+      <CommentSection matchClubId={params.matchClubId} />
     </>
   );
 };

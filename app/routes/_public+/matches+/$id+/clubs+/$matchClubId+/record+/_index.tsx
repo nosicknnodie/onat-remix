@@ -80,7 +80,7 @@ const RecordPage = (_props: IRecordPageProps) => {
   const quarters = loaderData.quarters;
   return (
     <>
-      <div>
+      <div className="pb-12">
         {quarters.map((quarter, index) => {
           const isSameTeam1 =
             index > 0 ? quarter.team1Id === quarters[index - 1].team1Id : false;

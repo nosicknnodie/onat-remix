@@ -72,6 +72,7 @@ model User {
   // applications  Application[]
   playerLogs    PlayerLog[]
   comments      Comment[]
+  toReplies     Comment[] @relation("CommentReplyToUser")
   matchs        Match[]
   evaluations   Evaluation[]
   postComments  PostComment[]
@@ -414,7 +415,7 @@ model Assigned {
 // 코멘트
 model Comment {
   id            String    @id @default(cuid())
-  content       String    @db.Text
+  content       Json
   isDeleted     Boolean   @default(false)
 
   userId        String
@@ -425,6 +426,11 @@ model Comment {
   parentId      String?
   parentComment Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   replys        Comment[] @relation("CommentToComment")
+
+  // 👇 자동 멘션 대상(대댓글 이상에서 사용)
+  replyToUserId String?
+  replyToUser   User?    @relation("CommentReplyToUser", fields: [replyToUserId], references: [id], onDelete: SetNull)
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @default(now()) @updatedAt
 
