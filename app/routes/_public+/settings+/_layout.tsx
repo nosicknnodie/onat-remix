@@ -21,7 +21,7 @@ const Layout = (_props: ILayoutProps) => {
                     {
                       "text-primary font-bold after:absolute after:-right-1.5 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
                         isActive,
-                    }
+                    },
                   )
                 }
               >
@@ -38,7 +38,7 @@ const Layout = (_props: ILayoutProps) => {
                     {
                       "text-primary font-bold after:absolute after:-right-1.5 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
                         isActive,
-                    }
+                    },
                   )
                 }
               >
@@ -55,7 +55,7 @@ const Layout = (_props: ILayoutProps) => {
                     {
                       "text-primary font-bold after:absolute after:-right-1.5 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
                         isActive,
-                    }
+                    },
                   )
                 }
               >
@@ -72,7 +72,7 @@ const Layout = (_props: ILayoutProps) => {
                     {
                       "text-primary font-bold after:absolute after:-right-1.5 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
                         isActive,
-                    }
+                    },
                   )
                 }
               >

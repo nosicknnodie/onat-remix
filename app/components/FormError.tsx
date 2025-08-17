@@ -9,7 +9,7 @@ const FormError = ({ children, className, ...props }: FormErrorProps) => {
     <div
       className={cn(
         "bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive",
-        className
+        className,
       )}
       {...props}
     >

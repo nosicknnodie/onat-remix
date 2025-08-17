@@ -1,5 +1,6 @@
 import type * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
+import React from "react";
 import {
   Controller,
   type ControllerProps,
@@ -8,10 +9,8 @@ import {
   FormProvider,
   useFormContext,
 } from "react-hook-form";
-import { cn } from "~/libs/utils";
-
-import React from "react";
 import { Label } from "~/components/ui/label";
+import { cn } from "~/libs/utils";
 
 const Form = FormProvider;
 
@@ -22,9 +21,7 @@ type FormFieldContextValue<
   name: TName;
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
-);
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
@@ -66,14 +63,9 @@ type FormItemContextValue = {
   id: string;
 };
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-);
+const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
-const FormItem = ({
-  className,
-  ...props
-}: React.ComponentPropsWithRef<"div">) => {
+const FormItem = ({ className, ...props }: React.ComponentPropsWithRef<"div">) => {
   const id = React.useId();
 
   return (
@@ -83,37 +75,26 @@ const FormItem = ({
   );
 };
 
-const FormLabel = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) => {
+const FormLabel = ({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) => {
   const { formItemId } = useFormField();
 
   return <Label className={cn(className)} htmlFor={formItemId} {...props} />;
 };
 
 const FormControl = ({ ...props }: React.ComponentProps<typeof Slot>) => {
-  const { error, formItemId, formDescriptionId, formMessageId } =
-    useFormField();
+  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
   return (
     <Slot
       id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
+      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
       aria-invalid={!!error}
       {...props}
     />
   );
 };
 
-const FormDescription = ({
-  className,
-  ...props
-}: React.ComponentPropsWithRef<"p">) => {
+const FormDescription = ({ className, ...props }: React.ComponentPropsWithRef<"p">) => {
   const { formDescriptionId } = useFormField();
 
   return (
@@ -125,11 +106,7 @@ const FormDescription = ({
   );
 };
 
-const FormMessage = ({
-  className,
-  children,
-  ...props
-}: React.ComponentPropsWithRef<"p">) => {
+const FormMessage = ({ className, children, ...props }: React.ComponentPropsWithRef<"p">) => {
   const { error, formMessageId } = useFormField();
   const body = error ? String(error?.message) : children;
 

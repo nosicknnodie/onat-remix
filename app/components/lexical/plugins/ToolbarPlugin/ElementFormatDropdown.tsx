@@ -1,12 +1,13 @@
-import { JSX } from "react";
 import {
-  BsTypeH1,
-  BsTypeH2,
-  BsTypeH3,
-  BsTypeH4,
-  BsTypeH5,
-  BsTypeH6,
-} from "react-icons/bs";
+  INSERT_CHECK_LIST_COMMAND,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+} from "@lexical/list";
+import { $createQuoteNode } from "@lexical/rich-text";
+import { $setBlocksType } from "@lexical/selection";
+import { $getSelection, type LexicalEditor } from "lexical";
+import type { JSX } from "react";
+import { BsTypeH1, BsTypeH2, BsTypeH3, BsTypeH4, BsTypeH5, BsTypeH6 } from "react-icons/bs";
 import { FaAngleDown } from "react-icons/fa";
 import { HiOutlineCheckCircle, HiOutlineListBullet } from "react-icons/hi2";
 import { PiTextAlignLeft } from "react-icons/pi";
@@ -18,21 +19,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-
-import {
-  INSERT_CHECK_LIST_COMMAND,
-  INSERT_ORDERED_LIST_COMMAND,
-  INSERT_UNORDERED_LIST_COMMAND,
-} from "@lexical/list";
-import { $createQuoteNode } from "@lexical/rich-text";
-import { $setBlocksType } from "@lexical/selection";
-import { $getSelection, LexicalEditor } from "lexical";
-import {
-  blockTypeToBlockName,
-  useActiveEditor,
-  useToolbarState,
-} from "./Context";
+import { type blockTypeToBlockName, useActiveEditor, useToolbarState } from "./Context";
 import { formatCode, formatHeading, formatParagraph } from "./formatUtils";
+
 interface IElementFormatDropdownProps {}
 
 const options: Record<
@@ -41,10 +30,7 @@ const options: Record<
     value: keyof typeof blockTypeToBlockName;
     label: string;
     icon: JSX.Element;
-    onClick?: (
-      editor: LexicalEditor,
-      blockType: keyof typeof blockTypeToBlockName
-    ) => void;
+    onClick?: (editor: LexicalEditor, blockType: keyof typeof blockTypeToBlockName) => void;
   }
 > = {
   bullet: {
@@ -153,10 +139,7 @@ const ElementFormatDropdown = (_props: IElementFormatDropdownProps) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant={"ghost"}
-            className="flex gap-2 text-xs text-gray-500"
-          >
+          <Button variant={"ghost"} className="flex gap-2 text-xs text-gray-500">
             {options[blockType].icon}
             <span>{options[blockType].label}</span>
             <FaAngleDown />

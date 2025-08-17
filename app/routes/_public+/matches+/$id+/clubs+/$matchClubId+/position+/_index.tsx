@@ -1,9 +1,5 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import {
-  useLoaderData,
-  useRevalidator,
-  useSearchParams,
-} from "@remix-run/react";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react";
 import { useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
@@ -11,10 +7,7 @@ import { prisma } from "~/libs/db/db.server";
 import { Board } from "./_Board";
 import { PositionContext, usePositionQuery } from "./_position.context";
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const matchClub = await prisma.matchClub.findUnique({
     where: {
@@ -38,9 +31,7 @@ const PositionPage = (_props: IPositionPageProps) => {
   const quarterOrder = searchParams.get("quarterOrder");
   const { revalidate } = useRevalidator();
   const matchClub = loaderData.matchClub;
-  const [currentQuarterOrder, setCurrentQuarterOrder] = useState(
-    Number(quarterOrder || 1)
-  );
+  const [currentQuarterOrder, setCurrentQuarterOrder] = useState(Number(quarterOrder || 1));
   const [isPending, startTransition] = useTransition();
   const query = usePositionQuery();
   /**
@@ -49,9 +40,7 @@ const PositionPage = (_props: IPositionPageProps) => {
    */
   const handleSetQuarter = (order: number) => {
     startTransition(async () => {
-      const quarterId = matchClub.quarters.find(
-        (quarter) => quarter.order === order
-      )?.id;
+      const quarterId = matchClub.quarters.find((quarter) => quarter.order === order)?.id;
       if (!quarterId) {
         const maxOrder = matchClub.quarters.reduce((max, q) => {
           return q.order > max ? q.order : max;

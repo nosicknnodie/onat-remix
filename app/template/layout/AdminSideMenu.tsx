@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
+
 interface IAdminSideMenuProps {}
 
 const AdminSideMenu = (_props: IAdminSideMenuProps) => {
@@ -26,7 +27,7 @@ const AdminSideMenu = (_props: IAdminSideMenuProps) => {
         icon: HiOutlineSquares2X2,
       },
     ],
-    []
+    [],
   );
   return (
     <>
@@ -51,10 +52,7 @@ const AdminSideMenu = (_props: IAdminSideMenuProps) => {
                 {adminMenus.map((menu) => (
                   <SidebarMenuItem key={menu.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink
-                        to={menu.url}
-                        onClick={() => setOpenMobile(false)}
-                      >
+                      <NavLink to={menu.url} onClick={() => setOpenMobile(false)}>
                         <menu.icon />
                         {menu.title}
                       </NavLink>

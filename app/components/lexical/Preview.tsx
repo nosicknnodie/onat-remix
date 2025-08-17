@@ -1,9 +1,9 @@
 import type {
+  SerializedEditorState,
   SerializedElementNode,
   SerializedLexicalNode,
   SerializedTextNode,
 } from "lexical";
-import { SerializedEditorState } from "lexical";
 import { useEffect, useState } from "react";
 
 // 프리뷰 컴포넌트 (editorState JSON을 받아 최대 6줄 분량의 텍스트를 줄바꿈 없이 간단하게 보여줌)
@@ -28,24 +28,17 @@ export function Preview({ editorState, maxLines = 6 }: PreviewProps) {
     }
   }, [editorState, maxLines]);
 
-  return (
-    <div className="text-sm text-gray-800 line-clamp-6 overflow-hidden">
-      {previewText}
-    </div>
-  );
+  return <div className="text-sm text-gray-800 line-clamp-6 overflow-hidden">{previewText}</div>;
 }
 
 // 간단한 raw JSON에서 텍스트 추출 로직 (타입가드 포함)
 function extractTextFromEditorState(state: SerializedEditorState): string {
   const rootChildren = (state.root?.children ?? []) as SerializedLexicalNode[];
 
-  const isTextNode = (
-    node: SerializedLexicalNode
-  ): node is SerializedTextNode => (node as SerializedTextNode).type === "text";
+  const isTextNode = (node: SerializedLexicalNode): node is SerializedTextNode =>
+    (node as SerializedTextNode).type === "text";
 
-  const isElementNode = (
-    node: SerializedLexicalNode
-  ): node is SerializedElementNode =>
+  const isElementNode = (node: SerializedLexicalNode): node is SerializedElementNode =>
     Array.isArray((node as SerializedElementNode).children);
 
   const collect = (node: SerializedLexicalNode): string => {

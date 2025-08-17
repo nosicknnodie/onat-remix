@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Link,
   Outlet,
@@ -26,7 +26,7 @@ import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import CommentSection from "~/template/match-comment/CommentSection";
-import { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
+import type { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
 const Breadcrumb = ({ match }: { match: any }) => {
   const data = match.data;
@@ -40,7 +40,7 @@ const Breadcrumb = ({ match }: { match: any }) => {
   const queryClient = useQueryClient();
   const handleMatchClubIsSelfChange = (isSelf: boolean) => {
     startTransition(async () => {
-      await fetch("/api/matchClubs/" + matchClubId + "/isSelf", {
+      await fetch(`/api/matchClubs/${matchClubId}/isSelf`, {
         method: "POST",
         body: JSON.stringify({
           isSelf: isSelf,
@@ -59,7 +59,7 @@ const Breadcrumb = ({ match }: { match: any }) => {
           <Button
             variant="ghost"
             className={cn(
-              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
             )}
           >
             <span className="sr-only">Open menu</span>
@@ -80,9 +80,7 @@ const Breadcrumb = ({ match }: { match: any }) => {
                     "타입 변경시 포지션 및 골기록이 초기화됩니다. 타입을 변경하시겠습니까?",
                   confirmText: "타입 변경",
                   cancelText: "취소",
-                }).onConfirm(() =>
-                  handleMatchClubIsSelfChange(!matchClub?.isSelf)
-                )
+                }).onConfirm(() => handleMatchClubIsSelfChange(!matchClub?.isSelf))
               }
             >
               자체전 여부
@@ -100,8 +98,8 @@ export const handle = {
 };
 
 interface IMatchClubIdLayoutProps {}
-export type IMatchClubIdLayoutOutletContext =
-  IMatchesIdLayoutPageLoaderReturnType & Awaited<ReturnType<typeof loader>>;
+export type IMatchClubIdLayoutOutletContext = IMatchesIdLayoutPageLoaderReturnType &
+  Awaited<ReturnType<typeof loader>>;
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -139,8 +137,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     : null;
   const isPlayer = !!player;
   const isMercenary = !!mercenary;
-  const isAdmin =
-    !!player && (player.role === "MANAGER" || player.role === "MASTER");
+  const isAdmin = !!player && (player.role === "MANAGER" || player.role === "MASTER");
   const role = {
     isPlayer,
     isAdmin,
@@ -163,35 +160,25 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         </ItemLink>
         {(role.isPlayer || role.isMercenary) && (
           <>
-            <ItemLink
-              to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}
-            >
+            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}>
               참석
             </ItemLink>
             {matchClub?.isSelf && (
-              <ItemLink
-                to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}
-              >
+              <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}>
                 Team
               </ItemLink>
             )}
-            <ItemLink
-              to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}
-            >
+            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}>
               포지션
             </ItemLink>
           </>
         )}
         {role.isPlayer && (
           <>
-            <ItemLink
-              to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}
-            >
+            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}>
               기록
             </ItemLink>
-            <ItemLink
-              to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}
-            >
+            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}>
               평점
             </ItemLink>
           </>

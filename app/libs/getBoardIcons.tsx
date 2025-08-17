@@ -1,11 +1,5 @@
-import { BoardType } from "@prisma/client";
-import {
-  FaBullhorn,
-  FaLink,
-  FaRegFileAlt,
-  FaRegImages,
-  FaRegPlayCircle,
-} from "react-icons/fa";
+import type { BoardType } from "@prisma/client";
+import { FaBullhorn, FaLink, FaRegFileAlt, FaRegImages, FaRegPlayCircle } from "react-icons/fa";
 
 export const getBoardIcon = (type: BoardType) => {
   switch (type) {

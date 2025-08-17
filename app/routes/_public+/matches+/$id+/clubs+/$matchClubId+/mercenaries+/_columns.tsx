@@ -1,14 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { ColumnDef } from "@tanstack/react-table";
+/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: off */
+import type { ColumnDef } from "@tanstack/react-table";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { formatPhoneNumber } from "~/libs/convert";
 import Actions from "./_actions";
-import { IMatchClubMecenaryLoaderTData } from "./_index";
+import type { IMatchClubMecenaryLoaderTData } from "./_index";
 
-export const mercenaryColumns: ColumnDef<
-  IMatchClubMecenaryLoaderTData[number]
->[] = [
+export const mercenaryColumns: ColumnDef<IMatchClubMecenaryLoaderTData[number]>[] = [
   {
     id: "name",
     accessorFn: (v) => v.user?.name || v.name || "",
@@ -21,11 +19,7 @@ export const mercenaryColumns: ColumnDef<
         <div className="flex justify-center items-center truncate space-x-2">
           {row.original?.user?.userImage?.url && (
             <Avatar>
-              <AvatarImage
-                src={
-                  row.original?.user?.userImage?.url || "/images/user_empty.png"
-                }
-              />
+              <AvatarImage src={row.original?.user?.userImage?.url || "/images/user_empty.png"} />
               <AvatarFallback className="bg-primary-foreground">
                 <Loading />
               </AvatarFallback>
@@ -33,9 +27,7 @@ export const mercenaryColumns: ColumnDef<
           )}
           <div>
             <div className="flex space-x-2 items-center h-5">
-              <span className="text-base font-semibold">
-                {row.getValue("name")}
-              </span>
+              <span className="text-base font-semibold">{row.getValue("name")}</span>
               {/* {user?.email && (
                 <>
                   <Separator orientation="vertical" />

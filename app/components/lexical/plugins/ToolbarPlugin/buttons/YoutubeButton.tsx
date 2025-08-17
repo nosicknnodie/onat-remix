@@ -12,6 +12,7 @@ import { Input } from "~/components/ui/input";
 import { cn } from "~/libs/utils";
 import { INSERT_YOUTUBE_COMMAND } from "../../YouTubePlugin";
 import { useActiveEditor, useToolbarState } from "../Context";
+
 interface IYoutubeButtonProps {}
 
 const YoutubeButton = (_props: IYoutubeButtonProps) => {
@@ -22,10 +23,7 @@ const YoutubeButton = (_props: IYoutubeButtonProps) => {
   const [error, setError] = useState<string | null>(null);
   if (toolbarState.blockType === "code") return null;
   const handleSetLink = (link: string) => {
-    const match =
-      /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/.exec(
-        link
-      );
+    const match = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/.exec(link);
     const id = match ? (match?.[2].length === 11 ? match[2] : null) : null;
     if (id != null) {
       activeEditor.dispatchCommand(INSERT_YOUTUBE_COMMAND, id);
@@ -57,9 +55,7 @@ const YoutubeButton = (_props: IYoutubeButtonProps) => {
                 className={cn({ "border-2 border-red-500": error })}
                 value={link}
               />
-              {error && (
-                <span className="text-red-500 text-xs pl-2">{error}</span>
-              )}
+              {error && <span className="text-red-500 text-xs pl-2">{error}</span>}
             </div>
             <Button onClick={() => handleSetLink(link)}>링크 추가</Button>
           </div>

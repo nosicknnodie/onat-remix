@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Prisma } from "@prisma/client";
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
+import type { Prisma } from "@prisma/client";
 import { useParams } from "@remix-run/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
@@ -45,7 +46,7 @@ export function usePositionQuery() {
   return useQuery<{ attendances: AttendanceWithAssigned[] }>({
     queryKey: ["ATTENDANCES", matchClubId],
     queryFn: async () => {
-      const res = await fetch("/api/attendances?matchClubId=" + matchClubId);
+      const res = await fetch(`/api/attendances?matchClubId=${matchClubId}`);
       return await res.json();
     },
   });
@@ -62,16 +63,10 @@ export function usePositionUpdate({ url }: { url: string }) {
           queryClient.setQueryData(["ATTENDANCES", matchClubId], (old: any) => {
             if (!old) return old;
             const updated = old.attendances.map((attendance: any) => {
-              const updatedAssigneds = attendance.assigneds.map(
-                (assigned: any) => {
-                  const found = data.assigneds.find(
-                    (a: any) => a.id === assigned.id
-                  );
-                  return found
-                    ? { ...assigned, position: found.position }
-                    : assigned;
-                }
-              );
+              const updatedAssigneds = attendance.assigneds.map((assigned: any) => {
+                const found = data.assigneds.find((a: any) => a.id === assigned.id);
+                return found ? { ...assigned, position: found.position } : assigned;
+              });
               return { ...attendance, assigneds: updatedAssigneds };
             });
             return { attendances: updated };
@@ -82,9 +77,7 @@ export function usePositionUpdate({ url }: { url: string }) {
           queryClient.setQueryData(["ATTENDANCES", matchClubId], (old: any) => {
             if (!old) return old;
             const updated = old.attendances.map((attendance: any) => {
-              const additions = data.assigneds.filter(
-                (a: any) => a.attendanceId === attendance.id
-              );
+              const additions = data.assigneds.filter((a: any) => a.attendanceId === attendance.id);
               return {
                 ...attendance,
                 assigneds: [...attendance.assigneds, ...additions],
@@ -101,7 +94,7 @@ export function usePositionUpdate({ url }: { url: string }) {
               return {
                 ...attendance,
                 assigneds: attendance.assigneds.filter(
-                  (assigned: any) => !data.assignedIds.includes(assigned.id)
+                  (assigned: any) => !data.assignedIds.includes(assigned.id),
                 ),
               };
             });

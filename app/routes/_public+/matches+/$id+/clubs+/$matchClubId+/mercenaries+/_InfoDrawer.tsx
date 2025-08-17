@@ -13,7 +13,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { IMatchClubMecenaryLoaderTData } from "./_index";
+import type { IMatchClubMecenaryLoaderTData } from "./_index";
 
 interface IInfoDrawerProps extends React.PropsWithChildren {
   payload: IMatchClubMecenaryLoaderTData[number];

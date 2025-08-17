@@ -24,11 +24,11 @@ import {
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
-  ElementNode,
-  LexicalNode,
-  RangeSelection,
+  type ElementNode,
+  type LexicalNode,
+  type RangeSelection,
   SELECTION_CHANGE_COMMAND,
-  TextNode,
+  type TextNode,
 } from "lexical";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Separator } from "~/components/ui/separator";
@@ -45,12 +45,9 @@ import UnderlineButton from "./buttons/UnderlineButton";
 import UndoButton from "./buttons/UndoButton";
 import YoutubeButton from "./buttons/YoutubeButton";
 import CodeLanguageDropDown from "./CodeLanguageDropDown";
-import {
-  blockTypeToBlockName,
-  useActiveEditor,
-  useToolbarState,
-} from "./Context";
+import { blockTypeToBlockName, useActiveEditor, useToolbarState } from "./Context";
 import ElementFormatDropdown from "./ElementFormatDropdown";
+
 // const LowPriority = 1;
 
 function getSelectedNode(selection: RangeSelection): TextNode | ElementNode {
@@ -97,43 +94,30 @@ export default function ToolbarPlugin() {
         : selectedElement.getType();
 
       if (type in blockTypeToBlockName) {
-        updateToolbarState(
-          "blockType",
-          type as keyof typeof blockTypeToBlockName
-        );
+        updateToolbarState("blockType", type as keyof typeof blockTypeToBlockName);
       }
     },
-    [updateToolbarState]
+    [updateToolbarState],
   );
 
   const $handleCodeNode = useCallback(
     (element: LexicalNode) => {
       if ($isCodeNode(element)) {
-        const language =
-          element.getLanguage() as keyof typeof CODE_LANGUAGE_MAP;
-        updateToolbarState(
-          "codeLanguage",
-          language ? CODE_LANGUAGE_MAP[language] || language : ""
-        );
+        const language = element.getLanguage() as keyof typeof CODE_LANGUAGE_MAP;
+        updateToolbarState("codeLanguage", language ? CODE_LANGUAGE_MAP[language] || language : "");
         return;
       }
     },
-    [updateToolbarState]
+    [updateToolbarState],
   );
   const $updateToolbar = useCallback(() => {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
-      if (
-        activeEditor &&
-        activeEditor !== editor &&
-        $isEditorIsNestedEditor(activeEditor)
-      ) {
+      if (activeEditor && activeEditor !== editor && $isEditorIsNestedEditor(activeEditor)) {
         const rootElement = activeEditor?.getRootElement();
         updateToolbarState(
           "isImageCaption",
-          !!rootElement?.parentElement?.classList.contains(
-            "image-caption-container"
-          )
+          !!rootElement?.parentElement?.classList.contains("image-caption-container"),
         );
       } else {
         updateToolbarState("isImageCaption", false);
@@ -162,13 +146,8 @@ export default function ToolbarPlugin() {
       if (elementDOM !== null) {
         updateToolbarState("selectedElementKey", elementKey);
         if ($isListNode(element)) {
-          const parentList = $getNearestNodeOfType<ListNode>(
-            anchorNode,
-            ListNode
-          );
-          const type = parentList
-            ? parentList.getListType()
-            : element.getListType();
+          const parentList = $getNearestNodeOfType<ListNode>(anchorNode, ListNode);
+          const type = parentList ? parentList.getListType() : element.getListType();
 
           updateToolbarState("blockType", type);
         } else {
@@ -180,26 +159,23 @@ export default function ToolbarPlugin() {
       // Handle buttons
       updateToolbarState(
         "fontColor",
-        $getSelectionStyleValueForProperty(selection, "color", "#000")
+        $getSelectionStyleValueForProperty(selection, "color", "#000"),
       );
       updateToolbarState(
         "bgColor",
-        $getSelectionStyleValueForProperty(
-          selection,
-          "background-color",
-          "#fff"
-        )
+        $getSelectionStyleValueForProperty(selection, "background-color", "#fff"),
       );
       updateToolbarState(
         "fontFamily",
-        $getSelectionStyleValueForProperty(selection, "font-family", "Arial")
+        $getSelectionStyleValueForProperty(selection, "font-family", "Arial"),
       );
+      // biome-ignore lint/suspicious/noImplicitAnyLet: off
       let matchingParent;
       if ($isLinkNode(parent)) {
         // If node is a link, we need to fetch the parent paragraph node to set format
         matchingParent = $findMatchingParent(
           node,
-          (parentNode) => $isElementNode(parentNode) && !parentNode.isInline()
+          (parentNode) => $isElementNode(parentNode) && !parentNode.isInline(),
         );
       }
 
@@ -210,7 +186,7 @@ export default function ToolbarPlugin() {
           ? matchingParent.getFormatType()
           : $isElementNode(node)
             ? node.getFormatType()
-            : parent?.getFormatType() || "left"
+            : parent?.getFormatType() || "left",
       );
     }
     if ($isRangeSelection(selection) || $isTableSelection(selection)) {
@@ -218,17 +194,14 @@ export default function ToolbarPlugin() {
       updateToolbarState("isBold", selection?.hasFormat("bold"));
       updateToolbarState("isItalic", selection?.hasFormat("italic"));
       updateToolbarState("isUnderline", selection?.hasFormat("underline"));
-      updateToolbarState(
-        "isStrikethrough",
-        selection?.hasFormat("strikethrough")
-      );
+      updateToolbarState("isStrikethrough", selection?.hasFormat("strikethrough"));
       updateToolbarState("isSubscript", selection?.hasFormat("subscript"));
       updateToolbarState("isSuperscript", selection?.hasFormat("superscript"));
       updateToolbarState("isHighlight", selection?.hasFormat("highlight"));
       updateToolbarState("isCode", selection?.hasFormat("code"));
       updateToolbarState(
         "fontSize",
-        $getSelectionStyleValueForProperty(selection, "font-size", "15px")
+        $getSelectionStyleValueForProperty(selection, "font-size", "15px"),
       );
       updateToolbarState("isLowercase", selection?.hasFormat("lowercase"));
       updateToolbarState("isUppercase", selection?.hasFormat("uppercase"));
@@ -237,10 +210,7 @@ export default function ToolbarPlugin() {
     if ($isNodeSelection(selection)) {
       const nodes = selection.getNodes();
       for (const selectedNode of nodes) {
-        const parentList = $getNearestNodeOfType<ListNode>(
-          selectedNode,
-          ListNode
-        );
+        const parentList = $getNearestNodeOfType<ListNode>(selectedNode, ListNode);
         if (parentList) {
           const type = parentList.getListType();
           updateToolbarState("blockType", type);
@@ -250,21 +220,12 @@ export default function ToolbarPlugin() {
           $handleCodeNode(selectedElement);
           // Update elementFormat for node selection (e.g., images)
           if ($isElementNode(selectedElement)) {
-            updateToolbarState(
-              "elementFormat",
-              selectedElement.getFormatType()
-            );
+            updateToolbarState("elementFormat", selectedElement.getFormatType());
           }
         }
       }
     }
-  }, [
-    activeEditor,
-    editor,
-    updateToolbarState,
-    $handleHeadingNode,
-    $handleCodeNode,
-  ]);
+  }, [activeEditor, editor, updateToolbarState, $handleHeadingNode, $handleCodeNode]);
 
   useEffect(() => {
     return editor.registerCommand(
@@ -274,7 +235,7 @@ export default function ToolbarPlugin() {
         $updateToolbar();
         return false;
       },
-      COMMAND_PRIORITY_CRITICAL
+      COMMAND_PRIORITY_CRITICAL,
     );
   }, [editor, $updateToolbar, setActiveEditor]);
 
@@ -294,7 +255,7 @@ export default function ToolbarPlugin() {
           updateToolbarState("canUndo", payload);
           return false;
         },
-        COMMAND_PRIORITY_CRITICAL
+        COMMAND_PRIORITY_CRITICAL,
       ),
       activeEditor.registerCommand<boolean>(
         CAN_REDO_COMMAND,
@@ -302,8 +263,8 @@ export default function ToolbarPlugin() {
           updateToolbarState("canRedo", payload);
           return false;
         },
-        COMMAND_PRIORITY_CRITICAL
-      )
+        COMMAND_PRIORITY_CRITICAL,
+      ),
     );
   }, [$updateToolbar, activeEditor, editor, updateToolbarState]);
 
@@ -317,8 +278,9 @@ export default function ToolbarPlugin() {
         <Separator orientation="vertical" className="h-8" />
       </div>
       <div className="flex">
-        {toolbarState.blockType in blockTypeToBlockName &&
-          activeEditor === editor && <ElementFormatDropdown />}
+        {toolbarState.blockType in blockTypeToBlockName && activeEditor === editor && (
+          <ElementFormatDropdown />
+        )}
         <Separator orientation="vertical" className="h-8" />
       </div>
       <div className="flex">

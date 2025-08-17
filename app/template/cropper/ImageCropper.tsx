@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Cropper, ReactCropperElement } from "react-cropper";
+import { Cropper, type ReactCropperElement } from "react-cropper";
 import { Button } from "~/components/ui/button";
 import "~/styles/cropper.css";
 import { useCropper } from "./cropper.hook";

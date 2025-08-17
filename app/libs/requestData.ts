@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export async function parseRequestData(
-  request: Request
-): Promise<Record<string, any>> {
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
+export async function parseRequestData(request: Request): Promise<Record<string, any>> {
   const url = new URL(request.url);
   const params: Record<string, string> = {};
   url.searchParams.forEach((value, key) => {

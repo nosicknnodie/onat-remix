@@ -1,9 +1,9 @@
-import { AttendanceState, PositionType } from "@prisma/client";
+import type { AttendanceState, PositionType } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useLoaderData } from "@remix-run/react";
 import {
   createContext,
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useState,
@@ -35,14 +35,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import {
-  isAttackPosition,
-  isDefensePosition,
-  isMiddlePosition,
-} from "~/libs/const/position.const";
+import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
 import { cn } from "~/libs/utils";
-import { IAssignedWithAttendance, usePositionSettingContext } from "./_context";
-import { loader } from "./_index";
+import { type IAssignedWithAttendance, usePositionSettingContext } from "./_context";
+import type { loader } from "./_index";
 
 interface IPositionSettingDrawerProps {
   positionType: PositionType;
@@ -71,9 +67,8 @@ export const PositionSettingDrawer = ({
   const attendancesData = attendances
     ?.filter(
       (attendance) =>
-        !attendance.assigneds.some(
-          (assigned) => assigned.quarterId === quarterId
-        ) && attendance.teamId === teamId
+        !attendance.assigneds.some((assigned) => assigned.quarterId === quarterId) &&
+        attendance.teamId === teamId,
     )
     .sort((a, b) => {
       const statePriority = {
@@ -104,14 +99,12 @@ export const PositionSettingDrawer = ({
     (_assigned) =>
       _assigned.quarterId === quarterId &&
       _assigned.teamId === currentTeamId &&
-      _assigned.position === positionType
+      _assigned.position === positionType,
   );
   /**
    * 배정하기 핸들러
    */
-  const handleSelectPosition = (
-    attendance: NonNullable<typeof attendancesData>[number]
-  ) => {
+  const handleSelectPosition = (attendance: NonNullable<typeof attendancesData>[number]) => {
     startTransition(async () => {
       if (assigned) {
         await fetch("/api/assigneds", {
@@ -150,27 +143,17 @@ export const PositionSettingDrawer = ({
               <DrawerTitle>
                 포지션설정{" "}
                 {currentTeamId && (
-                  <>
-                    (
-                    {
-                      matchClub.teams.find((team) => team.id === currentTeamId)
-                        ?.name
-                    }
-                    )
-                  </>
+                  <>({matchClub.teams.find((team) => team.id === currentTeamId)?.name})</>
                 )}
               </DrawerTitle>
               <DrawerDescription>
-                {context.currentQuarter?.order}쿼터의 {positionType}의 포지션
-                설정
+                {context.currentQuarter?.order}쿼터의 {positionType}의 포지션 설정
               </DrawerDescription>
             </DrawerHeader>
             <div className="p-4 space-y-2">
               {assigned && (
                 <>
-                  <h3 className="mb-2 text-base font-semibold">
-                    현재 위치 배정선수
-                  </h3>
+                  <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
                   <ul className="divide-y divide-gray-200">
                     <PositionSettingRowItem
                       attendance={assigned.attendance}
@@ -181,9 +164,7 @@ export const PositionSettingDrawer = ({
                 </>
               )}
               <div className="flex justify-between items-center">
-                <h3 className="text-base font-semibold">
-                  배정 가능 선수 리스트
-                </h3>
+                <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
                 {currentTeamId && (
                   <Select value={teamId ?? undefined} onValueChange={setTeamId}>
                     <SelectTrigger className="w-[100px]">
@@ -232,9 +213,7 @@ const PositionSettingRowItem = ({
   onClick,
 }: IPositionsettingRowItem) => {
   const imageUrl =
-    attendance?.player?.user?.userImage?.url ||
-    attendance?.mercenary?.user?.userImage?.url ||
-    null;
+    attendance?.player?.user?.userImage?.url || attendance?.mercenary?.user?.userImage?.url || null;
   const name =
     attendance?.player?.user?.name ||
     attendance?.mercenary?.user?.name ||
@@ -242,9 +221,7 @@ const PositionSettingRowItem = ({
     "";
   const assigneds = attendance.assigneds;
   const loaderData = useLoaderData<typeof loader>();
-  const quarters = loaderData.matchClub.quarters.sort(
-    (a, b) => a.order - b.order
-  );
+  const quarters = loaderData.matchClub.quarters.sort((a, b) => a.order - b.order);
   const state = {
     NORMAL: "기용가능",
     EXCUSED: "불참",
@@ -259,10 +236,7 @@ const PositionSettingRowItem = ({
       <div className={cn("flex items-center gap-2")}>
         {/* 프로필 이미지 */}
         <Avatar>
-          <AvatarImage
-            src={imageUrl || "/images/user_empty.png"}
-            alt={name || "Player"}
-          />
+          <AvatarImage src={imageUrl || "/images/user_empty.png"} alt={name || "Player"} />
           <AvatarFallback className="bg-primary-foreground">
             <Loading />
           </AvatarFallback>
@@ -270,8 +244,7 @@ const PositionSettingRowItem = ({
         <div className="flex-1 flex flex-col gap-1">
           <span
             className={cn("font-medium", {
-              "line-through opacity-70 text-gray-400":
-                !isAssigned && attendance.state !== "NORMAL",
+              "line-through opacity-70 text-gray-400": !isAssigned && attendance.state !== "NORMAL",
             })}
           >
             {name}
@@ -282,14 +255,10 @@ const PositionSettingRowItem = ({
           <span
             className={cn(
               "text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center bg-green-500 text-white",
-              {}
+              {},
             )}
           >
-            {isLoading ? (
-              <Loading size={12} className="text-white text-center" />
-            ) : (
-              "배정됨"
-            )}
+            {isLoading ? <Loading size={12} className="text-white text-center" /> : "배정됨"}
           </span>
         )}
         {!isAssigned && attendance.state === "NORMAL" && (
@@ -306,7 +275,7 @@ const PositionSettingRowItem = ({
         {!isAssigned && attendance.state !== "NORMAL" && (
           <span
             className={cn(
-              "text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center bg-yellow-500 text-white"
+              "text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center bg-yellow-500 text-white",
             )}
           >
             {state}
@@ -321,7 +290,7 @@ const PositionSettingRowItem = ({
         </span>
         {quarters.map((quarter) => {
           const position = assigneds.find(
-            (assigned) => assigned.quarterId === quarter.id
+            (assigned) => assigned.quarterId === quarter.id,
           )?.position;
           return (
             <span
@@ -394,11 +363,7 @@ const Action = ({ isAssigned, attendance }: IActionProps) => {
             disabled={isPending}
           >
             <span className="sr-only">Open menu</span>
-            {isPending ? (
-              <Loading />
-            ) : (
-              <DotsHorizontalIcon className="h-4 w-4" />
-            )}
+            {isPending ? <Loading /> : <DotsHorizontalIcon className="h-4 w-4" />}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -429,10 +394,7 @@ const Action = ({ isAssigned, attendance }: IActionProps) => {
           {isAssigned && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleCancelAssigned}
-                className="text-red-500"
-              >
+              <DropdownMenuItem onClick={handleCancelAssigned} className="text-red-500">
                 배정취소
               </DropdownMenuItem>
             </>

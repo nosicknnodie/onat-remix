@@ -1,11 +1,7 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: off */
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
 import { useFetcher, useLocation } from "@remix-run/react";
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-} from "react";
+import { createContext, useCallback, useEffect, useMemo, useReducer } from "react";
 import { hasItemsAndPageInfo, reducer } from "./internals";
 import type { Ctx, Filters, PageInfo } from "./types";
 
@@ -20,7 +16,6 @@ type ProviderProps<T> = {
   children: React.ReactNode;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const InfiniteListCtx = createContext<Ctx<any> | null>(null);
 
 export function InfiniteListProvider<T>({
@@ -73,18 +68,15 @@ export function InfiniteListProvider<T>({
       });
       return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data]);
 
   const loadMore = useCallback(() => {
-    if (state.busy || !state.pageInfo.hasMore || fetcher.state !== "idle")
-      return;
+    if (state.busy || !state.pageInfo.hasMore || fetcher.state !== "idle") return;
     dispatch({ type: "BUSY", payload: true });
 
     const params = new URLSearchParams();
     params.set("take", String(state.pageInfo.take));
-    if (state.pageInfo.nextCursor)
-      params.set("cursor", String(state.pageInfo.nextCursor));
+    if (state.pageInfo.nextCursor) params.set("cursor", String(state.pageInfo.nextCursor));
 
     // 필터를 쿼리에 반영 (서버에서 동일하게 읽어야 함)
     const { flair, sort, period, q } = state.filters;
@@ -94,7 +86,6 @@ export function InfiniteListProvider<T>({
     if (q) params.set("q", q);
 
     fetcher.load(`${pathname}?index&${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.busy, state.pageInfo, state.filters, fetcher.state, pathname]);
 
   const resetWith = useCallback(
@@ -110,7 +101,7 @@ export function InfiniteListProvider<T>({
         },
       });
     },
-    [slug, type, state.filters]
+    [slug, type, state.filters],
   );
 
   const setFilters = useCallback((f: Filters) => {
@@ -119,12 +110,8 @@ export function InfiniteListProvider<T>({
 
   const value = useMemo<Ctx<T>>(
     () => ({ state, loadMore, resetWith, setFilters }),
-    [state, loadMore, resetWith, setFilters]
+    [state, loadMore, resetWith, setFilters],
   );
 
-  return (
-    <InfiniteListCtx.Provider value={value}>
-      {children}
-    </InfiniteListCtx.Provider>
-  );
+  return <InfiniteListCtx.Provider value={value}>{children}</InfiniteListCtx.Provider>;
 }

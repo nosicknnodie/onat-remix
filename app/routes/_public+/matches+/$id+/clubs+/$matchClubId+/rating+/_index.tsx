@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -15,28 +15,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts/AuthUserContext";
-import {
-  isAttackPosition,
-  isDefensePosition,
-  isMiddlePosition,
-} from "~/libs/const/position.const";
+import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
 import { prisma } from "~/libs/db/db.server";
 import { getRatingAttendances } from "~/libs/queries/attendance/atttendances";
 import { cn } from "~/libs/utils";
-import { loader as layoutLoader } from "../../../_layout";
+import type { loader as layoutLoader } from "../../../_layout";
 import { RightDrawer } from "./_RightDrawer";
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const matchClub = await prisma.matchClub.findUnique({
     where: {
@@ -55,8 +43,7 @@ interface IRatingPageProps {}
 const RatingPage = (_props: IRatingPageProps) => {
   const user = useSession();
   const params = useParams();
-  const outletData =
-    useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();
+  const outletData = useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();
 
   const loaderData = useLoaderData<typeof loader>();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -68,28 +55,20 @@ const RatingPage = (_props: IRatingPageProps) => {
   const { data } = useQuery<Awaited<ReturnType<typeof loader>>>({
     queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
     queryFn: async () => {
-      return await fetch(
-        "/api/attendances/rating?matchClubId=" + params.matchClubId
-      ).then((res) => res.json());
+      return await fetch(`/api/attendances/rating?matchClubId=${params.matchClubId}`).then((res) =>
+        res.json(),
+      );
     },
     initialData: loaderData,
   });
   const attendances = data.attendances;
   const match = outletData.match;
-  const quarters = loaderData.matchClub?.quarters.sort(
-    (a, b) => a.order - b.order
-  );
+  const quarters = loaderData.matchClub?.quarters.sort((a, b) => a.order - b.order);
   const queryClient = useQueryClient();
 
   // update score
   const updateEvaluation = useMutation({
-    mutationFn: async ({
-      attendanceId,
-      score,
-    }: {
-      attendanceId: string;
-      score: number;
-    }) => {
+    mutationFn: async ({ attendanceId, score }: { attendanceId: string; score: number }) => {
       const res = await fetch("/api/evaluations/score", {
         method: "POST",
         body: JSON.stringify({
@@ -106,9 +85,10 @@ const RatingPage = (_props: IRatingPageProps) => {
         queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
       });
 
-      const prevData = queryClient.getQueryData<
-        Awaited<ReturnType<typeof loader>>
-      >(["MATCH_RATING_QUERY", params.matchClubId]);
+      const prevData = queryClient.getQueryData<Awaited<ReturnType<typeof loader>>>([
+        "MATCH_RATING_QUERY",
+        params.matchClubId,
+      ]);
 
       if (prevData) {
         queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], {
@@ -118,10 +98,10 @@ const RatingPage = (_props: IRatingPageProps) => {
               ? {
                   ...att,
                   evaluations: att.evaluations.map((ev) =>
-                    ev.userId === user?.id ? { ...ev, score } : ev
+                    ev.userId === user?.id ? { ...ev, score } : ev,
                   ),
                 }
-              : att
+              : att,
           ),
         });
       }
@@ -131,10 +111,7 @@ const RatingPage = (_props: IRatingPageProps) => {
 
     onError: (_err, _vars, context) => {
       if (context?.prevData) {
-        queryClient.setQueryData(
-          ["MATCH_RATING_QUERY", params.matchClubId],
-          context.prevData
-        );
+        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], context.prevData);
       }
     },
 
@@ -147,13 +124,7 @@ const RatingPage = (_props: IRatingPageProps) => {
 
   // update like
   const toggleLike = useMutation({
-    mutationFn: async ({
-      attendanceId,
-      liked,
-    }: {
-      attendanceId: string;
-      liked: boolean;
-    }) => {
+    mutationFn: async ({ attendanceId, liked }: { attendanceId: string; liked: boolean }) => {
       await fetch("/api/evaluations/like", {
         method: "POST",
         body: JSON.stringify({
@@ -168,9 +139,10 @@ const RatingPage = (_props: IRatingPageProps) => {
         queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
       });
 
-      const prevData = queryClient.getQueryData<
-        Awaited<ReturnType<typeof loader>>
-      >(["MATCH_RATING_QUERY", params.matchClubId]);
+      const prevData = queryClient.getQueryData<Awaited<ReturnType<typeof loader>>>([
+        "MATCH_RATING_QUERY",
+        params.matchClubId,
+      ]);
 
       if (prevData) {
         queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], {
@@ -180,10 +152,10 @@ const RatingPage = (_props: IRatingPageProps) => {
               ? {
                   ...att,
                   evaluations: att.evaluations.map((ev) =>
-                    ev.userId === user?.id ? { ...ev, liked } : ev
+                    ev.userId === user?.id ? { ...ev, liked } : ev,
                   ),
                 }
-              : att
+              : att,
           ),
         });
       }
@@ -192,10 +164,7 @@ const RatingPage = (_props: IRatingPageProps) => {
     },
     onError: (_err, _vars, context) => {
       if (context?.prevData) {
-        queryClient.setQueryData(
-          ["MATCH_RATING_QUERY", params.matchClubId],
-          context.prevData
-        );
+        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], context.prevData);
       }
     },
     onSettled: () => {
@@ -256,11 +225,9 @@ const RatingPage = (_props: IRatingPageProps) => {
               // 지각여부
               const isPerception = attendance.checkTime
                 ? new Date(match.stDate) < new Date(attendance.checkTime)
-                : new Date(match.stDate) < new Date()
-                  ? true
-                  : false;
+                : new Date(match.stDate) < new Date();
               const evaluation = attendance.evaluations.find(
-                (evaluation) => evaluation.userId === user?.id
+                (evaluation) => evaluation.userId === user?.id,
               );
               return (
                 <SwiperSlide
@@ -271,10 +238,9 @@ const RatingPage = (_props: IRatingPageProps) => {
                     className={cn(
                       "w-full h-full transition-all duration-300 bg-zinc-100 rounded-xl flex flex-col",
                       {
-                        "bg-white shadow-lg ring-1 ring-blue-400 z-10":
-                          isActived,
+                        "bg-white shadow-lg ring-1 ring-blue-400 z-10": isActived,
                         "bg-zinc-100 opacity-90": !isActived,
-                      }
+                      },
                     )}
                   >
                     <CardHeader className="flex-shrink-0">
@@ -284,11 +250,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                           {`'s 정보`}
                         </span>
                         <RightDrawer attendance={attendance}>
-                          <Button
-                            size={"sm"}
-                            variant="ghost"
-                            className="text-gray-500"
-                          >
+                          <Button size={"sm"} variant="ghost" className="text-gray-500">
                             Detail
                             <RiExpandLeftLine className="ml-2" />
                           </Button>
@@ -298,9 +260,9 @@ const RatingPage = (_props: IRatingPageProps) => {
                         <Badge variant={isPlayer ? "default" : "outline"}>
                           {isPlayer ? "회원" : "용병"}
                         </Badge>
-                        {attendance.assigneds.some(
-                          (a) => a.goals.length > 0
-                        ) && <Badge variant="secondary">득점</Badge>}
+                        {attendance.assigneds.some((a) => a.goals.length > 0) && (
+                          <Badge variant="secondary">득점</Badge>
+                        )}
                         {isPerception && (
                           <Tooltip>
                             <TooltipTrigger>
@@ -310,9 +272,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                               <p>
                                 출석 체크 시간:{" "}
                                 {attendance.checkTime
-                                  ? dayjs(attendance.checkTime).format(
-                                      "MM.DD (ddd) HH:mm"
-                                    )
+                                  ? dayjs(attendance.checkTime).format("MM.DD (ddd) HH:mm")
                                   : "-"}
                               </p>
                             </TooltipContent>
@@ -320,9 +280,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                         )}
                         {attendance.state !== "NORMAL" && (
                           <Badge variant={"destructive"}>
-                            {attendance.state === "EXCUSED"
-                              ? "불참"
-                              : "리타이어"}
+                            {attendance.state === "EXCUSED" ? "불참" : "리타이어"}
                           </Badge>
                         )}
                       </div>
@@ -345,18 +303,15 @@ const RatingPage = (_props: IRatingPageProps) => {
                           </span>
                           {quarters?.map((quarter) => {
                             const position = attendance.assigneds.find(
-                              (assigned) => assigned.quarterId === quarter.id
+                              (assigned) => assigned.quarterId === quarter.id,
                             )?.position;
                             return (
                               <span
                                 key={quarter.id}
                                 className={cn("h-2 rounded flex-1 border ", {
-                                  "bg-red-500":
-                                    position && isAttackPosition(position),
-                                  "bg-yellow-400":
-                                    position && isMiddlePosition(position),
-                                  "bg-blue-500":
-                                    position && isDefensePosition(position),
+                                  "bg-red-500": position && isAttackPosition(position),
+                                  "bg-yellow-400": position && isMiddlePosition(position),
+                                  "bg-blue-500": position && isDefensePosition(position),
                                   "bg-green-500": position && position === "GK",
                                   "bg-gray-200": !position,
                                 })}
@@ -372,7 +327,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                           width={30}
                           isHighLight
                           disabled={!isActived}
-                          onClick={(e, score) => {
+                          onClick={(_e, score) => {
                             updateEvaluation.mutate({
                               attendanceId: attendance.id,
                               score,

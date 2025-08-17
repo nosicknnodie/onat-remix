@@ -1,4 +1,4 @@
-import { File, Post, User } from "@prisma/client";
+import type { File, Post, User } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link, useRevalidator } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
@@ -47,15 +47,11 @@ const Settings = ({ post, editTo }: ISettingsProps) => {
           <Button
             variant="ghost"
             className={cn(
-              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
             )}
           >
             <span className="sr-only">Open menu</span>
-            {isPending ? (
-              <Loading />
-            ) : (
-              <DotsHorizontalIcon className="h-4 w-4" />
-            )}
+            {isPending ? <Loading /> : <DotsHorizontalIcon className="h-4 w-4" />}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

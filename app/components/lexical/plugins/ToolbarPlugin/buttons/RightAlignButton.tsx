@@ -3,6 +3,7 @@ import { MdFormatAlignRight } from "react-icons/md";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { useActiveEditor, useToolbarState } from "../Context";
+
 interface IRightAlignButtonProps {}
 
 const RightAlignButton = (_props: IRightAlignButtonProps) => {

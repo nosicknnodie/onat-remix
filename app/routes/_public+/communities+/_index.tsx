@@ -1,4 +1,5 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+// biome-ignore assist/source/organizeImports: off
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, NavLink, useLoaderData } from "@remix-run/react";
 import { FaRegComment } from "react-icons/fa";
 import { Fragment } from "react/jsx-runtime";
@@ -76,10 +77,7 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
                 <ul className="space-y-1 text-gray-700 text-sm">
                   {board.posts.map((post) => {
                     return (
-                      <NavLink
-                        key={post.id}
-                        to={`/communities/${board.slug}/${post.id}`}
-                      >
+                      <NavLink key={post.id} to={`/communities/${board.slug}/${post.id}`}>
                         <li className="hover:bg-primary/5 hover:text-primary px-2 py-0.5 rounded-md flex justify-between">
                           <span>{post.title}</span>
                           <Badge variant={"outline"} className="space-x-2">

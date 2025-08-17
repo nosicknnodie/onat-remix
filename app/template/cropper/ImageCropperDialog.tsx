@@ -1,6 +1,6 @@
-import { File, FilePurposeType } from "@prisma/client";
+import type { File, FilePurposeType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
-import { ComponentProps, useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
 import {
@@ -10,8 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import ImageCropper from "./ImageCropper";
 import { CropperProvider, useCropper } from "./cropper.hook";
+import ImageCropper from "./ImageCropper";
+
 interface IImageCropperDialogProps extends ComponentProps<typeof ImageCropper> {
   title: string;
   descirption: string;

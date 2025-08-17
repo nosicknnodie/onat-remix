@@ -1,5 +1,5 @@
-import { OverlayControllerComponent } from "overlay-kit";
-import { ComponentProps } from "react";
+import type { OverlayControllerComponent } from "overlay-kit";
+import type { ComponentProps } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,

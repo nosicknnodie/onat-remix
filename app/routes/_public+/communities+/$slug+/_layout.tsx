@@ -1,11 +1,10 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const slug = params.slug;
   try {
     const res = await prisma.board.findFirst({

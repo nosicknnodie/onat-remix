@@ -1,22 +1,16 @@
 import { motion } from "framer-motion";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { useDrop } from "react-dnd";
 import { cn } from "~/libs/utils";
 
 const MotionDiv = motion.div;
 
-interface IDropDivProps<TItem>
-  extends Omit<ComponentProps<typeof motion.div>, "onDrop"> {
+interface IDropDivProps<TItem> extends Omit<ComponentProps<typeof motion.div>, "onDrop"> {
   canDrop?: ({ item }: { item: TItem }) => boolean;
   onDrop?: (value: TItem) => void;
 }
 
-const DropDiv = <TItem,>({
-  canDrop,
-  onDrop,
-  className,
-  ..._props
-}: IDropDivProps<TItem>) => {
+const DropDiv = <TItem,>({ canDrop, onDrop, className, ..._props }: IDropDivProps<TItem>) => {
   const [{ isDragging, isOver, canDrop: _canDrop }, dropRef] = useDrop<
     TItem,
     unknown,
@@ -36,7 +30,7 @@ const DropDiv = <TItem,>({
         canDrop: !!monitor.canDrop(),
       }),
     }),
-    []
+    [],
   );
   return (
     <>
@@ -44,7 +38,7 @@ const DropDiv = <TItem,>({
         ref={dropRef as unknown as React.Ref<HTMLDivElement>}
         className={cn(className, {
           "outline outline-primary rounded-full": isOver && _canDrop,
-          ["visible opacity-30"]: isDragging,
+          "visible opacity-30": isDragging,
         })}
         {..._props}
       />

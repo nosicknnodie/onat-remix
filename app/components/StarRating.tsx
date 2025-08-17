@@ -1,27 +1,18 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: off */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React from "react";
+import type React from "react";
 import StarIcon from "./StarIcon";
 
 interface IProps {
   id: string;
   score?: number;
   width?: number;
-  onClick?: (
-    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
-    score: number
-  ) => void;
+  onClick?: (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, score: number) => void;
   isHighLight?: boolean;
   [key: string]: unknown;
 }
-const StarRating = ({
-  id,
-  score,
-  onClick,
-  width,
-  isHighLight,
-  ...props
-}: IProps) => {
+const StarRating = ({ id, score, onClick, width, isHighLight, ...props }: IProps) => {
   const getPer = (score: number, sort: number) => {
     const r = score - sort * 20;
     const result = r >= 20 ? 100 : r <= 0 ? 0 : r * 5;
@@ -35,16 +26,16 @@ const StarRating = ({
             {v === 0 && (
               <span
                 className="absolute -left-1/2 top-0 h-full w-1/2 bg-transparent cursor-pointer"
-                onClick={(e) => onClick && onClick(e, 0)}
+                onClick={(e) => onClick?.(e, 0)}
               ></span>
             )}
             <span
               className="absolute left-0 top-0 h-full w-1/2 bg-transparent cursor-pointer"
-              onClick={(e) => onClick && onClick(e, v * 20 + 10)}
+              onClick={(e) => onClick?.(e, v * 20 + 10)}
             ></span>
             <span
               className="absolute left-1/2 top-0 h-full w-1/2 bg-transparent cursor-pointer"
-              onClick={(e) => onClick && onClick(e, v * 20 + 20)}
+              onClick={(e) => onClick?.(e, v * 20 + 20)}
             ></span>
             <StarIcon
               id={`${id}-${v}`}

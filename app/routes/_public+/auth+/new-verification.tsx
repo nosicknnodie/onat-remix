@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { getVerificationTokenByToken } from "~/libs/auth/token";
 import { prisma } from "~/libs/db/db.server";
 import { auth } from "~/libs/db/lucia.server";

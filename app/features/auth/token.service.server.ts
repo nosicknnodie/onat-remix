@@ -35,10 +35,7 @@ export async function issuePasswordResetToken(email: string) {
   const expires = new Date(Date.now() + 3600_000);
 
   return prisma.$transaction(async () => {
-    const existing = await repo.findTokenByEmail(
-      email,
-      TokenType.PASSWORD_RESET
-    );
+    const existing = await repo.findTokenByEmail(email, TokenType.PASSWORD_RESET);
     if (existing) await repo.deleteTokenById(existing.id);
     return repo.createToken({
       email,

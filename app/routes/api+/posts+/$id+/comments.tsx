@@ -1,4 +1,5 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -6,17 +7,13 @@ import { generateShortId } from "~/libs/id";
 import { isMobile } from "~/libs/isMobile";
 import { parseRequestData } from "~/libs/requestData";
 
-type PostCommentWithAuthor = Awaited<
-  ReturnType<typeof prisma.postComment.findMany>
->[number];
+type PostCommentWithAuthor = Awaited<ReturnType<typeof prisma.postComment.findMany>>[number];
 
 type CommentTreeNode = PostCommentWithAuthor & {
   children: CommentTreeNode[];
 };
 
-function buildCommentTree(
-  comments: PostCommentWithAuthor[]
-): CommentTreeNode[] {
+function buildCommentTree(comments: PostCommentWithAuthor[]): CommentTreeNode[] {
   const map = new Map<string, CommentTreeNode>();
   const roots: CommentTreeNode[] = [];
 
@@ -112,7 +109,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     // Image Upload
     const contentJSON = content;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];
@@ -162,9 +158,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return Response.json({ success: true, comment });
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
   }
 }

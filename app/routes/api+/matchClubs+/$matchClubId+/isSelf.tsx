@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
 
@@ -11,10 +11,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const result = matchClubSchema.safeParse(data);
   const matchClubId = params.matchClubId;
   if (!result.success) {
-    return Response.json(
-      { success: false, errors: result.error.flatten() },
-      { status: 400 }
-    );
+    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
   const isSelf = result.data.isSelf;
 
@@ -55,7 +52,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                   matchClubId: matchClub.id,
                 },
               });
-            })
+            }),
           );
         } else {
           await Promise.all([
@@ -122,9 +119,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return Response.json({ success: "success" });
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
   }
 };

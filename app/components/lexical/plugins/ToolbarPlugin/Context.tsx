@@ -1,10 +1,9 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import type { LexicalEditor, NodeKey } from "lexical";
-import { ElementFormatType } from "lexical";
+import type { ElementFormatType, LexicalEditor, NodeKey } from "lexical";
 import {
   createContext,
-  JSX,
-  PropsWithChildren,
+  type JSX,
+  type PropsWithChildren,
   useCallback,
   useContext,
   useEffect,
@@ -17,7 +16,7 @@ export const MAX_ALLOWED_FONT_SIZE = 72;
 export const DEFAULT_FONT_SIZE = 15;
 
 type IHandlerOnUpload = (
-  file: File
+  file: File,
 ) => Promise<{ success: string; url: string; id: string } | null> | undefined;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -80,10 +79,7 @@ type ToolbarState = typeof INITIAL_TOOLBAR_STATE;
 
 type ContextShape = {
   toolbarState: ToolbarState;
-  updateToolbarState<Key extends ToolbarStateKey>(
-    key: Key,
-    value: ToolbarStateValue<Key>
-  ): void;
+  updateToolbarState<Key extends ToolbarStateKey>(key: Key, value: ToolbarStateValue<Key>): void;
 };
 // Utility type to get keys and infer value types
 type ToolbarStateKey = keyof ToolbarState;
@@ -99,9 +95,7 @@ export const ToolbarContext = ({
   config,
   children,
 }: PropsWithChildren & { config?: Record<string, unknown> }) => {
-  const [toolbarState, setToolbarState] = useState(
-    Object.assign(INITIAL_TOOLBAR_STATE, config)
-  );
+  const [toolbarState, setToolbarState] = useState(Object.assign(INITIAL_TOOLBAR_STATE, config));
   const selectionFontSize = toolbarState.fontSize;
   const updateToolbarState = useCallback(
     <Key extends ToolbarStateKey>(key: Key, value: ToolbarStateValue<Key>) => {
@@ -110,7 +104,7 @@ export const ToolbarContext = ({
         [key]: value,
       }));
     },
-    []
+    [],
   );
   useEffect(() => {
     updateToolbarState("fontSizeInputValue", selectionFontSize.slice(0, -2));
@@ -139,15 +133,9 @@ type ActiveEditorContextType = {
   setActiveEditor: (editor: LexicalEditor) => void;
 };
 
-const ActiveEditorContext = createContext<ActiveEditorContextType | undefined>(
-  undefined
-);
+const ActiveEditorContext = createContext<ActiveEditorContextType | undefined>(undefined);
 
-export function ActiveEditorProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+export function ActiveEditorProvider({ children }: { children: React.ReactNode }): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [activeEditor, setActiveEditor] = useState<LexicalEditor>(editor);
 

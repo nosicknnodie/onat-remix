@@ -1,5 +1,6 @@
-import { PositionType } from "@prisma/client";
-import { ToggleGroupItemProps } from "@radix-ui/react-toggle-group";
+/** biome-ignore-all lint/complexity/useIndexOf: off */
+import type { PositionType } from "@prisma/client";
+import type { ToggleGroupItemProps } from "@radix-ui/react-toggle-group";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";

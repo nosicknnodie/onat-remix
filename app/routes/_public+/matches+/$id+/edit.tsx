@@ -1,8 +1,5 @@
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: off */
+import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useAtomCallback } from "jotai/utils";
@@ -10,13 +7,7 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -29,7 +20,7 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { IKakaoLocalType, INITIAL_CENTER } from "~/libs/map";
+import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs/map";
 import HistoryPlaceDownList from "../_components/HistoryPlaceDownList";
 import SearchPlace from "../_components/SearchPlace";
 import { placeHistoryAtom } from "../_libs/state";
@@ -92,21 +83,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return new Response("잘못된 요청입니다.", { status: 400 });
   }
 
-  const {
-    title,
-    description,
-    date,
-    hour,
-    minute,
-    placeName,
-    address,
-    lat,
-    lng,
-  } = result.data;
+  const { title, description, date, hour, minute, placeName, address, lat, lng } = result.data;
 
-  const matchDate = new Date(
-    `${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`
-  );
+  const matchDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
   try {
     await prisma.match.update({
       where: {
@@ -124,7 +103,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       },
     });
 
-    return redirect("/matches/" + matchId);
+    return redirect(`/matches/${matchId}`);
   } catch {
     return new Response("잘못된 요청입니다.", { status: 400 });
   }
@@ -183,13 +162,7 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                   >
                     매치명
                   </Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    type="text"
-                    defaultValue={match.title}
-                    required
-                  />
+                  <Input name="title" type="text" defaultValue={match.title} required />
                 </div>
                 <div className="space-y-2">
                   <Label
@@ -198,13 +171,7 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                   >
                     설명
                   </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    rows={3}
-                    required
-                    defaultValue={match.description}
-                  />
+                  <Textarea name="description" rows={3} required defaultValue={match.description} />
                 </div>
                 <div className="space-y-2">
                   <Label
@@ -215,7 +182,6 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                   </Label>
                   <div className="flex gap-2 max-sm:flex-col">
                     <Input
-                      id="date"
                       name="date"
                       type="date"
                       defaultValue={dayjs(match.stDate).format("YYYY-MM-DD")}
@@ -223,10 +189,7 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                       className="w-36 max-sm:w-full"
                     />
                     <div className="flex gap-x-2">
-                      <Select
-                        name="hour"
-                        defaultValue={dayjs(match.stDate).hour().toString()}
-                      >
+                      <Select name="hour" defaultValue={dayjs(match.stDate).hour().toString()}>
                         <SelectTrigger className="w-36">
                           <SelectValue />
                         </SelectTrigger>
@@ -238,10 +201,7 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Select
-                        name="minute"
-                        defaultValue={dayjs(match.stDate).minute().toString()}
-                      >
+                      <Select name="minute" defaultValue={dayjs(match.stDate).minute().toString()}>
                         <SelectTrigger className="w-36">
                           <SelectValue />
                         </SelectTrigger>
@@ -257,7 +217,6 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                   <Label htmlFor="placeName">장소</Label>
                   <div className="flex gap-x-2">
                     <Input
-                      id="placeName"
                       name="placeName"
                       type="text"
                       value={place?.place_name ?? ""}
@@ -268,14 +227,8 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
                         <FaSearch />
                       </Button>
                     </SearchPlace>
-                    <HistoryPlaceDownList
-                      onSetPlace={handleSearchPlaceSubmit}
-                    />
-                    <input
-                      type="hidden"
-                      name="address"
-                      value={place?.address_name ?? ""}
-                    />
+                    <HistoryPlaceDownList onSetPlace={handleSearchPlaceSubmit} />
+                    <input type="hidden" name="address" value={place?.address_name ?? ""} />
                     <input type="hidden" name="lat" value={place?.y ?? ""} />
                     <input type="hidden" name="lng" value={place?.x ?? ""} />
                   </div>

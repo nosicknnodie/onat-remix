@@ -1,16 +1,15 @@
-// routes/upload.tsx
-import { FilePurposeType } from "@prisma/client";
+/** biome-ignore-all assist/source/organizeImports: off */
+import type { FilePurposeType } from "@prisma/client";
 import {
   type ActionFunction,
   type LoaderFunction,
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
 import {
-  NodeOnDiskFile,
   createFileUploadHandler,
+  type NodeOnDiskFile,
 } from "@remix-run/node/dist/upload/fileUploadHandler";
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import sharp from "sharp";
 import slugify from "slugify";
 import { prisma } from "~/libs/db/db.server";
@@ -30,10 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
     file: ({ filename }) => filename,
   });
 
-  const formData = await unstable_parseMultipartFormData(
-    request,
-    uploadHandler
-  );
+  const formData = await unstable_parseMultipartFormData(request, uploadHandler);
   const file = formData.get("file");
   const purpose = (formData.get("purpose") as FilePurposeType) || "PROFILE";
   if (!file || typeof file === "string")

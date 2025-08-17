@@ -27,12 +27,8 @@ export const auth = new Lucia(adapter, {
 
 // 요청에서 세션을 가져오는 함수
 // 쿠키에서 세션 ID를 추출하여 유효성을 검사합니다
-export const getSession = async (
-  request: Request
-): Promise<LuciaSession | null> => {
-  const sessionId = request.headers
-    .get("Cookie")
-    ?.match(/auth_session=([^;]+)/)?.[1];
+export const getSession = async (request: Request): Promise<LuciaSession | null> => {
+  const sessionId = request.headers.get("Cookie")?.match(/auth_session=([^;]+)/)?.[1];
   if (!sessionId) return null;
   const { session } = await auth.validateSession(sessionId);
   return session;
@@ -41,9 +37,7 @@ export const getSession = async (
 // 요청에서 사용자을 가져오는 함수
 // 쿠키에서 세션 ID를 추출하여 유효성을 검사합니다
 export const getUser = async (request: Request) => {
-  const sessionId = request.headers
-    .get("Cookie")
-    ?.match(/auth_session=([^;]+)/)?.[1];
+  const sessionId = request.headers.get("Cookie")?.match(/auth_session=([^;]+)/)?.[1];
   if (!sessionId) return null;
   const { user } = await auth.validateSession(sessionId);
   return user;

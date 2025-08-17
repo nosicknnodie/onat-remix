@@ -38,7 +38,7 @@ export function InfiniteSentinel({
           }
         }
       },
-      { root: null, rootMargin, threshold: 0 }
+      { root: null, rootMargin, threshold: 0 },
     );
     io.observe(node);
     return () => io.disconnect();
@@ -46,11 +46,7 @@ export function InfiniteSentinel({
 
   return (
     <div ref={elRef} className={className ?? "py-4 text-center text-xs"}>
-      {busy
-        ? loadingText
-        : hasMore
-          ? "아래로 스크롤하면 더 불러옵니다"
-          : doneText}
+      {busy ? loadingText : hasMore ? "아래로 스크롤하면 더 불러옵니다" : doneText}
     </div>
   );
 }

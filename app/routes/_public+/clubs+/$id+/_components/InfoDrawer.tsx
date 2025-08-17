@@ -14,7 +14,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { IPlayer } from "./members.columns";
+import type { IPlayer } from "./members.columns";
+
 interface IInfoDrawerProps extends React.PropsWithChildren {
   player?: IPlayer;
 }

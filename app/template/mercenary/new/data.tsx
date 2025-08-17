@@ -1,5 +1,5 @@
-import { PositionType } from "@prisma/client";
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import type { PositionType } from "@prisma/client";
+import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { AES } from "~/libs/crypto.utils";
 import { prisma } from "~/libs/db/db.server";
 
@@ -52,5 +52,5 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     });
   }
 
-  return redirect("/matches/" + matchClub.matchId + "/clubs/" + matchClubId + "/mercenaries");
+  return redirect(`/matches/${matchClub.matchId}/clubs/${matchClubId}/mercenaries`);
 };

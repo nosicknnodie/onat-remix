@@ -1,4 +1,5 @@
-import { Board } from "@prisma/client";
+/** biome-ignore-all assist/source/organizeImports: off */
+import type { Board } from "@prisma/client";
 import { useLocation, useNavigate } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
@@ -21,6 +22,7 @@ import {
 } from "~/components/ui/sidebar";
 import { Skeleton } from "~/components/ui/skeleton";
 import { getBoardIcon } from "~/libs/getBoardIcons";
+
 interface IMainSideMenuProps {}
 const MainSideMenu = (_props: IMainSideMenuProps) => {
   const { open, toggleSidebar, setOpenMobile } = useSidebar();

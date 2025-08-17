@@ -1,16 +1,12 @@
-import { CommentVote, File, PostComment, User } from "@prisma/client";
+import type { CommentVote, File, PostComment, User } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import {
-  FaRegThumbsDown,
-  FaRegThumbsUp,
-  FaThumbsDown,
-  FaThumbsUp,
-} from "react-icons/fa";
+import { FaRegThumbsDown, FaRegThumbsUp, FaThumbsDown, FaThumbsUp } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useSession } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
+
 type PostCommentWithExtras = PostComment & {
   author: User & {
     userImage: File | null;
@@ -44,7 +40,7 @@ const CommentVoteBadgeButton = ({ comment }: ICommentVoteBadgeButtonProps) => {
         commentId: comment.id,
         vote: newVote,
       },
-      { method: "POST", action: "/api/comment-vote" }
+      { method: "POST", action: "/api/comment-vote" },
     );
   };
 
@@ -68,10 +64,9 @@ const CommentVoteBadgeButton = ({ comment }: ICommentVoteBadgeButtonProps) => {
           size={"icon"}
           onClick={() => handleVote(-1)}
           disabled={isDisabled}
-          className={cn(
-            "rounded-full hover:text-destructive hover:bg-destructive/10",
-            { "text-destructive": vote === -1 }
-          )}
+          className={cn("rounded-full hover:text-destructive hover:bg-destructive/10", {
+            "text-destructive": vote === -1,
+          })}
         >
           {vote === -1 ? <FaThumbsDown /> : <FaRegThumbsDown />}
         </Button>

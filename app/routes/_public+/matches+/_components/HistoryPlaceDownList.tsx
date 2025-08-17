@@ -10,8 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { IKakaoLocalType } from "~/libs/map";
+import type { IKakaoLocalType } from "~/libs/map";
 import { placeHistoryAtom } from "../_libs/state";
+
 interface IHistoryPlaceDownListProps {
   onSetPlace: (place: IKakaoLocalType) => void;
 }

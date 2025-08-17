@@ -11,7 +11,7 @@ export async function verifyPassword(plain: string, hashed?: string | null) {
 
 export async function ensureVerifiedEmail(
   user: { email: string; emailVerified: Date | null },
-  baseUrl: string
+  baseUrl: string,
 ) {
   if (!user.emailVerified) {
     const { email, token } = await issueVerificationToken(user.email);
@@ -24,10 +24,7 @@ export async function ensureVerifiedEmail(
   return { needsVerification: false as const };
 }
 
-export async function createSessionAndCleanup(
-  userId: string,
-  cleanupUserId?: string
-) {
+export async function createSessionAndCleanup(userId: string, cleanupUserId?: string) {
   const session = await auth.createSession(userId, {});
   const sessionCookie = auth.createSessionCookie(session.id);
   // 만료된 세션 정리(베스트 에포트)

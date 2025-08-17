@@ -1,11 +1,9 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const slug = params.slug;
   const clubId = params.id;
   try {
@@ -20,12 +18,9 @@ export const loader = async ({
 };
 
 export const handle = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   breadcrumb: (match: { data: any }) => {
     return (
-      <Link
-        to={`/clubs/${match.data?.board?.clubId}/boards/${match.data?.board?.slug}`}
-      >
+      <Link to={`/clubs/${match.data?.board?.clubId}/boards/${match.data?.board?.slug}`}>
         {match.data?.board?.name || "게시판"}
       </Link>
     );

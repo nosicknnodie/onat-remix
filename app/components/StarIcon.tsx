@@ -1,4 +1,4 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { cn } from "~/libs/utils";
 
 interface IProps extends ComponentProps<"span"> {
@@ -17,6 +17,7 @@ const StarIcon = ({ id, width, per, fill, className }: IProps) => {
   return (
     <span className={cn("star_icon", className)}>
       <svg
+        aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         width={svgWidth}
         height={svgHeight}
@@ -31,11 +32,7 @@ const StarIcon = ({ id, width, per, fill, className }: IProps) => {
           d="M9,2l2.163,4.279L16,6.969,12.5,10.3l.826,4.7L9,12.779,4.674,15,5.5,10.3,2,6.969l4.837-.69Z"
           transform="translate(-2 -2)"
         />
-        <use
-          clipPath={`url(#star-clip-${id})`}
-          href={`#star-${id}`}
-          fill={fill ?? "#DBA901"}
-        />
+        <use clipPath={`url(#star-clip-${id})`} href={`#star-${id}`} fill={fill ?? "#DBA901"} />
       </svg>
     </span>
   );

@@ -1,4 +1,6 @@
-import { Prisma } from "@prisma/client";
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
+import type { Prisma } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
@@ -23,7 +25,6 @@ type Club = Prisma.ClubGetPayload<{
   };
 }>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RightComponent = (_match: any) => {
   const user = useSession();
   if (!user) return null;
@@ -33,7 +34,7 @@ const RightComponent = (_match: any) => {
         <Button
           variant="ghost"
           className={cn(
-            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
           )}
         >
           <span className="sr-only">Open menu</span>
@@ -50,7 +51,6 @@ const RightComponent = (_match: any) => {
 };
 
 export const handle = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   right: (match: any) => <RightComponent {...match} />,
 };
 
@@ -110,7 +110,7 @@ const ClubsPage = (_props: IClubsPageProps) => {
                 className={cn(
                   "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
                   "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
                 )}
               >
                 나의 클럽
@@ -121,7 +121,7 @@ const ClubsPage = (_props: IClubsPageProps) => {
               className={cn(
                 "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
                 "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
               )}
             >
               공개 클럽
@@ -154,15 +154,9 @@ const ClubList = ({ clubs }: { clubs: Club[] }) => {
           const myPlayer = players.find((p) => p.clubId === club.id);
           const isStatePending = myPlayer?.status === "PENDING";
           return (
-            <div
-              key={club.id}
-              className="border rounded-lg shadow-sm overflow-hidden relative"
-            >
+            <div key={club.id} className="border rounded-lg shadow-sm overflow-hidden relative">
               {isStatePending && (
-                <Badge
-                  className="absolute top-2 right-2 text-xs"
-                  variant="destructive"
-                >
+                <Badge className="absolute top-2 right-2 text-xs" variant="destructive">
                   가입대기
                 </Badge>
               )}
@@ -175,8 +169,7 @@ const ClubList = ({ clubs }: { clubs: Club[] }) => {
               </Link>
               <div className="flex justify-end px-2">
                 <p className="text-xs text-gray-500">
-                  {club.si || "-"} {club.gun || "-"} /
-                  {club.isPublic ? "공개" : "비공개"}
+                  {club.si || "-"} {club.gun || "-"} /{club.isPublic ? "공개" : "비공개"}
                 </p>
               </div>
               <div className="flex p-2 gap-2 items-center overflow-hidden w-full">
@@ -188,10 +181,7 @@ const ClubList = ({ clubs }: { clubs: Club[] }) => {
                   />
                 </Link>
                 <div className="flex-shrink min-w-0 w-full">
-                  <Link
-                    to={`/clubs/${club.id}`}
-                    className="text-xl font-semibold"
-                  >
+                  <Link to={`/clubs/${club.id}`} className="text-xl font-semibold">
                     {club.name}
                   </Link>
                   <p className="text-sm text-muted-foreground truncate w-full ">

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/complexity/useDateNow: off */
 import { TokenType } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "~/libs/db/db.server";
@@ -9,6 +10,7 @@ import { prisma } from "~/libs/db/db.server";
  */
 export const generatePasswordResetToken = async (email: string) => {
   const token = uuidv4();
+
   const expires = new Date(new Date().getTime() + 3600 * 1000);
 
   const existingToken = await prisma.confirmToken.findFirst({

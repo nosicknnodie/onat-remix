@@ -1,9 +1,7 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
+import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -91,7 +89,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
   try {
     const contentJSON = JSON.parse(result.data.content);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];
@@ -120,8 +117,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         files: true,
       },
     });
-    const notUsedImages =
-      post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
+    const notUsedImages = post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
 
     if (post?.authorId !== user.id) {
       return { error: "게시글 권한이 없습니다." };
@@ -171,7 +167,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         id: result.data.boardId,
       },
     });
-    return redirect("/communities/" + board?.slug + "/" + res.id);
+
+    return redirect(`/communities/${board?.slug}/${res.id}`);
   } catch (error) {
     console.error(error);
     return { success: false, error: "Internal Server Error" };
@@ -229,11 +226,7 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>게시판 명</FormLabel>
-                    <Select
-                      name={field.name}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger
                           className={cn({
@@ -307,12 +300,8 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
                     />
                     <FormControl>
                       <PostEditor
-                        onChange={(value) =>
-                          field.onChange(JSON.stringify(value))
-                        }
-                        initialEditorState={
-                          field.value ? JSON.parse(field.value) : undefined
-                        }
+                        onChange={(value) => field.onChange(JSON.stringify(value))}
+                        initialEditorState={field.value ? JSON.parse(field.value) : undefined}
                         onUploadImage={handleOnUploadImage}
                         className={cn({
                           "ring-red-500 ring-1": fieldState.invalid,

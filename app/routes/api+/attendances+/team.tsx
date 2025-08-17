@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {

@@ -13,7 +13,7 @@ const mdParser = new MarkdownIt();
 const MdEditor = lazy(() =>
   import("react-markdown-editor-lite").then((module) => ({
     default: module.default as typeof MdEditorType,
-  }))
+  })),
 );
 export function MarkdownEditor(props: Props) {
   const [mounted, setMounted] = useState(false);

@@ -1,4 +1,4 @@
-import { Player } from "@prisma/client";
+import type { Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useOutletContext } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
@@ -13,9 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { confirm } from "~/libs/confirm";
-import { IClubLayoutLoaderData } from "../_layout";
+import type { IClubLayoutLoaderData } from "../_layout";
 import InfoDrawer from "./InfoDrawer";
-import { IPlayer } from "./members.columns";
+import type { IPlayer } from "./members.columns";
 import { useGetPendingPlayers } from "./pendings.context";
 
 interface IPendingsActionProps {
@@ -29,7 +29,7 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
   const context = useGetPendingPlayers();
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (value: Partial<Player>) => {
-      return fetch("/api/players/" + payload.id, {
+      return fetch(`/api/players/${payload.id}`, {
         method: "POST",
         body: JSON.stringify({ ...value }),
       });
@@ -56,11 +56,7 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
               disabled={isPending}
             >
               <span className="sr-only">Open menu</span>
-              {isPending ? (
-                <Loading />
-              ) : (
-                <DotsHorizontalIcon className="h-4 w-4" />
-              )}
+              {isPending ? <Loading /> : <DotsHorizontalIcon className="h-4 w-4" />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

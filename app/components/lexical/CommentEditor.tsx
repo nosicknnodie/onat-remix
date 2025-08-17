@@ -8,7 +8,7 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
+import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "~/libs/utils";
 import { Skeleton } from "../ui/skeleton";
@@ -19,10 +19,7 @@ import FooterToolbarPlugin from "./plugins/FooterToolbarPlugin";
 import ImagesPlugin from "./plugins/ImagesPlugin";
 import MarkdownPlugin from "./plugins/MarkdownShortcutPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
-import {
-  ActiveEditorProvider,
-  ToolbarContext,
-} from "./plugins/ToolbarPlugin/Context";
+import { ActiveEditorProvider, ToolbarContext } from "./plugins/ToolbarPlugin/Context";
 import YouTubePlugin from "./plugins/YouTubePlugin";
 import "./theme/code-highlight.css";
 import { theme } from "./theme/theme";
@@ -66,7 +63,7 @@ export function CommentEditor({
     (editorState: EditorState) => {
       onChange?.(editorState.toJSON());
     },
-    [onChange]
+    [onChange],
   );
 
   useEffect(() => {
@@ -79,9 +76,7 @@ export function CommentEditor({
     <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
-          <ToolbarContext
-            config={{ isToolbarVisible: false, isSubmitting, onUploadImage }}
-          >
+          <ToolbarContext config={{ isToolbarVisible: false, isSubmitting, onUploadImage }}>
             <ToolbarPlugin />
             <div className="relative  p-2">
               <RichTextPlugin

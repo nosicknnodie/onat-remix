@@ -1,5 +1,5 @@
-import { FilePurposeType } from "@prisma/client";
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { FilePurposeType } from "@prisma/client";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import sharp from "sharp";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -22,9 +22,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const subId = formData.get("subId") as string | undefined;
   const baseName = originalName.replace(/\.[^/.]+$/, "") || "image";
   const key = `user/${user.id}/${Date.now()}_${baseName}.${ext}`;
-  const finalBuffer = isWebp
-    ? buffer
-    : await sharp(buffer).webp({ quality: 80 }).toBuffer();
+  const finalBuffer = isWebp ? buffer : await sharp(buffer).webp({ quality: 80 }).toBuffer();
 
   const publicUrl = await sendBufferToPublicImage({
     key: key,

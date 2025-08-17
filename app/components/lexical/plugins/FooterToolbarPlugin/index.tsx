@@ -1,4 +1,4 @@
-import { LexicalEditor, SerializedEditorState } from "lexical";
+import type { LexicalEditor, SerializedEditorState } from "lexical";
 import { Button } from "~/components/ui/button";
 import { useActiveEditor, useToolbarState } from "../ToolbarPlugin/Context";
 import ToolbarShowButton from "./buttons/ToolbarShowButton";
@@ -8,10 +8,7 @@ interface IFooterToolbarPluginProps {
   onSubmit?: (root?: SerializedEditorState, editor?: LexicalEditor) => void;
 }
 
-const FooterToolbarPlugin = ({
-  onCancel,
-  onSubmit,
-}: IFooterToolbarPluginProps) => {
+const FooterToolbarPlugin = ({ onCancel, onSubmit }: IFooterToolbarPluginProps) => {
   const { toolbarState } = useToolbarState();
   const { activeEditor } = useActiveEditor();
   const handleSubmit = () => {

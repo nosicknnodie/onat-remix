@@ -1,6 +1,7 @@
 import { NavLink } from "@remix-run/react";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { cn } from "~/libs/utils";
+
 interface IItemLinkProps extends ComponentProps<typeof NavLink> {}
 const ItemLink = ({ className, ..._props }: IItemLinkProps) => {
   return (
@@ -13,7 +14,7 @@ const ItemLink = ({ className, ..._props }: IItemLinkProps) => {
             "text-primary font-bold after:absolute after:-right-1.5 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
               isActive,
           },
-          className
+          className,
         )
       }
       {..._props}

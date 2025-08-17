@@ -1,5 +1,5 @@
-import { PlayerNativeType } from "@prisma/client";
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import type { PlayerNativeType } from "@prisma/client";
+import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { useNavigation } from "@remix-run/react";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
@@ -24,8 +24,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const formData = await request.formData();
 
-  const playerNative =
-    (formData.get("playerNative")?.toString() as PlayerNativeType) ?? null;
+  const playerNative = (formData.get("playerNative")?.toString() as PlayerNativeType) ?? null;
   const clothesSize = formData.get("clothesSize")?.toString() ?? null;
   const shoesSize = formData.get("shoesSize")?.toString() ?? null;
   const heightRaw = formData.get("height")?.toString() ?? null;
@@ -61,10 +60,7 @@ export default function BodyPage() {
         <form method="POST" className="space-y-6">
           <div className="space-y-1">
             <Label htmlFor="playerNative">선출 여부</Label>
-            <Select
-              name="playerNative"
-              defaultValue={user.playerNative ?? undefined}
-            >
+            <Select name="playerNative" defaultValue={user.playerNative ?? undefined}>
               <SelectTrigger>
                 <SelectValue placeholder="선택" />
               </SelectTrigger>
@@ -80,20 +76,12 @@ export default function BodyPage() {
 
           <div className="space-y-1">
             <Label htmlFor="height">키 (cm)</Label>
-            <Input
-              id="height"
-              name="height"
-              type="number"
-              defaultValue={user.height ?? undefined}
-            />
+            <Input name="height" type="number" defaultValue={user.height ?? undefined} />
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="clothesSize">상의 사이즈</Label>
-            <Select
-              name="clothesSize"
-              defaultValue={user.clothesSize ?? undefined}
-            >
+            <Select name="clothesSize" defaultValue={user.clothesSize ?? undefined}>
               <SelectTrigger>
                 <SelectValue placeholder="선택" />
               </SelectTrigger>
@@ -109,12 +97,7 @@ export default function BodyPage() {
 
           <div className="space-y-1">
             <Label htmlFor="shoesSize">신발 사이즈</Label>
-            <Input
-              id="shoesSize"
-              name="shoesSize"
-              type="text"
-              defaultValue={user.shoesSize ?? undefined}
-            />
+            <Input name="shoesSize" type="text" defaultValue={user.shoesSize ?? undefined} />
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

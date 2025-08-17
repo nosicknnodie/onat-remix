@@ -1,12 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DotsHorizontalIcon,
-} from "@radix-ui/react-icons";
-import { cn } from "~/libs/utils";
-
+import { ChevronLeftIcon, ChevronRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { type ButtonProps, buttonVariants } from "~/components/ui/button";
+import { cn } from "~/libs/utils";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -16,20 +11,11 @@ const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   />
 );
 
-const PaginationContent = ({
-  className,
-  ...props
-}: React.ComponentProps<"ul">) => (
-  <ul
-    className={cn("flex flex-row items-center gap-1", className)}
-    {...props}
-  />
+const PaginationContent = ({ className, ...props }: React.ComponentProps<"ul">) => (
+  <ul className={cn("flex flex-row items-center gap-1", className)} {...props} />
 );
 
-const PaginationItem = ({
-  className,
-  ...props
-}: React.ComponentProps<"li">) => (
+const PaginationItem = ({ className, ...props }: React.ComponentProps<"li">) => (
   <li className={cn("", className)} {...props} />
 );
 
@@ -38,12 +24,7 @@ type PaginationLinkProps = {
 } & Pick<ButtonProps, "size"> &
   React.ComponentProps<"a">;
 
-const PaginationLink = ({
-  className,
-  isActive,
-  size = "icon",
-  ...props
-}: PaginationLinkProps) => (
+const PaginationLink = ({ className, isActive, size = "icon", ...props }: PaginationLinkProps) => (
   <a
     aria-current={isActive ? "page" : undefined}
     className={cn(
@@ -51,7 +32,7 @@ const PaginationLink = ({
         variant: isActive ? "outline" : "ghost",
         size,
       }),
-      className
+      className,
     )}
     {...props}
   />
@@ -72,10 +53,7 @@ const PaginationPrevious = ({
   </PaginationLink>
 );
 
-const PaginationNext = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
+const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
     aria-label="Go to next page"
     size="default"
@@ -87,10 +65,7 @@ const PaginationNext = ({
   </PaginationLink>
 );
 
-const PaginationEllipsis = ({
-  className,
-  ...props
-}: React.ComponentProps<"span">) => (
+const PaginationEllipsis = ({ className, ...props }: React.ComponentProps<"span">) => (
   <span
     aria-hidden
     className={cn("flex h-9 w-9 items-center justify-center", className)}

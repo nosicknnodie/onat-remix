@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext } from "react";
+import { createContext, type PropsWithChildren, useContext } from "react";
 
 interface ICropperContextProps extends PropsWithChildren {
   blob: Blob | null;
@@ -8,19 +8,12 @@ interface ICropperContextProps extends PropsWithChildren {
   isPending: boolean;
 }
 
-const cropperContext = createContext<ICropperContextProps>(
-  {} as ICropperContextProps
-);
+const cropperContext = createContext<ICropperContextProps>({} as ICropperContextProps);
 
 export const useCropper = () => {
   return useContext(cropperContext);
 };
 
-export const CropperProvider = ({
-  children,
-  ...props
-}: ICropperContextProps) => {
-  return (
-    <cropperContext.Provider value={props}>{children}</cropperContext.Provider>
-  );
+export const CropperProvider = ({ children, ...props }: ICropperContextProps) => {
+  return <cropperContext.Provider value={props}>{children}</cropperContext.Provider>;
 };

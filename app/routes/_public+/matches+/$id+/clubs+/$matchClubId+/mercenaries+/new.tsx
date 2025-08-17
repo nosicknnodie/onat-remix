@@ -1,6 +1,6 @@
 import AddMercenary from "~/template/mercenary/new/AddMercenary";
-import EmailSearch from "~/template/mercenary/new/EmailSearch";
 import { action } from "~/template/mercenary/new/data";
+import EmailSearch from "~/template/mercenary/new/EmailSearch";
 import { NewMercenaryContext, useNewMercenary } from "~/template/mercenary/new/hook";
 export { action };
 

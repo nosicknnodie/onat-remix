@@ -1,21 +1,18 @@
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
-import { SerializedEditorState, SerializedLexicalNode } from "lexical";
+import type { SerializedEditorState, SerializedLexicalNode } from "lexical";
 import { useState, useTransition } from "react";
 import { FaRegComment } from "react-icons/fa";
+import { Loading } from "~/components/Loading";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
 import { View } from "~/components/lexical/View";
-import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
-import { IMatchClubComment } from "~/routes/api+/matchClubs+/$matchClubId+/comments";
-import {
-  useCommentInput,
-  useGetMatchCommentsQuery,
-  useMatchCommentContext,
-} from "./_hooks";
+import type { IMatchClubComment } from "~/routes/api+/matchClubs+/$matchClubId+/comments";
+import { useCommentInput, useGetMatchCommentsQuery, useMatchCommentContext } from "./_hooks";
+
 interface ICommentItemProps {
   comment: Omit<IMatchClubComment, "replys">;
 }
@@ -30,19 +27,16 @@ const CommentItem = ({ comment }: ICommentItemProps) => {
   const handleSubmit = async (root?: SerializedEditorState) => {
     setIsSubmitting(true);
     startTransition(async () => {
-      const res = await fetch(
-        "/api/matchClubs/" + context.matchClubId + "/comments",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: root,
-            matchClubId: context.matchClubId,
-            parentId: comment.parentId || comment.id,
-            replyToUserId: comment.user.id,
-          }),
-        }
-      );
+      const res = await fetch(`/api/matchClubs/${context.matchClubId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: root,
+          matchClubId: context.matchClubId,
+          parentId: comment.parentId || comment.id,
+          replyToUserId: comment.user.id,
+        }),
+      });
       if (res.ok) {
         query.refetch();
         setReplyOpen(false);
@@ -98,11 +92,7 @@ const CommentItem = ({ comment }: ICommentItemProps) => {
           </div>
           {replyOpen && (
             <>
-              <div
-                className={cn(
-                  "border border-primary rounded-3xl overflow-hidden p-4 "
-                )}
-              >
+              <div className={cn("border border-primary rounded-3xl overflow-hidden p-4 ")}>
                 <CommentEditor
                   onCancel={() => setReplyOpen(false)}
                   onSubmit={handleSubmit}

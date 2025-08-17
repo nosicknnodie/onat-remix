@@ -1,7 +1,7 @@
 import { DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Fragment, PropsWithChildren, useState } from "react";
+import { Fragment, type PropsWithChildren, useState } from "react";
 import { Map as KMap, MapMarker } from "react-kakao-maps-sdk";
 import { Button } from "~/components/ui/button";
 import {
@@ -14,7 +14,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem } from "~/components/ui/pagination";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { IKakaoLocalType } from "~/libs/map";
+import type { IKakaoLocalType } from "~/libs/map";
 
 interface IProps extends PropsWithChildren {
   onSubmit?: (value: IKakaoLocalType) => void;

@@ -11,7 +11,8 @@ import {
 } from "~/components/ui/dropdown-menu";
 import HistoryDrawer from "./_HistoryDrawer";
 import InfoDrawer from "./_InfoDrawer";
-import { IMatchClubMecenaryLoaderTData } from "./_index";
+import type { IMatchClubMecenaryLoaderTData } from "./_index";
+
 const Actions = ({ payload }: { payload: IMatchClubMecenaryLoaderTData[number] }) => {
   return (
     <>

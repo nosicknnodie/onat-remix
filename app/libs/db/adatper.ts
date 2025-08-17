@@ -1,4 +1,5 @@
-import { Adapter } from "lucia";
+/** biome-ignore-all lint/correctness/noUnusedVariables: off */
+import type { Adapter } from "lucia";
 import { prisma } from "./db.server";
 import { redis } from "./redis.server";
 
@@ -29,7 +30,7 @@ export const adapter: Adapter = {
             user,
           }),
           "EX",
-          Math.floor((cachedData.expiresAt.getTime() - Date.now()) / 1000)
+          Math.floor((cachedData.expiresAt.getTime() - Date.now()) / 1000),
         );
       }
       const { id: userId, ...userAttributes } = user;
@@ -72,7 +73,7 @@ export const adapter: Adapter = {
         user,
       }),
       "EX",
-      Math.floor((dbSession.expiresAt.getTime() - Date.now()) / 1000)
+      Math.floor((dbSession.expiresAt.getTime() - Date.now()) / 1000),
     );
 
     return [
@@ -96,7 +97,6 @@ export const adapter: Adapter = {
     }));
   },
   setSession: async (session) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { attributes, ...sessionData } = session;
     await prisma.session.create({
       data: sessionData,
@@ -106,7 +106,7 @@ export const adapter: Adapter = {
       `session:${session.id}`,
       JSON.stringify(session),
       "EX",
-      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000)
+      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000),
     );
   },
   updateSessionExpiration: async (sessionId, expiresAt) => {
@@ -123,7 +123,7 @@ export const adapter: Adapter = {
         `session:${sessionId}`,
         JSON.stringify(session),
         "EX",
-        Math.floor((expiresAt.getTime() - Date.now()) / 1000)
+        Math.floor((expiresAt.getTime() - Date.now()) / 1000),
       );
     }
   },

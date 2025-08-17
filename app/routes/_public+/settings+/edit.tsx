@@ -1,6 +1,6 @@
-import { File } from "@prisma/client";
+import type { File } from "@prisma/client";
 import { CameraIcon } from "@radix-ui/react-icons";
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import FormSuccess from "~/components/FormSuccess";
@@ -110,19 +110,12 @@ const EditPage = (_props: IEditPageProps) => {
           </div>
           <div className="space-y-1">
             <Label htmlFor="email">이메일</Label>
-            <Input
-              type="email"
-              name="email"
-              id="email"
-              defaultValue={user.email}
-              disabled
-              readOnly
-            />
+            <Input type="email" name="email" defaultValue={user.email} disabled readOnly />
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="name">이름</Label>
-            <Input name="name" id="name" defaultValue={user.name ?? undefined} />
+            <Input name="name" defaultValue={user.name ?? undefined} />
           </div>
 
           <div className="space-y-1">
@@ -156,7 +149,7 @@ const EditPage = (_props: IEditPageProps) => {
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 12 }, (_, i) => (
-                    <SelectItem key={i + 1} value={(i + 1).toString()}>
+                    <SelectItem key={`${i + 1}`} value={(i + 1).toString()}>
                       {i + 1}
                     </SelectItem>
                   ))}
@@ -172,7 +165,7 @@ const EditPage = (_props: IEditPageProps) => {
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 31 }, (_, i) => (
-                    <SelectItem key={i + 1} value={(i + 1).toString()}>
+                    <SelectItem key={`${i + 1}`} value={(i + 1).toString()}>
                       {i + 1}
                     </SelectItem>
                   ))}

@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { AES } from "~/libs/crypto.utils";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -33,7 +33,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     },
   });
 
-  if (!matchClub) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
+  if (!matchClub) return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
 
   // 용병 개인정보 decrypt
   Object.assign(matchClub, {
@@ -96,7 +96,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   ]);
 
   if (!currentPlayer && !currentMercenary) {
-    return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
+    return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
   }
 
   const currentStatus = currentPlayer
@@ -131,7 +131,8 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
   const isVote = formData.get("isVote") === "true";
   const isCheck = formData.get("isCheck") === "true";
   const mercenaryId = formData.get("mercenaryId")?.toString();
-  if (!matchClubId) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
+
+  if (!matchClubId) return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
 
   const currentMatchClub = await prisma.matchClub.findUnique({
     where: {
@@ -147,7 +148,8 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
       },
     },
   });
-  if (!currentPlayer) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
+
+  if (!currentPlayer) return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
 
   await prisma.attendance.upsert({
     create: {

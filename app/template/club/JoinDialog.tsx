@@ -1,7 +1,7 @@
-import { Player } from "@prisma/client";
+import type { Player } from "@prisma/client";
 import { useNavigate, useParams } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -61,7 +61,6 @@ const JoinDialog = ({ children, player }: IJoinDialogProps) => {
                 닉네임
               </Label>
               <Input
-                id="nickname"
                 name="nick"
                 type="text"
                 required

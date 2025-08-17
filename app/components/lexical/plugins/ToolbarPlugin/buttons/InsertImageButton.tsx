@@ -2,6 +2,7 @@ import { FaImage } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { InsertImageDialog } from "../../ImagesPlugin";
+
 interface IInsertImageButtonProps {}
 
 const InsertImageButton = (_props: IInsertImageButtonProps) => {

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: off */
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import bcrypt from "bcryptjs";
@@ -16,8 +17,7 @@ interface ISecurityPageProps {}
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const session = await getUser(request);
-  if (!session)
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const keyId = `email:${session.email}`;
 
   const formData = await request.formData();
@@ -26,16 +26,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const confirmPassword = formData.get("confirmPassword") as string;
 
   if (newPassword !== confirmPassword) {
-    return Response.json(
-      { error: "비밀번호 확인이 일치하지 않습니다." },
-      { status: 400 }
-    );
+    return Response.json({ error: "비밀번호 확인이 일치하지 않습니다." }, { status: 400 });
   }
   if (newPassword.length < 6) {
-    return Response.json(
-      { error: "비밀번호는 최소 6자 이상이어야 합니다." },
-      { status: 400 }
-    );
+    return Response.json({ error: "비밀번호는 최소 6자 이상이어야 합니다." }, { status: 400 });
   }
 
   const key = await prisma.key.findUnique({
@@ -45,16 +39,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!key || !key.hashedPassword) {
     return Response.json(
       { error: "사용자를 찾을 수 없거나 비밀번호 설정이 되어있지 않습니다." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
   const isValid = await bcrypt.compare(currentPassword, key.hashedPassword);
   if (!isValid) {
-    return Response.json(
-      { error: "현재 비밀번호가 일치하지 않습니다." },
-      { status: 401 }
-    );
+    return Response.json({ error: "현재 비밀번호가 일치하지 않습니다." }, { status: 401 });
   }
 
   const newHashedPassword = await bcrypt.hash(newPassword, 10);
@@ -87,40 +78,19 @@ const SecurityPage = (_props: ISecurityPageProps) => {
         <Form method="post" className="space-y-4" ref={formRef}>
           <div>
             <Label htmlFor="email">이메일</Label>
-            <Input
-              type="text"
-              name="email"
-              id="email"
-              defaultValue={user.email ?? ""}
-              disabled
-            />
+            <Input type="text" name="email" defaultValue={user.email ?? ""} disabled />
           </div>
           <div>
             <Label htmlFor="currentPassword">현재 비밀번호</Label>
-            <Input
-              type="password"
-              name="currentPassword"
-              id="currentPassword"
-              required
-            />
+            <Input type="password" name="currentPassword" required />
           </div>
           <div>
             <Label htmlFor="newPassword">새 비밀번호</Label>
-            <Input
-              type="password"
-              name="newPassword"
-              id="newPassword"
-              required
-            />
+            <Input type="password" name="newPassword" required />
           </div>
           <div>
             <Label htmlFor="confirmPassword">새 비밀번호 확인</Label>
-            <Input
-              type="password"
-              name="confirmPassword"
-              id="confirmPassword"
-              required
-            />
+            <Input type="password" name="confirmPassword" required />
           </div>
           <FormSuccess>{actionData?.success}</FormSuccess>
           <FormError>{actionData?.error}</FormError>

@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/alt-text */
-import { ComponentProps, useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { Loading } from "~/components/Loading";
 
 interface INodeImageProps extends ComponentProps<"img"> {
@@ -26,9 +26,7 @@ const NodeImage = (_props: INodeImageProps) => {
               <>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-2">
                   <div className="inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <span className="text-red-500 bg-white/70 px-2 py-1 rounded">
-                      업로드 실패
-                    </span>
+                    <span className="text-red-500 bg-white/70 px-2 py-1 rounded">업로드 실패</span>
                   </div>
                 </div>
               </>
@@ -41,6 +39,7 @@ const NodeImage = (_props: INodeImageProps) => {
                     <Loading />
                   </div>
                 )}
+                {/** biome-ignore lint/a11y/useAltText: off */}
                 <img
                   {..._props}
                   loading="lazy"

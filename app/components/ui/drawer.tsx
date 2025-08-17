@@ -11,10 +11,7 @@ const Drawer = ({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerContext.Provider value={{ direction: props.direction }}>
-    <DrawerPrimitive.Root
-      shouldScaleBackground={shouldScaleBackground}
-      {...props}
-    />
+    <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
   </DrawerContext.Provider>
 );
 Drawer.displayName = "Drawer";
@@ -29,10 +26,7 @@ const DrawerOverlay = ({
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) => (
-  <DrawerPrimitive.Overlay
-    className={cn("fixed inset-0 z-50 bg-black/80", className)}
-    {...props}
-  />
+  <DrawerPrimitive.Overlay className={cn("fixed inset-0 z-50 bg-black/80", className)} {...props} />
 );
 
 const DrawerContent = ({
@@ -48,13 +42,12 @@ const DrawerContent = ({
         className={cn(
           "fixed z-50 flex h-auto flex-col border bg-background",
           {
-            "inset-x-0 bottom-0 mt-24 rounded-t-[10px]":
-              !direction || direction === "bottom",
+            "inset-x-0 bottom-0 mt-24 rounded-t-[10px]": !direction || direction === "bottom",
             "top-0 right-0 w-screen max-w-80 h-full": direction === "right",
             "top-0 left-0 w-screen max-w-80 h-full": direction === "left",
             "inset-x-0 top-0": direction === "top",
           },
-          className
+          className,
         )}
         {...props}
       >
@@ -65,24 +58,12 @@ const DrawerContent = ({
   );
 };
 
-const DrawerHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("grid gap-1.5 p-4 text-center sm:text-left", className)}
-    {...props}
-  />
+const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("grid gap-1.5 p-4 text-center sm:text-left", className)} {...props} />
 );
 
-const DrawerFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("mt-auto flex flex-col gap-2 p-4", className)}
-    {...props}
-  />
+const DrawerFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("mt-auto flex flex-col gap-2 p-4", className)} {...props} />
 );
 
 const DrawerTitle = ({
@@ -90,10 +71,7 @@ const DrawerTitle = ({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Title>) => (
   <DrawerPrimitive.Title
-    className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className
-    )}
+    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
     {...props}
   />
 );

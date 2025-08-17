@@ -1,4 +1,5 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+/** biome-ignore-all assist/source/organizeImports: off */
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, NavLink, useLoaderData } from "@remix-run/react";
 import { FaRegComment } from "react-icons/fa";
 import { Fragment } from "react/jsx-runtime";
@@ -11,10 +12,7 @@ export const handle = {
   breadcrumb: "게시판",
 };
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const clubId = params.id;
 
   try {

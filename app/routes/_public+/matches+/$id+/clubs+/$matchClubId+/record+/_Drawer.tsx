@@ -1,4 +1,4 @@
-import { Goal, Team } from "@prisma/client";
+import type { Goal, Team } from "@prisma/client";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, useTransition } from "react";
@@ -12,8 +12,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { IQuarter } from "~/routes/api+/quarters+/$id+/_index";
-import { loader } from "./_index";
+import type { IQuarter } from "~/routes/api+/quarters+/$id+/_index";
+import type { loader } from "./_index";
 
 interface IRightDrawerProps extends React.PropsWithChildren {
   quarterId?: string;
@@ -29,14 +29,14 @@ export const RightDrawer = ({ children, quarterId }: IRightDrawerProps) => {
   const currentQuarter = quarters.find((quarter) => quarter.id === quarterId);
   const { data } = useQuery({
     queryKey: ["RECORD_QUARTER_ASSIGNED_QUERY"],
-    queryFn: async () =>
-      await fetch("/api/quarters/" + quarterId).then((res) => res.json()),
+
+    queryFn: async () => await fetch(`/api/quarters/${quarterId}`).then((res) => res.json()),
   });
 
   const quater: IQuarter | undefined = data?.quarter;
   const assigneds =
     quater?.assigneds.sort((a, b) =>
-      a.teamId === b.teamId ? 0 : a.teamId === currentTeam?.id ? -1 : 1
+      a.teamId === b.teamId ? 0 : a.teamId === currentTeam?.id ? -1 : 1,
     ) ?? [];
 
   useEffect(() => {
@@ -76,27 +76,15 @@ export const RightDrawer = ({ children, quarterId }: IRightDrawerProps) => {
                 <div className="flex flex-1 gap-2 justify-center items-center">
                   <Button
                     size={"sm"}
-                    variant={
-                      currentTeam?.id === currentQuarter?.team1?.id
-                        ? "default"
-                        : "outline"
-                    }
-                    onClick={() =>
-                      handleOnTeamChange(currentQuarter?.team1 ?? null)
-                    }
+                    variant={currentTeam?.id === currentQuarter?.team1?.id ? "default" : "outline"}
+                    onClick={() => handleOnTeamChange(currentQuarter?.team1 ?? null)}
                   >
                     {currentQuarter?.team1?.name}
                   </Button>
                   <Button
                     size={"sm"}
-                    variant={
-                      currentTeam?.id === currentQuarter?.team2?.id
-                        ? "default"
-                        : "outline"
-                    }
-                    onClick={() =>
-                      handleOnTeamChange(currentQuarter?.team2 ?? null)
-                    }
+                    variant={currentTeam?.id === currentQuarter?.team2?.id ? "default" : "outline"}
+                    onClick={() => handleOnTeamChange(currentQuarter?.team2 ?? null)}
                   >
                     {currentQuarter?.team2?.name}
                   </Button>
@@ -117,10 +105,7 @@ export const RightDrawer = ({ children, quarterId }: IRightDrawerProps) => {
                   assigned.attendance.mercenary?.user?.userImage?.url ||
                   "/images/user_empty.png";
                 return (
-                  <li
-                    key={assigned.id}
-                    className="flex justify-between border-b"
-                  >
+                  <li key={assigned.id} className="flex justify-between border-b">
                     <div className="flex items-center gap-2 ">
                       <Avatar>
                         <AvatarImage src={imageUrl}></AvatarImage>
@@ -132,11 +117,7 @@ export const RightDrawer = ({ children, quarterId }: IRightDrawerProps) => {
                     </div>
                     <div className="px-4">
                       <Button
-                        variant={
-                          currentTeam?.id === assigned.teamId
-                            ? "default"
-                            : "destructive"
-                        }
+                        variant={currentTeam?.id === assigned.teamId ? "default" : "destructive"}
                         disabled={isPending}
                         onClick={() =>
                           handleAddGoal({
@@ -149,8 +130,7 @@ export const RightDrawer = ({ children, quarterId }: IRightDrawerProps) => {
                           })
                         }
                       >
-                        +{" "}
-                        {currentTeam?.id === assigned.teamId ? "골" : "자책골"}
+                        + {currentTeam?.id === assigned.teamId ? "골" : "자책골"}
                       </Button>
                     </div>
                   </li>

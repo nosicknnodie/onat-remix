@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 
@@ -9,8 +9,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   // club check
   const clubId = params.id;
-  if (!clubId)
-    return Response.json({ error: "clubId is required" }, { status: 400 });
+  if (!clubId) return Response.json({ error: "clubId is required" }, { status: 400 });
 
   // nick check
   const raw = await request.json();
@@ -30,8 +29,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     });
     if (
       !existingPlayer ||
-      (existingPlayer.status !== "APPROVED" &&
-        existingPlayer.status !== "PENDING")
+      (existingPlayer.status !== "APPROVED" && existingPlayer.status !== "PENDING")
     ) {
       const player = await prisma.player.upsert({
         where: {
@@ -65,10 +63,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
   } catch (e) {
     console.error(e);
-    return Response.json(
-      { error: "가입 처리 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+    return Response.json({ error: "가입 처리 중 오류가 발생했습니다." }, { status: 500 });
   }
   return Response.json({
     success: "가입신청 완료 했습니다.",

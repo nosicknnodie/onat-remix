@@ -1,5 +1,5 @@
-import { JobTitle, PlayerLog, RoleType, StatusType } from "@prisma/client";
-import { ActionFunctionArgs } from "@remix-run/node";
+import { JobTitle, type PlayerLog, RoleType, StatusType } from "@prisma/client";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import _ from "lodash";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
@@ -26,10 +26,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const result = PlayerUpdateSchema.safeParse(raw);
 
   if (!result.success) {
-    return Response.json(
-      { error: "Invalid input", issues: result.error.issues },
-      { status: 400 }
-    );
+    return Response.json({ error: "Invalid input", issues: result.error.issues }, { status: 400 });
   }
 
   const existingPlayer = await prisma.player.findUnique({
@@ -51,10 +48,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
   });
   if (!requestPlayer) {
-    return Response.json(
-      { error: "You are not a member of this club" },
-      { status: 403 }
-    );
+    return Response.json({ error: "You are not a member of this club" }, { status: 403 });
   }
 
   const isAllow =
@@ -64,13 +58,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   if (!isAllow) {
     return Response.json(
       { error: "You don't have permission to update this player" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
   const parsed = result.data;
-  const logs: (Partial<Omit<PlayerLog, "playerId">> &
-    Pick<PlayerLog, "playerId">)[] = [];
+  const logs: (Partial<Omit<PlayerLog, "playerId">> & Pick<PlayerLog, "playerId">)[] = [];
 
   const cleaned = _.omitBy(parsed, _.isUndefined);
   _.forEach(cleaned, (value, key) => {
@@ -125,10 +118,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   });
 
   if (Object.keys(cleaned).length === 0) {
-    return Response.json(
-      { error: "No valid fields to update" },
-      { status: 400 }
-    );
+    return Response.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
   try {

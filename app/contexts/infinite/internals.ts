@@ -1,21 +1,19 @@
-import { InfiniteActions, InfiniteState, PageInfo } from "./types";
+import type { InfiniteActions, InfiniteState, PageInfo } from "./types";
 
 // 런타임 key(itemsKey)로 배열과 pageInfo 존재를 안전하게 판별하는 타입 가드
 export function hasItemsAndPageInfo<T>(
   obj: unknown,
-  key: string
+  key: string,
 ): obj is { pageInfo: PageInfo } & Record<string, T[]> {
   if (!obj || typeof obj !== "object") return false;
   const rec = obj as Record<string, unknown>;
   const items = rec[key];
-  const pageInfo = rec["pageInfo"];
+  const newLocal = "pageInfo";
+  const pageInfo = rec[newLocal];
   return Array.isArray(items) && !!pageInfo && typeof pageInfo === "object";
 }
 
-export function reducer<T>(
-  state: InfiniteState<T>,
-  action: InfiniteActions<T>
-): InfiniteState<T> {
+export function reducer<T>(state: InfiniteState<T>, action: InfiniteActions<T>): InfiniteState<T> {
   switch (action.type) {
     case "RESET":
       return { ...state, ...action.payload, error: null, busy: false };

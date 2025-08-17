@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { IPendingsPageLoaderData } from "../pendings";
+import type { IPendingsPageLoaderData } from "../pendings";
 
 export const PendingsContext = createContext<
   (IPendingsPageLoaderData & { refetch: () => Promise<void> }) | undefined

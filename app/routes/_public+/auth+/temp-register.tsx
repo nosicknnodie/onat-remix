@@ -66,41 +66,20 @@ const TempRegister = () => {
         </p>
         <div>
           <Label htmlFor="name">이름</Label>
-          <Input
-            type="text"
-            id="name"
-            name="name"
-            required
-            placeholder="홍길동"
-          />
+          <Input type="text" name="name" required placeholder="홍길동" />
         </div>
         <FormError>{data?.errors?.name}</FormError>
         <div>
           <Label htmlFor="address">주소</Label>
-          <Input
-            type="text"
-            id="address"
-            name="address"
-            placeholder="서울특별시 ..."
-          />
+          <Input type="text" name="address" placeholder="서울특별시 ..." />
         </div>
         <div>
           <Label htmlFor="phone">전화번호</Label>
-          <Input
-            type="text"
-            id="phone"
-            name="phone"
-            placeholder="010-1234-5678"
-          />
+          <Input type="text" name="phone" placeholder="010-1234-5678" />
         </div>
         <div>
           <Label htmlFor="birthDay">생년월일</Label>
-          <Input
-            type="text"
-            id="birthDay"
-            name="birthDay"
-            placeholder="2000-01-01"
-          />
+          <Input type="text" name="birthDay" placeholder="2000-01-01" />
         </div>
         <div>
           <FormSuccess>{success}</FormSuccess>

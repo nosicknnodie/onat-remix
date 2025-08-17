@@ -14,6 +14,7 @@ import { Separator } from "~/components/ui/separator";
 import { generateVerificationToken } from "~/libs/auth/token";
 import { prisma } from "~/libs/db/db.server";
 import { sendVerificationEmail } from "~/libs/mail";
+
 interface IRegisterProps {}
 
 const registerSchema = z.object({
@@ -45,7 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!result.success) {
     return data(
       { errors: result.error.flatten().fieldErrors, values: result.data },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -65,7 +66,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             email: ["이미 가입된 이메일입니다."],
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,14 +87,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
 
     // 토큰 생성
-    const verificationToken = await generateVerificationToken(
-      result.data.email
-    );
+    const verificationToken = await generateVerificationToken(result.data.email);
     // 토큰 보내기
     await sendVerificationEmail(
       verificationToken.email,
       verificationToken.token,
-      `${protocol}//${host}`
+      `${protocol}//${host}`,
     );
     return Response.json({ success: "확인 메일을 보냈습니다." });
   } catch (error) {
@@ -119,25 +118,15 @@ const Register = (_props: IRegisterProps) => {
           <Label htmlFor="name">
             이름<span className="text-red-500 ml-1">*</span>
           </Label>
-          <Input
-            type="text"
-            id="name"
-            name="name"
-            required
-            placeholder="홍길동"
-          />
+          <Input type="text" name="name" required placeholder="홍길동" />
         </div>
         <FormError>{data?.errors?.name}</FormError>
         <div>
-          <Label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
             이메일<span className="text-red-500 ml-1">*</span>
           </Label>
           <Input
             type="email"
-            id="email"
             name="email"
             required
             className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
@@ -148,15 +137,11 @@ const Register = (_props: IRegisterProps) => {
         <FormError>{data?.errors?.email}</FormError>
 
         <div>
-          <Label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
             비밀번호<span className="text-red-500 ml-1">*</span>
           </Label>
           <Input
             type="password"
-            id="password"
             name="password"
             required
             className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"

@@ -6,7 +6,7 @@ import { Button } from "~/components/ui/button";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs/const/position.const";
 import { cn } from "~/libs/utils";
 import { Actions } from "./_Actions";
-import { loader } from "./_index";
+import type { loader } from "./_index";
 import { usePositionContext, usePositionUpdate } from "./_position.context";
 
 export const Board = () => {
@@ -14,7 +14,7 @@ export const Board = () => {
   const context = usePositionContext();
   const currentQuarterOrder = context?.currentQuarterOrder;
   const currentQuarter = loaderData.matchClub.quarters.find(
-    (quarter) => quarter.order === currentQuarterOrder
+    (quarter) => quarter.order === currentQuarterOrder,
   );
   const isSelf = currentQuarter?.isSelf || loaderData.matchClub.isSelf;
   const team1 = currentQuarter?.team1;
@@ -25,23 +25,17 @@ export const Board = () => {
       attendance.assigneds.map((assigned) => ({
         ...assigned,
         attendance,
-      }))
+      })),
     )
-    .filter(
-      (assigned) =>
-        assigned.quarterId === currentQuarter?.id && assigned.position
-    )
+    .filter((assigned) => assigned.quarterId === currentQuarter?.id && assigned.position)
     .map((assigned) => {
       const isSelf = currentQuarter?.isSelf || loaderData.matchClub.isSelf;
       const { className, team1ClassName, team2ClassName } =
         PORMATION_POSITION_CLASSNAME[assigned.position];
       let _className = "";
-      let _color = undefined;
+      let _color: string | undefined;
       if (isSelf) {
-        _className =
-          assigned.teamId === team1?.id
-            ? team1ClassName || ""
-            : team2ClassName || "";
+        _className = assigned.teamId === team1?.id ? team1ClassName || "" : team2ClassName || "";
         _color = assigned.teamId === team1?.id ? team1?.color : team2?.color;
       } else {
         _className = className;
@@ -85,11 +79,7 @@ export const Board = () => {
           )}
 
           {!isSelf && (
-            <Button
-              variant={"outline"}
-              asChild
-              className="z-20 absolute top-2 right-2"
-            >
+            <Button variant={"outline"} asChild className="z-20 absolute top-2 right-2">
               <Link
                 to={{
                   pathname: "./setting",
@@ -121,7 +111,7 @@ export const Board = () => {
                     // ["md:w-12 md:-ml-6 md:-mt-6 md:h-12 max-md:-ml-4 max-md:-mt-4 max-md:w-8 max-md:h-8"]: true,
                   },
                   // className,
-                  assigned.className
+                  assigned.className,
                 )}
               >
                 {name}
@@ -138,8 +128,6 @@ type MotionButtonProps = ComponentPropsWithoutRef<typeof Button> & {
   forwardedRef?: Ref<ComponentRef<typeof Button>>;
 };
 
-const MotionButton = motion.create(
-  ({ forwardedRef, ...props }: MotionButtonProps) => (
-    <Button ref={forwardedRef} {...props} />
-  )
-);
+const MotionButton = motion.create(({ forwardedRef, ...props }: MotionButtonProps) => (
+  <Button ref={forwardedRef} {...props} />
+));

@@ -1,5 +1,5 @@
-import { DecoratorNode, NodeKey, SerializedLexicalNode, Spread } from "lexical";
-import { JSX } from "react";
+import { DecoratorNode, type NodeKey, type SerializedLexicalNode, type Spread } from "lexical";
+import type { JSX } from "react";
 import NodeImage from "../components/NodeImage";
 
 export interface ImagePayload {
@@ -39,7 +39,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
       node.__imageId,
       node.__sourceType,
       node.__key,
-      node.__uploadState
+      node.__uploadState,
     );
   }
 
@@ -49,7 +49,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     imageId?: string,
     sourceType?: "upload" | "external",
     key?: string,
-    uploadState?: "pending" | "error" | "success"
+    uploadState?: "pending" | "error" | "success",
   ) {
     super(key);
     this.__src = src;
@@ -71,13 +71,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   }
 
   static importJSON(json: SerializedImageNode): ImageNode {
-    return new ImageNode(
-      json.src,
-      json.altText,
-      json.imageId,
-      json.sourceType,
-      undefined
-    );
+    return new ImageNode(json.src, json.altText, json.imageId, json.sourceType, undefined);
   }
 
   createDOM(): HTMLElement {
@@ -116,7 +110,7 @@ export function $createImageNode(args: {
     args.imageId,
     args.sourceType,
     undefined,
-    args.uploadState
+    args.uploadState,
   );
 }
 

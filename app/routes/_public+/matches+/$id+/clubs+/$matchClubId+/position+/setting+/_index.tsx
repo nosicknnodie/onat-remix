@@ -1,10 +1,5 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRevalidator,
-  useSearchParams,
-} from "@remix-run/react";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Link, useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react";
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
@@ -23,24 +18,24 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import {
-  PORMATION_POSITIONS,
-  PORMATION_POSITION_CLASSNAME,
-  PORMATION_TYPE,
-  POSITION_TEMPLATE_LIST,
-  POSITION_TYPE,
   isDiffPosition,
   isRLDiffPostion,
+  PORMATION_POSITION_CLASSNAME,
+  PORMATION_POSITIONS,
+  type PORMATION_TYPE,
+  POSITION_TEMPLATE_LIST,
+  type POSITION_TYPE,
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
-import { PositionSettingDrawer } from "./_Drawer";
 import {
   PositionSettingContext,
   useOptimisticPositionUpdate,
   usePositionSettingQuery,
 } from "./_context";
+import { PositionSettingDrawer } from "./_Drawer";
 // const isTouchDevice = () => {
 //   return typeof window !== "undefined" ? "ontouchstart" in window : false;
 // };
@@ -75,10 +70,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   return { matchClub };
 };
 
-const POSITION_TEMPLATE = atomWithStorage<PORMATION_TYPE>(
-  "POSITION_TEMPLATE",
-  "4-3-3"
-);
+const POSITION_TEMPLATE = atomWithStorage<PORMATION_TYPE>("POSITION_TEMPLATE", "4-3-3");
 
 interface IPositionSettingPageProps {}
 
@@ -90,17 +82,14 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const { revalidate } = useRevalidator();
   const { mutateAsync } = useOptimisticPositionUpdate();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedPositionType, setSelectedPositionType] =
-    useState<POSITION_TYPE>("GK");
+  const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
   const [currentQuarterOrder, setCurrentQuarterOrder] = useState(
-    Number(searchParams.get("quarter")) || 1
+    Number(searchParams.get("quarter")) || 1,
   );
   const currentQuarter =
-    matchClub.quarters.find(
-      (quarter) => quarter.order === currentQuarterOrder
-    ) || null;
+    matchClub.quarters.find((quarter) => quarter.order === currentQuarterOrder) || null;
   const [currentTeamId, setCurrentTeamId] = useState(
-    searchParams.get("teamId") || matchClub.teams.at(0)?.id || null
+    searchParams.get("teamId") || matchClub.teams.at(0)?.id || null,
   );
   const [isLoading, startTransition] = useTransition();
 
@@ -113,9 +102,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
    */
   const handleSetQuarter = (order: number) => {
     startTransition(async () => {
-      const quarterId = matchClub.quarters.find(
-        (quarter) => quarter.order === order
-      )?.id;
+      const quarterId = matchClub.quarters.find((quarter) => quarter.order === order)?.id;
       if (!quarterId) {
         const maxOrder = matchClub.quarters.reduce((max, q) => {
           return q.order > max ? q.order : max;
@@ -139,34 +126,29 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
       attendance.assigneds.map((assigned) => ({
         ...assigned,
         attendance,
-      }))
+      })),
     )
     .filter(
       (assigned) =>
         assigned.quarterId === currentQuarter?.id &&
-        (currentTeamId === null || assigned.teamId === currentTeamId)
+        (currentTeamId === null || assigned.teamId === currentTeamId),
     );
 
-  const positions = typedEntries(PORMATION_POSITION_CLASSNAME).map(
-    ([position, { className }]) => {
-      const assigned =
-        assigneds?.find((assigned) => assigned.position === position) || null;
-      let isFormation =
-        PORMATION_POSITIONS[positionTemplate].includes(position);
-      // 인원이 11명이 다 차면 isFormation를 false로
-      isFormation =
-        (assigneds?.length || 0) >= maxPlayers ? false : isFormation;
-      // 배정이 있으면 isFormation를 false로
-      isFormation = assigned?.attendance ? false : isFormation;
+  const positions = typedEntries(PORMATION_POSITION_CLASSNAME).map(([position, { className }]) => {
+    const assigned = assigneds?.find((assigned) => assigned.position === position) || null;
+    let isFormation = PORMATION_POSITIONS[positionTemplate].includes(position);
+    // 인원이 11명이 다 차면 isFormation를 false로
+    isFormation = (assigneds?.length || 0) >= maxPlayers ? false : isFormation;
+    // 배정이 있으면 isFormation를 false로
+    isFormation = assigned?.attendance ? false : isFormation;
 
-      return {
-        key: position,
-        className,
-        assigned,
-        isFormation,
-      };
-    }
-  );
+    return {
+      key: position,
+      className,
+      assigned,
+      isFormation,
+    };
+  });
 
   const handlePositionClick = (position: POSITION_TYPE) => () => {
     setSelectedPositionType(position);
@@ -207,21 +189,17 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     const len = assigneds?.length || 0;
     if (len >= maxPlayers) return;
     const needed = maxPlayers - len;
-    const emptyPositions = PORMATION_POSITIONS[positionTemplate].filter(
-      (position) => {
-        return !assigneds?.find((assigned) => assigned.position === position);
-      }
-    );
+    const emptyPositions = PORMATION_POSITIONS[positionTemplate].filter((position) => {
+      return !assigneds?.find((assigned) => assigned.position === position);
+    });
 
     // 동일팀에 이번쿼터에 없는 인원
     const notAttendance = attendancesData?.attendances
       .filter(
         (attendance) =>
           attendance.state === "NORMAL" &&
-          !attendance.assigneds.some(
-            (assigned) => assigned.quarterId === currentQuarter?.id
-          ) &&
-          (currentTeamId === null || attendance.teamId === currentTeamId)
+          !attendance.assigneds.some((assigned) => assigned.quarterId === currentQuarter?.id) &&
+          (currentTeamId === null || attendance.teamId === currentTeamId),
         // assigned.quarterId !== currentQuarter?.id && assigned.attendance.teamId === currentTeamId,
       )
       .sort((a, b) => {
@@ -231,12 +209,8 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
         if (aGames !== bGames) return aGames - bGames;
 
         // 2. 출석 시간 오래된 순 (즉, 더 먼저 체크한 사람 우선)
-        const aTime = a.checkTime
-          ? new Date(a.checkTime).getTime()
-          : Number.POSITIVE_INFINITY;
-        const bTime = b.checkTime
-          ? new Date(b.checkTime).getTime()
-          : Number.POSITIVE_INFINITY;
+        const aTime = a.checkTime ? new Date(a.checkTime).getTime() : Number.POSITIVE_INFINITY;
+        const bTime = b.checkTime ? new Date(b.checkTime).getTime() : Number.POSITIVE_INFINITY;
         if (aTime !== bTime) return aTime - bTime;
 
         // 3. 회원 우선, 용병은 뒤로
@@ -274,47 +248,38 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               ];
         const compactPositions = _.compact(positions);
         const findedPosition = compactPositions.find((position) =>
-          mutableEmptyPositions.includes(position)
+          mutableEmptyPositions.includes(position),
         );
         // 선호포지션이 맞는 위치가 있을 경우
         if (findedPosition) {
-          mutableEmptyPositions.splice(
-            mutableEmptyPositions.indexOf(findedPosition),
-            1
-          );
+          mutableEmptyPositions.splice(mutableEmptyPositions.indexOf(findedPosition), 1);
           return { ...attendance, toPosition: findedPosition };
         }
 
         // 선호포지션에 비슷한 포지션이 있을 경우. (공, 미, 수)
         const analogousPosition = compactPositions.find((position) =>
-          mutableEmptyPositions.some((mep) => isDiffPosition(mep, position))
+          mutableEmptyPositions.some((mep) => isDiffPosition(mep, position)),
         );
         if (analogousPosition) {
           const matchedEmptyPosition = mutableEmptyPositions.find((mep) =>
-            isDiffPosition(mep, analogousPosition)
+            isDiffPosition(mep, analogousPosition),
           );
           if (matchedEmptyPosition) {
-            mutableEmptyPositions.splice(
-              mutableEmptyPositions.indexOf(matchedEmptyPosition),
-              1
-            );
+            mutableEmptyPositions.splice(mutableEmptyPositions.indexOf(matchedEmptyPosition), 1);
             return { ...attendance, toPosition: matchedEmptyPosition };
           }
         }
 
         // 좌, 중, 우 구분으로 포지션을 넣어준다.
         const rlPosition = compactPositions.find((position) =>
-          mutableEmptyPositions.some((mep) => isRLDiffPostion(mep, position))
+          mutableEmptyPositions.some((mep) => isRLDiffPostion(mep, position)),
         );
         if (rlPosition) {
           const matchedEmptyPosition = mutableEmptyPositions.find((mep) =>
-            isRLDiffPostion(mep, rlPosition)
+            isRLDiffPostion(mep, rlPosition),
           );
           if (matchedEmptyPosition) {
-            mutableEmptyPositions.splice(
-              mutableEmptyPositions.indexOf(matchedEmptyPosition),
-              1
-            );
+            mutableEmptyPositions.splice(mutableEmptyPositions.indexOf(matchedEmptyPosition), 1);
             return { ...attendance, toPosition: matchedEmptyPosition };
           }
         }
@@ -334,7 +299,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               quarterId: currentQuarter.id,
               position: attendance.toPosition,
               teamId: currentTeamId,
-            }))
+            })),
           ),
         });
         await query.refetch();
@@ -353,9 +318,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
 
   return (
     <>
-      <PositionSettingContext
-        value={{ query, currentQuarter, currentTeamId, assigneds }}
-      >
+      <PositionSettingContext value={{ query, currentQuarter, currentTeamId, assigneds }}>
         <div className="space-y-4 flex flex-col gap-2">
           <section className="flex justify-between items-center relative">
             <div className="min-w-28 flex items-center gap-x-2">
@@ -472,10 +435,8 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                       "absolute z-20 md:-ml-8 md:-mt-8 max-md:-ml-6 max-md:-mt-6",
                       position.className,
                       {
-                        ["invisible"]: !(
-                          position.assigned || position.isFormation
-                        ),
-                      }
+                        invisible: !(position.assigned || position.isFormation),
+                      },
                     )}
                   >
                     {position.assigned ? (
@@ -489,15 +450,14 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                               "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
                               {
                                 // ["outline outline-primary"]: position.assigned,
-                                ["opacity-30"]: isDragging,
-                              }
+                                "opacity-30": isDragging,
+                              },
                             );
                           }}
                         >
                           {position.assigned
                             ? position.assigned.attendance.player?.user?.name ||
-                              position.assigned.attendance.mercenary?.user
-                                ?.name ||
+                              position.assigned.attendance.mercenary?.user?.name ||
                               position.assigned.attendance.mercenary?.name
                             : position.key}
                         </DragButton>
@@ -507,7 +467,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                         onClick={handlePositionClick(position.key)}
                         variant={"ghost"}
                         className={cn(
-                          "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs w-full h-full flex justify-center items-center bg-white shadow-md"
+                          "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs w-full h-full flex justify-center items-center bg-white shadow-md",
                         )}
                       >
                         {position.key}

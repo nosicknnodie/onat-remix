@@ -1,25 +1,18 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+/** biome-ignore-all assist/source/organizeImports: off */
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Fragment } from "react/jsx-runtime";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { prisma } from "~/libs/db/db.server";
+
 interface IMatchesPageProps {}
 export const handle = { breadcrumb: "매치" };
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const clubId = params.id;
   const matcheClubs = await prisma.matchClub.findMany({
     where: {
@@ -64,9 +57,7 @@ const MatchesPage = (_props: IMatchesPageProps) => {
             <Card className="col-span-1 flex flex-col border border-gray-200 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300">
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 min-w-0 flex-1">
                 <div className="space-y-1 w-full min-w-0">
-                  <CardTitle className="text-lg font-semibold truncate">
-                    {match.title}
-                  </CardTitle>
+                  <CardTitle className="text-lg font-semibold truncate">{match.title}</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground line-clamp-2 overflow-hidden break-words w-full">
                     {match.description}
                   </CardDescription>
@@ -82,10 +73,7 @@ const MatchesPage = (_props: IMatchesPageProps) => {
                       <div className="flex whitespace-nowrap items-center text-sm font-semibold gap-1">
                         <Avatar>
                           <AvatarImage
-                            src={
-                              matchClub.club?.emblem?.url ??
-                              "/images/club-default-emblem.webp"
-                            }
+                            src={matchClub.club?.emblem?.url ?? "/images/club-default-emblem.webp"}
                           />
                           <AvatarFallback className="bg-primary">
                             <Loading />

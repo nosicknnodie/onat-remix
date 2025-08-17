@@ -1,8 +1,5 @@
-interface IMatchesIdPageProps {}
-
+/** biome-ignore-all assist/source/organizeImports: off */
 import { useNavigate, useOutletContext, useParams } from "@remix-run/react";
-import { loader as layoutLoader } from "./_layout";
-
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
@@ -18,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import type { loader as layoutLoader } from "./_layout";
 
 /**
  * 축구 경기 매치 디테일 화면
@@ -50,6 +48,8 @@ import {
  * @param _props
  * @returns
  */
+
+interface IMatchesIdPageProps {}
 
 const MatchesIdPage = (_props: IMatchesIdPageProps) => {
   const data = useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();

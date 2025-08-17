@@ -1,15 +1,12 @@
-import { File } from "@prisma/client";
+import type { File } from "@prisma/client";
 import { CameraIcon } from "@radix-ui/react-icons";
+import { type ActionFunctionArgs, redirect } from "@remix-run/node";
+import { useActionData } from "@remix-run/react";
 import { useState } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -20,13 +17,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { SIGUNGU } from "~/libs/sigungu";
-import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
-
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { useActionData } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server"; // prisma 경로에 맞게 수정하세요
 import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
+import { SIGUNGU } from "~/libs/sigungu";
+import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 
 export const handle = {
   breadcrumb: "클럽 생성",
@@ -115,10 +109,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(`/clubs/${club.id}`);
   } catch (err) {
     console.error(err);
-    return Response.json(
-      { error: "클럽 생성 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+    return Response.json({ error: "클럽 생성 중 오류가 발생했습니다." }, { status: 500 });
   }
 }
 
@@ -195,12 +186,11 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">클럽 이름</Label>
-                    <Input id="name" name="name" disabled={isPending} />
+                    <Input name="name" disabled={isPending} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="description">클럽 소개</Label>
                     <Textarea
-                      id="description"
                       name="description"
                       rows={4}
                       disabled={isPending}
@@ -232,11 +222,7 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="gun">지역</Label>
-                      <Select
-                        name="gun"
-                        disabled={isPending}
-                        defaultValue={undefined}
-                      >
+                      <Select name="gun" disabled={isPending} defaultValue={undefined}>
                         <SelectTrigger>
                           <SelectValue placeholder="지역 선택" />
                         </SelectTrigger>
@@ -254,11 +240,7 @@ const ClubNewPage = (_props: IClubNewPageProps) => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="isPublic">공개 여부</Label>
-                    <Select
-                      name="isPublic"
-                      disabled={isPending}
-                      defaultValue="true"
-                    >
+                    <Select name="isPublic" disabled={isPending} defaultValue="true">
                       <SelectTrigger>
                         <SelectValue placeholder="공개 여부" />
                       </SelectTrigger>

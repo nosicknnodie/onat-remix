@@ -3,6 +3,7 @@ import { VscCode } from "react-icons/vsc";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { useActiveEditor, useToolbarState } from "../Context";
+
 interface IInsertCodeButtonProps {}
 
 const InsertCodeButton = (_props: IInsertCodeButtonProps) => {

@@ -1,10 +1,9 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
-import { prisma } from "~/libs/db/db.server";
-import { cn } from "~/libs/utils";
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
 
-import { Board, Club, File, Player } from "@prisma/client";
+import type { Board, Club, File, Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import ItemLink from "~/components/ItemLink";
@@ -17,36 +16,33 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts/AuthUserContext";
+import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
+import { cn } from "~/libs/utils";
 import JoinDialog from "~/template/club/JoinDialog";
 
 export const handle = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   breadcrumb: (match: any) => {
     const data = match.data;
     const params = match.params;
     return (
       <>
-        <BreadcrumbLink to={"/clubs/" + params.id}>
-          {data.club.name}
-        </BreadcrumbLink>
+        <BreadcrumbLink to={`/clubs/${params.id}`}>{data.club.name}</BreadcrumbLink>
       </>
     );
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   right: (match: any) => {
     const data = match.data;
     const params = match.params;
     return (
       <>
-        {(data.player?.role === "MANAGER" ||
-          data.player?.role === "MASTER") && (
+        {(data.player?.role === "MANAGER" || data.player?.role === "MASTER") && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 className={cn(
-                  "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+                  "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
                 )}
               >
                 <span className="sr-only">Open menu</span>
@@ -61,9 +57,7 @@ export const handle = {
                 <Link to={"/matches/new"}>매치 추가</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to={"/clubs/" + params.id + "/boards/new"}>
-                  게시글 추가
-                </Link>
+                <Link to={`/clubs/${params.id}/boards/new`}>게시글 추가</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -138,8 +132,7 @@ const Layout = (_props: ILayoutProps) => {
   const isInJoined = !!data.player;
   // 관리자
   const isAdmin =
-    !!data.player &&
-    (data.player.role === "MANAGER" || data.player.role === "MASTER");
+    !!data.player && (data.player.role === "MANAGER" || data.player.role === "MASTER");
 
   const isJoined = !!user && !data.player;
   // 재가입버튼
@@ -167,12 +160,8 @@ const Layout = (_props: ILayoutProps) => {
                 <Button>가입</Button>
               </JoinDialog>
             )}
-            {isRejected && (
-              <FormError className="py-2">가입 승인 거절되었습니다.</FormError>
-            )}
-            {isJoinPending && (
-              <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
-            )}
+            {isRejected && <FormError className="py-2">가입 승인 거절되었습니다.</FormError>}
+            {isJoinPending && <FormSuccess>가입 승인 대기중입니다.</FormSuccess>}
             {isReJoined && (
               <JoinDialog player={data.player ?? undefined}>
                 <Button>재가입</Button>
@@ -230,9 +219,7 @@ const Layout = (_props: ILayoutProps) => {
               <ItemLink to={`/clubs/${data.club.id}/members`}>멤버</ItemLink>
             </>
           )}
-          {isAdmin && (
-            <ItemLink to={`/clubs/${data.club.id}/pendings`}>승인대기</ItemLink>
-          )}
+          {isAdmin && <ItemLink to={`/clubs/${data.club.id}/pendings`}>승인대기</ItemLink>}
         </div>
         <Outlet context={{ club: data.club, player: data.player }} />
       </div>

@@ -1,27 +1,18 @@
-import { PositionType } from "@prisma/client";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { PositionType } from "@prisma/client";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
 import _ from "lodash";
 import { useState } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { AES } from "~/libs/crypto.utils";
 import { prisma } from "~/libs/db/db.server";
 import Position from "~/template/Position";
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const mercenaryId = params.mercenaryId;
 
   try {
@@ -49,15 +40,9 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
   const name = formData.get("name")?.toString();
   const hp = formData.get("hp")?.toString();
   const description = formData.get("description")?.toString();
-  const position1 = formData.get("position1")?.toString() as
-    | PositionType
-    | undefined;
-  const position2 = formData.get("position2")?.toString() as
-    | PositionType
-    | undefined;
-  const position3 = formData.get("position3")?.toString() as
-    | PositionType
-    | undefined;
+  const position1 = formData.get("position1")?.toString() as PositionType | undefined;
+  const position2 = formData.get("position2")?.toString() as PositionType | undefined;
+  const position3 = formData.get("position3")?.toString() as PositionType | undefined;
   try {
     const mercenary = await prisma.mercenary.update({
       where: {
@@ -91,11 +76,7 @@ const MercenaryEditPage = (_props: IMercenaryEditPageProps) => {
         mercenary?.user?.position2,
         mercenary?.user?.position3,
       ])
-    : _.compact([
-        mercenary?.position1,
-        mercenary?.position2,
-        mercenary?.position3,
-      ]);
+    : _.compact([mercenary?.position1, mercenary?.position2, mercenary?.position3]);
   const [positions, setPositions] = useState<string[]>(defaultPositions);
   return (
     <>
@@ -103,28 +84,18 @@ const MercenaryEditPage = (_props: IMercenaryEditPageProps) => {
         <Card>
           <CardHeader>
             <CardTitle>용병 수정</CardTitle>
-            <CardDescription>
-              용병 수정 (회원 연결된 용병은 수정사항 제한)
-            </CardDescription>
+            <CardDescription>용병 수정 (회원 연결된 용병은 수정사항 제한)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {/* <Input type="hidden" name="userId" value={mercenary?.userId || undefined}></Input>
           <Input type="hidden" name="actionType" value="name"></Input> */}
-            <Input
-              type="hidden"
-              name="mercenaryId"
-              value={mercenary?.id || undefined}
-            ></Input>
+            <Input type="hidden" name="mercenaryId" value={mercenary?.id || undefined}></Input>
             <div className="space-y-2">
-              <Label
-                htmlFor="name"
-                className="after:content-['*'] after:text-red-500 after:ml-1"
-              >
+              <Label htmlFor="name" className="after:content-['*'] after:text-red-500 after:ml-1">
                 용병 이름
               </Label>
               <Input
                 type="text"
-                id="name"
                 name="name"
                 placeholder="이름"
                 defaultValue={mercenary?.user?.name || mercenary?.name || ""}
@@ -141,7 +112,6 @@ const MercenaryEditPage = (_props: IMercenaryEditPageProps) => {
               </Label>
               <Input
                 type="text"
-                id="description"
                 name="description"
                 placeholder="OOO의 친구.."
                 defaultValue={mercenary?.description || ""}
@@ -151,7 +121,6 @@ const MercenaryEditPage = (_props: IMercenaryEditPageProps) => {
               <Label htmlFor="hp">전화번호</Label>
               <Input
                 type="text"
-                id="hp"
                 name="hp"
                 placeholder="전화번호"
                 defaultValue={mercenary?.hp || ""}
@@ -163,9 +132,7 @@ const MercenaryEditPage = (_props: IMercenaryEditPageProps) => {
               <Input type="hidden" name="position3" value={positions?.at(2)} />
               <Position
                 value={positions}
-                onValueChange={(v) =>
-                  !loaderData.mercenary?.user && setPositions(v ?? [])
-                }
+                onValueChange={(v) => !loaderData.mercenary?.user && setPositions(v ?? [])}
               />
             </div>
             <FormSuccess>{actionData?.success}</FormSuccess>

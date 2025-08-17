@@ -2,7 +2,7 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { LexicalEditor, SerializedEditorState } from "lexical";
+import type { LexicalEditor, SerializedEditorState } from "lexical";
 import { cn } from "~/libs/utils";
 import { nodes } from "./nodes/nodes";
 import { theme } from "./theme/theme";
@@ -31,12 +31,7 @@ export function View({ editorState, className }: ViewProps) {
     <LexicalComposer initialConfig={initialConfig}>
       <RichTextPlugin
         contentEditable={
-          <ContentEditable
-            className={cn(
-              "w-full min-h-[4rem] text-sm text-gray-900",
-              className
-            )}
-          />
+          <ContentEditable className={cn("w-full min-h-[4rem] text-sm text-gray-900", className)} />
         }
         ErrorBoundary={LexicalErrorBoundary}
       />

@@ -1,4 +1,4 @@
-import { JobTitle, Player, RoleType, StatusType } from "@prisma/client";
+import type { JobTitle, Player, RoleType, StatusType } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useOutletContext } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
@@ -16,10 +16,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { IClubLayoutLoaderData } from "../_layout";
+import type { IClubLayoutLoaderData } from "../_layout";
 import InfoDrawer from "./InfoDrawer";
 import { useGetPlayers } from "./member.context";
-import { IPlayer } from "./members.columns";
+import type { IPlayer } from "./members.columns";
 
 interface IMembersActionProps {
   payload: IPlayer;
@@ -33,7 +33,7 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
   const context = useGetPlayers();
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (value: Partial<Player>) => {
-      return fetch("/api/players/" + payload.id, {
+      return fetch(`/api/players/${payload.id}`, {
         method: "POST",
         body: JSON.stringify({ ...value }),
       });
@@ -73,11 +73,7 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
               disabled={isPending}
             >
               <span className="sr-only">Open menu</span>
-              {isPending ? (
-                <Loading />
-              ) : (
-                <DotsHorizontalIcon className="h-4 w-4" />
-              )}
+              {isPending ? <Loading /> : <DotsHorizontalIcon className="h-4 w-4" />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -94,10 +90,7 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                 <DropdownMenuSubTrigger>권한</DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   {isMaster && (
-                    <DropdownMenuCheckboxItem
-                      checked={payload.role === "MASTER"}
-                      disabled={true}
-                    >
+                    <DropdownMenuCheckboxItem checked={payload.role === "MASTER"} disabled={true}>
                       MASTER
                     </DropdownMenuCheckboxItem>
                   )}

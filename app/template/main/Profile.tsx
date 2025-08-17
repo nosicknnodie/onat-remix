@@ -29,9 +29,7 @@ const Profile = (_props: IProfileProps) => {
             </div>
             <div>
               <div className="rounded-md flex space-x-2 h-5 items-center">
-                <div className="font-semibold text-2xl text-primary">
-                  {user?.name}
-                </div>
+                <div className="font-semibold text-2xl text-primary">{user?.name}</div>
                 <Separator orientation="vertical" />
                 <div className="">{user?.name}</div>
               </div>

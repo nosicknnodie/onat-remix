@@ -7,9 +7,5 @@ export const MatchCommentContextProvider = ({
   children,
   ...props
 }: IMatchCommentContextProviderProps) => {
-  return (
-    <MatchCommentContext.Provider value={props}>
-      {children}
-    </MatchCommentContext.Provider>
-  );
+  return <MatchCommentContext.Provider value={props}>{children}</MatchCommentContext.Provider>;
 };

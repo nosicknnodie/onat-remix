@@ -38,10 +38,6 @@ export type InfiniteActions<T> =
 export type Ctx<T> = {
   state: InfiniteState<T>;
   loadMore: () => void;
-  resetWith: (args: {
-    items: T[];
-    pageInfo: PageInfo;
-    filters?: Filters;
-  }) => void;
+  resetWith: (args: { items: T[]; pageInfo: PageInfo; filters?: Filters }) => void;
   setFilters: (f: Filters) => void;
 };

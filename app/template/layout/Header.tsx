@@ -15,13 +15,14 @@ import {
 import { useSidebar } from "~/components/ui/sidebar";
 import { useSession } from "~/contexts/AuthUserContext";
 import { cn } from "~/libs/utils";
+
 const Header = () => {
   const user = useSession();
   const { toggleSidebar } = useSidebar();
   return (
     <header
       className={cn(
-        "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30"
+        "h-16 min-h-16 w-full shadow-md flex justify-center items-center sticky top-0 bg-background px-4 z-30",
       )}
     >
       <div className="flex justify-between w-full items-center">
@@ -33,11 +34,7 @@ const Header = () => {
           </div>
           <Link to={"/"} className="">
             <div className="px-4 py-0.5">
-              <img
-                src="/images/logo-onsoa.png"
-                alt="logo"
-                className="h-8 cursor-pointer"
-              />
+              <img src="/images/logo-onsoa.png" alt="logo" className="h-8 cursor-pointer" />
             </div>
             {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
               ONSOA
@@ -60,9 +57,7 @@ const Header = () => {
                 <DropdownMenuContent>
                   <DropdownMenuLabel className="flex space-x-2">
                     <span className="text-sm">{user?.name}</span>
-                    <span className="truncate text-sm font-medium">
-                      {user?.email}
-                    </span>
+                    <span className="truncate text-sm font-medium">{user?.email}</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -72,9 +67,7 @@ const Header = () => {
                   </DropdownMenuItem>
                   <form action="/api/auth/logout" method="post">
                     <button type="submit" className="w-full">
-                      <DropdownMenuItem className="text-sm">
-                        로그아웃
-                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-sm">로그아웃</DropdownMenuItem>
                     </button>
                   </form>
                 </DropdownMenuContent>
@@ -93,9 +86,7 @@ const Header = () => {
             <div className="flex space-x-3">
               <Link
                 to="/auth/login"
-                className={cn(
-                  "px-1 py-0.5 text-inherit rounded-md flex items-center gap-1"
-                )}
+                className={cn("px-1 py-0.5 text-inherit rounded-md flex items-center gap-1")}
               >
                 Sign in
               </Link>{" "}

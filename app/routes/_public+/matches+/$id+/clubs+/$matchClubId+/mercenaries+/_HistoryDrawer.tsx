@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: off */
 import { AvatarImage } from "@radix-ui/react-avatar";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
@@ -15,7 +16,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { IMatchClubMecenaryLoaderTData } from "./_index";
+import type { IMatchClubMecenaryLoaderTData } from "./_index";
 
 interface IHistoryDrawerProps extends React.PropsWithChildren {
   payload: IMatchClubMecenaryLoaderTData[number];
@@ -25,9 +26,7 @@ const HistoryDrawer = ({ children, payload }: IHistoryDrawerProps) => {
   const attends = payload.attendances
     .filter((at) => at.isVote)
     .sort((a, b) =>
-      dayjs(b.matchClub.match.stDate).isAfter(dayjs(a.matchClub.match.stDate))
-        ? 1
-        : -1
+      dayjs(b.matchClub.match.stDate).isAfter(dayjs(a.matchClub.match.stDate)) ? 1 : -1,
     );
   return (
     <>
@@ -52,8 +51,7 @@ const HistoryDrawer = ({ children, payload }: IHistoryDrawerProps) => {
               최근 경기 정보
             </DrawerTitle>
             <DrawerDescription>
-              {payload?.user?.name || payload.name} 용병의 최근 경기 정보
-              입니다.
+              {payload?.user?.name || payload.name} 용병의 최근 경기 정보 입니다.
             </DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 pl-4 relative w-full">
@@ -61,9 +59,7 @@ const HistoryDrawer = ({ children, payload }: IHistoryDrawerProps) => {
               <Avatar className="group max-sm:size-[100px] sm:size-[180px] absolute right-2 top-5 opacity-80 shadow-lg">
                 <AvatarImage
                   className="object-cover"
-                  src={
-                    payload?.user?.userImage?.url || "/images/user_empty.png"
-                  }
+                  src={payload?.user?.userImage?.url || "/images/user_empty.png"}
                 />
                 <AvatarFallback>
                   <Loading />
@@ -80,9 +76,7 @@ const HistoryDrawer = ({ children, payload }: IHistoryDrawerProps) => {
   );
 };
 
-const columns: ColumnDef<
-  IMatchClubMecenaryLoaderTData[number]["attendances"][number]
->[] = [
+const columns: ColumnDef<IMatchClubMecenaryLoaderTData[number]["attendances"][number]>[] = [
   {
     id: "title",
     accessorFn: (v) => v.matchClub.match.title,
@@ -103,9 +97,7 @@ const columns: ColumnDef<
     },
     cell: ({ row }) => {
       const stDate = row.original.matchClub.match.stDate;
-      const matchDate = stDate
-        ? dayjs(stDate).format("YYYY-MM-DD (ddd) HH:mm")
-        : null;
+      const matchDate = stDate ? dayjs(stDate).format("YYYY-MM-DD (ddd) HH:mm") : null;
       return <div className="flex justify-center">{matchDate}</div>;
     },
   },

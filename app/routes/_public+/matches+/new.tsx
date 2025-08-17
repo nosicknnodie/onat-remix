@@ -1,9 +1,6 @@
-import { Club } from "@prisma/client";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: off */
+import type { Club } from "@prisma/client";
+import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useAtomCallback } from "jotai/utils";
@@ -11,13 +8,7 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -31,7 +22,7 @@ import { Switch } from "~/components/ui/switch";
 import { Textarea } from "~/components/ui/textarea";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { IKakaoLocalType } from "~/libs/map";
+import type { IKakaoLocalType } from "~/libs/map";
 import HistoryPlaceDownList from "./_components/HistoryPlaceDownList";
 import SearchPlace from "./_components/SearchPlace";
 import { placeHistoryAtom } from "./_libs/state";
@@ -90,23 +81,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return new Response("잘못된 요청입니다.", { status: 400 });
   }
 
-  const {
-    clubId,
-    title,
-    description,
-    date,
-    hour,
-    minute,
-    placeName,
-    address,
-    lat,
-    lng,
-    isSelf,
-  } = result.data;
+  const { clubId, title, description, date, hour, minute, placeName, address, lat, lng, isSelf } =
+    result.data;
   const isSelfMatch = isSelf === "on";
-  const matchDate = new Date(
-    `${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`
-  );
+  const matchDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
   try {
     const res = await prisma.$transaction(async (tx) => {
       const txMatch = await tx.match.create({
@@ -157,7 +135,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                   matchClubId: matchClub.id,
                 },
               });
-            })
+            }),
           );
         } else {
           await Promise.all([
@@ -201,12 +179,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 team2Id: teams[1].id,
               }),
             },
-          })
-        )
+          }),
+        ),
       );
       return txMatch;
     });
-    return redirect("/matches/" + res.id);
+
+    return redirect(`/matches/${res.id}`);
   } catch (e) {
     console.error("[matches/new:action] error - ", e);
     return new Response("잘못된 요청입니다.", { status: 400 });
@@ -251,10 +230,7 @@ const MatchesNew = (_props: IMatchesNewProps) => {
                   >
                     클럽선택
                   </Label>
-                  <Select
-                    name="clubId"
-                    defaultValue={loaderData?.clubs?.[0]?.id ?? ""}
-                  >
+                  <Select name="clubId" defaultValue={loaderData?.clubs?.[0]?.id ?? ""}>
                     <SelectTrigger>
                       <SelectValue placeholder="클럽 선택" />
                     </SelectTrigger>
@@ -274,7 +250,7 @@ const MatchesNew = (_props: IMatchesNewProps) => {
                   >
                     매치명
                   </Label>
-                  <Input id="title" name="title" type="text" required />
+                  <Input name="title" type="text" required />
                 </div>
                 <div className="space-y-2">
                   <Label
@@ -283,12 +259,7 @@ const MatchesNew = (_props: IMatchesNewProps) => {
                   >
                     설명
                   </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    rows={3}
-                    required
-                  />
+                  <Textarea name="description" rows={3} required />
                 </div>
                 <div className="space-y-2">
                   <Label
@@ -299,16 +270,10 @@ const MatchesNew = (_props: IMatchesNewProps) => {
                   </Label>
                   <div className="flex gap-2 max-sm:flex-col">
                     <Input
-                      id="date"
                       name="date"
                       type="date"
                       defaultValue={
-                        dayjs()
-                          .day(6)
-                          .hour(8)
-                          .minute(0)
-                          .second(0)
-                          .isBefore(dayjs())
+                        dayjs().day(6).hour(8).minute(0).second(0).isBefore(dayjs())
                           ? dayjs()
                               .day(6 + 7)
                               .format("YYYY-MM-DD")
@@ -346,7 +311,6 @@ const MatchesNew = (_props: IMatchesNewProps) => {
                   <Label htmlFor="placeName">장소</Label>
                   <div className="flex gap-x-2">
                     <Input
-                      id="placeName"
                       name="placeName"
                       type="text"
                       value={place?.place_name ?? ""}
@@ -357,21 +321,15 @@ const MatchesNew = (_props: IMatchesNewProps) => {
                         <FaSearch />
                       </Button>
                     </SearchPlace>
-                    <HistoryPlaceDownList
-                      onSetPlace={handleSearchPlaceSubmit}
-                    />
-                    <input
-                      type="hidden"
-                      name="address"
-                      value={place?.address_name ?? ""}
-                    />
+                    <HistoryPlaceDownList onSetPlace={handleSearchPlaceSubmit} />
+                    <input type="hidden" name="address" value={place?.address_name ?? ""} />
                     <input type="hidden" name="lat" value={place?.y ?? ""} />
                     <input type="hidden" name="lng" value={place?.x ?? ""} />
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Label htmlFor="isSelf">자체전 여부</Label>
-                  <Switch id="isSelf" name="isSelf" />
+                  <Switch name="isSelf" />
                 </div>
 
                 <Button type="submit" className="w-full font-semibold">

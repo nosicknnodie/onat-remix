@@ -3,7 +3,6 @@ import { MdEventAvailable } from "react-icons/md";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
-import AttendanceManageAction from "./_components/AttendanceManageAction";
 import {
   AttendanceGroupCard,
   AttendanceGroupCardContent,
@@ -11,6 +10,7 @@ import {
   AttendanceGroupCardItem,
   AttendanceGroupCardTitle,
 } from "./_components/_index";
+import AttendanceManageAction from "./_components/AttendanceManageAction";
 import { action, loader } from "./_data";
 import { AttendanceContext, useAttendance } from "./_hook";
 export { action, loader };

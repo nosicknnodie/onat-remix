@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Board } from "@prisma/client";
+/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: off */
+import type { Board } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link, useRevalidator } from "@remix-run/react";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useTransition } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -165,9 +165,7 @@ const Actions = ({ payload }: { payload: Board }) => {
                     e.stopPropagation();
                     confirm({
                       title: "삭제 요청",
-                      description: (
-                        <>{payload.name} 게시판을 삭제 하시겠습니까?</>
-                      ),
+                      description: <>{payload.name} 게시판을 삭제 하시겠습니까?</>,
                     }).onConfirm(handleDelete);
                   }}
                 >

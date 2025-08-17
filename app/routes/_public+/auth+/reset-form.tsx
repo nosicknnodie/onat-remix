@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { LuKeyRound } from "react-icons/lu";
 import { z } from "zod";
@@ -38,14 +38,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     // reset token 발급
-    const passwordResetToken = await generatePasswordResetToken(
-      existingUser.email
-    );
+    const passwordResetToken = await generatePasswordResetToken(existingUser.email);
     // 메일 보내기
     await sendPasswordResetEmail(
       passwordResetToken.email,
       passwordResetToken.token,
-      `${protocol}//${host}`
+      `${protocol}//${host}`,
     );
     return { success: "이메일을 보냈습니다. 확인 부탁드립니다." };
   } catch (error) {
@@ -60,8 +58,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const ResetForm = () => {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting =
-    navigation.state === "submitting" || navigation.state === "loading";
+  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
   return (
     <>
       <div className="max-w-md w-full space-y-4 mt-6">
@@ -72,23 +69,13 @@ const ResetForm = () => {
           </p>
           <div className="space-y-1">
             <label htmlFor="email">이메일</label>
-            <Input
-              id="email"
-              name="email"
-              defaultValue={actionData?.values?.email ?? ""}
-            ></Input>
+            <Input name="email" defaultValue={actionData?.values?.email ?? ""}></Input>
           </div>
           <div>
             <FormSuccess>{actionData?.success}</FormSuccess>
-            <FormError>
-              {actionData?.error && JSON.stringify(actionData?.error)}
-            </FormError>
+            <FormError>{actionData?.error && JSON.stringify(actionData?.error)}</FormError>
           </div>
-          <Button
-            type="submit"
-            className="w-full font-semibold"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="w-full font-semibold" disabled={isSubmitting}>
             {isSubmitting && <Loading className="text-primary-foreground" />}
             <span>인증 메일 발송</span>
           </Button>

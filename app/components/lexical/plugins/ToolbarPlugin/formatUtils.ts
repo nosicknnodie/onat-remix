@@ -1,13 +1,13 @@
 import { $createCodeNode } from "@lexical/code";
-import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
+import { $createHeadingNode, type HeadingTagType } from "@lexical/rich-text";
 import { $setBlocksType } from "@lexical/selection";
 import {
   $createParagraphNode,
   $getSelection,
   $isRangeSelection,
-  LexicalEditor,
+  type LexicalEditor,
 } from "lexical";
-import { blockTypeToBlockName } from "./Context";
+import type { blockTypeToBlockName } from "./Context";
 export const formatParagraph = (editor: LexicalEditor) => {
   editor.update(() => {
     const selection = $getSelection();
@@ -18,7 +18,7 @@ export const formatParagraph = (editor: LexicalEditor) => {
 export const formatHeading = (
   editor: LexicalEditor,
   blockType?: string,
-  headingSize?: HeadingTagType
+  headingSize?: HeadingTagType,
 ) => {
   if (blockType !== headingSize) {
     editor.update(() => {
@@ -28,10 +28,7 @@ export const formatHeading = (
   }
 };
 
-export const formatCode = (
-  editor: LexicalEditor,
-  blockType: keyof typeof blockTypeToBlockName
-) => {
+export const formatCode = (editor: LexicalEditor, blockType: keyof typeof blockTypeToBlockName) => {
   if (blockType !== "code") {
     editor.update(() => {
       let selection = $getSelection();

@@ -2,6 +2,7 @@ import { RiTextBlock } from "react-icons/ri";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { useToolbarState } from "../../ToolbarPlugin/Context";
+
 interface IToolbarShowButtonProps {}
 
 const ToolbarShowButton = (_props: IToolbarShowButtonProps) => {
@@ -15,10 +16,7 @@ const ToolbarShowButton = (_props: IToolbarShowButtonProps) => {
         variant={toolbarState.isToolbarVisible ? "default" : "ghost"}
         size="icon"
         onClick={() => {
-          updateToolbarState(
-            "isToolbarVisible",
-            !toolbarState.isToolbarVisible
-          );
+          updateToolbarState("isToolbarVisible", !toolbarState.isToolbarVisible);
         }}
       >
         <RiTextBlock className={cn("size-4", {})} />

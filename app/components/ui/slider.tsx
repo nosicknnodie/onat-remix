@@ -1,15 +1,9 @@
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { cn } from "~/libs/utils";
 
-const Slider = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) => (
+const Slider = ({ className, ...props }: React.ComponentProps<typeof SliderPrimitive.Root>) => (
   <SliderPrimitive.Root
-    className={cn(
-      "relative flex w-full touch-none select-none items-center",
-      className
-    )}
+    className={cn("relative flex w-full touch-none select-none items-center", className)}
     {...props}
   >
     <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20">

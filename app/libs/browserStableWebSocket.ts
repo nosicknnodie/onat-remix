@@ -20,7 +20,7 @@ export class BrowserStableWebSocket {
 
   constructor(
     private url: string,
-    private options: BrowserStableWebSocketOptions = {}
+    private options: BrowserStableWebSocketOptions = {},
   ) {
     this.connect();
   }
@@ -60,8 +60,7 @@ export class BrowserStableWebSocket {
     const interval = this.options.pingIntervalMs ?? 15000;
     this.heartbeatInterval = window.setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        const pingMsg =
-          this.options.pingMessage ?? JSON.stringify({ type: "ping" });
+        const pingMsg = this.options.pingMessage ?? JSON.stringify({ type: "ping" });
         this.ws.send(pingMsg);
       }
     }, interval);

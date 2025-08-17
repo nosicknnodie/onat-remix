@@ -1,6 +1,6 @@
-import { Quarter, Team } from "@prisma/client";
+import type { Quarter, Team } from "@prisma/client";
 import { AvatarFallback } from "@radix-ui/react-avatar";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useTransition } from "react";
 import { FaFutbol } from "react-icons/fa";
@@ -82,10 +82,8 @@ const RecordPage = (_props: IRecordPageProps) => {
     <>
       <div className="pb-12">
         {quarters.map((quarter, index) => {
-          const isSameTeam1 =
-            index > 0 ? quarter.team1Id === quarters[index - 1].team1Id : false;
-          const isSameTeam2 =
-            index > 0 ? quarter.team2Id === quarters[index - 1].team2Id : false;
+          const isSameTeam1 = index > 0 ? quarter.team1Id === quarters[index - 1].team1Id : false;
+          const isSameTeam2 = index > 0 ? quarter.team2Id === quarters[index - 1].team2Id : false;
           const team1Goals = quarter.goals
             .filter((goal) => {
               return goal.teamId === quarter.team1Id || !quarter.team1Id;

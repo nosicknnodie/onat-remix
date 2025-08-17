@@ -1,7 +1,8 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
 import type { Prisma } from "@prisma/client";
-import { InputJsonValue } from "@prisma/client/runtime/library";
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { InputJsonValue } from "@prisma/client/runtime/library";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
@@ -27,10 +28,7 @@ export type IMatchClubComment = Prisma.CommentGetPayload<{
   };
 }>;
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const comments: IMatchClubComment[] = await prisma.comment.findMany({
     where: {
@@ -74,10 +72,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
   const matchClubId = params.matchClubId;
   if (!matchClubId) {
-    return new Response(
-      JSON.stringify({ error: "Missing matchClubId parameter" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Missing matchClubId parameter" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
   const result = await parseRequestData(request);
   const content = result.content as InputJsonValue;
@@ -110,14 +108,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       },
     });
     return Response.json({ comment: createdComment });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return new Response(
       JSON.stringify({
         error: "Failed to create comment",
         detail: error?.message,
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 };

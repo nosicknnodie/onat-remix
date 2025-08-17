@@ -1,4 +1,4 @@
-import { LexicalEditor, SerializedEditorState } from "lexical";
+import type { LexicalEditor, SerializedEditorState } from "lexical";
 import { useState } from "react";
 // import { Editor } from "~/components/lexical/PostEditor";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
@@ -10,10 +10,7 @@ interface ICommentInputProps {
   onCancel?: () => void;
   placeholder?: string;
   initialEditorState?: SerializedEditorState | null;
-  onSubmit?: (
-    root?: SerializedEditorState,
-    editor?: LexicalEditor
-  ) => Promise<void | boolean>;
+  onSubmit?: (root?: SerializedEditorState, editor?: LexicalEditor) => Promise<undefined | boolean>;
 }
 
 const CommentInput = ({
@@ -28,10 +25,7 @@ const CommentInput = ({
   const handleCancel = () => {
     onCancel?.();
   };
-  const handleSubmit = async (
-    root?: SerializedEditorState,
-    editor?: LexicalEditor
-  ) => {
+  const handleSubmit = async (root?: SerializedEditorState, editor?: LexicalEditor) => {
     setIsSubmitting(true);
     await onSubmit?.(root, editor);
     setIsSubmitting(false);
@@ -48,12 +42,7 @@ const CommentInput = ({
 
   return (
     <>
-      <div
-        className={cn(
-          "border border-primary rounded-3xl overflow-hidden p-4 ",
-          className
-        )}
-      >
+      <div className={cn("border border-primary rounded-3xl overflow-hidden p-4 ", className)}>
         <CommentEditor
           onCancel={handleCancel}
           onSubmit={handleSubmit}

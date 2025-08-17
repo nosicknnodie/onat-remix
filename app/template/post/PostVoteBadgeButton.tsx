@@ -1,15 +1,11 @@
-import { File, Post, PostVote, User } from "@prisma/client";
+import type { File, Post, PostVote, User } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import {
-  FaRegThumbsDown,
-  FaRegThumbsUp,
-  FaThumbsDown,
-  FaThumbsUp,
-} from "react-icons/fa";
+import { FaRegThumbsDown, FaRegThumbsUp, FaThumbsDown, FaThumbsUp } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useSession } from "~/contexts/AuthUserContext";
+
 type PostWithExtras = Post & {
   author: User & {
     userImage: File | null;
@@ -53,16 +49,14 @@ const PostVoteBadgeButton = ({ post }: IPostVoteBadgeButtonProps) => {
         postId: post.id,
         vote: newVote,
       },
-      { method: "POST", action: "/api/post-vote" }
+      { method: "POST", action: "/api/post-vote" },
     );
   };
 
   return (
     <>
       <Badge
-        variant={
-          vote === 1 ? "default" : vote === -1 ? "destructive" : "outline"
-        }
+        variant={vote === 1 ? "default" : vote === -1 ? "destructive" : "outline"}
         className="space-x-2 w-fit h-fit"
       >
         <Button

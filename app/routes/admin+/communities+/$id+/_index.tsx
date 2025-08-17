@@ -1,9 +1,5 @@
 import { BoardType, UserRoleType } from "@prisma/client";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
+import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import {
@@ -14,13 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -58,10 +48,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const data = await parseRequestData(request);
   const result = boardScheme.safeParse(data);
   if (!result.success) {
-    return Response.json(
-      { success: false, errors: result.error.flatten() },
-      { status: 400 }
-    );
+    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
   try {
     const res = await prisma.board.update({
@@ -82,10 +69,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
   }
   return null;
 };
@@ -121,17 +105,11 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">게시판명</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="게시판명"
-                  defaultValue={board?.name}
-                />
+                <Input name="name" placeholder="게시판명" defaultValue={board?.name} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug</Label>
                 <Input
-                  id="slug"
                   name="slug"
                   placeholder="ex) board"
                   defaultValue={board?.slug ?? undefined}
@@ -180,13 +158,7 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="order">게시판 우선순위</Label>
-                <Input
-                  type="number"
-                  id="order"
-                  name="order"
-                  placeholder="ex) 1"
-                  defaultValue={board?.order}
-                />
+                <Input type="number" name="order" placeholder="ex) 1" defaultValue={board?.order} />
               </div>
             </CardContent>
             <CardFooter>

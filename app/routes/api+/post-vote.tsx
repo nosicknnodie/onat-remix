@@ -1,5 +1,5 @@
 // POST /api/post-like
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
@@ -15,10 +15,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return Response.json({ success: false }, { status: 400 });
   }
   if (!postId || ![-1, 0, 1].includes(vote)) {
-    return Response.json(
-      { success: false, error: "Invalid vote value" },
-      { status: 400 }
-    );
+    return Response.json({ success: false, error: "Invalid vote value" }, { status: 400 });
   }
 
   await prisma.postVote.upsert({

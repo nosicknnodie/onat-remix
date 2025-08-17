@@ -1,5 +1,5 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import DataTable from "~/components/DataTable";
 import {
@@ -58,7 +58,7 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+                    "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
                   )}
                 >
                   <span className="sr-only">Open menu</span>

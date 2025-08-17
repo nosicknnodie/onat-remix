@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { getRatingAttendances } from "~/libs/queries/attendance/atttendances";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

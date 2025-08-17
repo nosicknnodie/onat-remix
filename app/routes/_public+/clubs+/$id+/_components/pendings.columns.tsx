@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { File, Player, User } from "@prisma/client";
-import { ColumnDef } from "@tanstack/react-table";
+/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: off */
+import type { File, Player, User } from "@prisma/client";
+import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { FaStar } from "react-icons/fa";
@@ -22,23 +22,15 @@ export const pendingsColumns: ColumnDef<IPlayer>[] = [
       return (
         <div className="flex justify-center items-center truncate space-x-2">
           <Avatar>
-            <AvatarImage
-              src={
-                row.original?.user?.userImage?.url || "/images/user_empty.png"
-              }
-            />
+            <AvatarImage src={row.original?.user?.userImage?.url || "/images/user_empty.png"} />
             <AvatarFallback className="bg-primary-foreground">
               <Loading />
             </AvatarFallback>
           </Avatar>
           <div>
             <div className="flex space-x-2 items-center h-5">
-              <span className="text-base font-semibold">
-                {row.getValue("name")}
-              </span>
-              <span className="text-xs text-gray-500">
-                ({row.original.nick})
-              </span>
+              <span className="text-base font-semibold">{row.getValue("name")}</span>
+              <span className="text-xs text-gray-500">({row.original.nick})</span>
             </div>
             <div className="flex space-x-2">
               <span className="text-xs text-gray-500 place-items-center">
@@ -86,9 +78,7 @@ export const pendingsColumns: ColumnDef<IPlayer>[] = [
       return (
         <div className="flex justify-center items-center space-x-2">
           <span>
-            {row.getValue("birth")
-              ? dayjs(row.getValue("birth")).format("YYYY-MM-DD")
-              : "-"}
+            {row.getValue("birth") ? dayjs(row.getValue("birth")).format("YYYY-MM-DD") : "-"}
           </span>
         </div>
       );
@@ -102,11 +92,7 @@ export const pendingsColumns: ColumnDef<IPlayer>[] = [
     },
     cell: ({ row }) => {
       const user = row.original.user;
-      const compacted = _.compact([
-        user?.position1,
-        user?.position2,
-        user?.position3,
-      ]);
+      const compacted = _.compact([user?.position1, user?.position2, user?.position3]);
       const positions = compacted.length > 0 ? compacted.join(",") : "-";
       return (
         <div className="flex justify-center items-center space-x-2">

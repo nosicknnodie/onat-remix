@@ -1,9 +1,7 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-} from "@remix-run/node";
+import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -101,7 +99,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
   try {
     const contentJSON = JSON.parse(result.data.content);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];
@@ -133,8 +130,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return { error: "게시글 권한이 없습니다." };
     }
     const usedImageIds = extractImageIds(contentJSON);
-    const notUsedImages =
-      post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
+    const notUsedImages = post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
     /**
      * Delete Not Used Images
      */
@@ -180,7 +176,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         id: result.data.boardId,
       },
     });
-    return redirect("/communities/" + board?.slug + "/" + res.id);
+
+    return redirect(`/communities/${board?.slug}/${res.id}`);
   } catch (error) {
     console.error(error);
     return { success: false, error: "Internal Server Error" };
@@ -207,9 +204,7 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
   });
 
   const boards = loaderData?.boards
-    .filter((board) =>
-      board.isUse && board.writeRole === "ADMIN" ? user?.role === "ADMIN" : true
-    )
+    .filter((board) => (board.isUse && board.writeRole === "ADMIN" ? user?.role === "ADMIN" : true))
     .sort((a, b) => {
       if (a.isUse && !b.isUse) return -1;
       if (!a.isUse && b.isUse) return 1;
@@ -251,22 +246,14 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
               method="post"
               className="space-y-2"
             >
-              <input
-                type="hidden"
-                name="id"
-                value={form.getValues("id") ?? ""}
-              />
+              <input type="hidden" name="id" value={form.getValues("id") ?? ""} />
               <FormField
                 name="boardId"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>게시판 명</FormLabel>
-                    <Select
-                      name={field.name}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger
                           className={cn({
@@ -340,12 +327,8 @@ const CommunityNewPage = (_props: ICommunityNewPageProps) => {
                     />
                     <FormControl>
                       <PostEditor
-                        onChange={(value) =>
-                          field.onChange(JSON.stringify(value))
-                        }
-                        initialEditorState={
-                          field.value ? JSON.parse(field.value) : undefined
-                        }
+                        onChange={(value) => field.onChange(JSON.stringify(value))}
+                        initialEditorState={field.value ? JSON.parse(field.value) : undefined}
                         onUploadImage={handleOnUploadImage}
                         className={cn({
                           "ring-red-500 ring-1": fieldState.invalid,

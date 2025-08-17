@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
-import { IMatchClubComment } from "~/routes/api+/matchClubs+/$matchClubId+/comments";
+import type { IMatchClubComment } from "~/routes/api+/matchClubs+/$matchClubId+/comments";
 import { MatchCommentContext } from "./_context";
 
 export const useMatchCommentContext = () => {
@@ -12,7 +12,7 @@ export const useGetMatchCommentsQuery = () => {
   return useQuery<{ comments: IMatchClubComment[] }>({
     queryKey: ["MATCH_CLUB", matchClubId],
     queryFn: async () => {
-      const res = await fetch("/api/matchClubs/" + matchClubId + "/comments");
+      const res = await fetch(`/api/matchClubs/${matchClubId}/comments`);
       return await res.json();
     },
     enabled: !!matchClubId,

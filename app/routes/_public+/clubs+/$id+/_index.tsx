@@ -1,5 +1,6 @@
 import { useOutletContext } from "@remix-run/react";
-import { IClubLayoutLoaderData } from "./_layout";
+import type { IClubLayoutLoaderData } from "./_layout";
+
 interface IClubPageProps {}
 
 export const handle = { breadcrumb: "정보" };
@@ -27,8 +28,7 @@ const ClubPage = (_props: IClubPageProps) => {
               {club.description || "클럽 소개가 없습니다."}
             </p>
             <p className="text-xs text-gray-500">
-              지역: {club.si || "-"} {club.gun || "-"} /{" "}
-              {club.isPublic ? "공개" : "비공개"}
+              지역: {club.si || "-"} {club.gun || "-"} / {club.isPublic ? "공개" : "비공개"}
             </p>
           </div>
         </div>

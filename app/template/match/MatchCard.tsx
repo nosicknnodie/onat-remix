@@ -1,4 +1,4 @@
-import { Match, MatchClub } from "@prisma/client";
+import type { Match, MatchClub } from "@prisma/client";
 import dayjs from "dayjs";
 import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";

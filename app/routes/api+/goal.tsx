@@ -1,5 +1,5 @@
 import { GoalType } from "@prisma/client";
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
 import { parseRequestData } from "~/libs/requestData";
@@ -19,10 +19,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (method === "POST") {
     const parsed = goalSchema.safeParse(data);
     if (!parsed.success) {
-      return Response.json(
-        { success: false, errors: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return Response.json({ success: false, errors: parsed.error.flatten() }, { status: 400 });
     }
 
     try {
@@ -39,18 +36,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return Response.json({ success: "success" });
     } catch (error) {
       console.error(error);
-      return Response.json(
-        { success: false, errors: "Internal Server Error" },
-        { status: 500 }
-      );
+      return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
     }
   } else if (method === "DELETE") {
     const id = data.id;
     if (!id) {
-      return Response.json(
-        { success: false, errors: "id is required" },
-        { status: 400 }
-      );
+      return Response.json({ success: false, errors: "id is required" }, { status: 400 });
     }
 
     try {
@@ -62,10 +53,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return Response.json({ success: "success" });
     } catch (error) {
       console.error(error);
-      return Response.json(
-        { success: false, errors: "Internal Server Error" },
-        { status: 500 }
-      );
+      return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
     }
   }
 };

@@ -1,19 +1,18 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { prisma } from "~/libs/db/db.server";
-
 import dayjs from "dayjs";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
+import { prisma } from "~/libs/db/db.server";
 
 export const handle = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   breadcrumb: (match: any) => {
     const data = match.data;
     const params = match.params;
     return (
       <>
-        <BreadcrumbLink to={"/matches/" + params.id}>
+        <BreadcrumbLink to={`/matches/${params.id}`}>
           {data.match.title}-{dayjs(data.match.stDate).format("M월D일(ddd)")}
         </BreadcrumbLink>
       </>
@@ -23,10 +22,7 @@ export const handle = {
 
 interface IMatchesIdLayoutPageProps {}
 
-export async function loader({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) {
+export async function loader({ request: _request, params }: LoaderFunctionArgs) {
   const [match] = await Promise.all([
     prisma.match.findUnique({
       where: {
@@ -49,9 +45,7 @@ export async function loader({
   return { match };
 }
 
-export type IMatchesIdLayoutPageLoaderReturnType = Awaited<
-  ReturnType<typeof loader>
->;
+export type IMatchesIdLayoutPageLoaderReturnType = Awaited<ReturnType<typeof loader>>;
 
 const MatchesIdLayoutPage = (_props: IMatchesIdLayoutPageProps) => {
   const data = useLoaderData<typeof loader>();

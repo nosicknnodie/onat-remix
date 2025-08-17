@@ -1,7 +1,7 @@
 // 삭제: "use client";
 // 삭제: import * as React from "react";
 import * as TogglePrimitive from "@radix-ui/react-toggle";
-import { type VariantProps, cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/libs/utils";
 
 const toggleVariants = cva(
@@ -23,7 +23,7 @@ const toggleVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 const Toggle = ({
@@ -31,12 +31,8 @@ const Toggle = ({
   variant,
   size,
   ...props
-}: React.ComponentProps<typeof TogglePrimitive.Root> &
-  VariantProps<typeof toggleVariants>) => (
-  <TogglePrimitive.Root
-    className={cn(toggleVariants({ variant, size, className }))}
-    {...props}
-  />
+}: React.ComponentProps<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>) => (
+  <TogglePrimitive.Root className={cn(toggleVariants({ variant, size, className }))} {...props} />
 );
 
 export { Toggle, toggleVariants };

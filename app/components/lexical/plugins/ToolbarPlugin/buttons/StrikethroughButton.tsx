@@ -3,6 +3,7 @@ import { GoStrikethrough } from "react-icons/go";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { useActiveEditor, useToolbarState } from "../Context";
+
 interface IStrikethroughButtonProps {}
 
 const StrikethroughButton = (_props: IStrikethroughButtonProps) => {

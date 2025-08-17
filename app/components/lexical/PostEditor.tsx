@@ -8,7 +8,7 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
+import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "~/libs/utils";
 import { Skeleton } from "../ui/skeleton";
@@ -18,10 +18,7 @@ import DragDropPaste from "./plugins/DragDropPastePlugin";
 import ImagesPlugin from "./plugins/ImagesPlugin";
 import MarkdownPlugin from "./plugins/MarkdownShortcutPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
-import {
-  ActiveEditorProvider,
-  ToolbarContext,
-} from "./plugins/ToolbarPlugin/Context";
+import { ActiveEditorProvider, ToolbarContext } from "./plugins/ToolbarPlugin/Context";
 import YouTubePlugin from "./plugins/YouTubePlugin";
 import "./theme/code-highlight.css";
 import { theme } from "./theme/theme";
@@ -59,7 +56,7 @@ export function PostEditor({
     (editorState: EditorState, _editor: LexicalEditor) => {
       onChange?.(editorState.toJSON());
     },
-    [onChange]
+    [onChange],
   );
 
   useEffect(() => {
@@ -72,9 +69,7 @@ export function PostEditor({
     <div className={cn("flex flex-col gap-4 rounded-md", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <ActiveEditorProvider>
-          <ToolbarContext
-            config={{ isEditable: true, isToolbarVisible: true, onUploadImage }}
-          >
+          <ToolbarContext config={{ isEditable: true, isToolbarVisible: true, onUploadImage }}>
             <ToolbarPlugin />
             <div className="relative  p-2">
               <RichTextPlugin

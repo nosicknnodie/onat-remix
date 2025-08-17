@@ -1,6 +1,11 @@
-import { type LoaderFunctionArgs, TypedResponse, redirect } from "@remix-run/node";
+import { type LoaderFunctionArgs, redirect, type TypedResponse } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { Row, SortingState, getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
+import {
+  getFilteredRowModel,
+  getSortedRowModel,
+  type Row,
+  type SortingState,
+} from "@tanstack/react-table";
 import Hangul from "hangul-js";
 import { useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
@@ -23,7 +28,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       },
     });
 
-    if (!matchClub) return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
+    if (!matchClub) return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
 
     const players = await prisma.player.findMany({
       where: {
@@ -58,7 +63,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return { mercenaries: decryptMercenaries };
   } catch (e) {
     console.error("e - ", e);
-    return redirect("/matches/" + matchId + "/clubs/" + matchClubId);
+
+    return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
   }
 }
 

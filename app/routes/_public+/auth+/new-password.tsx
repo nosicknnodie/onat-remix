@@ -1,11 +1,6 @@
 import { TokenType } from "@prisma/client";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
+import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import bcrypt from "bcryptjs";
 import { MdPassword } from "react-icons/md";
 import { z } from "zod";
@@ -16,9 +11,7 @@ import { prisma } from "~/libs/db/db.server";
 
 const findPasswordSchema = z.object({
   token: z.string().min(1),
-  password: z
-    .string()
-    .min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
+  password: z.string().min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
 });
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -58,10 +51,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const result = findPasswordSchema.safeParse({ password, token });
 
   if (!result.success) {
-    return Response.json(
-      { errors: result.error.flatten().fieldErrors },
-      { status: 400 }
-    );
+    return Response.json({ errors: result.error.flatten().fieldErrors }, { status: 400 });
   }
   const existingToken = await prisma.confirmToken.findUnique({
     where: { token: result.data.token, type: TokenType.PASSWORD_RESET },
@@ -90,7 +80,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const hashedPassword = await bcrypt.hash(result.data.password, 10);
 
   await prisma.key.update({
-    where: { id: "email:" + existingToken?.email },
+    where: { id: `email:${existingToken.email}` },
     data: { hashedPassword },
   });
 
@@ -117,27 +107,18 @@ const NewPassword = () => {
           <div>
             <label htmlFor="email">이메일</label>
             <input
-              id="email"
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
               defaultValue={loadData.user.email ?? ""}
               disabled
             ></input>
-            <input
-              type="hidden"
-              name="token"
-              defaultValue={loadData.token ?? ""}
-            ></input>
+            <input type="hidden" name="token" defaultValue={loadData.token ?? ""}></input>
           </div>
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               비밀번호
             </label>
             <input
               type="password"
-              id="password"
               name="password"
               required
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"

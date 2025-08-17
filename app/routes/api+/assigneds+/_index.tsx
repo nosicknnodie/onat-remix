@@ -1,5 +1,5 @@
 import { PositionType } from "@prisma/client";
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
 import { redis } from "~/libs/db/redis.server";
@@ -18,9 +18,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const res = await parseRequestData(request);
   const isArray = Array.isArray(res);
   const parsedData = isArray
-    ? res.map((item: z.infer<typeof assignedSchema>) =>
-        assignedSchema.safeParse(item)
-      )
+    ? res.map((item: z.infer<typeof assignedSchema>) => assignedSchema.safeParse(item))
     : [assignedSchema.safeParse(res)];
   const hasErrors = parsedData.some((p) => !p.success);
   if (["POST", "PUT", "PATCH"].includes(method) && hasErrors) {
@@ -31,21 +29,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           .filter((p) => !p.success)
           .map((p) => (p.success ? null : p.error.flatten())),
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   try {
     if (method === "POST") {
       const created = await prisma.$transaction(
-        parsedData.map((p) => prisma.assigned.create({ data: p.data! }))
+        parsedData.map((p) => prisma.assigned.create({ data: p.data! })),
       );
       await redis.publish(
         `position:${parsedData.at(0)?.data?.quarterId}`,
         JSON.stringify({
           type: "POSITION_CREATED",
           assigneds: created,
-        })
+        }),
       );
       return Response.json({ success: true, assigned: created });
     } else if (method === "PUT" || method === "PATCH") {
@@ -57,14 +55,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             where: { id: item.id },
             data: p.data!,
           });
-        })
+        }),
       );
       await redis.publish(
         `position:${parsedData.at(0)?.data?.quarterId}`,
         JSON.stringify({
           type: "POSITION_UPDATED",
           assigneds: updates,
-        })
+        }),
       );
       return Response.json({ success: true, assigned: updates });
     } else if (method === "DELETE") {
@@ -74,12 +72,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       if (ids.length === 0) {
         return Response.json(
           { success: false, errors: { id: "id is required for delete" } },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
       const deleted = await prisma.$transaction(
-        ids.map((id) => prisma.assigned.delete({ where: { id } }))
+        ids.map((id) => prisma.assigned.delete({ where: { id } })),
       );
 
       await redis.publish(
@@ -87,21 +85,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         JSON.stringify({
           type: "POSITION_REMOVED",
           assignedIds: deleted.map((a) => a.id),
-        })
+        }),
       );
 
       return Response.json({ success: true });
     } else {
-      return Response.json(
-        { success: false, errors: "Method Not Allowed" },
-        { status: 405 }
-      );
+      return Response.json({ success: false, errors: "Method Not Allowed" }, { status: 405 });
     }
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
   }
 };

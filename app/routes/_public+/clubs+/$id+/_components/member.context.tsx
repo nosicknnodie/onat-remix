@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { IMembersPageLoaderData } from "../members";
+import type { IMembersPageLoaderData } from "../members";
 
 export const PlayersContext = createContext<
   (IMembersPageLoaderData & { refetch: () => Promise<void> }) | undefined

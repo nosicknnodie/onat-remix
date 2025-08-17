@@ -1,4 +1,5 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
+
 const convertObjectToString = (obj: Record<string, string | number>) => {
   const keyValuePairs = Object.keys(obj).map(
     (key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`,

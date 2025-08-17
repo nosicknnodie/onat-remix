@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
+/** biome-ignore-all lint/complexity/noFlatMapIdentity: off */
 
 import { DRAG_DROP_PASTE } from "@lexical/rich-text";
 import { isMimeType, mediaFileReader } from "@lexical/utils";
@@ -15,13 +16,7 @@ import { $isImageNode } from "../../nodes/ImageNode";
 import { INSERT_IMAGE_COMMAND } from "../ImagesPlugin";
 import { useActiveEditor, useToolbarState } from "../ToolbarPlugin/Context";
 
-const ACCEPTABLE_IMAGE_TYPES = [
-  "image/",
-  "image/heic",
-  "image/heif",
-  "image/gif",
-  "image/webp",
-];
+const ACCEPTABLE_IMAGE_TYPES = ["image/", "image/heic", "image/heif", "image/gif", "image/webp"];
 
 export default function DragDropPaste(): null {
   const { activeEditor } = useActiveEditor();
@@ -33,7 +28,7 @@ export default function DragDropPaste(): null {
         (async () => {
           const filesResult = await mediaFileReader(
             files,
-            [ACCEPTABLE_IMAGE_TYPES].flatMap((x) => x)
+            [ACCEPTABLE_IMAGE_TYPES].flatMap((x) => x),
           );
           for (const { file, result } of filesResult) {
             if (isMimeType(file, ACCEPTABLE_IMAGE_TYPES)) {
@@ -82,9 +77,8 @@ export default function DragDropPaste(): null {
         })();
         return true;
       },
-      COMMAND_PRIORITY_LOW
+      COMMAND_PRIORITY_LOW,
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeEditor]);
+  }, [activeEditor, toolbarState.onUploadImage]);
   return null;
 }

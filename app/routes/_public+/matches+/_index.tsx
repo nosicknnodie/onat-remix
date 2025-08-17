@@ -1,6 +1,8 @@
-import { Prisma } from "@prisma/client";
+/** biome-ignore-all assist/source/organizeImports: off */
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+import type { Prisma } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import {
@@ -16,13 +18,7 @@ import { Fragment } from "react/jsx-runtime";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +40,7 @@ const RightComponent = () => {
         <Button
           variant="ghost"
           className={cn(
-            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
           )}
         >
           <span className="sr-only">Open menu</span>
@@ -61,7 +57,6 @@ const RightComponent = () => {
 };
 
 export const handle = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   right: (match: any) => <RightComponent {...match} />,
 };
 
@@ -108,11 +103,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const myClubIds = myClubs.map((c) => c.clubId);
 
   // 분류
-  const myMatches = matches.filter((m) =>
-    m.matchClubs.some((mc) => myClubIds.includes(mc.clubId))
-  );
+  const myMatches = matches.filter((m) => m.matchClubs.some((mc) => myClubIds.includes(mc.clubId)));
   const publicMatches = matches.filter(
-    (m) => !m.matchClubs.some((mc) => myClubIds.includes(mc.clubId))
+    (m) => !m.matchClubs.some((mc) => myClubIds.includes(mc.clubId)),
   );
   const categorized = {
     my: {
@@ -184,7 +177,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
                   className={cn(
                     "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
                     "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                    "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                    "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
                   )}
                 >
                   나의 클럽 매치
@@ -195,7 +188,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
                 className={cn(
                   "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
                   "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
                 )}
               >
                 공개 클럽 매치
@@ -215,11 +208,7 @@ const MatchsPage = (_props: IMatchsPageProps) => {
                   title="다가올 매치"
                 />
 
-                <MatchList
-                  matches={categorized.my.past}
-                  myClubIds={myClubIds}
-                  title="지난 매치"
-                />
+                <MatchList matches={categorized.my.past} myClubIds={myClubIds} title="지난 매치" />
               </section>
             </TabsContent>
             <TabsContent value="public">
@@ -267,9 +256,7 @@ const MatchList = ({
       </h3>
       <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
         {matches?.map((match) => {
-          const matchClubId = match.matchClubs.find((mc) =>
-            myClubIds.includes(mc.clubId)
-          )?.id;
+          const matchClubId = match.matchClubs.find((mc) => myClubIds.includes(mc.clubId))?.id;
           return (
             <Link
               key={match.id}
@@ -281,9 +268,7 @@ const MatchList = ({
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 min-w-0 flex-1">
                   <div className="space-y-1 w-full min-w-0">
-                    <CardTitle className="text-lg font-semibold truncate">
-                      {match.title}
-                    </CardTitle>
+                    <CardTitle className="text-lg font-semibold truncate">{match.title}</CardTitle>
                     <CardDescription className="text-sm text-muted-foreground line-clamp-2 overflow-hidden break-words w-full">
                       {match.description}
                     </CardDescription>
@@ -300,8 +285,7 @@ const MatchList = ({
                           <Avatar>
                             <AvatarImage
                               src={
-                                matchClub.club?.emblem?.url ??
-                                "/images/club-default-emblem.webp"
+                                matchClub.club?.emblem?.url ?? "/images/club-default-emblem.webp"
                               }
                             />
                             <AvatarFallback className="bg-primary">

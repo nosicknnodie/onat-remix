@@ -1,5 +1,5 @@
-import { PositionType } from "@prisma/client";
-import { ActionFunctionArgs, redirect } from "@remix-run/node";
+import type { PositionType } from "@prisma/client";
+import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -17,12 +17,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const userId = user.id;
   const formData = await request.formData();
 
-  const position1 =
-    (formData.get("position1")?.toString() as PositionType) ?? null;
-  const position2 =
-    (formData.get("position2")?.toString() as PositionType) ?? null;
-  const position3 =
-    (formData.get("position3")?.toString() as PositionType) ?? null;
+  const position1 = (formData.get("position1")?.toString() as PositionType) ?? null;
+  const position2 = (formData.get("position2")?.toString() as PositionType) ?? null;
+  const position3 = (formData.get("position3")?.toString() as PositionType) ?? null;
 
   await prisma.user.update({
     where: { id: userId },
@@ -44,9 +41,7 @@ const PositionPage = (_props: IPositionPageProps) => {
   const user = useSession();
   const [positions, setPositions] = useState<string[]>();
   useEffect(() => {
-    setPositions(
-      _.compact([user?.position1, user?.position2, user?.position3])
-    );
+    setPositions(_.compact([user?.position1, user?.position2, user?.position3]));
   }, [user]);
   return (
     <>
@@ -56,25 +51,10 @@ const PositionPage = (_props: IPositionPageProps) => {
         </CardHeader>
         <CardContent>
           <form method="post">
-            <Input
-              type="hidden"
-              name="position1"
-              value={positions?.at(0) ?? ""}
-            />
-            <Input
-              type="hidden"
-              name="position2"
-              value={positions?.at(1) ?? ""}
-            />
-            <Input
-              type="hidden"
-              name="position3"
-              value={positions?.at(2) ?? ""}
-            />
-            <Position
-              value={positions}
-              onValueChange={(v) => setPositions(v ?? [])}
-            />
+            <Input type="hidden" name="position1" value={positions?.at(0) ?? ""} />
+            <Input type="hidden" name="position2" value={positions?.at(1) ?? ""} />
+            <Input type="hidden" name="position3" value={positions?.at(2) ?? ""} />
+            <Position value={positions} onValueChange={(v) => setPositions(v ?? [])} />
             <div className="w-full">
               <Button type="submit" className="w-full">
                 저장

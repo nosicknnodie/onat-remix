@@ -1,5 +1,5 @@
-import { Player } from "@prisma/client";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import type { Player } from "@prisma/client";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData, useLocation } from "@remix-run/react";
 import { useMemo } from "react";
 import DataTable from "~/components/DataTable";
@@ -10,10 +10,7 @@ import { PendingsContext } from "./_components/pendings.context";
 interface IPendingsPageProps {}
 export const handle = { breadcrumb: "승인대기" };
 
-export const loader = async ({
-  request: _request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const clubId = params.id;
 
   if (!clubId) {
@@ -49,7 +46,7 @@ const PendingsPage = (_props: IPendingsPageProps) => {
   const location = useLocation();
   const players = useMemo(
     () => fetch.data?.players ?? loaderData.players ?? [],
-    [loaderData, fetch.data]
+    [loaderData, fetch.data],
   );
   const value = {
     players,

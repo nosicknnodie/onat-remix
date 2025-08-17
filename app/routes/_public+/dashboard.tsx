@@ -1,11 +1,5 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts/AuthUserContext";
 import { getUser } from "~/libs/db/lucia.server";
 
@@ -49,8 +43,7 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
             <span>{user.position3 ?? ""}</span>
           </div>
           <div>
-            <span className="font-medium">지역:</span> {user.si ?? ""}{" "}
-            {user.gun ?? ""}
+            <span className="font-medium">지역:</span> {user.si ?? ""} {user.gun ?? ""}
           </div>
           <div>
             <span className="font-medium">성별:</span>{" "}
@@ -63,14 +56,11 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
             }
           </div>
           <div>
-            <span className="font-medium">키:</span>{" "}
-            {user.height ? `${user.height} cm` : "미입력"}
+            <span className="font-medium">키:</span> {user.height ? `${user.height} cm` : "미입력"}
           </div>
           <div>
             <span className="font-medium">생년월일:</span>{" "}
-            {user.birth
-              ? new Date(user.birth).toLocaleDateString("ko-KR")
-              : "미입력"}
+            {user.birth ? new Date(user.birth).toLocaleDateString("ko-KR") : "미입력"}
           </div>
         </CardContent>
       </Card>

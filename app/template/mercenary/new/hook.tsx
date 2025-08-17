@@ -1,7 +1,7 @@
 import { useFetcher } from "@remix-run/react";
 import _ from "lodash";
 import { createContext, useContext, useEffect, useState } from "react";
-import { action } from "./data";
+import type { action } from "./data";
 
 export const NewMercenaryContext = createContext({} as ReturnType<typeof useNewMercenary>);
 

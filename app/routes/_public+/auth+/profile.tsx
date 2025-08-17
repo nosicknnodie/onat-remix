@@ -1,13 +1,7 @@
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 
@@ -26,16 +20,11 @@ const Profile = (_props: IProfileProps) => {
           <TabsContent value="default">
             <Card className="w-full overflow-hidden">
               <CardHeader>
-                <p className="text-2xl font-semibold text-center">
-                  🪽 기본 정보
-                </p>
+                <p className="text-2xl font-semibold text-center">🪽 기본 정보</p>
               </CardHeader>
               <CardContent>
                 <div className="space-x-4 w-full flex justify-center min-h-[120px]">
-                  <ImageCropperDialog
-                    title="이미지 변경"
-                    descirption="이미지를 변경합니다."
-                  >
+                  <ImageCropperDialog title="이미지 변경" descirption="이미지를 변경합니다.">
                     이미지 변경
                   </ImageCropperDialog>
                 </div>
@@ -62,9 +51,7 @@ const Profile = (_props: IProfileProps) => {
           <TabsContent value="details">
             <Card className="w-full overflow-hidden">
               <CardHeader>
-                <p className="text-2xl font-semibold text-center">
-                  🪽 선수 정보
-                </p>
+                <p className="text-2xl font-semibold text-center">🪽 선수 정보</p>
               </CardHeader>
               <CardContent>
                 <FormError></FormError>

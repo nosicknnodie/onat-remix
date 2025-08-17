@@ -12,10 +12,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   // 1) 파싱 & 유효성 검사
   const parsed = await auth.validators.parseLoginForm(request);
   if (!parsed.ok) {
-    return Response.json(
-      { errors: parsed.errors },
-      { status: 401, statusText: "Bad Request" }
-    );
+    return Response.json({ errors: parsed.errors }, { status: 401, statusText: "Bad Request" });
   }
 
   try {
@@ -27,22 +24,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           errors: { password: "비밀번호가 맞지 않습니다." },
           values: _.omit(parsed.data, "password"),
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // 3) 비밀번호 검증
-    const isValid = await auth.service.verifyPassword(
-      parsed.data.password,
-      key.hashedPassword
-    );
+    const isValid = await auth.service.verifyPassword(parsed.data.password, key.hashedPassword);
     if (!isValid) {
       return Response.json(
         {
           errors: { password: "비밀번호가 맞지 않습니다." },
           values: _.omit(parsed.data, "password"),
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -50,15 +44,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const user = key.user;
     const check = await auth.service.ensureVerifiedEmail(
       { email: user.email, emailVerified: user.emailVerified },
-      baseUrl
+      baseUrl,
     );
     if (check.needsVerification) return check.response;
 
     // 5) 세션 생성 + 만료 세션 정리
-    const { sessionCookie } = await auth.service.createSessionAndCleanup(
-      key.userId,
-      user?.id
-    );
+    const { sessionCookie } = await auth.service.createSessionAndCleanup(key.userId, user?.id);
 
     // 6) 홈으로 redirect
     return redirect("/", {
@@ -71,7 +62,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         errors: { password: "오류입니다." },
         values: parsed.ok ? _.omit(parsed.data, "password") : undefined,
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 };
@@ -79,8 +70,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const Login = () => {
   const actions = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting =
-    navigation.state === "submitting" || navigation.state === "loading";
+  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
   return (
     <div className="max-w-md w-full space-y-4 mt-6">
       <LoginForm

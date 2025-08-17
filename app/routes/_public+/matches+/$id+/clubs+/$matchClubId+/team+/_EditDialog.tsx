@@ -1,4 +1,4 @@
-import { Team } from "@prisma/client";
+import type { Team } from "@prisma/client";
 import { useRevalidator } from "@remix-run/react";
 import { useState, useTransition } from "react";
 import { HexColorPicker } from "react-colorful";
@@ -28,7 +28,7 @@ const EditDialog = ({ children, payload }: IEditDialogProps) => {
   const { revalidate } = useRevalidator();
   const handleTeamUpdate = async () => {
     startTransition(async () => {
-      const res = await fetch("/api/teams/" + payload?.id, {
+      const res = await fetch(`/api/teams/${payload?.id}`, {
         method: "POST",
         body: JSON.stringify({
           name: name,
@@ -54,12 +54,7 @@ const EditDialog = ({ children, payload }: IEditDialogProps) => {
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
               <Label htmlFor="team-name">팀 이름</Label>
-              <Input
-                id="team-name"
-                name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <Input name="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label className="flex gap-2">

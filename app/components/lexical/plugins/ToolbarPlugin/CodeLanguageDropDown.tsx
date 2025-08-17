@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useActiveEditor, useToolbarState } from "./Context";
+
 interface ICodeLanguageDropDownProps {}
 
 const CodeLanguageDropDown = (_props: ICodeLanguageDropDownProps) => {
@@ -26,7 +27,7 @@ const CodeLanguageDropDown = (_props: ICodeLanguageDropDownProps) => {
         }
       });
     },
-    [activeEditor, toolbarState.selectedElementKey]
+    [activeEditor, toolbarState.selectedElementKey],
   );
   if (toolbarState.blockType !== "code") return null;
 
@@ -34,30 +35,25 @@ const CodeLanguageDropDown = (_props: ICodeLanguageDropDownProps) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant={"ghost"}
-            className="flex gap-2 text-xs text-gray-500"
-          >
+          <Button variant={"ghost"} className="flex gap-2 text-xs text-gray-500">
             {CODE_LANGUAGE_FRIENDLY_NAME_MAP[toolbarState.codeLanguage]}
             <FaAngleDown />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {Object.entries(CODE_LANGUAGE_FRIENDLY_NAME_MAP).map(
-            ([key, name]) => {
-              return (
-                <DropdownMenuItem
-                  // className={`item ${dropDownActiveClass(
-                  //   value === toolbarState.codeLanguage,
-                  // )}`}
-                  onClick={() => onCodeLanguageSelect(key)}
-                  key={key}
-                >
-                  <span className="text">{name}</span>
-                </DropdownMenuItem>
-              );
-            }
-          )}
+          {Object.entries(CODE_LANGUAGE_FRIENDLY_NAME_MAP).map(([key, name]) => {
+            return (
+              <DropdownMenuItem
+                // className={`item ${dropDownActiveClass(
+                //   value === toolbarState.codeLanguage,
+                // )}`}
+                onClick={() => onCodeLanguageSelect(key)}
+                key={key}
+              >
+                <span className="text">{name}</span>
+              </DropdownMenuItem>
+            );
+          })}
           <DropdownMenuItem>Markdown</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

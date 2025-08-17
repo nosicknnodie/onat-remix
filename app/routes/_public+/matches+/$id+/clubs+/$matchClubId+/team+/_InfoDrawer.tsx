@@ -13,7 +13,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { IAttendance } from "./_index";
+import type { IAttendance } from "./_index";
+
 interface IInfoDrawerProps extends React.PropsWithChildren {
   payload: IAttendance | null;
 }

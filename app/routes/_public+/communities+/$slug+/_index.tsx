@@ -1,32 +1,28 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+// biome-ignore assist/source/organizeImports: off
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
-import { SerializedEditorState } from "lexical";
+import type { SerializedEditorState } from "lexical";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { FaRegComment } from "react-icons/fa6";
 import { Fragment } from "react/jsx-runtime";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import ItemLink from "~/components/ItemLink";
-import { Preview } from "~/components/lexical/Preview";
 import { Loading } from "~/components/Loading";
+import { Preview } from "~/components/lexical/Preview";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { useSession } from "~/contexts/AuthUserContext";
 import { InfiniteListProvider, useInfiniteList } from "~/contexts/infinite";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import PostVoteBadgeButton from "../../../../template/post/PostVoteBadgeButton";
+
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   const slug = params.slug;
@@ -114,7 +110,7 @@ const SlugPage = (_props: ISlugPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const board = loaderData.board;
   const [type, setType] = useState<"compact" | "card">(
-    board?.type === "NOTICE" ? "compact" : "card"
+    board?.type === "NOTICE" ? "compact" : "card",
   );
   useEffect(() => {
     setType(board?.type === "NOTICE" ? "compact" : "card");
@@ -126,9 +122,7 @@ const SlugPage = (_props: ISlugPageProps) => {
       type={type}
       keySelector={(post) => String(post.id)}
       initialItems={loaderData.posts || []}
-      initialPageInfo={
-        loaderData.pageInfo || { hasMore: false, nextCursor: null, take: 20 }
-      }
+      initialPageInfo={loaderData.pageInfo || { hasMore: false, nextCursor: null, take: 20 }}
     >
       {type === "compact" ? <CompactTypeComponent /> : <CardTypeComponent />}
     </InfiniteListProvider>
@@ -173,10 +167,7 @@ const CompactTypeComponent = () => {
                       {/* 아바타 이미지 */}
                       <Avatar className="size-6">
                         <AvatarImage
-                          src={
-                            post.author.userImage?.url ||
-                            "/images/user_empty.png"
-                          }
+                          src={post.author.userImage?.url || "/images/user_empty.png"}
                         ></AvatarImage>
                         <AvatarFallback className="bg-primary-foreground">
                           <Loading />
@@ -195,12 +186,7 @@ const CompactTypeComponent = () => {
                       <PostVoteBadgeButton post={post} />
                       {/* <PostLikeBadgeButton post={post} /> */}
                       <Badge variant={"outline"} className="space-x-2 ">
-                        <Button
-                          variant={"ghost"}
-                          size={"icon"}
-                          className="h-4 w-4"
-                          asChild
-                        >
+                        <Button variant={"ghost"} size={"icon"} className="h-4 w-4" asChild>
                           <Link to={`./${post.id}`}>
                             <FaRegComment />
                           </Link>
@@ -242,10 +228,7 @@ const CardTypeComponent = () => {
                         {/* 아바타 이미지 */}
                         <Avatar className="size-5">
                           <AvatarImage
-                            src={
-                              post.author.userImage?.url ||
-                              "/images/user_empty.png"
-                            }
+                            src={post.author.userImage?.url || "/images/user_empty.png"}
                           ></AvatarImage>
                           <AvatarFallback className="bg-primary-foreground">
                             <Loading />
@@ -271,22 +254,13 @@ const CardTypeComponent = () => {
                   </CardHeader>
                   <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
                     <Link to={`./${post.id}`}>
-                      <Preview
-                        editorState={
-                          post.content as unknown as SerializedEditorState
-                        }
-                      />
+                      <Preview editorState={post.content as unknown as SerializedEditorState} />
                     </Link>
                   </CardContent>
                   <CardFooter className="space-x-2">
                     <PostVoteBadgeButton post={post} />
                     <Badge variant={"outline"} className="space-x-2">
-                      <Button
-                        variant={"ghost"}
-                        size={"icon"}
-                        className="h-4 w-4"
-                        asChild
-                      >
+                      <Button variant={"ghost"} size={"icon"} className="h-4 w-4" asChild>
                         <Link to={`./${post.id}`}>
                           <FaRegComment />
                         </Link>

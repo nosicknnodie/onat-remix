@@ -32,19 +32,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
-  if (!user)
-    return Response.json(
-      { errorMessage: "로그인이 필요합니다." },
-      { status: 401 }
-    );
+  if (!user) return Response.json({ errorMessage: "로그인이 필요합니다." }, { status: 401 });
 
   const formData = await request.formData();
   const result = schema.safeParse(Object.fromEntries(formData));
   if (!result.success) {
-    return Response.json(
-      { errors: result.error.flatten().fieldErrors },
-      { status: 400 }
-    );
+    return Response.json({ errors: result.error.flatten().fieldErrors }, { status: 400 });
   }
 
   const { name, password } = result.data;
@@ -59,7 +52,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     if (password) {
       await prisma.key.update({
-        where: { id: "email:" + user.email },
+        where: { id: `email:${user.email}` },
         data: { hashedPassword: await bcrypt.hash(password, 10) },
       });
     }
@@ -81,31 +74,19 @@ const EditProfile = () => {
       <Form method="post" className="space-y-4">
         <div>
           <Label htmlFor="email">이메일</Label>
-          <Input id="email" name="email" defaultValue={user.email} disabled />
+          <Input name="email" defaultValue={user.email} disabled />
         </div>
         <div>
           <Label htmlFor="name">
             이름<span className="text-red-500 ml-1">*</span>
           </Label>
-          <Input
-            id="name"
-            name="name"
-            defaultValue={user.name ?? ""}
-            required
-          />
+          <Input name="name" defaultValue={user.name ?? ""} required />
           <FormError>{data?.errors?.name}</FormError>
         </div>
         <div>
           <Label htmlFor="password">비밀번호 변경</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-          />
-          <p className="text-sm text-muted-foreground">
-            입력 시 비밀번호가 변경됩니다
-          </p>
+          <Input name="password" type="password" placeholder="••••••••" />
+          <p className="text-sm text-muted-foreground">입력 시 비밀번호가 변경됩니다</p>
         </div>
         <FormSuccess>{data?.success}</FormSuccess>
         <FormError>{data?.errorMessage}</FormError>

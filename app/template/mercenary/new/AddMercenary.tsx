@@ -2,8 +2,9 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import Position from "~/template/Position";
 import { useNewMercenaryContext } from "~/template/mercenary/new/hook";
+import Position from "~/template/Position";
+
 interface IAddMercenaryProps {}
 
 const AddMercenary = (_props: IAddMercenaryProps) => {
@@ -24,7 +25,6 @@ const AddMercenary = (_props: IAddMercenaryProps) => {
             </Label>
             <Input
               type="text"
-              id="name"
               name="name"
               placeholder="이름"
               value={context?.name}
@@ -38,11 +38,11 @@ const AddMercenary = (_props: IAddMercenaryProps) => {
             >
               설명
             </Label>
-            <Input type="text" id="description" name="description" placeholder="OOO의 친구.." />
+            <Input type="text" name="description" placeholder="OOO의 친구.." />
           </div>
           <div className="space-y-2">
             <Label htmlFor="hp">전화번호</Label>
-            <Input type="text" id="hp" name="hp" placeholder="전화번호" />
+            <Input type="text" name="hp" placeholder="전화번호" />
           </div>
           <div>
             <Input type="hidden" name="position1" value={context?.positions?.at(0)} />

@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { cn } from "~/libs/utils";
 
 export interface ISVGProps extends React.SVGProps<SVGSVGElement> {
@@ -8,7 +8,7 @@ export interface ISVGProps extends React.SVGProps<SVGSVGElement> {
 
 export const Loading = ({ size = 24, className, ...props }: ISVGProps) => {
   return (
-    // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
+    // biome-ignore lint/a11y/noSvgWithoutTitle: off
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={size}

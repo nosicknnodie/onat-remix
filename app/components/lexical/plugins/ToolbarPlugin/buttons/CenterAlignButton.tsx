@@ -3,6 +3,7 @@ import { MdFormatAlignCenter } from "react-icons/md";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { useActiveEditor, useToolbarState } from "../Context";
+
 interface ICenterAlignButtonProps {}
 
 const CenterAlignButton = (_props: ICenterAlignButtonProps) => {

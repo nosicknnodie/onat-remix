@@ -6,8 +6,6 @@
  *
  */
 
-import type { JSX } from "react";
-
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $wrapNodeInElement, mergeRegister } from "@lexical/utils";
 import {
@@ -27,10 +25,11 @@ import {
   DROP_COMMAND,
   getDOMSelectionFromTarget,
   isHTMLElement,
-  LexicalCommand,
-  LexicalEditor,
-  LexicalNode,
+  type LexicalCommand,
+  type LexicalEditor,
+  type LexicalNode,
 } from "lexical";
+import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "~/components/ui/button";
@@ -50,7 +49,7 @@ import {
   $createImageNode,
   $isImageNode,
   ImageNode,
-  ImagePayload,
+  type ImagePayload,
 } from "../../nodes/ImageNode";
 import { useActiveEditor, useToolbarState } from "../ToolbarPlugin/Context";
 
@@ -87,9 +86,7 @@ const InserImageUrl = ({ onSubmit }: { onSubmit: () => void }) => {
         onChange={(e) => setAlt(e.target.value)}
         value={alt}
       ></Input>
-      <Button onClick={() => handleSubmit({ src: url, altText: alt })}>
-        이미지 추가
-      </Button>
+      <Button onClick={() => handleSubmit({ src: url, altText: alt })}>이미지 추가</Button>
     </>
   );
 };
@@ -173,12 +170,11 @@ const InserImageFile = ({ onSubmit }: { onSubmit: () => void }) => {
   );
 };
 
-export function InsertImageDialog({
-  children,
-}: IInsertImageDialogProps): JSX.Element {
+export function InsertImageDialog({ children }: IInsertImageDialogProps): JSX.Element {
   const { activeEditor } = useActiveEditor();
   const hasModifier = useRef(false);
   const [open, setOpen] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: off
   useEffect(() => {
     hasModifier.current = false;
     const handler = (e: KeyboardEvent) => {
@@ -200,9 +196,7 @@ export function InsertImageDialog({
         <DialogContent>
           <DialogHeader className="font-semibold">
             <DialogTitle>이미지 추가</DialogTitle>
-            <DialogDescription>
-              file 혹은 url 로 이미지를 업로드합니다.
-            </DialogDescription>
+            <DialogDescription>file 혹은 url 로 이미지를 업로드합니다.</DialogDescription>
           </DialogHeader>
           <Tabs defaultValue="file" className="w-full">
             <TabsList className="bg-transparent  space-x-2 mb-2">
@@ -211,7 +205,7 @@ export function InsertImageDialog({
                 className={cn(
                   "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
                   "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
                 )}
               >
                 파일업로드
@@ -221,7 +215,7 @@ export function InsertImageDialog({
                 className={cn(
                   "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
                   "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full"
+                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
                 )}
               >
                 URL 입력
@@ -252,6 +246,7 @@ export default function ImagesPlugin({
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: off
   useEffect(() => {
     if (!editor.hasNodes([ImageNode])) {
       throw new Error("ImagesPlugin: ImageNode not registered on editor");
@@ -270,29 +265,29 @@ export default function ImagesPlugin({
 
           return true;
         },
-        COMMAND_PRIORITY_EDITOR
+        COMMAND_PRIORITY_EDITOR,
       ),
       editor.registerCommand<DragEvent>(
         DRAGSTART_COMMAND,
         (event) => {
           return $onDragStart(event);
         },
-        COMMAND_PRIORITY_HIGH
+        COMMAND_PRIORITY_HIGH,
       ),
       editor.registerCommand<DragEvent>(
         DRAGOVER_COMMAND,
         (event) => {
           return $onDragover(event);
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand<DragEvent>(
         DROP_COMMAND,
         (event) => {
           return $onDrop(event, editor);
         },
-        COMMAND_PRIORITY_HIGH
-      )
+        COMMAND_PRIORITY_HIGH,
+      ),
     );
   }, [captionsEnabled, editor]);
 
@@ -323,7 +318,7 @@ function $onDragStart(event: DragEvent): boolean {
         src: node.__src,
       },
       type: "image",
-    })
+    }),
   );
 
   return true;
@@ -404,7 +399,7 @@ function canDropImage(event: DragEvent): boolean {
 }
 
 function getDragSelection(event: DragEvent): Range | null | undefined {
-  let range;
+  let range: Range | null | undefined = null;
   const domSelection = getDOMSelectionFromTarget(event.target);
   if (document.caretRangeFromPoint) {
     range = document.caretRangeFromPoint(event.clientX, event.clientY);

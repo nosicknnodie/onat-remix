@@ -1,14 +1,14 @@
-import { File, Player, User } from "@prisma/client";
+import type { File, Player, User } from "@prisma/client";
 import { useLoaderData, useParams } from "@remix-run/react";
 import {
-  ColumnDef,
-  Row,
-  SortingState,
+  type ColumnDef,
   getFilteredRowModel,
   getSortedRowModel,
+  type Row,
+  type SortingState,
 } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
+import { type PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -22,7 +22,7 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
-import { loader } from "../_data";
+import type { loader } from "../_data";
 import { useAttendanceContext } from "../_hook";
 
 type IPlayer = Player & {

@@ -1,7 +1,9 @@
-import Quill from "quill";
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: off */
+import type Quill from "quill";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import { useEffect, useRef } from "react";
+
 interface QuillEditorProps {
   value: string;
   onChange: (value: string) => void;

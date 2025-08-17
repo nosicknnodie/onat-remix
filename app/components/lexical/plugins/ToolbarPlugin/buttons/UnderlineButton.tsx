@@ -3,6 +3,7 @@ import { HiOutlineUnderline } from "react-icons/hi2";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs/utils";
 import { useActiveEditor, useToolbarState } from "../Context";
+
 interface IUnderlineButtonProps {}
 
 const UnderlineButton = (_props: IUnderlineButtonProps) => {

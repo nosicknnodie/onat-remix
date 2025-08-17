@@ -1,5 +1,7 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: off */
+
 import { PositionType } from "@prisma/client";
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
 import { redis } from "~/libs/db/redis.server";
@@ -15,10 +17,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const result = assignedSchema.safeParse(value);
 
   if (!result.success) {
-    return Response.json(
-      { success: false, errors: result.error.flatten() },
-      { status: 400 }
-    );
+    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
   try {
     const updated = await prisma.$transaction(async (tx) => {
@@ -35,7 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           quarterId: assigned.quarterId,
         },
       });
-      let wasAssignedUpdate = undefined;
+      let wasAssignedUpdate: any = null;
       if (wasAssigned) {
         wasAssignedUpdate = await tx.assigned.update({
           where: { id: wasAssigned.id },
@@ -60,7 +59,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       JSON.stringify({
         type: "POSITION_UPDATED",
         assigneds: updateds,
-      })
+      }),
     );
     // await prisma.assigned.update({
     //   where: {
@@ -73,9 +72,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return Response.json({ success: "success" });
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
   }
 };

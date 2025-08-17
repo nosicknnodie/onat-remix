@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/heading-has-content */
-import { type VariantProps, cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/libs/utils";
 
 const alertVariants = cva(
@@ -15,7 +15,7 @@ const alertVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 const Alert = ({
@@ -23,27 +23,14 @@ const Alert = ({
   variant,
   ...props
 }: React.ComponentPropsWithRef<"div"> & VariantProps<typeof alertVariants>) => (
-  <div
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
+  <div role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
 );
 
-const AlertTitle = ({
-  className,
-  ...props
-}: React.ComponentPropsWithRef<"h5">) => (
-  <h5
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-    {...props}
-  />
+const AlertTitle = ({ className, ...props }: React.ComponentPropsWithRef<"h5">) => (
+  <h5 className={cn("mb-1 font-medium leading-none tracking-tight", className)} {...props} />
 );
 
-const AlertDescription = ({
-  className,
-  ...props
-}: React.ComponentPropsWithRef<"div">) => (
+const AlertDescription = ({ className, ...props }: React.ComponentPropsWithRef<"div">) => (
   <div className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />
 );
 

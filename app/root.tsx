@@ -1,22 +1,18 @@
-import type {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import {
+  data,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  data,
   useLoaderData,
   useLocation,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import "dayjs/locale/ko"; // 한국어 locale import
-import { User } from "lucia";
+import type { User } from "lucia";
 import { OverlayProvider } from "overlay-kit";
 import { type ReactNode, useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
@@ -34,10 +30,7 @@ import Header from "./template/layout/Header";
 dayjs.locale("ko"); // 전역 locale 설정
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "ONSOA | 홈" },
-    { name: "description", content: "축구 관리앱 입니다." },
-  ];
+  return [{ title: "ONSOA | 홈" }, { name: "description", content: "축구 관리앱 입니다." }];
 };
 
 export const links: LinksFunction = () => [
@@ -64,8 +57,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return data({
     user,
     env: {
-      PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY:
-        process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
+      PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY: process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
     },
   });
 }
@@ -100,9 +92,7 @@ export default function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const appKey = data?.env?.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
   const backendForDND =
-    typeof window !== "undefined" && "ontouchstart" in window
-      ? TouchBackend
-      : HTML5Backend;
+    typeof window !== "undefined" && "ontouchstart" in window ? TouchBackend : HTML5Backend;
   useKakaoLoader({
     appkey: appKey,
   });

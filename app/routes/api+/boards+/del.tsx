@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
@@ -11,15 +11,11 @@ const boardDeleteSchema = z.object({
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
-  if (user.role !== "ADMIN")
-    return Response.json({ error: "Forbidden" }, { status: 403 });
+  if (user.role !== "ADMIN") return Response.json({ error: "Forbidden" }, { status: 403 });
   const data = await parseRequestData(request);
   const result = boardDeleteSchema.safeParse(data);
   if (!result.success) {
-    return Response.json(
-      { success: false, errors: result.error.flatten() },
-      { status: 400 }
-    );
+    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
   try {
     const res = await prisma.board.updateMany({
@@ -38,10 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { success: false, errors: "Internal Server Error" },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
   }
 
   return null;
