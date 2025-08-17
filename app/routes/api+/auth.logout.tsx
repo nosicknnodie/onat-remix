@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
-import { auth, getUser } from "~/libs/db/lucia.server";
+import { getUser, lucia } from "~/libs/db/lucia.server";
 
 // 로그아웃 요청을 처리하는 Remix action 함수
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -19,7 +19,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       },
     });
     // 로그아웃 세션 삭제
-    await auth.invalidateSession(sessionId);
+    await lucia.invalidateSession(sessionId);
   }
 
   // 클라이언트의 'auth_session' 쿠키를 즉시 만료시켜 브라우저에서도 로그아웃 처리

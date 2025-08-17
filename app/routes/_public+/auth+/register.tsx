@@ -149,54 +149,6 @@ const Register = (_props: IRegisterProps) => {
           />
         </div>
         <FormError>{data?.errors?.password}</FormError>
-        {/* <div>
-          <Label
-            htmlFor="address"
-            className="block text-sm font-medium text-gray-700"
-          >
-            주소
-          </Label>
-          <Input
-            type="text"
-            id="address"
-            name="address"
-            required
-            className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-            placeholder="부천시 ..."
-          />
-        </div>
-        <div>
-          <Label
-            htmlFor="phone"
-            className="block text-sm font-medium text-gray-700"
-          >
-            전화번호
-          </Label>
-          <Input
-            type="text"
-            id="phone"
-            name="phone"
-            required
-            className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-            placeholder="010-1234-5678"
-          />
-        </div>
-        <div>
-          <Label
-            htmlFor="birthDay"
-            className="block text-sm font-medium text-gray-700"
-          >
-            생년월일
-          </Label>
-          <Input
-            type="text"
-            id="birthDay"
-            name="birthDay"
-            required
-            className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-            placeholder="2000-01-01"
-          />
-        </div> */}
         <div className="">
           <FormSuccess>{success && success}</FormSuccess>
           <FormError>{errorMessage && errorMessage}</FormError>

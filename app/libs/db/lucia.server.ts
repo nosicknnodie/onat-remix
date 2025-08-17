@@ -8,7 +8,7 @@ import { adapter } from "./adatper";
 // Useful to avoid additional DB queries.
 // Lucia 인증 인스턴스를 생성합니다
 // Prisma 어댑터를 사용하여 데이터베이스와 연동합니다
-export const auth = new Lucia(adapter, {
+export const lucia = new Lucia(adapter, {
   // 세션 쿠키 설정
   // 프로덕션 환경에서는 secure 속성을 true로 설정합니다
   sessionCookie: {
@@ -30,7 +30,7 @@ export const auth = new Lucia(adapter, {
 export const getSession = async (request: Request): Promise<LuciaSession | null> => {
   const sessionId = request.headers.get("Cookie")?.match(/auth_session=([^;]+)/)?.[1];
   if (!sessionId) return null;
-  const { session } = await auth.validateSession(sessionId);
+  const { session } = await lucia.validateSession(sessionId);
   return session;
 };
 
@@ -39,7 +39,7 @@ export const getSession = async (request: Request): Promise<LuciaSession | null>
 export const getUser = async (request: Request) => {
   const sessionId = request.headers.get("Cookie")?.match(/auth_session=([^;]+)/)?.[1];
   if (!sessionId) return null;
-  const { user } = await auth.validateSession(sessionId);
+  const { user } = await lucia.validateSession(sessionId);
   return user;
 };
 
@@ -57,7 +57,7 @@ export const requireAuth = async (request: Request): Promise<LuciaSession> => {
 // 👇 이 아래에 위치해야 함!
 declare module "lucia" {
   interface Register {
-    Lucia: typeof auth;
+    Lucia: typeof lucia;
     DatabaseUserAttributes: User & { userImage?: File };
   }
 }
