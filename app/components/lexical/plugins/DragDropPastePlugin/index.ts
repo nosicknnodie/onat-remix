@@ -84,6 +84,7 @@ export default function DragDropPaste(): null {
       },
       COMMAND_PRIORITY_LOW
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeEditor]);
   return null;
 }

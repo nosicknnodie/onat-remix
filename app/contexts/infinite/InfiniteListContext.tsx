@@ -20,6 +20,7 @@ type ProviderProps<T> = {
   children: React.ReactNode;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const InfiniteListCtx = createContext<Ctx<any> | null>(null);
 
 export function InfiniteListProvider<T>({
@@ -72,6 +73,7 @@ export function InfiniteListProvider<T>({
       });
       return;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data]);
 
   const loadMore = useCallback(() => {
@@ -92,6 +94,7 @@ export function InfiniteListProvider<T>({
     if (q) params.set("q", q);
 
     fetcher.load(`${pathname}?index&${params.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.busy, state.pageInfo, state.filters, fetcher.state, pathname]);
 
   const resetWith = useCallback(

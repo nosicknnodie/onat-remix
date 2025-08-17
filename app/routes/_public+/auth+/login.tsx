@@ -1,112 +1,77 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
-import bcrypt from "bcryptjs";
+import { Link, useActionData, useNavigation } from "@remix-run/react";
 import _ from "lodash";
-import { LuLogIn } from "react-icons/lu";
-import { z } from "zod";
-import FormError from "~/components/FormError";
-import FormSuccess from "~/components/FormSuccess";
-import { Loading } from "~/components/Loading";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
-import { generateVerificationToken } from "~/libs/auth/token";
-import { prisma } from "~/libs/db/db.server";
-import { auth } from "~/libs/db/lucia.server";
-import { sendVerificationEmail } from "~/libs/mail";
-
-const loginSchema = z.object({
-  email: z.string().email({ message: "유효한 이메일을 입력하세요." }),
-  password: z.string().min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
-});
+import { LoginForm } from "~/features/auth";
+import { auth } from "~/features/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
   const url = new URL(request.url);
-  const host = url.host;
-  const protocol = url.protocol;
-  const result = loginSchema.safeParse({ email, password });
+  const baseUrl = `${url.protocol}//${url.host}`;
 
-  if (!result.success) {
+  // 1) 파싱 & 유효성 검사
+  const parsed = await auth.validators.parseLoginForm(request);
+  if (!parsed.ok) {
     return Response.json(
-      { errors: result.error.flatten().fieldErrors },
-      { status: 401, statusText: "Bad Request" },
+      { errors: parsed.errors },
+      { status: 401, statusText: "Bad Request" }
     );
   }
+
   try {
-    // 비밀번호 값을 조회 (user join)
-    const key = await prisma.key.findUnique({
-      where: {
-        id: `email:${email}`,
-      },
-      include: {
-        user: true,
-      },
-    });
-    // 비밀번호가 없을경우
-    if (!key || !key.hashedPassword) {
+    // 2) 사용자 키 조회
+    const key = await auth.service.findKeyByEmail(parsed.data.email);
+    if (!key) {
       return Response.json(
         {
           errors: { password: "비밀번호가 맞지 않습니다." },
-          values: _.omit(result.data, "password"),
+          values: _.omit(parsed.data, "password"),
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
-    // 비밀번호가 맞지 않을 경우
-    const isValid = await bcrypt.compare(result.data.password, key.hashedPassword);
 
+    // 3) 비밀번호 검증
+    const isValid = await auth.service.verifyPassword(
+      parsed.data.password,
+      key.hashedPassword
+    );
     if (!isValid) {
       return Response.json(
         {
           errors: { password: "비밀번호가 맞지 않습니다." },
-          values: _.omit(result.data, "password"),
+          values: _.omit(parsed.data, "password"),
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
+
+    // 4) 이메일 인증 필요 시 처리
     const user = key.user;
+    const check = await auth.service.ensureVerifiedEmail(
+      { email: user.email, emailVerified: user.emailVerified },
+      baseUrl
+    );
+    if (check.needsVerification) return check.response;
 
-    // 이메일 인증 체크가 안되어있는경우 인증메일을 보냄
-    if (user && !user?.emailVerified) {
-      const verificationToken = await generateVerificationToken(user.email);
-      await sendVerificationEmail(
-        verificationToken.email,
-        verificationToken.token,
-        `${protocol}//${host}`,
-      );
-      return Response.json({ success: "확인 이메일을 보냈습니다." });
-    }
-    // 세션 생성
-    const session = await auth.createSession(key.userId, {});
-    const sessionCookie = auth.createSessionCookie(session.id);
+    // 5) 세션 생성 + 만료 세션 정리
+    const { sessionCookie } = await auth.service.createSessionAndCleanup(
+      key.userId,
+      user?.id
+    );
 
-    // 만료된 세션 삭제
-    await prisma.session.deleteMany({
-      where: {
-        userId: user?.id,
-        expiresAt: {
-          lt: new Date(),
-        },
-      },
-    });
-
-    // 홈으로 redirect
+    // 6) 홈으로 redirect
     return redirect("/", {
-      headers: {
-        "Set-Cookie": sessionCookie.serialize(),
-      },
+      headers: { "Set-Cookie": sessionCookie.serialize() },
     });
   } catch (_error) {
     console.error(_error);
     return Response.json(
       {
         errors: { password: "오류입니다." },
-        values: _.omit(result.data, "password"),
+        values: parsed.ok ? _.omit(parsed.data, "password") : undefined,
       },
-      { status: 401 },
+      { status: 401 }
     );
   }
 };
@@ -114,52 +79,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const Login = () => {
   const actions = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
+  const isSubmitting =
+    navigation.state === "submitting" || navigation.state === "loading";
   return (
     <div className="max-w-md w-full space-y-4 mt-6">
-      <Form method="post" className="space-y-6">
-        <p className="text-2xl font-semibold text-primary w-full flex justify-center items-center gap-x-2">
-          <LuLogIn />
-          <span>로그인</span>
-        </p>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            이메일
-          </label>
-          <Input
-            type="email"
-            id="email"
-            name="email"
-            required
-            placeholder="you@example.com"
-            defaultValue={actions?.values?.email ?? ""}
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            비밀번호
-          </label>
-          <Input
-            type="password"
-            id="password"
-            name="password"
-            required
-            className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-            placeholder="••••••••"
-          />
-        </div>
-        <FormSuccess>{actions?.success}</FormSuccess>
-        <FormError>{actions?.errors?.email}</FormError>
-        <FormError>{actions?.errors?.password}</FormError>
-        <Button
-          type="submit"
-          className="w-full font-semibold flex justify-center items-center gap-x-2"
-          disabled={isSubmitting}
-        >
-          <span>로그인</span>
-          {isSubmitting && <Loading className="text-primary-foreground" />}
-        </Button>
-      </Form>
+      <LoginForm
+        values={actions?.values}
+        errors={actions?.errors}
+        success={actions?.success}
+        isSubmitting={isSubmitting}
+      />
       <div className="flex justify-end items-center gap-2 text-sm h-4">
         <Link to={"/auth/reset-form"}>비밀번호찾기</Link>
         <Separator orientation="vertical" />

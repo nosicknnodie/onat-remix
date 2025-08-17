@@ -35,13 +35,13 @@ import { parseRequestData } from "~/libs/requestData";
 import { cn } from "~/libs/utils";
 
 export const handle = {
-  breadcrumb: (match: { data: any }) => "수정",
+  breadcrumb: () => "수정",
 };
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
-  const slug = params.slug;
+  // const slug = params.slug;
   const id = params.postId;
   /**
    * TODO:
@@ -92,6 +92,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
   try {
     const contentJSON = JSON.parse(result.data.content);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];

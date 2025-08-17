@@ -49,7 +49,7 @@ import { TeamAttendanceActions } from "./_actions";
  * 4. 이전 팀 정보의 내용을 토대로 팀을 생성
  * 5. 최소 2개의 팀을 생성해야함
  */
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({ params }: LoaderFunctionArgs) => {
   const matchId = params.id;
   const matchClubId = params.matchClubId;
   try {

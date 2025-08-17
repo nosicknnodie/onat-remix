@@ -26,7 +26,7 @@ export const handle = {
   right: () => <RightComponent />,
 };
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
   const boards = await prisma.board.findMany({
     where: { isUse: true, clubId: null },
     orderBy: { order: "asc" },

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import { ComponentProps, useState } from "react";
 import { Loading } from "~/components/Loading";
 

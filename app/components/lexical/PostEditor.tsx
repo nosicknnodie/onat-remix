@@ -56,7 +56,7 @@ export function PostEditor({
   };
 
   const handleEditorChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
+    (editorState: EditorState, _editor: LexicalEditor) => {
       onChange?.(editorState.toJSON());
     },
     [onChange]
@@ -82,7 +82,7 @@ export function PostEditor({
                   <ContentEditable
                     className="min-h-[5rem] w-full focus:outline-none"
                     aria-placeholder={placeholder || "내용을 입력해 주세요."}
-                    placeholder={(isEditable: boolean) => (
+                    placeholder={(_isEditable: boolean) => (
                       <div className="text-gray-300 absolute top-2 left-2">
                         {placeholder || "내용을 입력해주세요."}
                       </div>

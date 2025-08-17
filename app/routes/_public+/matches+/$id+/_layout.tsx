@@ -1,13 +1,13 @@
-import { Outlet } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
 import dayjs from "dayjs";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
 
 export const handle = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   breadcrumb: (match: any) => {
     const data = match.data;
     const params = match.params;
@@ -23,7 +23,10 @@ export const handle = {
 
 interface IMatchesIdLayoutPageProps {}
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) {
   const [match] = await Promise.all([
     prisma.match.findUnique({
       where: {

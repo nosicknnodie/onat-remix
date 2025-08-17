@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -191,7 +192,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
             <ItemLink
               to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}
             >
-              평점등록
+              평점
             </ItemLink>
           </>
         )}

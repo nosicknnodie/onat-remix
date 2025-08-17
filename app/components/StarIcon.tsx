@@ -1,11 +1,12 @@
-import clsx from "clsx";
+import { ComponentProps } from "react";
+import { cn } from "~/libs/utils";
 
-interface IProps {
+interface IProps extends ComponentProps<"span"> {
   id: string;
   width?: number;
   per: number;
   fill?: string;
-  [prop: string]: any;
+  [prop: string]: unknown;
 }
 const StarIcon = ({ id, width, per, fill, className }: IProps) => {
   const svgWidth = width ?? 40;
@@ -14,7 +15,7 @@ const StarIcon = ({ id, width, per, fill, className }: IProps) => {
   // const svgWidth =
   const clipWidth = (14 * per) / 100;
   return (
-    <span className={clsx("star_icon", className)}>
+    <span className={cn("star_icon", className)}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width={svgWidth}

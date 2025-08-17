@@ -1,1 +1,1 @@
-export * from "./CommentSection";
+export * as CommentSection from "./CommentSection";

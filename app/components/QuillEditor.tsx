@@ -39,6 +39,7 @@ export const QuillEditor = ({ value, onChange }: QuillEditorProps) => {
         quillRef.current = instance;
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -20,6 +20,7 @@ type IHandlerOnUpload = (
   file: File
 ) => Promise<{ success: string; url: string; id: string } | null> | undefined;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const rootTypeToRootName = {
   root: "Root",
   table: "Table",
@@ -41,7 +42,6 @@ export const blockTypeToBlockName = {
 };
 
 //disable eslint sorting rule for quick reference to toolbar state
-/* eslint-disable sort-keys-fix/sort-keys-fix */
 const INITIAL_TOOLBAR_STATE = {
   bgColor: "#fff",
   blockType: "paragraph" as keyof typeof blockTypeToBlockName,

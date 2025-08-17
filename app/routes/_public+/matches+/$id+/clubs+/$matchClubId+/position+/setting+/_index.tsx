@@ -148,7 +148,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     );
 
   const positions = typedEntries(PORMATION_POSITION_CLASSNAME).map(
-    ([position, { className }], i) => {
+    ([position, { className }]) => {
       const assigned =
         assigneds?.find((assigned) => assigned.position === position) || null;
       let isFormation =

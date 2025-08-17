@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/heading-has-content */
 import { type VariantProps, cva } from "class-variance-authority";
 import { cn } from "~/libs/utils";
 

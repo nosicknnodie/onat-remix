@@ -2,6 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
+import { SerializedEditorState } from "lexical";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { FaRegComment } from "react-icons/fa6";
@@ -106,7 +107,7 @@ const SlugPage = (_props: ISlugPageProps) => {
   return (
     <InfiniteListProvider
       key={board?.id}
-      slug={board?.slug!}
+      slug={board?.slug || ""}
       type={type}
       keySelector={(post) => String(post.id)}
       initialItems={loaderData.posts || []}
@@ -260,7 +261,11 @@ const CardTypeComponent = () => {
                   </CardHeader>
                   <CardContent className="w-full break-words whitespace-pre-wrap text-sm">
                     <Link to={`./${post.id}`}>
-                      <Preview editorState={post.content as any} />
+                      <Preview
+                        editorState={
+                          post.content as unknown as SerializedEditorState
+                        }
+                      />
                     </Link>
                   </CardContent>
                   <CardFooter className="space-x-2">

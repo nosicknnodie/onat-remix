@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma } from "@prisma/client";
 import { useParams } from "@remix-run/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -56,7 +57,7 @@ export function usePositionUpdate({ url }: { url: string }) {
 
   useEffect(() => {
     const socket = new BrowserStableWebSocket(url, {
-      onMessage: (data) => {
+      onMessage: (data: any) => {
         if (data.type === "POSITION_UPDATED") {
           queryClient.setQueryData(["ATTENDANCES", matchClubId], (old: any) => {
             if (!old) return old;

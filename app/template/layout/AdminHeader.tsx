@@ -1,5 +1,4 @@
-import { Link, NavLink } from "@remix-run/react";
-import type { ComponentProps } from "react";
+import { Link } from "@remix-run/react";
 import { FaUser } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -96,29 +95,29 @@ const Header = () => {
   );
 };
 
-const ListItem = ({
-  className,
-  title,
-  children,
-  ...props
-}: ComponentProps<typeof NavLink>) => {
-  return (
-    <NavLink
-      className={({ isActive }) =>
-        cn(
-          "text-gray-600 relative incline-block font-semibold pt-0.5 px-2",
-          "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] pt-1 pb-3 hover:bg-[length:100%_3px] transition-all",
-          {
-            "text-primary font-bold after:absolute after:-right-0 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
-              isActive,
-          }
-        )
-      }
-      {...props}
-    >
-      <div className="font-medium leading-none">{title}</div>
-    </NavLink>
-  );
-};
+// const ListItem = ({
+//   className,
+//   title,
+//   children,
+//   ...props
+// }: ComponentProps<typeof NavLink>) => {
+//   return (
+//     <NavLink
+//       className={({ isActive }) =>
+//         cn(
+//           "text-gray-600 relative incline-block font-semibold pt-0.5 px-2",
+//           "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] pt-1 pb-3 hover:bg-[length:100%_3px] transition-all",
+//           {
+//             "text-primary font-bold after:absolute after:-right-0 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
+//               isActive,
+//           }
+//         )
+//       }
+//       {...props}
+//     >
+//       <div className="font-medium leading-none">{title}</div>
+//     </NavLink>
+//   );
+// };
 
 export default Header;

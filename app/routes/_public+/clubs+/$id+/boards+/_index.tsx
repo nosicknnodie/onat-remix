@@ -11,7 +11,10 @@ export const handle = {
   breadcrumb: "게시판",
 };
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const clubId = params.id;
 
   try {

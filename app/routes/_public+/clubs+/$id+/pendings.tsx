@@ -10,7 +10,10 @@ import { PendingsContext } from "./_components/pendings.context";
 interface IPendingsPageProps {}
 export const handle = { breadcrumb: "승인대기" };
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const clubId = params.id;
 
   if (!clubId) {

@@ -1,3 +1,8 @@
+import type {
+  SerializedElementNode,
+  SerializedLexicalNode,
+  SerializedTextNode,
+} from "lexical";
 import { SerializedEditorState } from "lexical";
 import { useEffect, useState } from "react";
 
@@ -30,16 +35,28 @@ export function Preview({ editorState, maxLines = 6 }: PreviewProps) {
   );
 }
 
-// 간단한 raw JSON에서 텍스트 추출 로직
+// 간단한 raw JSON에서 텍스트 추출 로직 (타입가드 포함)
 function extractTextFromEditorState(state: SerializedEditorState): string {
-  const children = (state.root?.children ?? []) as any[];
-  return children
-    .map((child) => {
-      if (child.children && Array.isArray(child.children)) {
-        return child.children.map((c: any) => c.text ?? "").join(" ");
-      }
-      return "";
-    })
-    .join(" ")
-    .trim();
+  const rootChildren = (state.root?.children ?? []) as SerializedLexicalNode[];
+
+  const isTextNode = (
+    node: SerializedLexicalNode
+  ): node is SerializedTextNode => (node as SerializedTextNode).type === "text";
+
+  const isElementNode = (
+    node: SerializedLexicalNode
+  ): node is SerializedElementNode =>
+    Array.isArray((node as SerializedElementNode).children);
+
+  const collect = (node: SerializedLexicalNode): string => {
+    if (isTextNode(node)) {
+      return node.text ?? "";
+    }
+    if (isElementNode(node)) {
+      return node.children.map(collect).join(" ");
+    }
+    return "";
+  };
+
+  return rootChildren.map(collect).join(" ").trim();
 }

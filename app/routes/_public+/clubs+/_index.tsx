@@ -23,7 +23,8 @@ type Club = Prisma.ClubGetPayload<{
   };
 }>;
 
-const RightComponent = (match: any) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const RightComponent = (_match: any) => {
   const user = useSession();
   if (!user) return null;
   return (
@@ -49,6 +50,7 @@ const RightComponent = (match: any) => {
 };
 
 export const handle = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   right: (match: any) => <RightComponent {...match} />,
 };
 

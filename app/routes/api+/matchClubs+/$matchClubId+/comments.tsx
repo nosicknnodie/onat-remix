@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { InputJsonValue } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
@@ -26,7 +27,10 @@ export type IMatchClubComment = Prisma.CommentGetPayload<{
   };
 }>;
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const comments: IMatchClubComment[] = await prisma.comment.findMany({
     where: {
@@ -76,7 +80,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     );
   }
   const result = await parseRequestData(request);
-  const content = result.content;
+  const content = result.content as InputJsonValue;
   const parentId = result.parentId || null;
   const replyToUserId = result.replyToUserId || null;
 
@@ -106,6 +110,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       },
     });
     return Response.json({ comment: createdComment });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return new Response(
       JSON.stringify({

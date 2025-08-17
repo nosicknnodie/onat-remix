@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function parseRequestData(
   request: Request
 ): Promise<Record<string, any>> {

@@ -2,7 +2,10 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const slug = params.slug;
   const clubId = params.id;
   try {
@@ -17,6 +20,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const handle = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   breadcrumb: (match: { data: any }) => {
     return (
       <Link

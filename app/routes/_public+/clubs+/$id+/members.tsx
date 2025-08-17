@@ -9,7 +9,10 @@ import { memberColumns } from "./_components/members.columns";
 export const handle = { breadcrumb: "멤버" };
 interface IMembersPageProps {}
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const clubId = params.id;
 
   if (!clubId) {
@@ -46,7 +49,7 @@ const MembersPage = (_props: IMembersPageProps) => {
   const location = useLocation();
   const players = useMemo(
     () => fetch.data?.players ?? loaderData.players ?? [],
-    [loaderData, fetch.data],
+    [loaderData, fetch.data]
   );
   const value = {
     players,

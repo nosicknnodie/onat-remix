@@ -2,7 +2,10 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 import { prisma } from "~/libs/db/db.server";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const clubId = params.id;
   const slug = params.slug;
 

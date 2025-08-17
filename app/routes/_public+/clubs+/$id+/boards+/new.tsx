@@ -103,6 +103,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
   try {
     const contentJSON = JSON.parse(result.data.content);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];

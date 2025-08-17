@@ -4,7 +4,7 @@ export interface BrowserStableWebSocketOptions {
   maxReconnectAttempts?: number;
   pingIntervalMs?: number;
   onOpen?: () => void;
-  onMessage?: (data: any) => void;
+  onMessage?: (data: unknown) => void;
   onError?: (event: Event) => void;
   onClose?: () => void;
   onReconnectAttempt?: (attempt: number, delay: number) => void;

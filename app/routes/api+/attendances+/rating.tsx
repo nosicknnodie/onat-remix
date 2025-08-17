@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { getRatingAttendances } from "~/libs/queries/atttendances";
+import { getRatingAttendances } from "~/libs/queries/attendance/atttendances";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);

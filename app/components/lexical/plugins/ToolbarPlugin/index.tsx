@@ -51,7 +51,7 @@ import {
   useToolbarState,
 } from "./Context";
 import ElementFormatDropdown from "./ElementFormatDropdown";
-const LowPriority = 1;
+// const LowPriority = 1;
 
 function getSelectedNode(selection: RangeSelection): TextNode | ElementNode {
   const anchor = selection.anchor;
@@ -88,7 +88,7 @@ export default function ToolbarPlugin() {
   const [editor] = useLexicalComposerContext();
   const { toolbarState, updateToolbarState } = useToolbarState();
   const { activeEditor, setActiveEditor } = useActiveEditor();
-  const [isEditable, setIsEditable] = useState(() => editor.isEditable());
+  const [, setIsEditable] = useState(() => editor.isEditable());
   const toolbarRef = useRef(null);
   const $handleHeadingNode = useCallback(
     (selectedElement: LexicalNode) => {

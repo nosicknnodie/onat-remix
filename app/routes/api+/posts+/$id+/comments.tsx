@@ -112,6 +112,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     // Image Upload
     const contentJSON = content;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];

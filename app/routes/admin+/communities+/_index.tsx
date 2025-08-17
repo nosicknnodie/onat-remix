@@ -22,7 +22,7 @@ import { boardColumns } from "./_columns";
 
 interface ICommunitiesPageProps {}
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
   const boards = await prisma.board.findMany({
     where: { clubId: null },
   });

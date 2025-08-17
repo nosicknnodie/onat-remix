@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData, useParams } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Fragment } from "react/jsx-runtime";
@@ -16,7 +16,10 @@ import { prisma } from "~/libs/db/db.server";
 interface IMatchesPageProps {}
 export const handle = { breadcrumb: "매치" };
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const clubId = params.id;
   const matcheClubs = await prisma.matchClub.findMany({
     where: {
@@ -45,9 +48,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
  */
 const MatchesPage = (_props: IMatchesPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const params = useParams();
+  // const params = useParams();
   const matchClubs = loaderData.matcheClubs;
-  const clubId = params.id;
+  // const clubId = params.id;
 
   return (
     <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4 p-2">

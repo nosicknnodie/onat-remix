@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import z from "zod";
+import * as z from "zod";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 

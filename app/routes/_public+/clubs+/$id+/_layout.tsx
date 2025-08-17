@@ -21,6 +21,7 @@ import { getUser } from "~/libs/db/lucia.server";
 import JoinDialog from "~/template/club/JoinDialog";
 
 export const handle = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   breadcrumb: (match: any) => {
     const data = match.data;
     const params = match.params;
@@ -32,6 +33,7 @@ export const handle = {
       </>
     );
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   right: (match: any) => {
     const data = match.data;
     const params = match.params;

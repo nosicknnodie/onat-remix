@@ -37,7 +37,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   const data = await parseRequestData(request);
-  const { content } = data;
+  const content = data.content;
 
   try {
     const currentComment = await prisma.postComment.findUnique({
@@ -51,6 +51,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     });
     // content image check
     const contentJSON = content;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extractImageIds = (node: any): string[] => {
       if (!node || typeof node !== "object") return [];
       let ids: string[] = [];

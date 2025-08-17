@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { File, Player, User } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";

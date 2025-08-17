@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { File, Player, User } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import _ from "lodash";
@@ -20,7 +21,11 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
       return (
         <div className="flex justify-center items-center truncate space-x-2">
           <Avatar>
-            <AvatarImage src={row.original?.user?.userImage?.url || "/images/user_empty.png"} />
+            <AvatarImage
+              src={
+                row.original?.user?.userImage?.url || "/images/user_empty.png"
+              }
+            />
 
             <AvatarFallback className="bg-primary-foreground">
               <Loading />
@@ -28,8 +33,12 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
           </Avatar>
           <div>
             <div className="flex space-x-2 items-center h-5">
-              <span className="text-base font-semibold">{row.getValue("name")}</span>
-              <span className="text-xs text-gray-500">({row.original.nick})</span>
+              <span className="text-base font-semibold">
+                {row.getValue("name")}
+              </span>
+              <span className="text-xs text-gray-500">
+                ({row.original.nick})
+              </span>
             </div>
             <div className="flex space-x-2">
               <span className="text-xs text-gray-500 place-items-center">
@@ -91,7 +100,13 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
       const user = row.original.user;
       return (
         <div className="flex justify-center items-center space-x-2">
-          <span>{_.compact([user?.position1, user?.position2, user?.position3]).join(",")}</span>
+          <span>
+            {_.compact([
+              user?.position1,
+              user?.position2,
+              user?.position3,
+            ]).join(",")}
+          </span>
         </div>
       );
     },

@@ -1,4 +1,4 @@
-/**
+/****
  * This is intended to be a basic starting point for linting in your app.
  * It relies on recommended configs out of the box for simplicity, but you can
  * and should modify this configuration to best suit your team's needs.
@@ -19,7 +19,13 @@ module.exports = {
     commonjs: true,
     es6: true,
   },
-  ignorePatterns: ["!**/.server", "!**/.client"],
+  ignorePatterns: [
+    "node_modules/",
+    "build/",
+    "dist/",
+    ".cache/",
+    "tailwind.config.ts",
+  ],
 
   // Base config
   extends: ["eslint:recommended"],
@@ -75,11 +81,11 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": [
           "warn",
           {
-            "argsIgnorePattern": "^_"
-          }
+            argsIgnorePattern: "^_",
+          },
         ],
-        "@typescript-eslint/no-empty-object-type": "off"
-      }
+        "@typescript-eslint/no-empty-object-type": "off",
+      },
     },
 
     // Node

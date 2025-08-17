@@ -28,12 +28,15 @@ import {
   isMiddlePosition,
 } from "~/libs/const/position.const";
 import { prisma } from "~/libs/db/db.server";
-import { getRatingAttendances } from "~/libs/queries/atttendances";
+import { getRatingAttendances } from "~/libs/queries/attendance/atttendances";
 import { cn } from "~/libs/utils";
 import { loader as layoutLoader } from "../../../_layout";
 import { RightDrawer } from "./_RightDrawer";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const matchClub = await prisma.matchClub.findUnique({
     where: {
@@ -276,7 +279,10 @@ const RatingPage = (_props: IRatingPageProps) => {
                   >
                     <CardHeader className="flex-shrink-0">
                       <CardTitle className="flex justify-between items-center">
-                        <span>{name}'s 정보</span>
+                        <span>
+                          {name}
+                          {`'s 정보`}
+                        </span>
                         <RightDrawer attendance={attendance}>
                           <Button
                             size={"sm"}
@@ -367,7 +373,6 @@ const RatingPage = (_props: IRatingPageProps) => {
                           isHighLight
                           disabled={!isActived}
                           onClick={(e, score) => {
-                            console.log("score - ", score);
                             updateEvaluation.mutate({
                               attendanceId: attendance.id,
                               score,
@@ -379,7 +384,6 @@ const RatingPage = (_props: IRatingPageProps) => {
                             variant={"ghost"}
                             disabled={toggleLike.isPending || !isActived}
                             onClick={() => {
-                              console.log("123123 - ", 123123);
                               toggleLike.mutate({
                                 attendanceId: attendance.id,
                                 liked: !evaluation?.liked,

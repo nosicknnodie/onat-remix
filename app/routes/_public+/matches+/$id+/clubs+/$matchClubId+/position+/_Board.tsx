@@ -1,5 +1,6 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { motion } from "framer-motion";
+import type { ComponentPropsWithoutRef, ComponentRef, Ref } from "react";
 import { AiFillSkin } from "react-icons/ai";
 import { Button } from "~/components/ui/button";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs/const/position.const";
@@ -132,6 +133,13 @@ export const Board = () => {
     </>
   );
 };
-const MotionButton = motion.create(({ forwardedRef, ...props }: any) => (
-  <Button ref={forwardedRef} {...props} />
-));
+// Button 기본 props + framer-motion이 주입하는 forwardedRef 타입 정의
+type MotionButtonProps = ComponentPropsWithoutRef<typeof Button> & {
+  forwardedRef?: Ref<ComponentRef<typeof Button>>;
+};
+
+const MotionButton = motion.create(
+  ({ forwardedRef, ...props }: MotionButtonProps) => (
+    <Button ref={forwardedRef} {...props} />
+  )
+);

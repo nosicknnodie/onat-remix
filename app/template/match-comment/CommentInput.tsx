@@ -13,7 +13,7 @@ interface ICommentInputProps {}
 const CommentInput = (_props: ICommentInputProps) => {
   const context = useMatchCommentContext();
   const query = useGetMatchCommentsQuery();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputHook = useCommentInput();
   const [isTextMode, setIsTextMode] = useState(false);
@@ -22,7 +22,7 @@ const CommentInput = (_props: ICommentInputProps) => {
   };
   const handleSubmit = async (
     root?: SerializedEditorState,
-    editor?: LexicalEditor
+    _editor?: LexicalEditor
   ) => {
     setIsSubmitting(true);
     startTransition(async () => {

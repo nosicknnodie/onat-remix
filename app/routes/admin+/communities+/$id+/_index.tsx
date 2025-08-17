@@ -33,7 +33,7 @@ import {
 import { prisma } from "~/libs/db/db.server";
 import { parseRequestData } from "~/libs/requestData";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({ params }: LoaderFunctionArgs) => {
   const id = params.id;
   const board = await prisma.board.findUnique({ where: { id } });
   return { board };

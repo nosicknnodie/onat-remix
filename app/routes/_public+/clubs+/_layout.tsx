@@ -4,7 +4,7 @@ import { BreadcrumbLink } from "~/components/ui/breadcrumb";
 interface ILayoutProps {}
 
 export const handle = {
-  breadcrumb: (match: any) => {
+  breadcrumb: () => {
     return (
       <>
         <BreadcrumbLink to="/clubs">클럽</BreadcrumbLink>

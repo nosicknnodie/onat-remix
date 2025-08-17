@@ -35,7 +35,7 @@ import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 
-const RightComponent = (match: any) => {
+const RightComponent = () => {
   const session = useSession();
   if (!session) return null;
   return (
@@ -61,6 +61,7 @@ const RightComponent = (match: any) => {
 };
 
 export const handle = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   right: (match: any) => <RightComponent {...match} />,
 };
 

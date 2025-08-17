@@ -68,13 +68,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 const SecurityPage = (_props: ISecurityPageProps) => {
   const user = useSession();
-  if (!user) return null;
+
   const actionData = useActionData<typeof action>();
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     formRef.current?.reset();
   }, [actionData]);
+
+  if (!user) return null;
 
   return (
     <Card className="max-w-xl mx-auto mt-8 w-full">

@@ -40,7 +40,7 @@ export function MarkdownEditor(props: Props) {
                 name: "image-manager",
                 icon: "🖼️",
                 title: "내 이미지 삽입",
-                action: (editor: any) => {
+                action: (editor: { insertText: (arg0: string) => void }) => {
                   editor.insertText("![](https://example.com/image.png)");
                 },
               },

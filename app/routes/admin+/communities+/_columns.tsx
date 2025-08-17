@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Board } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link, useRevalidator } from "@remix-run/react";

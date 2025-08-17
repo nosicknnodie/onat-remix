@@ -64,6 +64,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       });
     }
   } catch (e) {
+    console.error(e);
     return Response.json(
       { error: "가입 처리 중 오류가 발생했습니다." },
       { status: 500 }

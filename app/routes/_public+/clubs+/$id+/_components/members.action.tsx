@@ -29,7 +29,7 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
   const { player } = useOutletContext<IClubLayoutLoaderData>();
   const isMaster = player?.role === "MASTER";
   const isManager = player?.role === "MANAGER";
-  const isNormal = player?.role === "NORMAL";
+  // const isNormal = player?.role === "NORMAL";
   const context = useGetPlayers();
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (value: Partial<Player>) => {

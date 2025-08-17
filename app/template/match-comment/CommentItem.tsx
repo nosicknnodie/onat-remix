@@ -1,6 +1,6 @@
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
-import { SerializedEditorState } from "lexical";
+import { SerializedEditorState, SerializedLexicalNode } from "lexical";
 import { useState, useTransition } from "react";
 import { FaRegComment } from "react-icons/fa";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
@@ -80,7 +80,12 @@ const CommentItem = ({ comment }: ICommentItemProps) => {
             </Badge>
           )}
           <div className="w-full rounded-lg ml-2">
-            <View editorState={comment.content as any} className="min-h-0 " />
+            <View
+              editorState={
+                comment.content as unknown as SerializedEditorState<SerializedLexicalNode>
+              }
+              className="min-h-0 "
+            />
           </div>
           <div>
             <Button

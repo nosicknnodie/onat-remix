@@ -1,6 +1,6 @@
 import { CommentVote, File, PostComment, User } from "@prisma/client";
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -34,7 +34,7 @@ import Settings from "../../../../../template/post/Settings";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   const id = params.id;
-  const slug = params.slug;
+  // const slug = params.slug;
   try {
     const post = await prisma.post.findUnique({
       where: { id },
@@ -63,7 +63,8 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         currentVote: post.votes.find((vote) => vote.userId === user?.id),
       },
     };
-  } catch (error) {
+  } catch (_error) {
+    console.error(_error);
     return { success: false, errors: "Internal Server Error" };
   }
 };
@@ -72,14 +73,11 @@ interface IPostViewProps {}
 
 const PostView = (_props: IPostViewProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  // const fetcher = useFetcher();
   const session = useSession();
   const [isTextMode, setIsTextMode] = useState(false);
   const [path, setPath] = useState<string | undefined>(undefined);
   const post = loaderData.post;
-  if (!post) {
-    return <div>게시글이 존재하지 않습니다.</div>;
-  }
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -89,10 +87,10 @@ const PostView = (_props: IPostViewProps) => {
       root: SerializedEditorState;
       parentId?: string;
     }) => {
-      const res = await fetch(`/api/posts/${post.id}/comments`, {
+      const res = await fetch(`/api/posts/${post?.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: root, postId: post.id, parentId }),
+        body: JSON.stringify({ content: root, postId: post?.id, parentId }),
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result?.errors || "댓글 등록 실패");
@@ -107,11 +105,11 @@ const PostView = (_props: IPostViewProps) => {
     limitDepth: number;
     startDepth: number;
   }>({
-    queryKey: ["COMMENTS_QUERY", post.id, path],
+    queryKey: ["COMMENTS_QUERY", post?.id, path],
     queryFn: async ({ queryKey }) => {
       try {
         const res = await fetch(
-          `/api/posts/${post.id}/comments${path ? `?path=${queryKey[2]}` : ""}`
+          `/api/posts/${post?.id}/comments${path ? `?path=${queryKey[2]}` : ""}`
         ).then((res) => res.json());
         if (res.success) {
           return res;
@@ -180,6 +178,9 @@ const PostView = (_props: IPostViewProps) => {
     refetch();
   };
 
+  if (!post) {
+    return <div>게시글이 존재하지 않습니다.</div>;
+  }
   return (
     <>
       <div>
@@ -221,7 +222,9 @@ const PostView = (_props: IPostViewProps) => {
             <CardTitle className="text-2xl">{post.title}</CardTitle>
           </CardHeader>
           <CardContent className="w-full break-words whitespace-pre-wrap text-sm max-md:p-1">
-            <View editorState={post.content as any} />
+            <View
+              editorState={post.content as unknown as SerializedEditorState}
+            />
           </CardContent>
           <CardFooter className="space-x-4 max-md:p-2">
             <PostVoteBadgeButton post={post} />
@@ -325,8 +328,7 @@ function CommentItem({
   const queryClient = useQueryClient();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditorMode, setIsEditorMode] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  if (!post) return null;
+  const [, startTransition] = useTransition();
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -336,10 +338,10 @@ function CommentItem({
       root: SerializedEditorState;
       parentId?: string;
     }) => {
-      const res = await fetch(`/api/posts/${post.id}/comments`, {
+      const res = await fetch(`/api/posts/${post?.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: root, postId: post.id, parentId }),
+        body: JSON.stringify({ content: root, postId: post?.id, parentId }),
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result?.errors || "댓글 등록 실패");
@@ -374,12 +376,12 @@ function CommentItem({
     });
     setIsReplying(false);
     queryClient.invalidateQueries({
-      queryKey: ["COMMENTS_QUERY", post.id],
+      queryKey: ["COMMENTS_QUERY", post?.id],
     });
   };
   const handleEditComment = async (
     root?: SerializedEditorState,
-    editor?: LexicalEditor
+    _editor?: LexicalEditor
   ) => {
     startTransition(async () => {
       if (!root) return;
@@ -394,11 +396,13 @@ function CommentItem({
         return;
       }
       await queryClient.invalidateQueries({
-        queryKey: ["COMMENTS_QUERY", post.id],
+        queryKey: ["COMMENTS_QUERY", post?.id],
       });
       setIsEditorMode(false);
     });
   };
+
+  if (!post) return null;
 
   if (
     comment.isDeleted &&
@@ -452,14 +456,18 @@ function CommentItem({
               <CommentInput
                 onCancel={() => setIsEditorMode(false)}
                 onSubmit={handleEditComment}
-                initialEditorState={comment.content as any}
+                initialEditorState={
+                  comment.content as unknown as SerializedEditorState
+                }
               />
             )}
             {!isEditorMode && (
               <>
                 <div className="w-full rounded-lg ml-2">
                   <View
-                    editorState={comment.content as any}
+                    editorState={
+                      comment.content as unknown as SerializedEditorState
+                    }
                     className="min-h-0 "
                   />
                 </div>

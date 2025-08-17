@@ -11,7 +11,10 @@ import { prisma } from "~/libs/db/db.server";
 import { Board } from "./_Board";
 import { PositionContext, usePositionQuery } from "./_position.context";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({
+  request: _request,
+  params,
+}: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const matchClub = await prisma.matchClub.findUnique({
     where: {

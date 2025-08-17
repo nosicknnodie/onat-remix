@@ -107,7 +107,6 @@ const ClubEditPage = (_props: IClubEditPageProps) => {
   const loaderData = useOutletContext<IClubLayoutLoaderData>();
   const actionData = useActionData<typeof action>();
   const club = loaderData.club;
-  if (!club) return null;
 
   const [sis, setSis] = useState(club.si ?? "null");
   const [gun, setGun] = useState(club.gun ?? "null");
@@ -123,6 +122,7 @@ const ClubEditPage = (_props: IClubEditPageProps) => {
       return value;
     });
   };
+  if (!club) return null;
 
   return (
     <>

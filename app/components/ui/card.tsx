@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/heading-has-content */
 import { cn } from "~/libs/utils";
 
 const Card = ({ className, ...props }: React.ComponentPropsWithRef<"div">) => (

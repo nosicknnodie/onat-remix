@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/heading-has-content */
 import { ComponentProps } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { cn } from "~/libs/utils";

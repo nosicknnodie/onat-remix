@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Outlet, UIMatch, useMatches } from "@remix-run/react";
 import { Fragment } from "react/jsx-runtime";
 import { Loading } from "~/components/Loading";

@@ -28,7 +28,7 @@ const DropDiv = <TItem,>({
         return canDrop?.({ item }) ?? false;
       },
       drop: (value, monitor) => {
-        monitor.isOver() && monitor.canDrop() && onDrop?.(value);
+        return monitor.isOver() && monitor.canDrop() && onDrop?.(value);
       },
       collect: (monitor) => ({
         isDragging: !!monitor.getItem(),
