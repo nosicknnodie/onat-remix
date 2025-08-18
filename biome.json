@@ -17,13 +17,39 @@
         "recommended": true,
         "useKeyWithClickEvents": "off"
       },
+     
       "complexity": {
         "noUselessCatch": "warn",
         "noUselessFragments": "off",
         "noImportantStyles": "off"
       },
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [{
+              "group": [                  
+                  "~/features/*/**",
+                  "**/features/*/**",
+                  "!~/features/*/index",
+                  "!~/features/*/*/index",
+                  "!~/features/*/*/types",
+                  "!~/features/*/*/types/**",
+                  "!~/features/*/*/schema",
+                  "!~/features/*/*/schema/**",
+                  "!~/features/*/ui/**",
+                  "!~/features/*/*/ui/**",
+                  "!**/features/*/ui/index",
+                  "!~/features/index",
+                  "!**/features/*/index",
+                  "!**/features/*/*/index",
+                  "!**/features/index"
+                ],
+              "message": "Deep import 금지: feature 배럴(index)로만 import 하세요."
+            }]
+          }
+        }
       },
       "suspicious": {
         "noExplicitAny": "warn",

@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { auth } from "~/features/index.server";
+import { core } from "~/features/auth";
 import { lucia } from "~/libs/db/lucia.server";
 import { fail } from "~/utils/action.server";
 
@@ -9,7 +9,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const token = url.searchParams.get("token");
   if (!token) return redirect("/");
 
-  const result = await auth.service.verifyEmailWithToken(token);
+  const result = await core.service.verifyEmailWithToken(token);
   if (!result.ok) {
     return fail(result.message);
   }

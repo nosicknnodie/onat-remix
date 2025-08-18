@@ -2,22 +2,22 @@ import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { Link, useActionData, useNavigation } from "@remix-run/react";
 import _ from "lodash";
 import { Separator } from "~/components/ui/separator";
-import { LoginForm } from "~/features/auth";
-import { auth } from "~/features/index.server";
+import { login } from "~/features/auth";
+import LoginForm from "~/features/auth/login/ui/LoginForm";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}`;
 
   // 1) 파싱 & 유효성 검사
-  const parsed = await auth.validators.parseLoginForm(request);
+  const parsed = await login.validators.parseLoginForm(request);
   if (!parsed.ok) {
     return Response.json({ errors: parsed.errors }, { status: 401, statusText: "Bad Request" });
   }
 
   try {
     // 2) 사용자 키 조회
-    const key = await auth.service.findKeyByEmail(parsed.data.email);
+    const key = await login.service.findKeyByEmail(parsed.data.email);
     if (!key) {
       return Response.json(
         {
@@ -29,7 +29,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     // 3) 비밀번호 검증
-    const isValid = await auth.service.verifyPassword(parsed.data.password, key.hashedPassword);
+    const isValid = await login.service.verifyPassword(parsed.data.password, key.hashedPassword);
     if (!isValid) {
       return Response.json(
         {
@@ -42,14 +42,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     // 4) 이메일 인증 필요 시 처리
     const user = key.user;
-    const check = await auth.service.ensureVerifiedEmail(
+    const check = await login.service.ensureVerifiedEmail(
       { email: user.email, emailVerified: user.emailVerified },
       baseUrl,
     );
     if (check.needsVerification) return check.response;
 
     // 5) 세션 생성 + 만료 세션 정리
-    const { sessionCookie } = await auth.service.createSessionAndCleanup(key.userId, user?.id);
+    const { sessionCookie } = await login.service.createSessionAndCleanup(key.userId, user?.id);
 
     // 6) 홈으로 redirect
     return redirect("/", {

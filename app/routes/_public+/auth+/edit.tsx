@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { redirect, useActionData, useLoaderData } from "@remix-run/react";
-import EditorForm from "~/features/auth/ui/EditorForm";
-import { auth } from "~/features/index.server";
+import { core, edit } from "~/features/auth";
+import EditorForm from "~/features/auth/edit/ui/EditorForm";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { fail, ok } from "~/utils/action.server";
@@ -18,7 +18,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
 
-  const parsed = await auth.validators.parseEditorForm(request);
+  const parsed = await edit.validators.parseEditorForm(request);
   if (!parsed.ok) {
     return fail("필드 수정이 필요합니다.", parsed.errors.fieldErrors);
   }
@@ -26,9 +26,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { name, password } = parsed.data;
 
   try {
-    await auth.service.setNameById(user.id, name);
+    await core.service.setNameById(user.id, name);
     if (password) {
-      await auth.service.setPasswordByEmail(user.email, password);
+      await core.service.setPasswordByEmail(user.email, password);
     }
     return ok("회원정보가 수정되었습니다.");
   } catch (err) {

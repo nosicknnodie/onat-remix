@@ -1,170 +1,54 @@
+// routes/auth.register.tsx (이전 Register.tsx 파일)
+
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { data } from "@remix-run/node";
-import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
-import bcrypt from "bcryptjs";
-import { AiOutlineUserAdd } from "react-icons/ai";
-import { z } from "zod";
-import FormError from "~/components/FormError";
-import FormSuccess from "~/components/FormSuccess";
-import { Loading } from "~/components/Loading";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
-import { generateVerificationToken } from "~/libs/auth/token";
-import { prisma } from "~/libs/db/db.server";
-import { sendVerificationEmail } from "~/libs/mail";
+import { useActionData, useNavigation } from "@remix-run/react";
+import { register } from "~/features/auth";
+import { registerSchema } from "~/features/auth/register/schema";
+import { RegisterForm } from "~/features/auth/register/ui/RegisterForm";
 
-interface IRegisterProps {}
-
-const registerSchema = z.object({
-  name: z.string().min(1, "이름을 입력하세요."),
-  email: z.string().email("유효한 이메일을 입력하세요."),
-  password: z.string().min(6, "비밀번호는 6자 이상이어야 합니다."),
-  // address: z.string().nullable().nullish(),
-  // phone: z.string().nullable().nullish(),
-  // birthDay: z.string().nullable().nullish(),
-});
-
+/**
+ * Remix의 액션 함수로, HTTP 요청을 처리하는 레이어입니다.
+ * 폼 데이터를 받아 유효성 검사 후, 비즈니스 로직을 담당하는 서비스 레이어를 호출합니다.
+ * 여기서는 데이터베이스 접근이나 기타 복잡한 로직을 직접 수행하지 않습니다.
+ */
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const name = formData.get("name");
-  // const address = formData.get("address");
-  // const phone = formData.get("phone");
-  const password = formData.get("password");
-  // const birthDay = formData.get("birthDay");
   const url = new URL(request.url);
   const host = url.host;
   const protocol = url.protocol;
-  const result = registerSchema.safeParse({
-    email,
-    password,
-    name,
-  });
-  // TODO: validation
+  const result = registerSchema.safeParse(Object.fromEntries(formData));
+
   if (!result.success) {
-    return data(
+    return Response.json(
       { errors: result.error.flatten().fieldErrors, values: result.data },
       { status: 400 },
     );
   }
 
-  try {
-    // 비밀번호 암호화
-    const hashedPassword = await bcrypt.hash(result.data.password, 10);
+  const serviceResult = await register.service.registerUserService(result.data, host, protocol);
 
-    // 이메일가 가입된 이메일인지 확인
-    const existingUser = await prisma.user.findUnique({
-      where: { email: result.data.email },
-    });
-    // TODO: 가입된 이메일이 있는 경우
-    if (existingUser) {
-      return Response.json(
-        {
-          errors: {
-            email: ["이미 가입된 이메일입니다."],
-          },
-        },
-        { status: 400 },
-      );
-    }
-
-    // user 생성
-    const user = await prisma.user.create({
-      data: {
-        email: result.data.email,
-        name: result.data.name,
-      },
-    });
-    // 비밀번호 저장
-    await prisma.key.create({
-      data: {
-        id: `email:${result.data.email}`,
-        userId: user.id,
-        hashedPassword,
-      },
-    });
-
-    // 토큰 생성
-    const verificationToken = await generateVerificationToken(result.data.email);
-    // 토큰 보내기
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token,
-      `${protocol}//${host}`,
-    );
-    return Response.json({ success: "확인 메일을 보냈습니다." });
-  } catch (error) {
-    console.error(error);
-    return Response.json({ errorMessage: "오류입니다." });
+  // 서비스 레이어의 결과를 기반으로 HTTP 응답을 생성합니다.
+  if (serviceResult.errors) {
+    return Response.json({ errors: serviceResult.errors, values: result.data }, { status: 400 });
   }
+
+  if (serviceResult.errorMessage) {
+    return Response.json({ errorMessage: serviceResult.errorMessage }, { status: 500 });
+  }
+
+  return Response.json({ success: serviceResult.success });
 };
 
-const Register = (_props: IRegisterProps) => {
-  const data = useActionData<typeof action>();
-  const success = data?.success;
-  const errorMessage = data?.errorMessage;
+/**
+ * Remix 라우트 컴포넌트로, UI와 HTTP 레이어를 연결하는 역할을 합니다.
+ * Remix 훅을 사용해 액션 데이터를 가져오고, UI 컴포넌트에 필요한 props를 전달합니다.
+ */
+const Register = () => {
+  const actionData = useActionData<typeof action>();
   const nav = useNavigation();
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
-  return (
-    <div className="max-w-md w-full space-y-4 mt-6">
-      <Form method="post" className="space-y-4">
-        <p className="text-2xl font-semibold text-primary w-full flex justify-center items-center gap-x-2">
-          <AiOutlineUserAdd />
-          <span>회원가입</span>
-        </p>
-        <div>
-          <Label htmlFor="name">
-            이름<span className="text-red-500 ml-1">*</span>
-          </Label>
-          <Input type="text" name="name" required placeholder="홍길동" />
-        </div>
-        <FormError>{data?.errors?.name}</FormError>
-        <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            이메일<span className="text-red-500 ml-1">*</span>
-          </Label>
-          <Input
-            type="email"
-            name="email"
-            required
-            className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-            placeholder="you@example.com"
-            defaultValue={data?.values?.email ?? ""}
-          />
-        </div>
-        <FormError>{data?.errors?.email}</FormError>
 
-        <div>
-          <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            비밀번호<span className="text-red-500 ml-1">*</span>
-          </Label>
-          <Input
-            type="password"
-            name="password"
-            required
-            className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-            placeholder="••••••••"
-          />
-        </div>
-        <FormError>{data?.errors?.password}</FormError>
-        <div className="">
-          <FormSuccess>{success && success}</FormSuccess>
-          <FormError>{errorMessage && errorMessage}</FormError>
-        </div>
-        <Button type="submit" className="w-full  font-semibold">
-          <span>회원가입</span>
-          {isSubmitting && <Loading className="text-primary-foreground" />}
-        </Button>
-      </Form>
-      <div className="flex justify-end items-center gap-2 text-sm h-4">
-        <Link to={"/auth/login"}>로그인</Link>
-        <Separator orientation="vertical"></Separator>
-        <Link to={"/auth/reset-form"}>비밀번호찾기</Link>
-      </div>
-    </div>
-  );
+  return <RegisterForm data={actionData} isSubmitting={isSubmitting} />;
 };
 
 export default Register;
