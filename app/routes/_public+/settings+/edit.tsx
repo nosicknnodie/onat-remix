@@ -33,7 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const birthDay = Number(form.get("birthDay"));
   const si = String(form.get("si") ?? "");
   const gun = String(form.get("gun") ?? "");
-  const userImageId = form.get("userImageId")?.toString() ?? null;
+  const userImageId = form.get("userImageId")?.toString() || null;
 
   const MM = birthMonth ? String(birthMonth).padStart(2, "0") : undefined;
   const dd = birthDay ? String(birthDay).padStart(2, "0") : undefined;
