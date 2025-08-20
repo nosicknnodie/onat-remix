@@ -1,146 +1,53 @@
-import { TokenType } from "@prisma/client";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
-import bcrypt from "bcryptjs";
-import { MdPassword } from "react-icons/md";
-import { z } from "zod";
-import FormError from "~/components/FormError";
-import FormSuccess from "~/components/FormSuccess";
-import { Loading } from "~/components/Loading";
-import { prisma } from "~/libs/db/db.server";
+import { service, validators } from "~/features/auth/new-password/index";
+import { NewPasswordForm } from "~/features/auth/new-password/ui/NewPasswordForm";
 
-const findPasswordSchema = z.object({
-  token: z.string().min(1),
-  password: z.string().min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
-});
+/**
+ * @purpose 이 파일은 Remix 프레임워크와 우리의 feature 로직을 연결하는 '접착제' 역할을 합니다.
+ * loader와 action은 HTTP 요청을 받아 service 함수에 필요한 데이터를 전달하고, 그 결과를 클라이언트에 반환합니다.
+ * React 컴포넌트는 Remix 훅을 사용하여 데이터를 가져오고, 이 데이터를 순수 UI 컴포넌트의 props로 전달합니다.
+ * 프레임워크에 종속적인 모든 코드는 이 파일에만 존재하게 됩니다.
+ */
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
 
-  if (!token) {
-    return Response.json({ error: "토큰이 없습니다." });
-  }
-
-  const existingToken = await prisma.confirmToken.findUnique({
-    where: { token, type: TokenType.PASSWORD_RESET },
-  });
-
-  if (!existingToken) {
-    return Response.json({ error: "토큰이 맞지 않습니다." });
-  }
-
-  const hasExpired = new Date(existingToken.expires) < new Date();
-
-  if (hasExpired) {
-    return Response.json({ error: "토큰이 만료가 되었습니다." });
-  }
-  const existingUser = await prisma.user.findUnique({
-    where: { email: existingToken.email },
-  });
-
-  if (!existingUser) {
-    return Response.json({ error: "이메일이 존재하지 않습니다." });
-  }
-  return Response.json({ token, user: existingUser });
+  // 토큰 검증 로직은 service에 위임
+  const result = await service.verifyPasswordResetToken(token);
+  return result;
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
-  const password = formData.get("password");
-  const token = formData.get("token");
-  const result = findPasswordSchema.safeParse({ password, token });
+  const data = Object.fromEntries(formData);
 
+  // 1. Validator를 사용한 유효성 검사
+  const result = validators.NewPasswordSchema.safeParse(data);
   if (!result.success) {
     return Response.json({ errors: result.error.flatten().fieldErrors }, { status: 400 });
   }
-  const existingToken = await prisma.confirmToken.findUnique({
-    where: { token: result.data.token, type: TokenType.PASSWORD_RESET },
-  });
 
-  if (!existingToken) {
-    return Response.json({ error: "토큰이 맞지 않습니다." });
-  }
-
-  // 회원 조회
-  const user = await prisma.user.findUnique({
-    where: { email: existingToken.email },
-  });
-
-  // 이메일 인증확인이 안되어있으면 비밀번호 발급흐름에 따라 이메일을 확인 한것으로 간주
-  if (!user?.emailVerified) {
-    await prisma.user.update({
-      where: { email: existingToken.email },
-      data: {
-        emailVerified: new Date(),
-        email: existingToken.email,
-      },
-    });
-  }
-
-  const hashedPassword = await bcrypt.hash(result.data.password, 10);
-
-  await prisma.key.update({
-    where: { id: `email:${existingToken.email}` },
-    data: { hashedPassword },
-  });
-
-  await prisma.confirmToken.delete({
-    where: { id: existingToken?.id },
-  });
-
-  return Response.json({ success: "비밀번호 변경에 성공하었습니다." });
+  // 2. 핵심 비즈니스 로직은 Service 함수에 위임
+  const actionResult = await service.updateUserPassword(result.data);
+  return Response.json(actionResult);
 };
 
-const NewPassword = () => {
-  const loadData = useLoaderData<typeof loader>();
+export default function NewPasswordPage() {
+  const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const nav = useNavigation();
-  const isSubmitting = nav.state === "submitting" || nav.state === "loading";
-  return (
-    <>
-      <div className="max-w-md w-full space-y-4 mt-6">
-        <Form method="post" className="space-y-4">
-          <p className="text-2xl font-semibold text-primary w-full flex justify-center items-center gap-x-2">
-            <MdPassword />
-            <span>비밀번호 변경</span>
-          </p>
-          <div>
-            <label htmlFor="email">이메일</label>
-            <input
-              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-              defaultValue={loadData.user.email ?? ""}
-              disabled
-            ></input>
-            <input type="hidden" name="token" defaultValue={loadData.token ?? ""}></input>
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              name="password"
-              required
-              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-500"
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <FormError>{actionData?.errors?.password}</FormError>
-            <FormError>{actionData?.error}</FormError>
-            <FormSuccess>{actionData?.success}</FormSuccess>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 px-4 rounded hover:bg-black/80 transition font-semibold flex justify-center items-center"
-          >
-            <span>비밀번호 변경</span>
-            {isSubmitting && <Loading className="text-primary-foreground" />}
-          </button>
-        </Form>
-      </div>
-    </>
-  );
-};
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
-export default NewPassword;
+  return (
+    // UI 컴포넌트는 Form으로 감싸서 제출 기능을 활성화
+    <Form method="post">
+      <NewPasswordForm
+        loaderData={loaderData}
+        actionData={actionData}
+        isSubmitting={isSubmitting}
+      />
+    </Form>
+  );
+}
