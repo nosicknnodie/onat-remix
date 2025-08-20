@@ -2,36 +2,51 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { service, validators } from "~/features/auth/new-password/index";
 import { NewPasswordForm } from "~/features/auth/new-password/ui/NewPasswordForm";
+import type { ActionData } from "~/types/action"; // 공통 타입을 가져온다고 가정
 
 /**
- * @purpose 이 파일은 Remix 프레임워크와 우리의 feature 로직을 연결하는 '접착제' 역할을 합니다.
- * loader와 action은 HTTP 요청을 받아 service 함수에 필요한 데이터를 전달하고, 그 결과를 클라이언트에 반환합니다.
- * React 컴포넌트는 Remix 훅을 사용하여 데이터를 가져오고, 이 데이터를 순수 UI 컴포넌트의 props로 전달합니다.
- * 프레임워크에 종속적인 모든 코드는 이 파일에만 존재하게 됩니다.
+ * @purpose Remix 프레임워크와 feature 로직을 연결하는 'HTTP 레이어'입니다.
+ * loader와 action은 HTTP 요청을 받아 service 함수에 전달하고, 그 결과를 표준화된 응답(ActionData)으로
+ * 변환하여 클라이언트에 반환하는 책임을 집니다. 프레임워크 종속 코드는 모두 이 파일에 있습니다.
  */
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
-
-  // 토큰 검증 로직은 service에 위임
   const result = await service.verifyPasswordResetToken(token);
   return result;
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs): Promise<Response> => {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
-  // 1. Validator를 사용한 유효성 검사
-  const result = validators.NewPasswordSchema.safeParse(data);
-  if (!result.success) {
-    return Response.json({ errors: result.error.flatten().fieldErrors }, { status: 400 });
+  const validationResult = validators.NewPasswordSchema.safeParse(data);
+  if (!validationResult.success) {
+    const response: ActionData = {
+      ok: false,
+      fieldErrors: validationResult.error.flatten().fieldErrors,
+    };
+    return Response.json(response, { status: 400 });
   }
 
-  // 2. 핵심 비즈니스 로직은 Service 함수에 위임
-  const actionResult = await service.updateUserPassword(result.data);
-  return Response.json(actionResult);
+  // 핵심 비즈니스 로직은 Service에 위임
+  const serviceResult = await service.updateUserPassword(validationResult.data);
+
+  // 서비스 결과를 표준 ActionData 타입으로 변환하여 반환
+  if (!serviceResult.success) {
+    const response: ActionData = {
+      ok: false,
+      message: serviceResult.message,
+    };
+    return Response.json(response, { status: 400 });
+  }
+
+  const response: ActionData = {
+    ok: true,
+    message: serviceResult.message,
+  };
+  return Response.json(response);
 };
 
 export default function NewPasswordPage() {
@@ -41,7 +56,6 @@ export default function NewPasswordPage() {
   const isSubmitting = navigation.state === "submitting";
 
   return (
-    // UI 컴포넌트는 Form으로 감싸서 제출 기능을 활성화
     <Form method="post">
       <NewPasswordForm
         loaderData={loaderData}
