@@ -15,6 +15,9 @@
   "editor.defaultFormatter": "biomejs.biome",
   "editor.codeActionsOnSave": {
     "quickfix.biome": "explicit",
+    // VS Code의 기본 import 정렬 기능은 비활성화합니다. (충돌 방지)
+    "source.organizeImports": "never",
+    // Biome의 import 정렬 기능을 사용하도록 명시적으로 설정합니다.
     "source.organizeImports.biome": "explicit"
   }
 }

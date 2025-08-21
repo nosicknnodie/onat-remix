@@ -1,9 +1,8 @@
-/** biome-ignore-all assist/source/organizeImports: off */
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
-import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Fragment } from "react/jsx-runtime";
+import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";

@@ -1,4 +1,3 @@
-/** biome-ignore-all assist/source/organizeImports: off */
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { formatDistance } from "date-fns";
@@ -6,8 +5,8 @@ import { ko } from "date-fns/locale";
 import type { SerializedEditorState } from "lexical";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { FaRegComment } from "react-icons/fa6";
 import { Fragment } from "react/jsx-runtime";
+import { FaRegComment } from "react-icons/fa6";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { Preview } from "~/components/lexical/Preview";

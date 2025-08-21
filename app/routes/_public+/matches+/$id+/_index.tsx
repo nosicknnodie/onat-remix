@@ -1,9 +1,8 @@
-/** biome-ignore-all assist/source/organizeImports: off */
 import { useNavigate, useOutletContext, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Fragment } from "react/jsx-runtime";
+import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import ItemLink from "~/components/ItemLink";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";

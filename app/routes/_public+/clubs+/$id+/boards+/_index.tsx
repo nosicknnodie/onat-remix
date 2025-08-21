@@ -1,8 +1,7 @@
-/** biome-ignore-all assist/source/organizeImports: off */
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, NavLink, useLoaderData } from "@remix-run/react";
-import { FaRegComment } from "react-icons/fa";
 import { Fragment } from "react/jsx-runtime";
+import { FaRegComment } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import { prisma } from "~/libs/db/db.server";

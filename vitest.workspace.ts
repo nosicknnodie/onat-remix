@@ -10,7 +10,17 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/writing-tests/test-addon
 export default defineWorkspace([
-  'vite.config.ts',
+  {
+    extends: 'vite.config.ts',
+    test: {
+      globals: true,
+      setupFiles: ['./tests/setup.ts'],
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html'],
+      },
+    },
+  },
   {
     extends: 'vite.config.ts',
     plugins: [

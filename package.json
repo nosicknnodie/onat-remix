@@ -12,6 +12,9 @@
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage",
     "storybook": "STORYBOOK=true storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -168,7 +171,8 @@
     "typescript": "^5.1.6",
     "vite": "^5.0.0",
     "vite-tsconfig-paths": "^4.2.1",
-    "vitest": "^3.1.1"
+    "vitest": "^3.1.1",
+    "vitest-mock-extended": "^3.1.0"
   },
   "engines": {
     "node": ">=18.0.0"
