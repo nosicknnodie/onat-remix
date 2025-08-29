@@ -1,6 +1,48 @@
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import bcrypt from "bcryptjs";
+import type { ActionData } from "~/types/action";
 import * as queries from "./queries";
 import type { NewPasswordInput, UpdatePasswordResult, VerifyTokenResult } from "./types";
+import { NewPasswordSchema } from "./validators";
+
+export async function handleNewPasswordLoader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const result = await verifyPasswordResetToken(token);
+  return result;
+}
+
+export async function handleNewPasswordAction({ request }: ActionFunctionArgs): Promise<Response> {
+  const formData = await request.formData();
+  const data = Object.fromEntries(formData);
+
+  const validationResult = NewPasswordSchema.safeParse(data);
+  if (!validationResult.success) {
+    const response: ActionData = {
+      ok: false,
+      fieldErrors: validationResult.error.flatten().fieldErrors,
+    };
+    return Response.json(response, { status: 400 });
+  }
+
+  // 핵심 비즈니스 로직은 Service에 위임
+  const serviceResult = await updateUserPassword(validationResult.data);
+
+  // 서비스 결과를 표준 ActionData 타입으로 변환하여 반환
+  if (!serviceResult.success) {
+    const response: ActionData = {
+      ok: false,
+      message: serviceResult.message,
+    };
+    return Response.json(response, { status: 400 });
+  }
+
+  const response: ActionData = {
+    ok: true,
+    message: serviceResult.message,
+  };
+  return Response.json(response);
+}
 
 /**
  * @purpose 기능의 핵심 비즈니스 로직을 캡슐화합니다.

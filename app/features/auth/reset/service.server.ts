@@ -1,6 +1,28 @@
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { sendPasswordResetEmail } from "~/libs/mail";
 import { createPasswordResetToken, findUserByEmail } from "./queries";
 import type { ResetActionResult, ResetInput } from "./types";
+import { ResetSchema } from "./validators";
+
+export async function handleResetFormAction({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const email = formData.get("email");
+
+  // 1. Validator를 사용한 유효성 검사
+  const result = ResetSchema.safeParse({ email });
+  if (!result.success) {
+    // Zod 에러 메시지를 직접 사용
+    const errorMessage = result.error.errors[0]?.message ?? "유효하지 않은 입력입니다.";
+    return { error: errorMessage, values: { email: String(email) } };
+  }
+
+  // 2. URL 정보 추출하여 Service에 전달
+  const url = new URL(request.url);
+  const baseUrl = `${url.protocol}//${url.host}`;
+
+  // 3. 핵심 비즈니스 로직은 Service 함수에 위임
+  return await requestPasswordReset({ input: result.data, baseUrl });
+}
 
 /**
  * @purpose 이 파일은 비밀번호 재설정 요청의 핵심 비즈니스 로직을 수행합니다.

@@ -1,9 +1,6 @@
-// routes/auth.register.tsx (이전 Register.tsx 파일)
-
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { register } from "~/features/auth";
-import { registerSchema } from "~/features/auth/register/schema";
 import { RegisterForm } from "~/features/auth/register/ui/RegisterForm";
 
 /**
@@ -12,31 +9,7 @@ import { RegisterForm } from "~/features/auth/register/ui/RegisterForm";
  * 여기서는 데이터베이스 접근이나 기타 복잡한 로직을 직접 수행하지 않습니다.
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const url = new URL(request.url);
-  const host = url.host;
-  const protocol = url.protocol;
-  const result = registerSchema.safeParse(Object.fromEntries(formData));
-
-  if (!result.success) {
-    return Response.json(
-      { errors: result.error.flatten().fieldErrors, values: result.data },
-      { status: 400 },
-    );
-  }
-
-  const serviceResult = await register.service.registerUserService(result.data, host, protocol);
-
-  // 서비스 레이어의 결과를 기반으로 HTTP 응답을 생성합니다.
-  if (serviceResult.errors) {
-    return Response.json({ errors: serviceResult.errors, values: result.data }, { status: 400 });
-  }
-
-  if (serviceResult.errorMessage) {
-    return Response.json({ errorMessage: serviceResult.errorMessage }, { status: 500 });
-  }
-
-  return Response.json({ success: serviceResult.success });
+  return register.service.handleRegister(request);
 };
 
 /**

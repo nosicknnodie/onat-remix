@@ -1,40 +1,14 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect, useActionData, useLoaderData } from "@remix-run/react";
-import { core, edit } from "~/features/auth";
+import { useActionData, useLoaderData } from "@remix-run/react";
+import { edit } from "~/features/auth";
 import EditorForm from "~/features/auth/edit/ui/EditorForm";
-import { prisma } from "~/libs/db/db.server";
-import { getUser } from "~/libs/db/lucia.server";
-import { fail, ok } from "~/utils/action.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await getUser(request);
-  if (!user) return redirect("/auth/login");
-
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-  return { user: dbUser };
+  return edit.queries.getEditUserLoader(request);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const user = await getUser(request);
-  if (!user) return redirect("/auth/login");
-
-  const parsed = await edit.validators.parseEditorForm(request);
-  if (!parsed.ok) {
-    return fail("필드 수정이 필요합니다.", parsed.errors.fieldErrors);
-  }
-
-  const { name, password } = parsed.data;
-
-  try {
-    await core.service.setNameById(user.id, name);
-    if (password) {
-      await core.service.setPasswordByEmail(user.email, password);
-    }
-    return ok("회원정보가 수정되었습니다.");
-  } catch (err) {
-    console.error(err);
-    return fail("수정 중 오류가 발생했습니다.");
-  }
+  return edit.service.handleEditUserAction(request);
 };
 
 const EditProfile = () => {

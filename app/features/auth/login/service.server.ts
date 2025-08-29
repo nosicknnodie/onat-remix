@@ -1,9 +1,74 @@
+import { redirect } from "@remix-run/node";
 import bcrypt from "bcryptjs";
+import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { lucia } from "~/libs/db/lucia.server";
 import { sendVerificationEmail } from "~/libs/mail";
 import { findKeyByEmail } from "../core/queries.server";
 import { issueVerificationToken } from "../core/token.service.server";
+import { parseLoginForm } from "./validators";
+
+export async function handleLogin(request: Request) {
+  const url = new URL(request.url);
+  const baseUrl = `${url.protocol}//${url.host}`;
+
+  // 1) 파싱 & 유효성 검사
+  const parsed = await parseLoginForm(request);
+  if (!parsed.ok) {
+    return Response.json({ errors: parsed.errors }, { status: 401, statusText: "Bad Request" });
+  }
+
+  try {
+    // 2) 사용자 키 조회
+    const key = await findKeyByEmail(parsed.data.email);
+    if (!key) {
+      return Response.json(
+        {
+          errors: { password: "비밀번호가 맞지 않습니다." },
+          values: _.omit(parsed.data, "password"),
+        },
+        { status: 401 },
+      );
+    }
+
+    // 3) 비밀번호 검증
+    const isValid = await verifyPassword(parsed.data.password, key.hashedPassword);
+    if (!isValid) {
+      return Response.json(
+        {
+          errors: { password: "비밀번호가 맞지 않습니다." },
+          values: _.omit(parsed.data, "password"),
+        },
+        { status: 401 },
+      );
+    }
+
+    // 4) 이메일 인증 필요 시 처리
+    const user = key.user;
+    const check = await ensureVerifiedEmail(
+      { email: user.email, emailVerified: user.emailVerified },
+      baseUrl,
+    );
+    if (check.needsVerification) return check.response;
+
+    // 5) 세션 생성 + 만료 세션 정리
+    const { sessionCookie } = await createSessionAndCleanup(key.userId, user?.id);
+
+    // 6) 홈으로 redirect
+    return redirect("/", {
+      headers: { "Set-Cookie": sessionCookie.serialize() },
+    });
+  } catch (_error) {
+    console.error(_error);
+    return Response.json(
+      {
+        errors: { password: "오류입니다." },
+        values: parsed.ok ? _.omit(parsed.data, "password") : undefined,
+      },
+      { status: 401 },
+    );
+  }
+}
 
 export async function verifyPassword(plain: string, hashed?: string | null) {
   if (!hashed) return false;

@@ -1,6 +1,40 @@
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import type { User } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
-import type { CreateClubInput } from "./validators";
+import { getUser } from "~/libs/db/lucia.server";
+import { CreateClubSchema, type CreateClubInput } from "./validators";
+
+export async function handleCreateClubAction({ request }: ActionFunctionArgs): Promise<Response> {
+  const user = await getUser(request);
+  if (!user) {
+    return redirect("/auth/login");
+  }
+  if (!user.name) {
+    return redirect("/settings/edit");
+  }
+
+  const formData = await request.formData();
+  const result = CreateClubSchema.safeParse(Object.fromEntries(formData));
+
+  if (!result.success) {
+    return Response.json(
+      { ok: false, fieldErrors: result.error.flatten().fieldErrors },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const club = await createClub({ input: result.data, ownerUser: user });
+    return redirect(`/clubs/${club.id}`);
+  } catch (err) {
+    console.error(err);
+    return Response.json(
+      { ok: false, message: "클럽 생성 중 오류가 발생했습니다." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function createClub({
   input,

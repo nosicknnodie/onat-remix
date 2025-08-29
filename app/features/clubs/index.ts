@@ -7,4 +7,4 @@
 // Services - 비즈니스 로직
 export * as service from "./service.server";
 // Validators - 데이터 검증
-export * from "./validators";
+export * as validators from "./validators";

@@ -4,7 +4,36 @@ import bcrypt from "bcryptjs";
 import { generateVerificationToken } from "~/libs/auth/token";
 import { prisma } from "~/libs/db/db.server";
 import { sendVerificationEmail } from "~/libs/mail";
+import { registerSchema } from "./schema";
 import type { RegisterFormData } from "./types";
+
+export async function handleRegister(request: Request) {
+  const formData = await request.formData();
+  const url = new URL(request.url);
+  const host = url.host;
+  const protocol = url.protocol;
+  const result = registerSchema.safeParse(Object.fromEntries(formData));
+
+  if (!result.success) {
+    return Response.json(
+      { errors: result.error.flatten().fieldErrors, values: result.data },
+      { status: 400 },
+    );
+  }
+
+  const serviceResult = await registerUserService(result.data, host, protocol);
+
+  // 서비스 레이어의 결과를 기반으로 HTTP 응답을 생성합니다.
+  if (serviceResult.errors) {
+    return Response.json({ errors: serviceResult.errors, values: result.data }, { status: 400 });
+  }
+
+  if (serviceResult.errorMessage) {
+    return Response.json({ errorMessage: serviceResult.errorMessage }, { status: 500 });
+  }
+
+  return Response.json({ success: serviceResult.success });
+}
 
 /**
  * 회원가입의 모든 비즈니스 로직을 처리하는 서비스 함수입니다.
