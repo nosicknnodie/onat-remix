@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
-import { register } from "~/features/auth";
+import { register } from "~/features/auth/index.server";
 import { RegisterForm } from "~/features/auth/register/ui/RegisterForm";
 
 /**

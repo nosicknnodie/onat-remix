@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { validators } from "~/features/communities/index";
 import { cn } from "~/libs/utils";
-import { validators } from "..";
 import type { BoardListItem, DraftPost } from "../types";
 
 export type ActionErrors =

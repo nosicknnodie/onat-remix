@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
-import { service } from "~/features/auth/reset/index";
+import { service } from "~/features/auth/reset/index.server";
 import ResetForm from "~/features/auth/reset/ui/ResetForm";
 
 export const action = async (args: ActionFunctionArgs) => {

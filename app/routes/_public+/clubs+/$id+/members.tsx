@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData, useLocation } from "@remix-run/react";
 import { useMemo } from "react";
-import { service } from "~/features/clubs";
+import { service } from "~/features/clubs/index.server";
 import Members from "~/features/clubs/ui/Members";
 export const handle = { breadcrumb: "멤버" };
 interface IMembersPageProps {}

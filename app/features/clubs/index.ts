@@ -4,7 +4,5 @@
  * - HTTP layer에서 사용할 수 있는 인터페이스 제공
  */
 
-// Services - 비즈니스 로직
-export * as service from "./service.server";
-// Validators - 데이터 검증
+// Validators - 데이터 검증 (client-safe)
 export * as validators from "./validators";

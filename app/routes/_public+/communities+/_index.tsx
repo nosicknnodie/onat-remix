@@ -7,7 +7,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useSession } from "~/contexts/AuthUserContext";
-import { service } from "~/features/communities";
+import { service } from "~/features/communities/index.server";
 import { getBoardIcon } from "~/libs/getBoardIcons";
 
 const RightComponent = () => {

@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { core } from "~/features/auth";
+import { core } from "~/features/auth/index.server";
 import { lucia } from "~/libs/db/lucia.server";
 import { fail } from "~/utils/action.server";
 

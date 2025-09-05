@@ -15,7 +15,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts/AuthUserContext";
-import { service } from "~/features/communities";
+import { service } from "~/features/communities/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import CommentInput from "../../../../../template/post/CommentInput";

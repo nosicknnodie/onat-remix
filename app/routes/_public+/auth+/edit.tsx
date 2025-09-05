@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
-import { edit } from "~/features/auth";
 import EditorForm from "~/features/auth/edit/ui/EditorForm";
+import { edit } from "~/features/auth/index.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   return edit.queries.getEditUserLoader(request);

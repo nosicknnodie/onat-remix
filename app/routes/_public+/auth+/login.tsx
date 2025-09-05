@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { Link, useActionData, useNavigation } from "@remix-run/react";
 import { Separator } from "~/components/ui/separator";
-import { login } from "~/features/auth";
+import { login } from "~/features/auth/index.server";
 import LoginForm from "~/features/auth/login/ui/LoginForm";
 
 export const action = async ({ request }: ActionFunctionArgs) => {

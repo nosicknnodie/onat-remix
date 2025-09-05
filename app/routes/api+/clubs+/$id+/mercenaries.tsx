@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { service } from "~/features/clubs";
+import { service } from "~/features/clubs/index.server";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const clubId = params.id;

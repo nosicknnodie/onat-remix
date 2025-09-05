@@ -1,6 +1,6 @@
 // POST /api/comment-vote
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { service } from "~/features/communities";
+import { service } from "~/features/communities/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
 
@@ -15,7 +15,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const result = await service.voteComment(userId, commentId, vote);
   if (!result.ok) {
-    return Response.json({ success: false, error: result.message }, { status: result.status ?? 500 });
+    return Response.json(
+      { success: false, error: result.message },
+      { status: result.status ?? 500 },
+    );
   }
   return Response.json({ success: true, vote: result.vote, sum: result.sum });
 };

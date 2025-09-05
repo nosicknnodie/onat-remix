@@ -16,43 +16,66 @@
 ```
 app/features/
 └── [feature-name]/
-    ├── ui/               # React 컴포넌트
+    ├── ui/                   # React 컴포넌트 (client-safe)
     │   └── Component.tsx
-    ├── index.ts          # 외부 노출을 위한 Barrel 파일
-    ├── queries.server.ts # [내부용] 데이터 조회 로직 (읽기)
-    ├── service.server.ts # [외부용] 데이터 조회/변경 로직 (읽기/쓰기/수정/삭제)
-    ├── types.ts          # 해당 Feature에서 사용하는 타입
-    └── validators.ts     # Zod 등을 이용한 데이터 유효성 검증
+    ├── index.ts              # client-safe 배럴 (validators, schema, types, ui만 export)
+    ├── index.server.ts       # server-only 배럴 (service.server, queries.server 등 export)
+    ├── queries.server.ts     # [내부용] 데이터 조회 로직 (읽기)
+    ├── service.server.ts     # [외부용] 데이터 조회/변경 로직 (읽기/쓰기/수정/삭제)
+    ├── types.ts              # 해당 Feature에서 사용하는 타입
+    └── validators.ts         # Zod 등을 이용한 데이터 유효성 검증
 ```
 
 - **`*.server.ts`**: 서버 전용 코드임을 명시하여 클라이언트 번들에 포함되지 않도록 합니다.
-- **`index.ts`**: `service`와 `validators` 모듈만 외부에 노출합니다. `queries`는 `service` 내부에서만 사용되어야 합니다.
+- **`index.ts` (client-safe 배럴)**: 절대 서버 전용 파일을 재export하지 않습니다. `validators`, `schema`, `types`, `ui` 등만 export 하세요.
+- **`index.server.ts` (server-only 배럴)**: 서버 전용 항목만 export 합니다. 예) `export * as service from "./service.server"`.
 
 ## 3. 임포트 정책 (Barrel-only Imports)
 
-Feature 내부의 모듈은 `index.ts`를 통해서만 외부에 노출됩니다. 깊은 경로의 직접적인 임포트(deep import)는 금지됩니다.
+Feature 내부의 모듈은 배럴을 통해서만 외부에 노출됩니다. 깊은 경로의 직접적인 임포트(deep import)는 금지됩니다.
 
-**이를 위해 `biome.json`에 아래 규칙을 적용합니다.**
+임포트 규칙
+- 서버 코드(라우트 loader/action, API 라우트, 서버 서비스/헬퍼): `~/features/[feature]/index.server`에서 import
+- 클라이언트/UI 코드(컴포넌트, 훅, 브라우저 전용 유틸): `~/features/[feature]/index`에서 import
+
+**프로젝트의 실제 `biome.json` 규칙 (발췌):**
 
 ```json
 {
   "linter": {
+    "enabled": true,
     "rules": {
-      "nursery": {
+      "recommended": true,
+      "style": {
+        "noNonNullAssertion": "off",
         "noRestrictedImports": {
           "level": "error",
           "options": {
-            "patterns": [{
-              "group": [
-                "~/features/*/**",
-                "**/features/*/**",
-                "!~/features/*/index",
-                "!~/features/*/*/index",
-                "!~/features/*/*/types",
-                "!~/features/*/*/ui/**"
-              ],
-              "message": "Deep import는 금지됩니다. 각 feature의 index.ts를 통해 임포트하세요."
-            }]
+            "patterns": [
+              {
+                "group": [
+                  "~/features/*/**",
+                  "**/features/*/**",
+                  "!~/features/*/index",
+                  "!~/features/*/*/index",
+                  "!~/features/*/*/types",
+                  "!~/features/*/*/types/**",
+                  "!~/features/*/*/schema",
+                  "!~/features/*/*/schema/**",
+                  "!~/features/*/index.server",
+                  "!~/features/*/ui/**",
+                  "!~/features/*/*/ui/**",
+                  "!**/features/*/ui/index",
+                  "!~/features/index",
+                  "!**/features/*/index",
+                  "!**/features/*/*/index",
+                  "!**/features/index",
+                  "!**/features/*/index.server",
+                  "!**/features/*/*/index.server"
+                ],
+                "message": "Deep import 금지: feature 배럴(index)로만 import 하세요."
+              }
+            ]
           }
         }
       }
@@ -60,6 +83,23 @@ Feature 내부의 모듈은 `index.ts`를 통해서만 외부에 노출됩니다
   }
 }
 ```
+
+## 3.1. index.ts vs index.server.ts 규칙 요약
+
+- 금지: `index.ts`에서 `service.server`, `queries.server`, `token.service.server` 등을 재export
+- 허용: `index.server.ts`에서 서버 전용 항목 재export
+- 서버 파일에서 클라이언트 배럴을 가져오지 않습니다. (서버는 필요 시 `index.server.ts` 또는 개별 `.server.ts`를 사용)
+- 클라이언트 코드에서 `index.server.ts`를 가져오지 않습니다.
+
+도입 배경
+- Remix Vite는 클라이언트 번들에 서버 전용 모듈이 섞여 들어가면 빌드를 차단합니다. ("Server-only module referenced by client")
+- `index.ts`가 서버 전용 모듈을 재export하면, UI가 배럴을 통해 간접적으로 서버 코드를 참조하여 빌드 에러와 보안 리스크가 발생합니다.
+- 배럴을 `index`(client-safe)와 `index.server`(server-only)로 이원화하면, 개발자가 코드 경계를 명확히 지킬 수 있고 린트 규칙과도 충돌하지 않습니다.
+
+마이그레이션 가이드(기존 코드 정리 시)
+- `index.ts`에서 서버 전용 export 제거 → `index.server.ts`에 추가
+- 서버 사이드 import를 `~/features/[feature]/index.server`로 변경
+- 클라이언트(UI) import는 `~/features/[feature]/index` 유지
 
 ## 4. 프레임워크와 로직의 분리
 

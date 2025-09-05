@@ -1,5 +1,5 @@
 import { redirect } from "@remix-run/node";
-import { core, edit } from "~/features/auth";
+import { core, edit } from "~/features/auth/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { fail, ok } from "~/utils/action.server";
 

@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
-import { service } from "~/features/auth/new-password/index";
+import { service } from "~/features/auth/new-password/index.server";
 import { NewPasswordForm } from "~/features/auth/new-password/ui/NewPasswordForm";
 
 export const loader = async (args: LoaderFunctionArgs) => {

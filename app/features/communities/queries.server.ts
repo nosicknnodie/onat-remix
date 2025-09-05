@@ -155,11 +155,7 @@ export async function upsertPostVote(userId: string, postId: string, vote: -1 | 
   return { vote, sum: sum._sum.vote ?? 0 };
 }
 
-export async function upsertCommentVote(
-  userId: string,
-  commentId: string,
-  vote: -1 | 0 | 1,
-) {
+export async function upsertCommentVote(userId: string, commentId: string, vote: -1 | 0 | 1) {
   await prisma.commentVote.upsert({
     where: { commentId_userId: { commentId, userId } },
     update: { vote },

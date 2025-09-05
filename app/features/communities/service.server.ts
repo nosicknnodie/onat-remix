@@ -169,11 +169,7 @@ export async function votePost(userId: string, postId: string, vote: -1 | 0 | 1)
   return { ok: true as const, ...res };
 }
 
-export async function voteComment(
-  userId: string,
-  commentId: string,
-  vote: -1 | 0 | 1,
-) {
+export async function voteComment(userId: string, commentId: string, vote: -1 | 0 | 1) {
   const { upsertCommentVote } = await import("./queries.server");
   if (![-1, 0, 1].includes(vote)) {
     return { ok: false as const, status: 400, message: "Invalid vote value" };

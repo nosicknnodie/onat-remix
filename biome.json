@@ -39,13 +39,16 @@
                   "!~/features/*/*/types/**",
                   "!~/features/*/*/schema",
                   "!~/features/*/*/schema/**",
+                  "!~/features/*/index.server",
                   "!~/features/*/ui/**",
                   "!~/features/*/*/ui/**",
                   "!**/features/*/ui/index",
                   "!~/features/index",
                   "!**/features/*/index",
                   "!**/features/*/*/index",
-                  "!**/features/index"
+                  "!**/features/index",
+                  "!**/features/*/index.server",
+                  "!**/features/*/*/index.server"
                 ],
                 "message": "Deep import 금지: feature 배럴(index)로만 import 하세요."
               }
