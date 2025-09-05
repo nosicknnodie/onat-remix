@@ -71,10 +71,7 @@ interface ILayoutProps {}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const user = await getUser(request);
-  const { club, player } = await service.getClubLayoutData(
-    params.id as string,
-    user?.id,
-  );
+  const { club, player } = await service.getClubLayoutData(params.id as string, user?.id);
 
   if (!club) {
     throw redirect("/404");

@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import type { Club, User } from "@prisma/client";
 import { prisma } from "tests/setup";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mockReset } from "vitest-mock-extended";
@@ -50,16 +50,22 @@ describe("createClub service", () => {
       return await callback(prisma);
     });
 
-    const mockCreatedClub = {
+    const mockCreatedClub: Club = {
       id: "club-1",
-      ...mockInput,
+      name: mockInput.name,
+      description: mockInput.description ?? null,
+      si: mockInput.si ?? null,
+      gun: mockInput.gun ?? null,
+      imageId: mockInput.imageId ?? null,
+      emblemId: mockInput.emblemId ?? null,
+      isPublic: mockInput.isPublic ?? false,
       ownerUserId: mockUser.id,
       createUserId: mockUser.id,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    prisma.club.create.mockResolvedValue(mockCreatedClub as any);
+    prisma.club.create.mockResolvedValue(mockCreatedClub);
 
     const result = await createClub({ input: mockInput, ownerUser: mockUser });
 

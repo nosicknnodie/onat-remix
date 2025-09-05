@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
-import { prisma } from "~/libs/db/db.server";
+import { service } from "~/features/communities";
 import { getUser } from "~/libs/db/lucia.server";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -7,20 +7,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   if (!user) return redirect("/auth/login");
   const method = request.method.toUpperCase();
   if (method === "DELETE") {
-    try {
-      await prisma.post.update({
-        where: {
-          id: params.id,
-          authorId: user.id,
-        },
-        data: {
-          state: "DELETED",
-        },
-      });
-      return Response.json({ success: "success" });
-    } catch (error) {
-      console.error(error);
-      return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
-    }
+    if (!params.id) return Response.json({ success: false }, { status: 400 });
+    const result = await service.deletePost(params.id, user.id);
+    if (result.ok) return Response.json({ success: true });
+    return Response.json({ success: false, errors: result.message }, { status: 500 });
   }
 };

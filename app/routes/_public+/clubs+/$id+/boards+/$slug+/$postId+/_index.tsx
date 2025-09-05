@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { LexicalEditor, SerializedEditorState } from "lexical";
-import _ from "lodash";
 import { useState, useTransition } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaArrowAltCircleLeft, FaRegComment } from "react-icons/fa";
@@ -16,7 +15,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts/AuthUserContext";
-import { prisma } from "~/libs/db/db.server";
+import { service } from "~/features/communities";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import CommentInput from "~/template/post/CommentInput";
@@ -27,36 +26,11 @@ import Settings from "~/template/post/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  const id = params.postId;
-  // const slug = params.slug;
+  const id = params.postId as string;
   try {
-    const post = await prisma.post.findUnique({
-      where: { id },
-      include: {
-        board: true,
-        author: { include: { userImage: true } },
-        likes: {
-          where: {
-            userId: user?.id,
-          },
-        },
-        votes: true,
-        _count: {
-          select: {
-            comments: { where: { parentId: null, isDeleted: false } },
-            likes: true,
-          },
-        },
-      },
-    });
-    if (!post) return { success: false, errors: "Not Found" };
-    return {
-      post: {
-        ..._.omit(post, "votes"),
-        sumVote: post.votes.reduce((acc, v) => acc + v.vote, 0),
-        currentVote: post.votes.find((vote) => vote.userId === user?.id),
-      },
-    };
+    const result = await service.getPostDetail(id, user?.id);
+    if (!result) return { success: false, errors: "Not Found" };
+    return result;
   } catch (_error) {
     console.error(_error);
     return { success: false, errors: "Internal Server Error" };
@@ -71,7 +45,7 @@ const PostView = (_props: IPostViewProps) => {
   const session = useSession();
   const [isTextMode, setIsTextMode] = useState(false);
   const [path, setPath] = useState<string | undefined>(undefined);
-  const post = loaderData.post;
+  const post = "post" in loaderData ? loaderData.post : undefined;
 
   const mutation = useMutation({
     mutationFn: async ({ root, parentId }: { root: SerializedEditorState; parentId?: string }) => {
@@ -108,6 +82,7 @@ const PostView = (_props: IPostViewProps) => {
         console.error(error);
       }
     },
+    enabled: Boolean(post?.id),
   });
   // Helper to recursively sort a comment tree node array by createdAt descending
   function sortCommentTreeRedditLike(nodes: CommentTreeNode[]): CommentTreeNode[] {
@@ -163,7 +138,7 @@ const PostView = (_props: IPostViewProps) => {
   };
 
   if (!post) {
-    return <div>게시글이 존재하지 않습니다.</div>;
+    return <div>게시글이 존재하지 않습니다.</div>;
   }
   return (
     <>
@@ -294,12 +269,12 @@ function CommentItem({
   onMoreReplies?: (path: string) => void;
 }) {
   const loaderData = useLoaderData<typeof loader>();
-  const post = loaderData.post;
+  const post = "post" in loaderData ? loaderData.post : undefined;
   const session = useSession();
   const queryClient = useQueryClient();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditorMode, setIsEditorMode] = useState(false);
-  const [, startTransition] = useTransition();
+  const [, _startTransition] = useTransition();
 
   const mutation = useMutation({
     mutationFn: async ({ root, parentId }: { root: SerializedEditorState; parentId?: string }) => {
@@ -313,6 +288,8 @@ function CommentItem({
       return result;
     },
   });
+  if (!post) return null;
+
   const handleInputComment = async (root?: SerializedEditorState, editor?: LexicalEditor) => {
     if (!root) return;
     const res = await mutation.mutateAsync({ root, parentId: comment.id });
@@ -341,24 +318,26 @@ function CommentItem({
       queryKey: ["COMMENTS_QUERY", post?.id],
     });
   };
-  const handleEditComment = async (root?: SerializedEditorState, _editor?: LexicalEditor) => {
-    startTransition(async () => {
-      if (!root) return;
-      const res = await fetch(`/api/comments/${comment.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: root }),
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        console.error(result);
-        return;
-      }
-      await queryClient.invalidateQueries({
-        queryKey: ["COMMENTS_QUERY", post?.id],
-      });
-      setIsEditorMode(false);
+  const handleEditComment = async (
+    root?: SerializedEditorState,
+    _editor?: LexicalEditor,
+  ): Promise<boolean | undefined> => {
+    if (!root) return false;
+    const res = await fetch(`/api/comments/${comment.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: root }),
     });
+    const result = await res.json();
+    if (!res.ok) {
+      console.error(result);
+      return false;
+    }
+    await queryClient.invalidateQueries({
+      queryKey: ["COMMENTS_QUERY", post?.id],
+    });
+    setIsEditorMode(false);
+    return true;
   };
   if (!post) return null;
 

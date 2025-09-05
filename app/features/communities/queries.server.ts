@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
 
 export async function getCommunityBoards() {
@@ -48,5 +49,96 @@ export async function getCommunityBoardList() {
   return await prisma.board.findMany({
     where: { isUse: true, clubId: null },
     orderBy: { order: "asc" },
+  });
+}
+
+export async function findPostWithFiles(postId: string) {
+  return await prisma.post.findUnique({
+    where: { id: postId },
+    include: { files: true },
+  });
+}
+
+export async function deleteFilesByIds(ids: string[]) {
+  if (ids.length === 0) return { count: 0 };
+  return await prisma.file.deleteMany({ where: { id: { in: ids } } });
+}
+
+export async function updatePostPublish(
+  postId: string,
+  data: { boardId: string; title: string; contentJSON: unknown },
+) {
+  return await prisma.post.update({
+    where: { id: postId },
+    data: {
+      boardId: data.boardId,
+      state: "PUBLISHED",
+      title: data.title,
+      content: data.contentJSON as Prisma.InputJsonValue,
+      createdAt: new Date(),
+    },
+  });
+}
+
+export async function findBoardById(boardId: string) {
+  return await prisma.board.findUnique({ where: { id: boardId } });
+}
+
+export async function findPostDetail(postId: string, userId?: string) {
+  return await prisma.post.findUnique({
+    where: { id: postId },
+    include: {
+      board: true,
+      author: { include: { userImage: true } },
+      likes: userId ? { where: { userId } } : true,
+      votes: true,
+      _count: {
+        select: {
+          comments: { where: { parentId: null, isDeleted: false } },
+          likes: true,
+        },
+      },
+    },
+  });
+}
+
+export async function softDeletePostByAuthor(postId: string, authorId: string) {
+  return await prisma.post.update({
+    where: { id: postId, authorId },
+    data: { state: "DELETED" },
+  });
+}
+
+export async function findCommentWithFilesForAuthor(commentId: string, authorId: string) {
+  return await prisma.postComment.findUnique({
+    where: { id: commentId, authorId },
+    include: { files: true },
+  });
+}
+
+export async function updateCommentContentAndConnectFiles(
+  commentId: string,
+  authorId: string,
+  contentJSON: unknown,
+  newImageIds: string[],
+) {
+  return await prisma.postComment.update({
+    where: { id: commentId, authorId },
+    data: {
+      content: contentJSON as Prisma.InputJsonValue,
+      files: { connect: newImageIds.map((id) => ({ id })) },
+    },
+  });
+}
+
+export async function markFilesPermanent(ids: string[]) {
+  if (ids.length === 0) return { count: 0 };
+  return await prisma.file.updateMany({ where: { id: { in: ids } }, data: { isTemp: false } });
+}
+
+export async function softDeleteCommentByAuthor(commentId: string, authorId: string) {
+  return await prisma.postComment.update({
+    where: { id: commentId, authorId },
+    data: { isDeleted: true },
   });
 }

@@ -52,11 +52,12 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 ### 3단계: 게시글/커뮤니티 (Posts/Communities)
 - [x] `_public+/communities+/_index.tsx`
   - [x] **Refactor**: loader 로직을 `service` 파일로 이전
-- [ ] `_public+/communities+/new.tsx`
-- [ ] `_public+/communities+/$slug+/$id/_index.tsx`
-- [ ] `_public+/clubs+/$id/boards+/$slug+/$postId/_index.tsx`
+- [x] `_public+/communities+/new.tsx`
+- [x] `_public+/communities+/$slug+/$id/_index.tsx`
+- [x] `_public+/clubs+/$id/boards+/$slug+/$postId/_index.tsx`
 - [ ] `api+/posts+/$id/_index.tsx`
-- [ ] `api+/comments+/$id/_index.tsx`
+- [x] `api+/posts+/$id/_index.tsx`
+- [x] `api+/comments+/$id/_index.tsx`
 - [ ] `api+/post-like.tsx`
 - [ ] `api+/post-vote.tsx`
 - [ ] `api+/comment-vote.tsx`

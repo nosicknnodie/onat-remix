@@ -1,9 +1,9 @@
+import type { User } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import type { User } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { CreateClubSchema, type CreateClubInput } from "./validators";
+import { type CreateClubInput, CreateClubSchema } from "./validators";
 
 export async function handleCreateClubAction({ request }: ActionFunctionArgs): Promise<Response> {
   const user = await getUser(request);

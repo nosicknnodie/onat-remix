@@ -40,8 +40,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-
-
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) {

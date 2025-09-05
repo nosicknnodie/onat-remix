@@ -1,4 +1,3 @@
-
 import { redirect } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";

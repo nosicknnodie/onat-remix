@@ -1,4 +1,3 @@
-
 import { redirect } from "@remix-run/node";
 import { core, edit } from "~/features/auth";
 import { getUser } from "~/libs/db/lucia.server";

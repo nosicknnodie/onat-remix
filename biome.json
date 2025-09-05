@@ -17,7 +17,7 @@
         "recommended": true,
         "useKeyWithClickEvents": "off"
       },
-     
+
       "complexity": {
         "noUselessCatch": "warn",
         "noUselessFragments": "off",
@@ -28,8 +28,9 @@
         "noRestrictedImports": {
           "level": "error",
           "options": {
-            "patterns": [{
-              "group": [                  
+            "patterns": [
+              {
+                "group": [
                   "~/features/*/**",
                   "**/features/*/**",
                   "!~/features/*/index",
@@ -46,8 +47,9 @@
                   "!**/features/*/*/index",
                   "!**/features/index"
                 ],
-              "message": "Deep import 금지: feature 배럴(index)로만 import 하세요."
-            }]
+                "message": "Deep import 금지: feature 배럴(index)로만 import 하세요."
+              }
+            ]
           }
         }
       },
