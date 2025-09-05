@@ -142,3 +142,52 @@ export async function softDeleteCommentByAuthor(commentId: string, authorId: str
     data: { isDeleted: true },
   });
 }
+
+// Votes & Likes
+
+export async function upsertPostVote(userId: string, postId: string, vote: -1 | 0 | 1) {
+  await prisma.postVote.upsert({
+    where: { postId_userId: { postId, userId } },
+    update: { vote },
+    create: { postId, userId, vote },
+  });
+  const sum = await prisma.postVote.aggregate({ where: { postId }, _sum: { vote: true } });
+  return { vote, sum: sum._sum.vote ?? 0 };
+}
+
+export async function upsertCommentVote(
+  userId: string,
+  commentId: string,
+  vote: -1 | 0 | 1,
+) {
+  await prisma.commentVote.upsert({
+    where: { commentId_userId: { commentId, userId } },
+    update: { vote },
+    create: { commentId, userId, vote },
+  });
+  const sum = await prisma.commentVote.aggregate({ where: { commentId }, _sum: { vote: true } });
+  // denormalized cache on comment
+  await prisma.postComment.update({
+    where: { id: commentId },
+    data: { voteCount: sum._sum.vote ?? 0 },
+  });
+  return { vote, sum: sum._sum.vote ?? 0 };
+}
+
+export async function likePost(userId: string, postId: string) {
+  await prisma.postLike.create({ data: { userId, postId } });
+  const [likeCount, liked] = await Promise.all([
+    prisma.postLike.count({ where: { postId } }),
+    prisma.postLike.findFirst({ where: { postId, userId } }),
+  ]);
+  return { liked: Boolean(liked), likeCount };
+}
+
+export async function unlikePost(userId: string, postId: string) {
+  await prisma.postLike.deleteMany({ where: { userId, postId } });
+  const [likeCount, liked] = await Promise.all([
+    prisma.postLike.count({ where: { postId } }),
+    prisma.postLike.findFirst({ where: { postId, userId } }),
+  ]);
+  return { liked: Boolean(liked), likeCount };
+}

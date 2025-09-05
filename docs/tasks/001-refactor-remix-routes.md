@@ -55,12 +55,11 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [x] `_public+/communities+/new.tsx`
 - [x] `_public+/communities+/$slug+/$id/_index.tsx`
 - [x] `_public+/clubs+/$id/boards+/$slug+/$postId/_index.tsx`
-- [ ] `api+/posts+/$id/_index.tsx`
 - [x] `api+/posts+/$id/_index.tsx`
 - [x] `api+/comments+/$id/_index.tsx`
-- [ ] `api+/post-like.tsx`
-- [ ] `api+/post-vote.tsx`
-- [ ] `api+/comment-vote.tsx`
+- [x] `api+/post-like.tsx`
+- [x] `api+/post-vote.tsx`
+- [x] `api+/comment-vote.tsx`
 
 ### 4단계: 경기/매치 (Matches)
 - [ ] `_public+/matches+/_index.tsx`

@@ -1,6 +1,6 @@
-// POST /api/post-like
+// POST /api/comment-vote
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { prisma } from "~/libs/db/db.server";
+import { service } from "~/features/communities";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
 
@@ -9,47 +9,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await parseRequestData(request);
   const userId = user?.id;
   const commentId = data.commentId as string;
-  const vote = parseInt(data.vote as string, 10);
+  const vote = parseInt(data.vote as string, 10) as -1 | 0 | 1;
 
-  if (!userId || !commentId) {
-    return Response.json({ success: false }, { status: 400 });
+  if (!userId || !commentId) return Response.json({ success: false }, { status: 400 });
+
+  const result = await service.voteComment(userId, commentId, vote);
+  if (!result.ok) {
+    return Response.json({ success: false, error: result.message }, { status: result.status ?? 500 });
   }
-  if (!commentId || ![-1, 0, 1].includes(vote)) {
-    return Response.json({ success: false, error: "Invalid vote value" }, { status: 400 });
-  }
-
-  await prisma.commentVote.upsert({
-    where: {
-      commentId_userId: {
-        userId,
-        commentId,
-      },
-    },
-    update: {
-      vote,
-    },
-    create: {
-      userId,
-      commentId,
-      vote,
-    },
-  });
-
-  const sum = await prisma.commentVote.aggregate({
-    where: { commentId },
-    _sum: { vote: true },
-  });
-
-  await prisma.postComment.update({
-    where: { id: commentId },
-    data: {
-      voteCount: sum._sum.vote ?? 0,
-    },
-  });
-
-  return Response.json({
-    success: true,
-    vote,
-    sum: sum._sum.vote ?? 0,
-  });
+  return Response.json({ success: true, vote: result.vote, sum: result.sum });
 };

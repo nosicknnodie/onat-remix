@@ -159,3 +159,36 @@ export async function deleteComment(commentId: string, userId: string) {
     return { ok: false as const, message: "삭제 실패" };
   }
 }
+
+export async function votePost(userId: string, postId: string, vote: -1 | 0 | 1) {
+  const { upsertPostVote } = await import("./queries.server");
+  if (![-1, 0, 1].includes(vote)) {
+    return { ok: false as const, status: 400, message: "Invalid vote value" };
+  }
+  const res = await upsertPostVote(userId, postId, vote);
+  return { ok: true as const, ...res };
+}
+
+export async function voteComment(
+  userId: string,
+  commentId: string,
+  vote: -1 | 0 | 1,
+) {
+  const { upsertCommentVote } = await import("./queries.server");
+  if (![-1, 0, 1].includes(vote)) {
+    return { ok: false as const, status: 400, message: "Invalid vote value" };
+  }
+  const res = await upsertCommentVote(userId, commentId, vote);
+  return { ok: true as const, ...res };
+}
+
+export async function togglePostLike(
+  userId: string,
+  postId: string,
+  actionType: "like" | "unlike",
+) {
+  const { likePost, unlikePost } = await import("./queries.server");
+  const op = actionType === "like" ? likePost : unlikePost;
+  const res = await op(userId, postId);
+  return { ok: true as const, ...res };
+}
