@@ -5,6 +5,7 @@
  */
 
 import type { Player, Prisma } from "@prisma/client";
+import type { getClubLayoutData, getClubMembers } from "./service.server";
 
 // 클럽 이미지와 엠블럼을 포함한 확장된 클럽 타입
 export type Club = Prisma.ClubGetPayload<{
@@ -38,3 +39,6 @@ export type ClubCardProps = {
   club: Club;
   isPending?: boolean;
 };
+
+export type IPlayer = Awaited<ReturnType<typeof getClubMembers>>[number];
+export type IClubLayoutLoaderData = Awaited<ReturnType<typeof getClubLayoutData>>;

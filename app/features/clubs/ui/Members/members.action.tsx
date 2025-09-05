@@ -16,10 +16,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { IClubLayoutLoaderData } from "../_layout";
-import InfoDrawer from "./InfoDrawer";
+import type { IClubLayoutLoaderData, IPlayer } from "../../types";
+import InfoDrawer from "../InfoDrawer";
 import { useGetPlayers } from "./member.context";
-import type { IPlayer } from "./members.columns";
 
 interface IMembersActionProps {
   payload: IPlayer;

@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { prisma } from "~/libs/db/db.server";
+import { service } from "~/features/clubs";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const clubId = params.id;
@@ -8,20 +8,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return Response.json({ error: "clubId is required" }, { status: 400 });
   }
   try {
-    const mercenaries = await prisma.mercenary.findMany({
-      where: {
-        clubId: clubId,
-      },
-      include: {
-        attendances: true,
-        user: {
-          include: {
-            userImage: true,
-          },
-        },
-      },
-    });
-
+    const mercenaries = await service.getClubMercenaries(clubId);
     return Response.json({ mercenaries });
   } catch (e) {
     return Response.json({ error: e }, { status: 500 });

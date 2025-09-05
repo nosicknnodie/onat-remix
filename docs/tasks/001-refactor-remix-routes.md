@@ -34,17 +34,24 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [x] `_public+/clubs+/_index.tsx`
 - [x] `_public+/clubs+/new.tsx`
   - [x] **Refactor**: action 로직을 단일 서비스 핸들러 함수로 이전
-- [ ] `_public+/clubs+/$id/_layout.tsx`
-  - [ ] **Refactor**: loader의 데이터 조회 로직을 `queries` 파일로 이전
-- [ ] `_public+/clubs+/$id/edit.tsx`
-- [ ] `_public+/clubs+/$id/members.tsx`
-- [ ] `_public+/clubs+/$id/pendings.tsx`
-- [ ] `api+/clubs+/$id/join.tsx`
-- [ ] `api+/clubs+/$id/mercenaries.tsx`
-- [ ] `api+/clubs+/$id/players.tsx`
+- [x] `_public+/clubs+/$id/_layout.tsx`
+  - [x] **Refactor**: loader의 데이터 조회 로직을 `service` 파일로 이전
+- [x] `_public+/clubs+/$id/edit.tsx`
+  - [x] **Refactor**: loader와 action 로직을 `service` 파일로 이전
+- [x] `_public+/clubs+/$id/members.tsx`
+  - [x] **Refactor**: loader 로직을 `service` 파일로 이전
+- [x] `_public+/clubs+/$id/pendings.tsx`
+  - [x] **Refactor**: loader 로직을 `service` 파일로 이전
+- [x] `api+/clubs+/$id/join.tsx`
+  - [x] **Refactor**: action 로직을 `service` 파일로 이전
+- [x] `api+/clubs+/$id/mercenaries.tsx`
+  - [x] **Refactor**: loader 로직을 `service` 파일로 이전
+- [x] `api+/clubs+/$id/players.tsx`
+  - [x] **Refactor**: loader 로직을 `service` 파일로 이전
 
 ### 3단계: 게시글/커뮤니티 (Posts/Communities)
-- [ ] `_public+/communities+/_index.tsx`
+- [x] `_public+/communities+/_index.tsx`
+  - [x] **Refactor**: loader 로직을 `service` 파일로 이전
 - [ ] `_public+/communities+/new.tsx`
 - [ ] `_public+/communities+/$slug+/$id/_index.tsx`
 - [ ] `_public+/clubs+/$id/boards+/$slug+/$postId/_index.tsx`
@@ -75,3 +82,10 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [ ] `api+/upload-url.tsx`
 - [ ] `api+/kakao+/search.tsx`
 - [ ] ...기타 식별된 API 라우트
+
+## ✅ 완료 조건 (Definition of Done)
+
+- `app/routes` 내의 모든 `loader`와 `action` 함수는 10줄 이하의 코드 라인을 유지해야 합니다.
+- 모든 비즈니스 로직은 `app/features` 내의 해당 모듈로 완전히 이전되어야 합니다.
+- 리팩토링된 모든 기능은 기존과 동일하게 작동해야 하며, 수동 테스트를 통해 검증되어야 합니다.
+- `CONVENTION.md` 문서의 모든 규칙을 준수해야 합니다.

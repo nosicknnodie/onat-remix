@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import type { IPendingsPageLoaderData } from "../pendings";
+import type { IPlayer } from "../../types";
 
 export const PendingsContext = createContext<
-  (IPendingsPageLoaderData & { refetch: () => Promise<void> }) | undefined
+  ({ players: IPlayer[] } & { refetch: () => Promise<void> | void }) | undefined
 >(undefined);
 
 export const useGetPendingPlayers = () => {

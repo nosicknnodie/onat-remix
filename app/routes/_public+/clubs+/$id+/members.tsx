@@ -1,11 +1,8 @@
-import type { Player } from "@prisma/client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData, useLocation } from "@remix-run/react";
 import { useMemo } from "react";
-import DataTable from "~/components/DataTable";
-import { prisma } from "~/libs/db/db.server";
-import { PlayersContext } from "./_components/member.context";
-import { memberColumns } from "./_components/members.columns";
+import { service } from "~/features/clubs";
+import Members from "~/features/clubs/ui/Members";
 export const handle = { breadcrumb: "멤버" };
 interface IMembersPageProps {}
 
@@ -13,52 +10,29 @@ export const loader = async ({ request: _request, params }: LoaderFunctionArgs) 
   const clubId = params.id;
 
   if (!clubId) {
-    return Response.json({ error: "clubId is required" }, { status: 400 });
+    return { players: [] };
   }
   try {
-    const players = await prisma.player.findMany({
-      where: {
-        clubId: clubId,
-        status: "APPROVED",
-      },
-      include: {
-        user: {
-          include: {
-            userImage: true,
-          },
-        },
-      },
-    });
-
-    return Response.json({ players });
+    const players = await service.getClubMembers(clubId);
+    return { players };
   } catch {
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    return { players: [] };
   }
 };
 
-export type IMembersPageLoaderData = {
-  players: (Player & { user: { userImage: string } })[];
-};
+export type IPlayer = Awaited<ReturnType<typeof service.getClubMembers>>[number];
 
 const MembersPage = (_props: IMembersPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const fetch = useFetcher<IMembersPageLoaderData>();
+  const fetch = useFetcher<{ players: IPlayer[] }>();
   const location = useLocation();
   const players = useMemo(
     () => fetch.data?.players ?? loaderData.players ?? [],
     [loaderData, fetch.data],
   );
-  const value = {
-    players,
-    refetch: async () => {
-      fetch.load(location.pathname);
-    },
-  };
   return (
     <>
-      <PlayersContext.Provider value={value}>
-        <DataTable data={value.players} columns={memberColumns} />
-      </PlayersContext.Provider>
+      <Members players={players} refetch={() => fetch.load(location.pathname)} />
     </>
   );
 };

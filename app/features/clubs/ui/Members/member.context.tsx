@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import type { IMembersPageLoaderData } from "../members";
+import type { IPlayer } from "../../types";
 
 export const PlayersContext = createContext<
-  (IMembersPageLoaderData & { refetch: () => Promise<void> }) | undefined
+  ({ players: IPlayer[] } & { refetch: () => Promise<void> | void }) | undefined
 >(undefined);
 
 export const useGetPlayers = () => {

@@ -13,9 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { confirm } from "~/libs/confirm";
-import type { IClubLayoutLoaderData } from "../_layout";
-import InfoDrawer from "./InfoDrawer";
-import type { IPlayer } from "./members.columns";
+import type { IClubLayoutLoaderData, IPlayer } from "../../types";
+import InfoDrawer from "../InfoDrawer";
 import { useGetPendingPlayers } from "./pendings.context";
 
 interface IPendingsActionProps {

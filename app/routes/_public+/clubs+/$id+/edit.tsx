@@ -17,53 +17,30 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { prisma } from "~/libs/db/db.server"; // prisma 경로에 맞게 수정하세요
+import { service } from "~/features/clubs";
 import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
 import { SIGUNGU } from "~/libs/sigungu";
 import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 import type { IClubLayoutLoaderData } from "./_layout";
 export const handle = { breadcrumb: "수정" };
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
   const user = await getUser(request); // 로그인한 사용자 확인 (없으면 리다이렉트 등 처리 가능)
 
   if (!user) {
     return redirect("/auth/login");
   }
 
-  const id = formData.get("id")?.toString();
-  const imageId = formData.get("imageId")?.toString() || null;
-  const emblemId = formData.get("emblemId")?.toString() || null;
-  const name = formData.get("name")?.toString().trim();
-  const description = formData.get("description")?.toString().trim();
-  const isPublic = formData.get("isPublic") === "true";
-  const si = formData.get("si")?.toString();
-  const gun = formData.get("gun")?.toString();
+  const formData = await request.formData();
+  const result = await service.updateClub(formData, user.id);
 
-  if (!name) {
-    return Response.json({ error: "클럽 이름은 필수입니다." }, { status: 400 });
-  }
-
-  try {
-    const club = await prisma.club.update({
-      where: { id },
-      data: {
-        name,
-        description,
-        isPublic,
-        imageId: imageId || undefined,
-        emblemId: emblemId || undefined,
-        si: si !== "null" ? si || null : null,
-        gun: gun !== "null" ? gun || null : null,
-      },
-    });
-
-    return redirect(`/clubs/${club.id}`);
-  } catch (err) {
-    console.error(err);
-    return Response.json({ error: "클럽 생성 중 오류가 발생했습니다." }, { status: 500 });
+  if (result.ok && result.club) {
+    return redirect(`/clubs/${result.club.id}`);
+  } else {
+    return Response.json({ error: result.message }, { status: 400 });
   }
 }
+
+
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -72,19 +49,16 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     throw redirect("/auth/login");
   }
 
-  const id = params.id;
-  const club = await prisma.club.findUnique({
-    where: { id },
-    include: { image: true, emblem: true },
-  });
-  if (!club) {
+  const ownerId = await service.getClubOwner(params.id as string);
+
+  if (!ownerId) {
     // 클럽가 없는 경우는 404 페이지로 리디렉트
     throw redirect("/404");
   }
-  if (user.id !== club.ownerUserId) {
+  if (user.id !== ownerId) {
     // 클럽 작성자와 로그인한 사용자가 다른 경우는 404 페이지로 리디렉트
 
-    return redirect(`/clubs/${id}`);
+    return redirect(`/clubs/${params.id}`);
   }
   return null;
 };

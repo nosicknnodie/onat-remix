@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts/AuthUserContext";
-import { prisma } from "~/libs/db/db.server";
+import { service } from "~/features/clubs";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import JoinDialog from "~/template/club/JoinDialog";
@@ -71,48 +71,16 @@ interface ILayoutProps {}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const user = await getUser(request);
-  // const club = await prisma.club.findUnique({
-  //   where: {
-  //     id: params.id,
-  //   },
-  //   include: {
-  //     image: { select: { url: true } },
-  //     emblem: { select: { url: true } },
-  //   },
-  // });
-  const [club, player] = await Promise.all([
-    prisma.club.findUnique({
-      where: {
-        id: params.id,
-      },
-      include: {
-        image: { select: { url: true } },
-        emblem: { select: { url: true } },
-        // boards: true,
-      },
-    }),
-    user
-      ? prisma.player.findFirst({
-          where: {
-            userId: user?.id,
-            clubId: params.id,
-          },
-          include: {
-            user: {
-              include: {
-                userImage: true,
-              },
-            },
-          },
-        })
-      : null,
-  ]);
+  const { club, player } = await service.getClubLayoutData(
+    params.id as string,
+    user?.id,
+  );
 
   if (!club) {
     throw redirect("/404");
   }
 
-  return Response.json({ club, player });
+  return { club, player };
 }
 
 export type IClubLayoutLoaderData = {

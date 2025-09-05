@@ -1,14 +1,11 @@
 /** biome-ignore-all lint/correctness/noUnusedFunctionParameters: off */
-import type { File, Player, User } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
 import _ from "lodash";
 import { FaStar } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import type { IPlayer } from "../../types";
 import { MembersAction } from "./members.action";
-export interface IPlayer extends Player {
-  user?: User & { userImage?: File | null };
-}
 
 export const memberColumns: ColumnDef<IPlayer>[] = [
   {

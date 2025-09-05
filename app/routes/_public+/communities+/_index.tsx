@@ -7,7 +7,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useSession } from "~/contexts/AuthUserContext";
-import { prisma } from "~/libs/db/db.server";
+import { service } from "~/features/communities";
 import { getBoardIcon } from "~/libs/getBoardIcons";
 
 const RightComponent = () => {
@@ -27,25 +27,7 @@ export const handle = {
 };
 
 export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
-  const boards = await prisma.board.findMany({
-    where: { isUse: true, clubId: null },
-    orderBy: { order: "asc" },
-    include: {
-      posts: {
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        where: { state: "PUBLISHED" },
-        include: {
-          _count: {
-            select: {
-              comments: { where: { parentId: null, isDeleted: false } },
-            },
-          },
-        },
-      },
-    },
-  });
-  return { boards };
+  return await service.getCommunityBoards();
 };
 
 interface ICommunitiesPageProps {}
