@@ -3,10 +3,9 @@ import { useLoaderData } from "@remix-run/react";
 import type { Row, SortingState } from "@tanstack/react-table";
 import Hangul from "hangul-js";
 import { useState, useTransition } from "react";
-import { MercenariesTable } from "~/features/matches";
+import { MercenariesTable, mercenaryColumns } from "~/features/matches";
 import { mercenaries as matches } from "~/features/matches/index.server";
 import { removePhoneHyphen } from "~/libs/convert";
-import { mercenaryColumns } from "./_columns";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const matchId = params.id;
@@ -62,11 +61,12 @@ const MatchClubMecenaryPage = (_props: IMatchClubMecenaryPageProps) => {
     );
   };
 
+  const columns = mercenaryColumns<IMatchClubMecenaryLoaderTData[number]>();
   return (
     <div className="space-y-2">
       <MercenariesTable
         data={mercenaries}
-        columns={mercenaryColumns}
+        columns={columns}
         newPath="./new"
         globalFilter={globalFilter}
         onGlobalFilterChange={handleSearch}

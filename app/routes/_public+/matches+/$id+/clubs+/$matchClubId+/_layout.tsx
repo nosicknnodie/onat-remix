@@ -1,10 +1,9 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
-  Link,
   Outlet,
   useLoaderData,
+  useLocation,
   useNavigate,
   useOutletContext,
   useParams,
@@ -12,23 +11,14 @@ import {
 } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
-import ItemLink from "~/components/ItemLink";
-import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+import { ClubAdminMenu, type ClubSubnavItem, ClubSubnavTabs } from "~/features/matches";
 import { club as matches } from "~/features/matches/index.server";
 import { confirm } from "~/libs/confirm";
 import { getUser } from "~/libs/db/lucia.server";
-import { cn } from "~/libs/utils";
 import CommentSection from "~/template/match-comment/CommentSection";
 import type { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
-const Breadcrumb = ({ match }: { match: any }) => {
+const RightActions = ({ match }: { match: any }) => {
   const data = match.data;
   const params = match.params;
   const role = data.role;
@@ -53,48 +43,25 @@ const Breadcrumb = ({ match }: { match: any }) => {
   };
   if (!role.isAdmin) return null;
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn(
-              "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
-            )}
-          >
-            <span className="sr-only">Open menu</span>
-            <DotsHorizontalIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link to={`/matches/${params.id}/edit`}>매치 수정</Link>
-          </DropdownMenuItem>
-          {matchClubId && (
-            <DropdownMenuCheckboxItem
-              checked={matchClub?.isSelf}
-              onClick={() =>
-                confirm({
-                  title: "매칭 타입변경 주의",
-                  description:
-                    "타입 변경시 포지션 및 골기록이 초기화됩니다. 타입을 변경하시겠습니까?",
-                  confirmText: "타입 변경",
-                  cancelText: "취소",
-                }).onConfirm(() => handleMatchClubIsSelfChange(!matchClub?.isSelf))
-              }
-            >
-              자체전 여부
-            </DropdownMenuCheckboxItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+    <ClubAdminMenu
+      isAdmin={role.isAdmin}
+      editHref={`/matches/${params.id}/edit`}
+      isSelf={matchClub?.isSelf}
+      onToggleSelf={() => {
+        confirm({
+          title: "매칭 타입변경 주의",
+          description: "타입 변경시 포지션 및 골기록이 초기화됩니다. 타입을 변경하시겠습니까?",
+          confirmText: "타입 변경",
+          cancelText: "취소",
+        }).onConfirm(() => handleMatchClubIsSelfChange(!matchClub?.isSelf));
+      }}
+    />
   );
 };
 
 export const handle = {
   breadcrumb: (match: any) => match.data.matchClub?.club?.name,
-  right: (match: any) => <Breadcrumb match={match} />,
+  right: (match: any) => <RightActions match={match} />,
 };
 
 interface IMatchClubIdLayoutProps {}
@@ -110,41 +77,48 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const params = useParams();
+  const location = useLocation();
   const role = loaderData.role;
   const matchClub = loaderData.matchClub;
   const outletData = useOutletContext<IMatchesIdLayoutPageLoaderReturnType>();
+  const base = `/matches/${params.id}/clubs/${params.matchClubId}`;
+  const items: ClubSubnavItem[] = [
+    { label: "정보", href: base, active: location.pathname === base },
+  ];
+  if (role.isPlayer || role.isMercenary) {
+    items.push({
+      label: "참석",
+      href: `${base}/attendance`,
+      active: location.pathname.startsWith(`${base}/attendance`),
+    });
+    if (matchClub?.isSelf) {
+      items.push({
+        label: "Team",
+        href: `${base}/team`,
+        active: location.pathname.startsWith(`${base}/team`),
+      });
+    }
+    items.push({
+      label: "포지션",
+      href: `${base}/position`,
+      active: location.pathname.startsWith(`${base}/position`),
+    });
+  }
+  if (role.isPlayer) {
+    items.push({
+      label: "기록",
+      href: `${base}/record`,
+      active: location.pathname.startsWith(`${base}/record`),
+    });
+    items.push({
+      label: "평점",
+      href: `${base}/rating`,
+      active: location.pathname.startsWith(`${base}/rating`),
+    });
+  }
   return (
     <>
-      <div className="flex gap-x-4 p-2">
-        <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}`} end>
-          정보
-        </ItemLink>
-        {(role.isPlayer || role.isMercenary) && (
-          <>
-            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/attendance`}>
-              참석
-            </ItemLink>
-            {matchClub?.isSelf && (
-              <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/team`}>
-                Team
-              </ItemLink>
-            )}
-            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/position`}>
-              포지션
-            </ItemLink>
-          </>
-        )}
-        {role.isPlayer && (
-          <>
-            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/record`}>
-              기록
-            </ItemLink>
-            <ItemLink to={`/matches/${params.id}/clubs/${params.matchClubId}/rating`}>
-              평점
-            </ItemLink>
-          </>
-        )}
-      </div>
+      <ClubSubnavTabs items={items} />
       <Outlet context={{ ...outletData, ...loaderData }} />
       <CommentSection matchClubId={params.matchClubId} />
     </>

@@ -18,10 +18,14 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { TeamCard, type UIAttendance } from "~/features/matches";
+import {
+  TeamAttendanceActions,
+  TeamCard,
+  TeamEditDialog,
+  type UIAttendance,
+} from "~/features/matches";
 import { team as matches } from "~/features/matches/index.server";
-import { TeamAttendanceActions } from "./_actions";
-import EditDialog from "./_EditDialog";
+// replaced with features TeamEditDialog
 
 /**
  * [LOGIC]
@@ -177,7 +181,17 @@ const TeamPage = (_props: ITeamPageProps) => {
               <TeamCard
                 team={team}
                 headerAction={
-                  <EditDialog payload={team}>
+                  <TeamEditDialog
+                    payload={team}
+                    onUpdate={async (teamId, data) => {
+                      const res = await fetch(`/api/teams/${teamId}`, {
+                        method: "POST",
+                        body: JSON.stringify({ name: data.name, color: data.color }),
+                      }).then((r) => r.json());
+                      if (res.success) revalidate();
+                      return !!res.success;
+                    }}
+                  >
                     <Button
                       variant="ghost"
                       size="icon"
@@ -186,10 +200,32 @@ const TeamPage = (_props: ITeamPageProps) => {
                     >
                       {/* icon inside EditDialog */}
                     </Button>
-                  </EditDialog>
+                  </TeamEditDialog>
                 }
                 renderAttendance={(attendance: UIAttendance | null) => (
-                  <TeamAttendanceActions payload={attendance as unknown as IAttendance}>
+                  <TeamAttendanceActions
+                    name={
+                      attendance?.player?.user?.name ||
+                      attendance?.mercenary?.user?.name ||
+                      attendance?.mercenary?.name ||
+                      ""
+                    }
+                    imageUrl={
+                      attendance?.player?.user?.userImage?.url ||
+                      attendance?.mercenary?.user?.userImage?.url ||
+                      "/images/user_empty.png"
+                    }
+                    isChecked={!!attendance?.isCheck}
+                    teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+                    currentTeamId={attendance?.teamId || null}
+                    onSelectTeam={async (teamId) => {
+                      await fetch("/api/attendances/team", {
+                        method: "POST",
+                        body: JSON.stringify({ teamId, attendanceIds: [attendance?.id] }),
+                      });
+                      revalidate();
+                    }}
+                  >
                     {attendance?.player?.user?.name ||
                       attendance?.mercenary?.user?.name ||
                       attendance?.mercenary?.name}

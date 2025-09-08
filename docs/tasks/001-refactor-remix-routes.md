@@ -85,28 +85,67 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [x] Position Setting: Drag & Drop UI 래핑 → `features/matches/ui/Dnd` (`DraggableChip`, `DropSpot`)
 
 #### 남은 UI 분리 체크리스트 (Matches 하위 세부)
-- [ ] Match Header Card: 매치 요약 카드(제목/설명/장소/시간/참여 클럽/클럽 선택)
+- [x] Match Header Card: 매치 요약 카드(제목/설명/장소/시간/참여 클럽/클럽 선택)
   - 적용 대상: `matches/$id/_index.tsx`, `matches/$id/clubs/$matchClubId/_index.tsx`
   - 목표: `features/matches/ui/MatchHeaderCard`로 분리하고 라우트는 상태/네비게이션만 담당
-- [ ] Club Subnav Tabs: 클럽 상세 상단 서브탭(정보/참석/팀/포지션/기록/평점)
+ - [x] Club Subnav Tabs: 클럽 상세 상단 서브탭(정보/참석/팀/포지션/기록/평점)
   - 적용 대상: `matches/$id/clubs/$matchClubId/_layout.tsx`
   - 목표: `features/matches/ui/ClubSubnavTabs`로 분리, 라우트는 링크 작성만 담당
-- [ ] Club Admin Menu: 우측 드롭다운(매치 수정, 자체전 여부 토글)
+ - [x] Club Admin Menu: 우측 드롭다운(매치 수정, 자체전 여부 토글)
   - 적용 대상: `matches/$id/clubs/$matchClubId/_layout.tsx`
   - 목표: `features/matches/ui/ClubAdminMenu`로 분리, 라우트는 콜백/권한 전달
-- [ ] Attendance Page UI: 상태 버튼/요약/그룹 카드 렌더 및 관리 액션/드로어
+- [x] Attendance Page UI: 상태 버튼/요약/그룹 카드 렌더 및 관리 액션/드로어
   - 적용 대상: `matches/$id/clubs/$matchClubId/attendance/_index.tsx` 및 `_components/*`
   - 목표: `features/matches/ui/attendance/*`로 분리 (GroupCard, ManageAction, Player/Mercenary/Check Drawers)
+  - 진행: [x] GroupCard 분리/교체, [x] ManageAction/Drawers 분리, [x] 라우트 폴더 기존 컴포넌트 정리
   - 유의: Remix 훅(fetcher 등)은 라우트에 유지하고 UI는 props로 이벤트/상태만 수신
-- [ ] Place Search/History/Map: 매치 생성의 장소 검색/히스토리/지도
+- [x] Place Search/History/Map: 매치 생성의 장소 검색/히스토리/지도
   - 적용 대상: `matches/_components/{SearchPlace,HistoryPlaceDownList,Map}.tsx`
   - 목표: `features/matches/ui/place/*`로 이동 또는 통합 컴포넌트화
+  - 진행: [x] 이동 완료 및 `matches/new.tsx`, `matches/$id/edit.tsx` 교체
 - [ ] Breadcrumbs: 매치/클럽 상세 브레드크럼 UI
   - 적용 대상: `matches/_layout.tsx`, `matches/$id/_layout.tsx`
   - 목표: 단순 UI는 유지 가능하나, 재사용 필요 시 `features/matches/ui/Breadcrumbs` 추출
 
+세부 하위 라우트 점검 목록
+- mercenaries
+  - [x] Actions 드롭다운: `mercenaries/_actions.tsx` → `features/matches/ui/mercenaries/Actions`
+  - [x] InfoDrawer: `mercenaries/_InfoDrawer.tsx` → `features/matches/ui/mercenaries/InfoDrawer`
+  - [x] HistoryDrawer: `mercenaries/_HistoryDrawer.tsx` → `features/matches/ui/mercenaries/HistoryDrawer`
+  - [x] Columns 정의: `mercenaries/_columns.tsx` → `features/matches/ui/mercenaries/columns` (테이블 UI 규칙에 맞게)
+- team
+  - [x] TeamAttendanceActions(드롭다운): `team/_actions.tsx` → `features/matches/ui/team/AttendanceActions`
+  - [x] EditDialog: `team/_EditDialog.tsx` → `features/matches/ui/team/EditDialog`
+  - [x] InfoDrawer: `team/_InfoDrawer.tsx` → `features/matches/ui/team/InfoDrawer`
+- position
+  - [x] Team Actions(포지션 설정 등): `position/_Actions.tsx` → `features/matches/ui/position/TeamActions`
+  - [x] Setting Drawer: `position/setting/_Drawer.tsx` → `features/matches/ui/position/SettingDrawer`
+  - [x] Setting Context: `position/setting/_context.tsx` → `features/matches/ui/position/setting.context` (Remix 훅 미사용 확인)
+- rating
+  - [x] RightDrawer(참여자 상세): `rating/_RightDrawer.tsx` → `features/matches/ui/rating/RightDrawer`
+- record
+  - [x] RightDrawer(골 추가 패널): `record/_Drawer.tsx` → `features/matches/ui/record/RightDrawer`
+
 #### 진행 현황 업데이트
 - [x] Match Header Card 컴포넌트 분리 및 2개 라우트 교체
+- [x] Club Subnav Tabs/Club Admin Menu 분리 및 레이아웃 교체
+- [x] Attendance: GroupCard/ManageAction/Drawers 분리 및 교체
+- [x] Mercenaries: Actions/Info/History/Columns 분리 및 교체
+- [x] Position: Team Actions 분리 및 보드 헤더 교체
+- [x] Rating: RightDrawer 분리 및 교체
+- [x] Record: RightDrawer 분리 및 교체
+
+## 변경 요약 (추가)
+- 추가: `app/features/matches/ui/ClubSubnavTabs.tsx`
+- 추가: `app/features/matches/ui/ClubAdminMenu.tsx`
+- 배럴: `app/features/matches/ui/index.ts` export 갱신
+- 교체: `app/routes/_public+/matches+/$id+/clubs+/$matchClubId+/_layout.tsx`
+  - 상단 탭 → `ClubSubnavTabs`
+  - 우측 드롭다운 → `ClubAdminMenu` (토글 콜백/권한은 라우트에서 관리)
+
+검증 방법 (추가)
+- 경로: `/matches/:id/clubs/:matchClubId` 하위 탭 이동/활성 상태 확인
+- 관리자 권한에서 우측 메뉴의 자체전 토글 및 매치 수정 링크 동작 확인
 
 ## 변경 요약 (PR-style)
 - 추가: `app/features/matches/ui/MatchHeaderCard.tsx`

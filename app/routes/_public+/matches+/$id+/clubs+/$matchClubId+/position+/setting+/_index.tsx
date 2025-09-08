@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react";
+import { useLoaderData, useParams, useRevalidator, useSearchParams } from "@remix-run/react";
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
@@ -15,6 +15,12 @@ import {
 } from "~/components/ui/select";
 import { DraggableChip, DropSpot, PositionToolbar, QuarterStepper } from "~/features/matches";
 import { position as matches } from "~/features/matches/index.server";
+import { PositionSettingDrawer } from "~/features/matches/ui/position/SettingDrawer";
+import {
+  PositionSettingContext,
+  useOptimisticPositionUpdate,
+  usePositionSettingQuery,
+} from "~/features/matches/ui/position/setting.context";
 import {
   isDiffPosition,
   isRLDiffPostion,
@@ -27,12 +33,7 @@ import {
 import { typedEntries } from "~/libs/convert";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
-import {
-  PositionSettingContext,
-  useOptimisticPositionUpdate,
-  usePositionSettingQuery,
-} from "./_context";
-import { PositionSettingDrawer } from "./_Drawer";
+// removed local context/drawer; using features UI
 // const isTouchDevice = () => {
 //   return typeof window !== "undefined" ? "ontouchstart" in window : false;
 // };
@@ -58,7 +59,9 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const matchClub = loaderData.matchClub;
   const { revalidate } = useRevalidator();
-  const { mutateAsync } = useOptimisticPositionUpdate();
+  const params = useParams();
+  const matchClubId = params.matchClubId!;
+  const { mutateAsync } = useOptimisticPositionUpdate(matchClubId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
   const [currentQuarterOrder, setCurrentQuarterOrder] = useState(
@@ -71,7 +74,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   );
   const [isLoading, startTransition] = useTransition();
 
-  const query = usePositionSettingQuery();
+  const query = usePositionSettingQuery(matchClubId);
   const attendancesData = query.data;
 
   /**
@@ -437,7 +440,21 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                 positionType={selectedPositionType}
                 open={drawerOpen}
                 onOpenChange={setDrawerOpen}
-              ></PositionSettingDrawer>
+                currentQuarter={currentQuarter}
+                currentTeamId={currentTeamId}
+                teams={matchClub.teams}
+                quarters={matchClub.quarters}
+                assigned={assigneds?.find(
+                  (a) =>
+                    a.quarterId === currentQuarter?.id &&
+                    a.teamId === currentTeamId &&
+                    a.position === selectedPositionType,
+                )}
+                attendances={query.data?.attendances || []}
+                onRefetch={() => {
+                  void query.refetch();
+                }}
+              />
             </div>
           </section>
         </div>

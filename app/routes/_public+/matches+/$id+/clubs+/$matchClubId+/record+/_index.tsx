@@ -9,9 +9,8 @@ import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { GoalItem, QuarterRecord } from "~/features/matches";
 import { record as matches } from "~/features/matches/index.server";
+import { RightDrawer as RecordRightDrawer } from "~/features/matches/ui/record/RightDrawer";
 import { confirm } from "~/libs/confirm";
-
-import { RightDrawer } from "./_Drawer";
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
   const data = await matches.service.getRecordPageData(matchClubId);
@@ -22,6 +21,7 @@ interface IRecordPageProps {}
 
 const RecordPage = (_props: IRecordPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
+  const { revalidate } = useRevalidator();
   const quarters = loaderData.quarters;
   return (
     <>
@@ -87,7 +87,15 @@ const RecordPage = (_props: IRecordPageProps) => {
               team1Content={team1Goals}
               team2Content={team2Goals}
               RightDrawer={({ quarterId, children }) => (
-                <RightDrawer quarterId={quarterId}>{children}</RightDrawer>
+                <RecordRightDrawer
+                  quarterId={quarterId}
+                  quarters={quarters}
+                  onRefetch={() => {
+                    revalidate();
+                  }}
+                >
+                  {children}
+                </RecordRightDrawer>
               )}
             />
           );

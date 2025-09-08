@@ -1,5 +1,4 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -9,11 +8,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import HistoryDrawer from "./_HistoryDrawer";
-import InfoDrawer from "./_InfoDrawer";
-import type { IMatchClubMecenaryLoaderTData } from "./_index";
+import { Link } from "~/components/ui/Link";
+import HistoryDrawer, { type MercenaryPayloadWithAttendances } from "./HistoryDrawer";
+import InfoDrawer, { type MercenaryPayload } from "./InfoDrawer";
 
-const Actions = ({ payload }: { payload: IMatchClubMecenaryLoaderTData[number] }) => {
+type ActionsPayload = (MercenaryPayload | (MercenaryPayload & MercenaryPayloadWithAttendances)) & {
+  id: string;
+};
+
+const Actions = ({ payload }: { payload: ActionsPayload }) => {
   return (
     <>
       <div className="flex justify-center">
@@ -22,31 +25,27 @@ const Actions = ({ payload }: { payload: IMatchClubMecenaryLoaderTData[number] }
             <Button
               variant="ghost"
               className="h-8 w-8 p-0 focus:outline-none focus:ring-0 focus-visible:ring-0"
-              // disabled={isPending}
             >
               <span className="sr-only">Open menu</span>
-              {/* {isPending ? (
-                <Loading />
-              ) : (
-              )} */}
               <DotsHorizontalIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{`${payload.user?.name || payload.name} 님`}</DropdownMenuLabel>
+            <DropdownMenuLabel>{`${payload.user?.name || payload.name || ""} 님`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <InfoDrawer payload={payload}>정보확인</InfoDrawer>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <HistoryDrawer payload={payload}>최근경기</HistoryDrawer>
-            </DropdownMenuItem>
+            {"attendances" in payload && (
+              <DropdownMenuItem>
+                <HistoryDrawer payload={payload as MercenaryPayloadWithAttendances}>
+                  최근경기
+                </HistoryDrawer>
+              </DropdownMenuItem>
+            )}
             <Link to={`./${payload.id}/edit`}>
               <DropdownMenuItem>정보수정</DropdownMenuItem>
             </Link>
-            {/* <DropdownMenuItem disabled>기록(개발중)</DropdownMenuItem>
-            <DropdownMenuItem disabled>출석정보(개발중)</DropdownMenuItem>
-            <DropdownMenuItem disabled>매치(개발중)</DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

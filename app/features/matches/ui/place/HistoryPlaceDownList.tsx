@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import type { IKakaoLocalType } from "~/libs/map";
-import { placeHistoryAtom } from "../_libs/state";
+import { placeHistoryAtom } from "~/routes/_public+/matches+/_libs/state";
 
 interface IHistoryPlaceDownListProps {
   onSetPlace: (place: IKakaoLocalType) => void;

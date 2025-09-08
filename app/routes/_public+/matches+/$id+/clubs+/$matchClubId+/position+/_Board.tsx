@@ -1,9 +1,8 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { AiFillSkin } from "react-icons/ai";
 import { Button } from "~/components/ui/button";
-import { type PositionAssigned, PositionBoard } from "~/features/matches";
+import { type PositionAssigned, PositionBoard, PositionTeamActions } from "~/features/matches";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs/const/position.const";
-import { Actions } from "./_Actions";
 import type { loader } from "./_index";
 import { usePositionContext, usePositionUpdate } from "./_position.context";
 
@@ -49,7 +48,15 @@ export const Board = () => {
   });
 
   const headerLeft = team1 ? (
-    <Actions teamId={team1.id}>
+    <PositionTeamActions
+      teamId={team1.id}
+      teams={loaderData.matchClub.teams}
+      currentTeam={team1}
+      currentQuarterOrder={currentQuarterOrder}
+      team1Id={team1?.id || null}
+      team2Id={team2?.id || null}
+      settingHref={`./setting?quarter=${currentQuarterOrder}&teamId=${team1.id}`}
+    >
       <Button
         variant={"outline"}
         className="z-20 absolute top-2 left-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
@@ -57,11 +64,19 @@ export const Board = () => {
         <AiFillSkin color={team1?.color} className="drop-shadow mr-1" />
         {team1.name}
       </Button>
-    </Actions>
+    </PositionTeamActions>
   ) : null;
 
   const headerRight = team2 ? (
-    <Actions teamId={team2.id}>
+    <PositionTeamActions
+      teamId={team2.id}
+      teams={loaderData.matchClub.teams}
+      currentTeam={team2}
+      currentQuarterOrder={currentQuarterOrder}
+      team1Id={team1?.id || null}
+      team2Id={team2?.id || null}
+      settingHref={`./setting?quarter=${currentQuarterOrder}&teamId=${team2.id}`}
+    >
       <Button
         variant={"outline"}
         className="z-20 absolute top-2 right-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
@@ -69,7 +84,7 @@ export const Board = () => {
         <AiFillSkin color={team2.color} className="drop-shadow mr-1" />
         {team2.name}
       </Button>
-    </Actions>
+    </PositionTeamActions>
   ) : null;
 
   const settingButton = !isSelf ? (

@@ -1,6 +1,6 @@
 import { AvatarImage } from "@radix-ui/react-avatar";
 import _ from "lodash";
-import { UserIcon } from "lucide-react"; // 또는 @heroicons/react 사용 가능
+import { UserIcon } from "lucide-react";
 import { FaEnvelope, FaFutbol, FaPhone, FaRegStickyNote } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
@@ -13,10 +13,29 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import type { IMatchClubMecenaryLoaderTData } from "./_index";
+
+export type MercenaryUser = {
+  name?: string | null;
+  email?: string | null;
+  userImage?: { url?: string | null } | null;
+  position1?: string | null;
+  position2?: string | null;
+  position3?: string | null;
+} | null;
+
+export type MercenaryPayload = {
+  id: string;
+  name?: string | null;
+  hp?: string | null;
+  description?: string | null;
+  position1?: string | null;
+  position2?: string | null;
+  position3?: string | null;
+  user?: MercenaryUser;
+};
 
 interface IInfoDrawerProps extends React.PropsWithChildren {
-  payload: IMatchClubMecenaryLoaderTData[number];
+  payload: MercenaryPayload;
 }
 
 const InfoDrawer = ({ children, payload }: IInfoDrawerProps) => {
@@ -68,11 +87,19 @@ const InfoDrawer = ({ children, payload }: IInfoDrawerProps) => {
             <InfoRow label="포지션" value={positions} icon={<FaFutbol size={16} />} />
             <InfoRow
               label="설명"
-              value={payload?.description}
+              value={payload?.description || undefined}
               icon={<FaRegStickyNote size={16} />}
             />
-            <InfoRow label="휴대폰번호" value={payload?.hp} icon={<FaPhone size={16} />} />
-            <InfoRow label="E-mail" value={payload?.user?.email} icon={<FaEnvelope size={16} />} />
+            <InfoRow
+              label="휴대폰번호"
+              value={payload?.hp || undefined}
+              icon={<FaPhone size={16} />}
+            />
+            <InfoRow
+              label="E-mail"
+              value={payload?.user?.email || undefined}
+              icon={<FaEnvelope size={16} />}
+            />
           </div>
         </DrawerContent>
       </Drawer>

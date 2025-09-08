@@ -16,6 +16,7 @@ import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts/AuthUserContext";
 import { RatingCard } from "~/features/matches";
 import { rating as matches } from "~/features/matches/index.server";
+import { RightDrawer as RatingRightDrawer } from "~/features/matches/ui/rating/RightDrawer";
 import {
   isAttackPosition,
   isDefensePosition,
@@ -23,7 +24,6 @@ import {
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
 import type { loader as layoutLoader } from "../../../_layout";
-import { RightDrawer } from "./_RightDrawer";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
@@ -245,12 +245,16 @@ const RatingPage = (_props: IRatingPageProps) => {
                     isMiddlePosition={(p: string) => isMiddlePosition(p as POSITION_TYPE)}
                     isDefensePosition={(p: string) => isDefensePosition(p as POSITION_TYPE)}
                     rightDrawerTrigger={
-                      <RightDrawer attendance={attendance}>
+                      <RatingRightDrawer
+                        attendance={attendance}
+                        quarters={quarters ?? []}
+                        matchStDate={match.stDate}
+                      >
                         <Button size={"sm"} variant="ghost" className="text-gray-500">
                           Detail
                           <RiExpandLeftLine className="ml-2" />
                         </Button>
-                      </RightDrawer>
+                      </RatingRightDrawer>
                     }
                     attendance={
                       attendance as unknown as {

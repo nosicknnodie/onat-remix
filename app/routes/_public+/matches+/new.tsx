@@ -7,12 +7,10 @@ import { useAtomCallback } from "jotai/utils";
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { MatchForm } from "~/features/matches";
+import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches";
 import { create as matches } from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import type { IKakaoLocalType } from "~/libs/map";
-import HistoryPlaceDownList from "./_components/HistoryPlaceDownList";
-import SearchPlace from "./_components/SearchPlace";
 import { placeHistoryAtom } from "./_libs/state";
 
 export const handle = { breadcrumb: "매치 생성" };

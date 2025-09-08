@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: off */
-import { AvatarImage } from "@radix-ui/react-avatar";
 import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -16,10 +13,24 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import type { IMatchClubMecenaryLoaderTData } from "./_index";
+
+export type MercenaryAttendance = {
+  isVote: boolean;
+  isCheck: boolean;
+  matchClub: {
+    match: { title: string; stDate: string | Date };
+  };
+};
+
+export type MercenaryPayloadWithAttendances = {
+  id: string;
+  name?: string | null;
+  user?: { name?: string | null; userImage?: { url?: string | null } | null } | null;
+  attendances: MercenaryAttendance[];
+};
 
 interface IHistoryDrawerProps extends React.PropsWithChildren {
-  payload: IMatchClubMecenaryLoaderTData[number];
+  payload: MercenaryPayloadWithAttendances;
 }
 
 const HistoryDrawer = ({ children, payload }: IHistoryDrawerProps) => {
@@ -76,23 +87,22 @@ const HistoryDrawer = ({ children, payload }: IHistoryDrawerProps) => {
   );
 };
 
-const columns: ColumnDef<IMatchClubMecenaryLoaderTData[number]["attendances"][number]>[] = [
+const columns: ColumnDef<MercenaryAttendance>[] = [
   {
     id: "title",
     accessorFn: (v) => v.matchClub.match.title,
-    header({ table }) {
+    header() {
       return <div className="flex justify-center">매치</div>;
     },
     cell: ({ row }) => {
       const title = row.original.matchClub.match.title;
-
       return <div className="flex justify-center">{title}</div>;
     },
   },
   {
     id: "stDate",
     accessorFn: (v) => v.matchClub.match.stDate,
-    header({ table }) {
+    header() {
       return <div className="flex justify-center">날짜</div>;
     },
     cell: ({ row }) => {
@@ -104,7 +114,7 @@ const columns: ColumnDef<IMatchClubMecenaryLoaderTData[number]["attendances"][nu
   {
     id: "isAttended",
     accessorFn: (v) => v.matchClub.match.stDate,
-    header({ table }) {
+    header() {
       return <div className="flex justify-center">출석정보</div>;
     },
     cell: ({ row }) => {

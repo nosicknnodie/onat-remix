@@ -5,7 +5,13 @@ import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Link } from "~/components/ui/Link";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 type MatchHeaderClub = {
   id: string;
@@ -87,7 +93,9 @@ export const MatchHeaderCard = ({
                   {makeClubHref ? (
                     <Link to={makeClubHref(mc.id)} className="flex gap-x-2 items-center">
                       <Avatar>
-                        <AvatarImage src={mc.club?.emblem?.url ?? "/images/club-default-emblem.webp"} />
+                        <AvatarImage
+                          src={mc.club?.emblem?.url ?? "/images/club-default-emblem.webp"}
+                        />
                         <AvatarFallback className="bg-primary">
                           <Loading />
                         </AvatarFallback>
@@ -97,7 +105,9 @@ export const MatchHeaderCard = ({
                   ) : (
                     <div className="flex gap-x-2 items-center">
                       <Avatar>
-                        <AvatarImage src={mc.club?.emblem?.url ?? "/images/club-default-emblem.webp"} />
+                        <AvatarImage
+                          src={mc.club?.emblem?.url ?? "/images/club-default-emblem.webp"}
+                        />
                         <AvatarFallback className="bg-primary">
                           <Loading />
                         </AvatarFallback>
@@ -128,4 +138,3 @@ export const MatchHeaderCard = ({
     </Card>
   );
 };
-

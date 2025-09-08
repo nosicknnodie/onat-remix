@@ -40,11 +40,9 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
     },
   });
 
-  // 검색 키워드 수정
   const handleSetQuery = (value: string) => {
     setQuery(value);
   };
-  // 검색 키워드 검색
   const handleSearchPlaceSubmit = async (value: FormData) => {
     const response = await mutateAsync(value);
     const data = await response.json();
@@ -52,12 +50,10 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
     setMeta(data?.meta);
   };
 
-  // 검색한 장소 선택
   const handleSelectdPlace = (place: IKakaoLocalType) => {
     setSelectedPlace(place);
   };
 
-  // 페이지 이동
   const handlePageChange = async (page: number) => {
     const formData = new FormData();
     formData.append("query", query);
@@ -66,7 +62,6 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
     await handleSearchPlaceSubmit(formData);
   };
 
-  // 검색한 장소 Submit
   const handleConfirmPlace = () => {
     if (selectedPlace) {
       onSubmit?.(selectedPlace);
@@ -105,10 +100,6 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
                 )}
               </KMap>
             </div>
-            <p className="flex justify-around">
-              {/* <span className="font-bold">{data?.place_name}</span>
-              <span className="text-sm text-gray-500">{data?.address_name}</span> */}
-            </p>
             <div className="p-2">
               <form action={handleSearchPlaceSubmit} className="flex gap-x-2">
                 <Input
@@ -121,7 +112,7 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
                 <Button>검색</Button>
               </form>
             </div>
-            <div className="grid grid-cols-1 min-h-[250px] grid-rows-5">
+            <div className="grid grid-cols-1 min-h[250px] grid-rows-5">
               {placesData?.map((v: IKakaoLocalType) => {
                 return (
                   <Fragment key={v.id}>
