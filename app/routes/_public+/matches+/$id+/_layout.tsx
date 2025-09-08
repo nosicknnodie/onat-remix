@@ -4,7 +4,7 @@ import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
-import { prisma } from "~/libs/db/db.server";
+import { detail as matches } from "~/features/matches/index.server";
 
 export const handle = {
   breadcrumb: (match: any) => {
@@ -23,26 +23,9 @@ export const handle = {
 interface IMatchesIdLayoutPageProps {}
 
 export async function loader({ request: _request, params }: LoaderFunctionArgs) {
-  const [match] = await Promise.all([
-    prisma.match.findUnique({
-      where: {
-        id: params.id,
-      },
-      include: {
-        matchClubs: {
-          include: {
-            club: { include: { image: true, emblem: true } },
-          },
-        },
-      },
-    }),
-  ]);
-
-  if (!match) {
-    throw redirect("/404");
-  }
-
-  return { match };
+  const data = await matches.service.getMatchDetail(params.id!);
+  if (!data) throw redirect("/404");
+  return data;
 }
 
 export type IMatchesIdLayoutPageLoaderReturnType = Awaited<ReturnType<typeof loader>>;

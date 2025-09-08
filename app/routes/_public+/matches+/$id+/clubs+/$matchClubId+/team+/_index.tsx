@@ -1,10 +1,9 @@
-import type { Attendance, File, Mercenary, Player, Team, User } from "@prisma/client";
+import type { Attendance, File, Mercenary, Player, User } from "@prisma/client";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import { type ComponentProps, Fragment, useState, useTransition } from "react";
-import { AiFillSkin } from "react-icons/ai";
-import { FiEdit, FiHelpCircle } from "react-icons/fi";
+import { Fragment, useState, useTransition } from "react";
+import { FiHelpCircle } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -19,7 +18,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { prisma } from "~/libs/db/db.server";
+import { TeamCard, type UIAttendance } from "~/features/matches";
+import { team as matches } from "~/features/matches/index.server";
 import { TeamAttendanceActions } from "./_actions";
 import EditDialog from "./_EditDialog";
 
@@ -32,49 +32,11 @@ import EditDialog from "./_EditDialog";
  * 5. 최소 2개의 팀을 생성해야함
  */
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const matchId = params.id;
-  const matchClubId = params.matchClubId;
-  try {
-    const matchClub = await prisma.matchClub.findUnique({
-      where: {
-        id: matchClubId,
-      },
-      include: {
-        attendances: {
-          where: {
-            isVote: true,
-          },
-          include: {
-            player: { include: { user: { include: { userImage: true } } } },
-            mercenary: { include: { user: { include: { userImage: true } } } },
-          },
-        },
-        teams: {
-          include: {
-            attendances: {
-              where: {
-                isVote: true,
-              },
-              include: {
-                player: { include: { user: { include: { userImage: true } } } },
-                mercenary: {
-                  include: { user: { include: { userImage: true } } },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!matchClubId || !matchClub || !matchClub.isSelf)
-      return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
-    const teams = matchClub.teams;
-    const attendances = matchClub.attendances;
-    return { teams, attendances };
-  } catch {
-    return redirect(`/matches/${matchId}/clubs/${matchClubId}`);
-  }
+  const matchId = params.id!;
+  const matchClubId = params.matchClubId!;
+  const data = await matches.service.getTeamPageData(matchId, matchClubId);
+  if ("redirectTo" in data) return redirect(data.redirectTo as string);
+  return data;
 };
 
 interface ITeamPageProps {}
@@ -212,7 +174,28 @@ const TeamPage = (_props: ITeamPageProps) => {
         {teams?.map((team) => {
           return (
             <Fragment key={team.id}>
-              <TeamCard team={team} />
+              <TeamCard
+                team={team}
+                headerAction={
+                  <EditDialog payload={team}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="팀 수정"
+                      className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
+                    >
+                      {/* icon inside EditDialog */}
+                    </Button>
+                  </EditDialog>
+                }
+                renderAttendance={(attendance: UIAttendance | null) => (
+                  <TeamAttendanceActions payload={attendance as unknown as IAttendance}>
+                    {attendance?.player?.user?.name ||
+                      attendance?.mercenary?.user?.name ||
+                      attendance?.mercenary?.name}
+                  </TeamAttendanceActions>
+                )}
+              />
             </Fragment>
           );
         })}
@@ -225,60 +208,4 @@ export interface IAttendance extends Attendance {
   player: (Player & { user: (User & { userImage: File | null }) | null }) | null;
   mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
 }
-
-interface ITeamCardProps extends ComponentProps<typeof Card> {
-  team:
-    | (Team & {
-        attendances?: (IAttendance | null)[];
-      })
-    | null;
-}
-
-const TeamCard = ({ team }: ITeamCardProps) => {
-  return (
-    <>
-      <Card
-        style={{
-          backgroundColor: team?.color ? `${team?.color}0D` : undefined,
-        }}
-      >
-        <CardHeader>
-          <CardTitle className="flex gap-2 justify-between items-center">
-            <div className="flex gap-2 items-center">
-              <AiFillSkin color={team?.color} className="drop-shadow" />
-              <span className="text-lg">{team?.name}</span>
-              <span className="text-muted-foreground text-sm">({team?.attendances?.length})</span>
-            </div>
-            <EditDialog payload={team}>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="팀 수정"
-                className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
-              >
-                <FiEdit />
-              </Button>
-            </EditDialog>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid xl:grid-cols-4 md:max-xl:grid-cols-3 max-md:grid-cols-2 gap-2">
-            {team?.attendances?.map((attendance) => {
-              return (
-                <Fragment key={attendance?.id}>
-                  <TeamAttendanceActions payload={attendance}>
-                    {attendance?.player?.user?.name ||
-                      attendance?.mercenary?.user?.name ||
-                      attendance?.mercenary?.name}
-                  </TeamAttendanceActions>
-                </Fragment>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-    </>
-  );
-};
-
 export default TeamPage;

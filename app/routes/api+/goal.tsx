@@ -1,7 +1,7 @@
 import { GoalType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
+import { record as matches } from "~/features/matches/index.server";
 import { parseRequestData } from "~/libs/requestData";
 
 const goalSchema = z.object({
@@ -22,38 +22,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return Response.json({ success: false, errors: parsed.error.flatten() }, { status: 400 });
     }
 
-    try {
-      await prisma.goal.create({
-        data: {
-          assignedId: data.assignedId,
-          assistAssignedId: data.assistAssignedId,
-          teamId: data.teamId,
-          quarterId: data.quarterId,
-          isOwnGoal: data.isOwnGoal,
-          goalType: data.goalType,
-        },
-      });
-      return Response.json({ success: "success" });
-    } catch (error) {
-      console.error(error);
-      return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
-    }
+    const res = await matches.service.createGoal({
+      assignedId: data.assignedId,
+      assistAssignedId: data.assistAssignedId,
+      teamId: data.teamId,
+      quarterId: data.quarterId,
+      isOwnGoal: data.isOwnGoal,
+      goalType: data.goalType,
+    });
+    if (!res.ok) return Response.json({ success: false }, { status: 500 });
+    return Response.json({ success: "success" });
   } else if (method === "DELETE") {
     const id = data.id;
     if (!id) {
       return Response.json({ success: false, errors: "id is required" }, { status: 400 });
     }
 
-    try {
-      await prisma.goal.delete({
-        where: {
-          id,
-        },
-      });
-      return Response.json({ success: "success" });
-    } catch (error) {
-      console.error(error);
-      return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
-    }
+    const res = await matches.service.deleteGoal(id);
+    if (!res.ok) return Response.json({ success: false }, { status: 500 });
+    return Response.json({ success: "success" });
   }
 };

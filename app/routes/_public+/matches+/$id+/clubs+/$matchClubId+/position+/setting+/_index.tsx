@@ -1,14 +1,10 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link, useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react";
+import { useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react";
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
 import { useEffect, useState, useTransition } from "react";
 import { Preview } from "react-dnd-preview";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import { RiArrowGoBackLine } from "react-icons/ri";
-import DragButton from "~/components/dnd/DragButton";
-import DropDiv from "~/components/dnd/DropDiv";
 import { Button } from "~/components/ui/button";
 import {
   Select,
@@ -17,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { DraggableChip, DropSpot, PositionToolbar, QuarterStepper } from "~/features/matches";
+import { position as matches } from "~/features/matches/index.server";
 import {
   isDiffPosition,
   isRLDiffPostion,
@@ -27,7 +25,6 @@ import {
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
-import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import {
@@ -46,28 +43,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
   const matchClubId = params.matchClubId!;
-  const matchClub = await prisma.matchClub.findUnique({
-    where: {
-      id: matchClubId,
-    },
-    include: {
-      quarters: { include: { team1: true, team2: true } },
-      teams: true,
-      attendances: {
-        where: {
-          isVote: true,
-        },
-        include: {
-          assigneds: true,
-          player: { include: { user: { include: { userImage: true } } } },
-          mercenary: { include: { user: { include: { userImage: true } } } },
-        },
-      },
-    },
-  });
-  if (!matchClub) return redirect("../");
-
-  return { matchClub };
+  const data = await matches.service.getPositionSettingData(matchClubId);
+  if (!data) return redirect("../");
+  return data;
 };
 
 const POSITION_TEMPLATE = atomWithStorage<PORMATION_TYPE>("POSITION_TEMPLATE", "4-3-3");
@@ -320,21 +298,10 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     <>
       <PositionSettingContext value={{ query, currentQuarter, currentTeamId, assigneds }}>
         <div className="space-y-4 flex flex-col gap-2">
-          <section className="flex justify-between items-center relative">
-            <div className="min-w-28 flex items-center gap-x-2">
-              <Button variant={"outline"} asChild>
-                <Link
-                  to={{
-                    pathname: "../",
-                    search: `quarterOrder=${currentQuarter?.order}`,
-                  }}
-                  className="space-x-2"
-                >
-                  <RiArrowGoBackLine />
-                  <span className="max-md:hidden">돌아가기</span>
-                </Link>
-              </Button>
-              {currentTeamId && (
+          <PositionToolbar
+            backTo={{ pathname: "../", search: `quarterOrder=${currentQuarter?.order}` }}
+            left={
+              currentTeamId ? (
                 <Select value={currentTeamId} onValueChange={setCurrentTeamId}>
                   <SelectTrigger>
                     <SelectValue placeholder="팀 선택" />
@@ -347,9 +314,9 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                     ))}
                   </SelectContent>
                 </Select>
-              )}
-            </div>
-            <div className="min-w-28">
+              ) : null
+            }
+            right={
               <Select
                 value={positionTemplate}
                 onValueChange={(v: PORMATION_TYPE) => setPositionTemplate(v)}
@@ -365,27 +332,15 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </section>
-          <section className="flex justify-between items-center relative">
-            <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center">
-              <Button
-                variant="ghost"
-                disabled={currentQuarterOrder === 1 || isLoading}
-                onClick={() => setCurrentQuarterOrder((prev) => prev - 1)}
-              >
-                <FaArrowLeft />
-              </Button>
-              <div>{currentQuarterOrder} Q</div>
-              <Button
-                variant="ghost"
-                disabled={isLoading}
-                onClick={() => handleSetQuarter(currentQuarterOrder + 1)}
-              >
-                <FaArrowRight />
-              </Button>
-            </div>
-          </section>
+            }
+          />
+          <QuarterStepper
+            current={currentQuarterOrder}
+            onPrev={() => setCurrentQuarterOrder((prev) => prev - 1)}
+            onNext={() => handleSetQuarter(currentQuarterOrder + 1)}
+            disablePrev={currentQuarterOrder === 1 || isLoading}
+            disableNext={isLoading}
+          />
           <section>
             <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
               <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
@@ -424,7 +379,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               )}
               {positions.map((position) => {
                 return (
-                  <DropDiv
+                  <DropSpot
                     layoutId={position.assigned?.id}
                     key={[position.key, position.assigned?.id].join("-")}
                     canDrop={({ item }: { item: typeof position.assigned }) => {
@@ -441,7 +396,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                   >
                     {position.assigned ? (
                       <>
-                        <DragButton
+                        <DraggableChip
                           item={position.assigned}
                           variant={"ghost"}
                           onClick={handlePositionClick(position.key)}
@@ -460,7 +415,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                               position.assigned.attendance.mercenary?.user?.name ||
                               position.assigned.attendance.mercenary?.name
                             : position.key}
-                        </DragButton>
+                        </DraggableChip>
                       </>
                     ) : (
                       <Button
@@ -474,7 +429,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                       </Button>
                     )}
                     {/* </PositionSettingDrawer> */}
-                  </DropDiv>
+                  </DropSpot>
                 );
               })}
 

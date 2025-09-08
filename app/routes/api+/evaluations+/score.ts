@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
+import { rating as matches } from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData";
 
@@ -18,20 +18,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
   if (!result.success) {
     return { error: result.error.flatten() };
   }
-  try {
-    await prisma.evaluation.upsert({
-      create: { ...result.data, userId: user.id },
-      update: { score: result.data.score },
-      where: {
-        userId_matchClubId_attendanceId: {
-          userId: user.id,
-          matchClubId: result.data.matchClubId,
-          attendanceId: result.data.attendanceId,
-        },
-      },
-    });
-    return Response.json({ success: "success" });
-  } catch {
-    return Response.json({ error: "Internal Server Error" });
-  }
+  const res = await matches.service.upsertScore(user.id, result.data);
+  if (!res.ok) return Response.json({ error: "Internal Server Error" }, { status: 500 });
+  return Response.json({ success: "success" });
 };

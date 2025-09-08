@@ -5,20 +5,12 @@ import dayjs from "dayjs";
 import { useAtomCallback } from "jotai/utils";
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { MatchForm } from "~/features/matches";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Textarea } from "~/components/ui/textarea";
-import { prisma } from "~/libs/db/db.server";
+  detail as matches,
+  validators as matchesValidators,
+} from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs/map";
 import HistoryPlaceDownList from "../_components/HistoryPlaceDownList";
@@ -35,38 +27,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
   const matchId = params.id;
 
-  const match = await prisma.match.findUnique({
-    where: {
-      id: matchId,
-    },
-    include: {
-      matchClubs: {
-        include: {
-          club: { include: { image: true, emblem: true } },
-        },
-      },
-    },
-  });
-
-  if (!match) {
-    throw redirect("/404");
-  }
-
-  return { match };
+  const data = await matches.service.getMatchDetail(matchId!);
+  if (!data) throw redirect("/404");
+  return data;
 };
-
-// schema
-const schema = z.object({
-  title: z.string(),
-  description: z.string(),
-  date: z.string(),
-  hour: z.string(),
-  minute: z.string(),
-  placeName: z.string().optional(),
-  address: z.string().optional(),
-  lat: z.string().optional(),
-  lng: z.string().optional(),
-});
 
 // action
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -76,37 +40,24 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     // 로그인 안된 사용자는 로그인 페이지로 리디렉트
     throw redirect("/auth/login");
   }
-  const formData = await request.formData();
-  const raw = Object.fromEntries(formData);
-  const result = schema.safeParse(raw);
-  if (!result.success) {
-    return new Response("잘못된 요청입니다.", { status: 400 });
-  }
+  const parsed = await matchesValidators.parseUpdateForm(request);
+  if (!parsed.ok)
+    return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
 
-  const { title, description, date, hour, minute, placeName, address, lat, lng } = result.data;
-
-  const matchDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
-  try {
-    await prisma.match.update({
-      where: {
-        id: matchId,
-      },
-      data: {
-        title,
-        description,
-        stDate: matchDate,
-        placeName: placeName?.toString() ?? "",
-        address: address?.toString() ?? "",
-        lat: lat ? Number.parseFloat(lat) : null,
-        lng: lng ? Number.parseFloat(lng) : null,
-        createUserId: user.id,
-      },
-    });
-
-    return redirect(`/matches/${matchId}`);
-  } catch {
-    return new Response("잘못된 요청입니다.", { status: 400 });
-  }
+  const { title, description, date, hour, minute, placeName, address, lat, lng } = parsed.data;
+  const stDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
+  const res = await matches.service.updateMatch(matchId!, {
+    title,
+    description,
+    stDate,
+    placeName: placeName?.toString() ?? "",
+    address: address?.toString() ?? "",
+    lat: lat ? Number.parseFloat(lat) : null,
+    lng: lng ? Number.parseFloat(lng) : null,
+    createUserId: user.id,
+  });
+  if (!res.ok) return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
+  return redirect(`/matches/${matchId}`);
 };
 
 interface IMatchEditPageProps {}
@@ -145,104 +96,30 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
     return true;
   });
   return (
-    <>
-      <div className="flex flex-col justify-start w-full space-y-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>매치 수정</CardTitle>
-            <CardDescription>매치를 수정합니다.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form method="post" onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="title"
-                    className="after:content-['*'] after:text-red-500 after:ml-1"
-                  >
-                    매치명
-                  </Label>
-                  <Input name="title" type="text" defaultValue={match.title} required />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="description"
-                    className="after:content-['*'] after:text-red-500 after:ml-1"
-                  >
-                    설명
-                  </Label>
-                  <Textarea name="description" rows={3} required defaultValue={match.description} />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="date"
-                    className="after:content-['*'] after:text-red-500 after:ml-1"
-                  >
-                    매치 날짜
-                  </Label>
-                  <div className="flex gap-2 max-sm:flex-col">
-                    <Input
-                      name="date"
-                      type="date"
-                      defaultValue={dayjs(match.stDate).format("YYYY-MM-DD")}
-                      required
-                      className="w-36 max-sm:w-full"
-                    />
-                    <div className="flex gap-x-2">
-                      <Select name="hour" defaultValue={dayjs(match.stDate).hour().toString()}>
-                        <SelectTrigger className="w-36">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 24 }).map((_, i) => (
-                            <SelectItem key={i} value={i.toString()}>
-                              {i}시
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select name="minute" defaultValue={dayjs(match.stDate).minute().toString()}>
-                        <SelectTrigger className="w-36">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0">정각</SelectItem>
-                          <SelectItem value="30">30분</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="placeName">장소</Label>
-                  <div className="flex gap-x-2">
-                    <Input
-                      name="placeName"
-                      type="text"
-                      value={place?.place_name ?? ""}
-                      onChange={() => {}}
-                    />
-                    <SearchPlace onSubmit={handleSearchPlaceSubmit}>
-                      <Button type="button" size="icon">
-                        <FaSearch />
-                      </Button>
-                    </SearchPlace>
-                    <HistoryPlaceDownList onSetPlace={handleSearchPlaceSubmit} />
-                    <input type="hidden" name="address" value={place?.address_name ?? ""} />
-                    <input type="hidden" name="lat" value={place?.y ?? ""} />
-                    <input type="hidden" name="lng" value={place?.x ?? ""} />
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full font-semibold">
-                  저장
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+    <div className="flex flex-col justify-start w-full space-y-2">
+      <MatchForm
+        defaultTitle={match.title}
+        defaultDescription={match.description}
+        defaultDate={dayjs(match.stDate).format("YYYY-MM-DD")}
+        defaultHour={dayjs(match.stDate).hour().toString()}
+        defaultMinute={dayjs(match.stDate).minute().toString()}
+        placeName={place?.place_name ?? ""}
+        address={place?.address_name ?? ""}
+        lat={place?.y ?? ""}
+        lng={place?.x ?? ""}
+        onSubmit={handleSubmit}
+        renderPlaceControls={() => (
+          <>
+            <SearchPlace onSubmit={handleSearchPlaceSubmit}>
+              <Button type="button" size="icon">
+                <FaSearch />
+              </Button>
+            </SearchPlace>
+            <HistoryPlaceDownList onSetPlace={handleSearchPlaceSubmit} />
+          </>
+        )}
+      />
+    </div>
   );
 };
 

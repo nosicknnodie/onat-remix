@@ -35,6 +35,7 @@
                   "**/features/*/**",
                   "!~/features/*/index",
                   "!~/features/*/*/index",
+                  "!~/features/*/types",
                   "!~/features/*/*/types",
                   "!~/features/*/*/types/**",
                   "!~/features/*/*/schema",

@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 import { RiExpandLeftLine } from "react-icons/ri";
@@ -12,30 +11,24 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Loading } from "~/components/Loading";
 import StarRating from "~/components/StarRating";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts/AuthUserContext";
-import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
-import { prisma } from "~/libs/db/db.server";
-import { getRatingAttendances } from "~/libs/queries/attendance/atttendances";
-import { cn } from "~/libs/utils";
+import { RatingCard } from "~/features/matches";
+import { rating as matches } from "~/features/matches/index.server";
+import {
+  isAttackPosition,
+  isDefensePosition,
+  isMiddlePosition,
+  type POSITION_TYPE,
+} from "~/libs/const/position.const";
 import type { loader as layoutLoader } from "../../../_layout";
 import { RightDrawer } from "./_RightDrawer";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
-  const matchClub = await prisma.matchClub.findUnique({
-    where: {
-      id: matchClubId,
-    },
-    include: {
-      quarters: { include: { team1: true, team2: true } },
-    },
-  });
-  const attendances = await getRatingAttendances({ matchClubId });
-  return { attendances, matchClub };
+  const data = await matches.service.getRatingPageData(matchClubId);
+  return data;
 };
 
 interface IRatingPageProps {}
@@ -234,127 +227,49 @@ const RatingPage = (_props: IRatingPageProps) => {
                   className="w-72 h-full relative flex items-center py-4"
                   key={`key-${attendance.id}-${i}`}
                 >
-                  <Card
-                    className={cn(
-                      "w-full h-full transition-all duration-300 bg-zinc-100 rounded-xl flex flex-col",
-                      {
-                        "bg-white shadow-lg ring-1 ring-blue-400 z-10": isActived,
-                        "bg-zinc-100 opacity-90": !isActived,
-                      },
-                    )}
-                  >
-                    <CardHeader className="flex-shrink-0">
-                      <CardTitle className="flex justify-between items-center">
-                        <span>
-                          {name}
-                          {`'s 정보`}
-                        </span>
-                        <RightDrawer attendance={attendance}>
-                          <Button size={"sm"} variant="ghost" className="text-gray-500">
-                            Detail
-                            <RiExpandLeftLine className="ml-2" />
-                          </Button>
-                        </RightDrawer>
-                      </CardTitle>
-                      <div className="flex gap-x-2">
-                        <Badge variant={isPlayer ? "default" : "outline"}>
-                          {isPlayer ? "회원" : "용병"}
-                        </Badge>
-                        {attendance.assigneds.some((a) => a.goals.length > 0) && (
-                          <Badge variant="secondary">득점</Badge>
-                        )}
-                        {isPerception && (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge variant={"destructive"}>지각</Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                출석 체크 시간:{" "}
-                                {attendance.checkTime
-                                  ? dayjs(attendance.checkTime).format("MM.DD (ddd) HH:mm")
-                                  : "-"}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                        {attendance.state !== "NORMAL" && (
-                          <Badge variant={"destructive"}>
-                            {attendance.state === "EXCUSED" ? "불참" : "리타이어"}
-                          </Badge>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col gap-y-2 justify-between">
-                      <div>
-                        <div className="flex justify-center items-center flex-col">
-                          <Avatar className="md:size-24 max-md:size-16">
-                            <AvatarImage src={imageUrl} />
-                            <AvatarFallback>
-                              <Loading />
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-lg font-semibold">{name}</span>
-                        </div>
-                        <div className="text-sm font-semibold">경기횟수</div>
-                        <div className="flex gap-1 w-full items-center">
-                          <span className="rounded flex-1 text-xs text-center">
-                            ({attendance.assigneds.length}/{quarters?.length})
-                          </span>
-                          {quarters?.map((quarter) => {
-                            const position = attendance.assigneds.find(
-                              (assigned) => assigned.quarterId === quarter.id,
-                            )?.position;
-                            return (
-                              <span
-                                key={quarter.id}
-                                className={cn("h-2 rounded flex-1 border ", {
-                                  "bg-red-500": position && isAttackPosition(position),
-                                  "bg-yellow-400": position && isMiddlePosition(position),
-                                  "bg-blue-500": position && isDefensePosition(position),
-                                  "bg-green-500": position && position === "GK",
-                                  "bg-gray-200": !position,
-                                })}
-                              ></span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div className="flex-1 flex justify-between items-center">
-                        <StarRating
-                          id={`${attendance.id}-star-id`}
-                          score={evaluation?.score || 0}
-                          width={30}
-                          isHighLight
-                          disabled={!isActived}
-                          onClick={(_e, score) => {
-                            updateEvaluation.mutate({
-                              attendanceId: attendance.id,
-                              score,
-                            });
-                          }}
-                        />
-                        <div>
-                          <Button
-                            variant={"ghost"}
-                            disabled={toggleLike.isPending || !isActived}
-                            onClick={() => {
-                              toggleLike.mutate({
-                                attendanceId: attendance.id,
-                                liked: !evaluation?.liked,
-                              });
-                            }}
-                          >
-                            {evaluation?.liked ? (
-                              <FaThumbsUp size={30} className="text-primary" />
-                            ) : (
-                              <FaRegThumbsUp size={30} className="text-muted" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <RatingCard
+                    name={name}
+                    imageUrl={imageUrl}
+                    isPlayer={isPlayer}
+                    isPerception={isPerception}
+                    hasGoal={attendance.assigneds.some((a) => a.goals.length > 0)}
+                    isActive={isActived}
+                    quartersCount={quarters?.length ?? 0}
+                    playedCount={attendance.assigneds.length}
+                    quarters={quarters ?? []}
+                    Avatar={Avatar}
+                    AvatarImage={AvatarImage}
+                    AvatarFallback={AvatarFallback}
+                    Loading={Loading}
+                    isAttackPosition={(p: string) => isAttackPosition(p as POSITION_TYPE)}
+                    isMiddlePosition={(p: string) => isMiddlePosition(p as POSITION_TYPE)}
+                    isDefensePosition={(p: string) => isDefensePosition(p as POSITION_TYPE)}
+                    rightDrawerTrigger={
+                      <RightDrawer attendance={attendance}>
+                        <Button size={"sm"} variant="ghost" className="text-gray-500">
+                          Detail
+                          <RiExpandLeftLine className="ml-2" />
+                        </Button>
+                      </RightDrawer>
+                    }
+                    attendance={
+                      attendance as unknown as {
+                        id: string;
+                        assigneds: { quarterId: string; position?: string; goals?: unknown[] }[];
+                      }
+                    }
+                    onScoreChange={(score: number) =>
+                      updateEvaluation.mutate({ attendanceId: attendance.id, score })
+                    }
+                    score={evaluation?.score || 0}
+                    StarRating={StarRating}
+                    liked={!!evaluation?.liked}
+                    onToggleLike={() =>
+                      toggleLike.mutate({ attendanceId: attendance.id, liked: !evaluation?.liked })
+                    }
+                    LikeIcon={FaThumbsUp}
+                    UnlikeIcon={FaRegThumbsUp}
+                  />
                 </SwiperSlide>
               );
             })}

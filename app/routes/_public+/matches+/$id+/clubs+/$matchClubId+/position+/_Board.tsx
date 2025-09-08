@@ -1,10 +1,8 @@
 import { Link, useLoaderData } from "@remix-run/react";
-import { motion } from "framer-motion";
-import type { ComponentPropsWithoutRef, ComponentRef, Ref } from "react";
 import { AiFillSkin } from "react-icons/ai";
 import { Button } from "~/components/ui/button";
+import { type PositionAssigned, PositionBoard } from "~/features/matches";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs/const/position.const";
-import { cn } from "~/libs/utils";
 import { Actions } from "./_Actions";
 import type { loader } from "./_index";
 import { usePositionContext, usePositionUpdate } from "./_position.context";
@@ -50,84 +48,54 @@ export const Board = () => {
     url: `${loaderData.env.WS_SERVER_URL}/position?id=${currentQuarter?.id}`,
   });
 
+  const headerLeft = team1 ? (
+    <Actions teamId={team1.id}>
+      <Button
+        variant={"outline"}
+        className="z-20 absolute top-2 left-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
+      >
+        <AiFillSkin color={team1?.color} className="drop-shadow mr-1" />
+        {team1.name}
+      </Button>
+    </Actions>
+  ) : null;
+
+  const headerRight = team2 ? (
+    <Actions teamId={team2.id}>
+      <Button
+        variant={"outline"}
+        className="z-20 absolute top-2 right-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
+      >
+        <AiFillSkin color={team2.color} className="drop-shadow mr-1" />
+        {team2.name}
+      </Button>
+    </Actions>
+  ) : null;
+
+  const settingButton = !isSelf ? (
+    <Button variant={"outline"} asChild className="z-20 absolute top-2 right-2">
+      <Link to={{ pathname: "./setting", search: `quarter=${currentQuarterOrder}` }}>
+        포지션 설정
+      </Link>
+    </Button>
+  ) : null;
+
+  const assignedList: PositionAssigned[] =
+    assigneds?.map((assigned) => {
+      const name =
+        assigned.attendance.player?.user?.name ||
+        assigned.attendance.mercenary?.user?.name ||
+        assigned.attendance.mercenary?.name ||
+        "";
+      return { id: assigned.id, name, className: assigned.className, color: assigned.color };
+    }) ?? [];
+
   return (
-    <>
-      <section>
-        <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
-          <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
-          {team1 && (
-            <Actions teamId={team1.id}>
-              <Button
-                variant={"outline"}
-                className="z-20 absolute top-2 left-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
-              >
-                <AiFillSkin color={team1?.color} className="drop-shadow mr-1" />
-                {team1.name}
-              </Button>
-            </Actions>
-          )}
-          {team2 && (
-            <Actions teamId={team2.id}>
-              <Button
-                variant={"outline"}
-                className="z-20 absolute top-2 right-2 max-w-36 opacity-70 outline-none ring-0 shadow-none drop-shadow-none border-none focus-visible:ring-0 focus-visible:outline-none"
-              >
-                <AiFillSkin color={team2.color} className="drop-shadow mr-1" />
-                {team2.name}
-              </Button>
-            </Actions>
-          )}
-
-          {!isSelf && (
-            <Button variant={"outline"} asChild className="z-20 absolute top-2 right-2">
-              <Link
-                to={{
-                  pathname: "./setting",
-                  search: `quarter=${currentQuarterOrder}`,
-                }}
-              >
-                포지션 설정
-              </Link>
-            </Button>
-          )}
-
-          {assigneds?.map((assigned) => {
-            const name =
-              assigned.attendance.player?.user?.name ||
-              assigned.attendance.mercenary?.user?.name ||
-              assigned.attendance.mercenary?.name;
-            return (
-              <MotionButton
-                layoutId={assigned.id}
-                key={assigned.id}
-                // item={position.assigned}
-                variant={"ghost"}
-                style={{ borderColor: assigned?.color }}
-                // onClick={handlePositionClick(position.key)}
-                className={cn(
-                  "absolute overflow-hidden z-20 hover:z-30 focus-visible:z-30 rounded-full md:w-16 md:-ml-8 md:-mt-8 md:h-16 max-md:-ml-6 max-md:-mt-6 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border bg-white shadow-md",
-                  {
-                    "border-primary": !assigned.color,
-                    // ["md:w-12 md:-ml-6 md:-mt-6 md:h-12 max-md:-ml-4 max-md:-mt-4 max-md:w-8 max-md:h-8"]: true,
-                  },
-                  // className,
-                  assigned.className,
-                )}
-              >
-                {name}
-              </MotionButton>
-            );
-          })}
-        </div>
-      </section>
-    </>
+    <PositionBoard
+      headerLeft={headerLeft}
+      headerRight={headerRight}
+      settingButton={settingButton}
+      assigned={assignedList}
+    />
   );
 };
-// Button 기본 props + framer-motion이 주입하는 forwardedRef 타입 정의
-type MotionButtonProps = ComponentPropsWithoutRef<typeof Button> & {
-  forwardedRef?: Ref<ComponentRef<typeof Button>>;
-};
-
-const MotionButton = motion.create(({ forwardedRef, ...props }: MotionButtonProps) => (
-  <Button ref={forwardedRef} {...props} />
-));

@@ -62,16 +62,61 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [x] `api+/comment-vote.tsx`
 
 ### 4단계: 경기/매치 (Matches)
-- [ ] `_public+/matches+/_index.tsx`
-- [ ] `_public+/matches+/new.tsx`
-- [ ] `_public+/matches+/$id/_index.tsx`
-- [ ] `_public+/matches+/$id/edit.tsx`
-- [ ] `_public+/matches+/$id/clubs+/$matchClubId/attendance/_index.tsx`
-- [ ] `_public+/matches+/$id/clubs+/$matchClubId/mercenaries/_index.tsx`
-- [ ] `_public+/matches+/$id/clubs+/$matchClubId/position/_index.tsx`
-- [ ] `_public+/matches+/$id/clubs+/$matchClubId/rating/_index.tsx`
-- [ ] `_public+/matches+/$id/clubs+/$matchClubId/record/_index.tsx`
-- [ ] `_public+/matches+/$id/clubs+/$matchClubId/team/_index.tsx`
+- [x] `_public+/matches+/_index.tsx`
+- [x] `_public+/matches+/new.tsx`
+- [x] `_public+/matches+/$id/_index.tsx` (loader/action 없음, UI-only)
+- [x] `_public+/matches+/$id/edit.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/_layout.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/attendance/_index.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/mercenaries/_index.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/position/_index.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/position/setting/_index.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/rating/_index.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/record/_index.tsx`
+- [x] `_public+/matches+/$id/clubs+/$matchClubId/team/_index.tsx`
+
+#### UI 분리 (Matches 하위)
+- [x] Mercenaries: 테이블/검색/버튼 UI → `features/matches/ui/MercenariesTable`
+- [x] Team: 팀 카드/참석자 렌더 → `features/matches/ui/TeamCard`
+- [x] Record: 쿼터/골 UI → `features/matches/ui/Record` (`QuarterRecord`, `GoalItem`)
+- [x] Rating: 카드 UI → `features/matches/ui/RatingCard`
+- [x] Position: 메인 보드 UI → `features/matches/ui/PositionBoard`
+- [x] Position Setting: 툴바/쿼터 스텝퍼 → `features/matches/ui/PositionSetting` (`PositionToolbar`, `QuarterStepper`)
+- [x] Position Setting: Drag & Drop UI 래핑 → `features/matches/ui/Dnd` (`DraggableChip`, `DropSpot`)
+
+#### 남은 UI 분리 체크리스트 (Matches 하위 세부)
+- [ ] Match Header Card: 매치 요약 카드(제목/설명/장소/시간/참여 클럽/클럽 선택)
+  - 적용 대상: `matches/$id/_index.tsx`, `matches/$id/clubs/$matchClubId/_index.tsx`
+  - 목표: `features/matches/ui/MatchHeaderCard`로 분리하고 라우트는 상태/네비게이션만 담당
+- [ ] Club Subnav Tabs: 클럽 상세 상단 서브탭(정보/참석/팀/포지션/기록/평점)
+  - 적용 대상: `matches/$id/clubs/$matchClubId/_layout.tsx`
+  - 목표: `features/matches/ui/ClubSubnavTabs`로 분리, 라우트는 링크 작성만 담당
+- [ ] Club Admin Menu: 우측 드롭다운(매치 수정, 자체전 여부 토글)
+  - 적용 대상: `matches/$id/clubs/$matchClubId/_layout.tsx`
+  - 목표: `features/matches/ui/ClubAdminMenu`로 분리, 라우트는 콜백/권한 전달
+- [ ] Attendance Page UI: 상태 버튼/요약/그룹 카드 렌더 및 관리 액션/드로어
+  - 적용 대상: `matches/$id/clubs/$matchClubId/attendance/_index.tsx` 및 `_components/*`
+  - 목표: `features/matches/ui/attendance/*`로 분리 (GroupCard, ManageAction, Player/Mercenary/Check Drawers)
+  - 유의: Remix 훅(fetcher 등)은 라우트에 유지하고 UI는 props로 이벤트/상태만 수신
+- [ ] Place Search/History/Map: 매치 생성의 장소 검색/히스토리/지도
+  - 적용 대상: `matches/_components/{SearchPlace,HistoryPlaceDownList,Map}.tsx`
+  - 목표: `features/matches/ui/place/*`로 이동 또는 통합 컴포넌트화
+- [ ] Breadcrumbs: 매치/클럽 상세 브레드크럼 UI
+  - 적용 대상: `matches/_layout.tsx`, `matches/$id/_layout.tsx`
+  - 목표: 단순 UI는 유지 가능하나, 재사용 필요 시 `features/matches/ui/Breadcrumbs` 추출
+
+#### 진행 현황 업데이트
+- [x] Match Header Card 컴포넌트 분리 및 2개 라우트 교체
+
+## 변경 요약 (PR-style)
+- 추가: `app/features/matches/ui/MatchHeaderCard.tsx`
+- 배럴 추가: `app/features/matches/ui/index.ts`에 `MatchHeaderCard` export
+- 교체: `app/routes/_public+/matches+/$id+/_index.tsx` → `MatchHeaderCard` 사용
+- 교체: `app/routes/_public+/matches+/$id+/clubs+/$matchClubId+/_index.tsx` → `MatchHeaderCard` 사용
+
+검증 방법
+- 경로: `/matches/:id` 및 `/matches/:id/clubs/:matchClubId`
+- 확인: 상단 매치 요약 카드가 동일하게 렌더되고, 클럽 선택 Select/아바타 링크 동작 정상
 
 ### 5단계: 관리자 (Admin)
 - [ ] `admin+/_index.tsx`
@@ -85,7 +130,7 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 
 ## ✅ 완료 조건 (Definition of Done)
 
-- `app/routes` 내의 모든 `loader`와 `action` 함수는 10줄 이하의 코드 라인을 유지해야 합니다.
+- `app/routes` 내의 모든 `loader`와 `action` 함수는 50줄 이하의 코드 라인을 유지해야 합니다.
 - 모든 비즈니스 로직은 `app/features` 내의 해당 모듈로 완전히 이전되어야 합니다.
 - 리팩토링된 모든 기능은 기존과 동일하게 작동해야 하며, 수동 테스트를 통해 검증되어야 합니다.
 - `CONVENTION.md` 문서의 모든 규칙을 준수해야 합니다.

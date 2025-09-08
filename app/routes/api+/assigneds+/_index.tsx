@@ -1,8 +1,7 @@
 import { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
-import { redis } from "~/libs/db/redis.server";
+import { position as matches } from "~/features/matches/index.server";
 import { parseRequestData } from "~/libs/requestData";
 
 const assignedSchema = z.object({
@@ -35,59 +34,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     if (method === "POST") {
-      const created = await prisma.$transaction(
-        parsedData.map((p) => prisma.assigned.create({ data: p.data! })),
-      );
-      await redis.publish(
-        `position:${parsedData.at(0)?.data?.quarterId}`,
-        JSON.stringify({
-          type: "POSITION_CREATED",
-          assigneds: created,
-        }),
-      );
-      return Response.json({ success: true, assigned: created });
+      const created = await matches.service.createAssigneds(parsedData.map((p) => p.data!));
+      return Response.json({ success: true, assigned: created.assigneds });
     } else if (method === "PUT" || method === "PATCH") {
-      const updates = await prisma.$transaction(
-        parsedData.map((p) => {
-          const item = isArray ? res[parsedData.indexOf(p)] : res;
-          if (!item.id) throw new Error("id is required for update");
-          return prisma.assigned.update({
-            where: { id: item.id },
-            data: p.data!,
-          });
-        }),
-      );
-      await redis.publish(
-        `position:${parsedData.at(0)?.data?.quarterId}`,
-        JSON.stringify({
-          type: "POSITION_UPDATED",
-          assigneds: updates,
-        }),
-      );
-      return Response.json({ success: true, assigned: updates });
+      const items = parsedData.map((p) => {
+        const raw = isArray ? res[parsedData.indexOf(p)] : res;
+        return { id: raw.id as string, ...p.data! };
+      });
+      const updated = await matches.service.updateAssigneds(items);
+      return Response.json({ success: true, assigned: updated.assigneds });
     } else if (method === "DELETE") {
       const data = parsedData.map((p) => p.data);
       const ids = data.filter((p) => p?.id).map((p) => p!.id!);
-
       if (ids.length === 0) {
         return Response.json(
           { success: false, errors: { id: "id is required for delete" } },
           { status: 400 },
         );
       }
-
-      const deleted = await prisma.$transaction(
-        ids.map((id) => prisma.assigned.delete({ where: { id } })),
+      await matches.service.deleteAssigneds(
+        ids.map((id) => ({ id, quarterId: data.at(0)!.quarterId! })),
       );
-
-      await redis.publish(
-        `position:${data.at(0)?.quarterId}`,
-        JSON.stringify({
-          type: "POSITION_REMOVED",
-          assignedIds: deleted.map((a) => a.id),
-        }),
-      );
-
       return Response.json({ success: true });
     } else {
       return Response.json({ success: false, errors: "Method Not Allowed" }, { status: 405 });

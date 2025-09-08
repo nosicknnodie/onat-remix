@@ -3,24 +3,15 @@ import { useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react
 import { useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { prisma } from "~/libs/db/db.server";
+import { position as matches } from "~/features/matches/index.server";
 import { Board } from "./_Board";
 import { PositionContext, usePositionQuery } from "./_position.context";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
-  const matchClub = await prisma.matchClub.findUnique({
-    where: {
-      id: matchClubId,
-    },
-    include: {
-      quarters: { include: { team1: true, team2: true } },
-      teams: true,
-    },
-  });
-  if (!matchClub) return redirect("../");
-
-  return { matchClub, env: { WS_SERVER_URL: process.env.WS_SERVER_URL } };
+  const data = await matches.service.getPositionPageData(matchClubId);
+  if (!data) return redirect("../");
+  return { ...data, env: { WS_SERVER_URL: process.env.WS_SERVER_URL } };
 };
 
 interface IPositionPageProps {}

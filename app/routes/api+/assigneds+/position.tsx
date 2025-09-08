@@ -3,8 +3,7 @@
 import { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
-import { redis } from "~/libs/db/redis.server";
+import { position as matches } from "~/features/matches/index.server";
 import { parseRequestData } from "~/libs/requestData";
 
 const assignedSchema = z.object({
@@ -19,59 +18,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!result.success) {
     return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
-  try {
-    const updated = await prisma.$transaction(async (tx) => {
-      const assigned = await tx.assigned.findUnique({
-        where: {
-          id: result.data.assignedId,
-        },
-      });
-      if (!assigned) throw new Error("assigned not found");
-      const wasAssigned = await tx.assigned.findFirst({
-        where: {
-          position: result.data.toPosition,
-          teamId: assigned.teamId,
-          quarterId: assigned.quarterId,
-        },
-      });
-      let wasAssignedUpdate: any = null;
-      if (wasAssigned) {
-        wasAssignedUpdate = await tx.assigned.update({
-          where: { id: wasAssigned.id },
-          data: {
-            position: assigned.position,
-          },
-        });
-      }
-      const update = await tx.assigned.update({
-        where: {
-          id: result.data.assignedId,
-        },
-        data: {
-          position: result.data.toPosition,
-        },
-      });
-      return [update, wasAssignedUpdate];
-    });
-    const updateds = updated.filter(Boolean);
-    await redis.publish(
-      `position:${updateds?.at(0)?.quarterId}`,
-      JSON.stringify({
-        type: "POSITION_UPDATED",
-        assigneds: updateds,
-      }),
-    );
-    // await prisma.assigned.update({
-    //   where: {
-    //     id: result.data.assignedId,
-    //   },
-    //   data: {
-    //     position: result.data.toPosition,
-    //   },
-    // });
-    return Response.json({ success: "success" });
-  } catch (error) {
-    console.error(error);
-    return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });
-  }
+  const res = await matches.service.swapAssignedPosition(
+    result.data.assignedId,
+    result.data.toPosition,
+  );
+  if (!res.ok) return Response.json({ success: false }, { status: 400 });
+  return Response.json({ success: "success" });
 };

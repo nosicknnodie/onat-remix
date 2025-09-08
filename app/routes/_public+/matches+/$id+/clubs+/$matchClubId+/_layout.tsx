@@ -21,8 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { club as matches } from "~/features/matches/index.server";
 import { confirm } from "~/libs/confirm";
-import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
 import CommentSection from "~/template/match-comment/CommentSection";
@@ -103,47 +103,8 @@ export type IMatchClubIdLayoutOutletContext = IMatchesIdLayoutPageLoaderReturnTy
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  const matchClub = await prisma.matchClub.findUnique({
-    where: {
-      id: params.matchClubId,
-    },
-    include: {
-      club: { include: { image: true, emblem: true } },
-      quarters: { include: { team1: true, team2: true } },
-      teams: true,
-      attendances: {
-        where: {
-          isVote: true,
-        },
-        include: {
-          assigneds: true,
-          player: { include: { user: { include: { userImage: true } } } },
-          mercenary: { include: { user: { include: { userImage: true } } } },
-        },
-      },
-    },
-  });
-  const player = user
-    ? await prisma.player.findFirst({
-        where: {
-          userId: user.id,
-          clubId: matchClub?.clubId || "",
-          status: "APPROVED",
-        },
-      })
-    : null;
-  const mercenary = user
-    ? matchClub?.attendances.find((a) => a.mercenary?.userId === user.id)
-    : null;
-  const isPlayer = !!player;
-  const isMercenary = !!mercenary;
-  const isAdmin = !!player && (player.role === "MANAGER" || player.role === "MASTER");
-  const role = {
-    isPlayer,
-    isAdmin,
-    isMercenary,
-  };
-  return { matchClub, role };
+  const data = await matches.service.getMatchClubLayoutData(user?.id, params.matchClubId!);
+  return data;
 };
 
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {

@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
+import { position as matches } from "~/features/matches/index.server";
 import { parseRequestData } from "~/libs/requestData";
 
 const newQuarterSchema = z.object({
@@ -14,35 +14,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
 
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const matchClub = await tx.matchClub.findUnique({
-        where: {
-          id: result.data.matchClubId,
-        },
-        include: {
-          quarters: true,
-          teams: true,
-        },
-      });
-
-      if (matchClub?.quarters.some((quarter) => quarter.order === result.data.order)) {
-        return Response.json({ error: "Quarter already exists" }, { status: 400 });
-      }
-      await tx.quarter.create({
-        data: {
-          matchClubId: result.data.matchClubId,
-          isSelf: matchClub?.isSelf,
-          order: result.data.order,
-          ...(matchClub?.isSelf && {
-            team1Id: matchClub.teams[0].id,
-            team2Id: matchClub.teams[1].id,
-          }),
-        },
-      });
-      return Response.json({ success: "success" });
-    });
-  } catch {
-    return Response.json({ error: "Internal Server Error" });
-  }
+  const res = await matches.service.createQuarter(result.data.matchClubId, result.data.order);
+  if (!res.ok) return Response.json({ error: res.message }, { status: 400 });
+  return Response.json({ success: "success" });
 };
