@@ -3,7 +3,7 @@ import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { Fragment, useState, useTransition } from "react";
-import { FiHelpCircle } from "react-icons/fi";
+import { FiHelpCircle, FiEdit2 } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -56,7 +56,6 @@ const TeamPage = (_props: ITeamPageProps) => {
   const [isPending, startTransition] = useTransition();
   const [selectedAttends, setSelectedAttends] = useState<typeof attendances>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(teams?.[0]?.id ?? null);
-
   // 팀없는 선수들 체크했을경우 attends 에 모아두기
   const handleSelectedAtted = async (attendance: (typeof attendances)[number]) => {
     setSelectedAttends((prev) => {
@@ -173,7 +172,6 @@ const TeamPage = (_props: ITeamPageProps) => {
           </Card>
         </div>
       )}
-
       <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
         {teams?.map((team) => {
           return (
@@ -198,7 +196,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                       aria-label="팀 수정"
                       className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
                     >
-                      {/* icon inside EditDialog */}
+                      <FiEdit2 />
                     </Button>
                   </TeamEditDialog>
                 }
@@ -218,6 +216,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                     isChecked={!!attendance?.isCheck}
                     teams={teams.map((t) => ({ id: t.id, name: t.name }))}
                     currentTeamId={attendance?.teamId || null}
+                    payload={{ player: attendance?.player || null, mercenary: attendance?.mercenary || null }}
                     onSelectTeam={async (teamId) => {
                       await fetch("/api/attendances/team", {
                         method: "POST",

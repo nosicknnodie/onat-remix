@@ -103,9 +103,6 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
   - 적용 대상: `matches/_components/{SearchPlace,HistoryPlaceDownList,Map}.tsx`
   - 목표: `features/matches/ui/place/*`로 이동 또는 통합 컴포넌트화
   - 진행: [x] 이동 완료 및 `matches/new.tsx`, `matches/$id/edit.tsx` 교체
-- [ ] Breadcrumbs: 매치/클럽 상세 브레드크럼 UI
-  - 적용 대상: `matches/_layout.tsx`, `matches/$id/_layout.tsx`
-  - 목표: 단순 UI는 유지 가능하나, 재사용 필요 시 `features/matches/ui/Breadcrumbs` 추출
 
 세부 하위 라우트 점검 목록
 - mercenaries
@@ -135,27 +132,7 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [x] Rating: RightDrawer 분리 및 교체
 - [x] Record: RightDrawer 분리 및 교체
 
-## 변경 요약 (추가)
-- 추가: `app/features/matches/ui/ClubSubnavTabs.tsx`
-- 추가: `app/features/matches/ui/ClubAdminMenu.tsx`
-- 배럴: `app/features/matches/ui/index.ts` export 갱신
-- 교체: `app/routes/_public+/matches+/$id+/clubs+/$matchClubId+/_layout.tsx`
-  - 상단 탭 → `ClubSubnavTabs`
-  - 우측 드롭다운 → `ClubAdminMenu` (토글 콜백/권한은 라우트에서 관리)
 
-검증 방법 (추가)
-- 경로: `/matches/:id/clubs/:matchClubId` 하위 탭 이동/활성 상태 확인
-- 관리자 권한에서 우측 메뉴의 자체전 토글 및 매치 수정 링크 동작 확인
-
-## 변경 요약 (PR-style)
-- 추가: `app/features/matches/ui/MatchHeaderCard.tsx`
-- 배럴 추가: `app/features/matches/ui/index.ts`에 `MatchHeaderCard` export
-- 교체: `app/routes/_public+/matches+/$id+/_index.tsx` → `MatchHeaderCard` 사용
-- 교체: `app/routes/_public+/matches+/$id+/clubs+/$matchClubId+/_index.tsx` → `MatchHeaderCard` 사용
-
-검증 방법
-- 경로: `/matches/:id` 및 `/matches/:id/clubs/:matchClubId`
-- 확인: 상단 매치 요약 카드가 동일하게 렌더되고, 클럽 선택 Select/아바타 링크 동작 정상
 
 ### 5단계: 관리자 (Admin)
 - [ ] `admin+/_index.tsx`

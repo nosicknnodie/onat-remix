@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuSub,
@@ -15,7 +14,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import InfoDrawer from "./InfoDrawer";
+import InfoDrawer, { type TeamInfoPayload } from "./InfoDrawer";
 
 export interface TeamAttendanceActionsProps extends PropsWithChildren {
   name: string;
@@ -24,6 +23,7 @@ export interface TeamAttendanceActionsProps extends PropsWithChildren {
   teams: { id: string; name: string }[];
   currentTeamId?: string | null;
   onSelectTeam: (teamId: string) => Promise<void> | void;
+  payload: TeamInfoPayload | null;
 }
 
 export const TeamAttendanceActions = ({
@@ -34,6 +34,7 @@ export const TeamAttendanceActions = ({
   teams,
   currentTeamId,
   onSelectTeam,
+  payload,
 }: TeamAttendanceActionsProps) => {
   const [isPending, startTransition] = useTransition();
 
@@ -68,8 +69,7 @@ export const TeamAttendanceActions = ({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{`${name} 님`}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <InfoDrawer payload={null}>정보확인</InfoDrawer>
-        <DropdownMenuItem asChild></DropdownMenuItem>
+        <InfoDrawer payload={payload}>정보확인</InfoDrawer>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Team</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
