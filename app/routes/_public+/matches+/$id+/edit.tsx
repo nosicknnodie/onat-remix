@@ -13,6 +13,7 @@ import {
 } from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs/map";
+import { parseRequestData } from "~/libs/requestData.server";
 import { placeHistoryAtom } from "../_libs/state";
 
 export const handle = { breadcrumb: "매치 수정" };
@@ -38,7 +39,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     // 로그인 안된 사용자는 로그인 페이지로 리디렉트
     throw redirect("/auth/login");
   }
-  const parsed = await matchesValidators.parseUpdateForm(request);
+  const raw = await parseRequestData(request);
+  const parsed = matchesValidators.parseUpdate(raw);
   if (!parsed.ok)
     return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
 

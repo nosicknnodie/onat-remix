@@ -2,7 +2,7 @@ import { GoalType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { record as matches } from "~/features/matches/index.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 const goalSchema = z.object({
   assignedId: z.string().min(1, "goalId is required"),

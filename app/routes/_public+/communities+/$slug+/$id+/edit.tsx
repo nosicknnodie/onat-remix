@@ -29,7 +29,7 @@ import {
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { deletePublicImage } from "~/libs/db/s3.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 import { cn } from "~/libs/utils";
 
 export const handle = {

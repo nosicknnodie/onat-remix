@@ -5,7 +5,7 @@ import type { InputJsonValue } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 export type IMatchClubComment = Prisma.CommentGetPayload<{
   include: {

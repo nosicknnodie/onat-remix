@@ -7,7 +7,6 @@ export async function parseRequestData(request: Request): Promise<Record<string,
     params[key] = value;
   });
 
-  // 이건 GET일 때만 동작
   if (request.method === "GET") return params;
   const contentType = request.headers.get("content-type") || "";
 

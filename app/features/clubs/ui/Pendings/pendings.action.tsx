@@ -4,6 +4,7 @@ import { useOutletContext } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
+import { confirm } from "~/components/ui/confirm";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { confirm } from "~/libs/confirm";
 import type { IClubLayoutLoaderData, IPlayer } from "../../types";
 import InfoDrawer from "../InfoDrawer";
 import { useGetPendingPlayers } from "./pendings.context";

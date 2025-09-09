@@ -5,6 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Button } from "~/components/ui/button";
+import { confirm } from "~/components/ui/confirm";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { confirm } from "~/libs/confirm";
 
 const Actions = ({ payload }: { payload: Board }) => {
   const { revalidate } = useRevalidator();

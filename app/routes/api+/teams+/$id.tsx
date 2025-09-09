@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { prisma } from "~/libs/db/db.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 const updateTeamSchema = z.object({
   name: z.string().min(1, "이름은 필수입니다."),

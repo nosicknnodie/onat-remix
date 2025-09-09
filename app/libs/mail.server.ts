@@ -1,15 +1,10 @@
 import nodemailer from "nodemailer";
 
-// const domain = process.env.APP_URL;
 const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
-  // port: '587',
   secure: false,
-  auth: {
-    user: process.env.SMTP_ID,
-    pass: process.env.SMTP_PW,
-  },
+  auth: { user: process.env.SMTP_ID, pass: process.env.SMTP_PW },
   from: process.env.SMTP_ID,
 });
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 export const postSchema = z.object({
   id: z.string().min(1, "ID 는 필수 입니다."),

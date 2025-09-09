@@ -1,8 +1,6 @@
 import { overlay } from "overlay-kit";
 import { ConfirmModal } from "~/components/ConfirmModal";
 
-// import { ConfirmModal } from "@/overlays/ConfirmModal";
-
 interface ConfirmOptions {
   title: React.ReactNode;
   description?: React.ReactNode;

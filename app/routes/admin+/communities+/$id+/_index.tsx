@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { prisma } from "~/libs/db/db.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const id = params.id;

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { sendPasswordResetEmail } from "~/libs/mail";
+import { sendPasswordResetEmail } from "~/libs/mail.server";
 import { createPasswordResetToken, findUserByEmail } from "./queries";
 import type { ResetActionResult, ResetInput } from "./types";
 import { ResetSchema } from "./validators";

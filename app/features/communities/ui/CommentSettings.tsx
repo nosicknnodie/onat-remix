@@ -3,6 +3,7 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
+import { confirm } from "~/components/ui/confirm";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts/AuthUserContext";
-import { confirm } from "~/libs/confirm";
 import { cn } from "~/libs/utils";
 
 type PostCommentWithExtras = PostComment & {

@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { rating as matches } from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 const EvaluationValidate = z.object({
   attendanceId: z.string().min(1, "attendanceId is required"),

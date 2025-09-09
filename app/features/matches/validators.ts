@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { parseRequestData } from "~/libs/requestData";
 
 export const createSchema = z.object({
   clubId: z.string(),
@@ -27,28 +26,14 @@ export const updateSchema = z.object({
   lng: z.string().optional(),
 });
 
-export async function parseCreateForm(request: Request) {
-  const raw = await parseRequestData(request);
-  const result = createSchema.safeParse(raw);
-  if (!result.success) {
-    return {
-      ok: false as const,
-      errors: result.error.flatten(),
-      values: raw,
-    };
-  }
+export function parseCreate(data: unknown) {
+  const result = createSchema.safeParse(data);
+  if (!result.success) return { ok: false as const, errors: result.error.flatten(), values: data };
   return { ok: true as const, data: result.data };
 }
 
-export async function parseUpdateForm(request: Request) {
-  const raw = await parseRequestData(request);
-  const result = updateSchema.safeParse(raw);
-  if (!result.success) {
-    return {
-      ok: false as const,
-      errors: result.error.flatten(),
-      values: raw,
-    };
-  }
+export function parseUpdate(data: unknown) {
+  const result = updateSchema.safeParse(data);
+  if (!result.success) return { ok: false as const, errors: result.error.flatten(), values: data };
   return { ok: true as const, data: result.data };
 }

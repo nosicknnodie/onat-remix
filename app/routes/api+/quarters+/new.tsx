@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { position as matches } from "~/features/matches/index.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 const newQuarterSchema = z.object({
   matchClubId: z.string().min(1, "matchClubId is required"),

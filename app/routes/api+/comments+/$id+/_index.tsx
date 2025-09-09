@@ -3,7 +3,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { service } from "~/features/communities/index.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const user = await getUser(request);

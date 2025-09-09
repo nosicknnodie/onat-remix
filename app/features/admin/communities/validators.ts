@@ -1,6 +1,6 @@
 import { BoardType, UserRoleType } from "@prisma/client";
 import { z } from "zod";
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 
 export const createBoardSchema = z.object({
   name: z.string().min(1, "name is required"),

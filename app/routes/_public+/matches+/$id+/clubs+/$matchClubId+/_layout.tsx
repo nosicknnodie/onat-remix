@@ -11,10 +11,10 @@ import {
 } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
+import { confirm } from "~/components/ui/confirm";
 import { ClubAdminMenu, type ClubSubnavItem, ClubSubnavTabs } from "~/features/matches";
 import { club as matches } from "~/features/matches/index.server";
 import CommentSection from "~/features/matches/ui/match-comment/CommentSection";
-import { confirm } from "~/libs/confirm";
 import { getUser } from "~/libs/db/lucia.server";
 import type { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 

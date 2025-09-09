@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { generateVerificationToken } from "~/libs/auth/token";
 import { prisma } from "~/libs/db/db.server";
-import { sendVerificationEmail } from "~/libs/mail";
+import { sendVerificationEmail } from "~/libs/mail.server";
 import { registerSchema } from "./schema";
 import type { RegisterFormData } from "./types";
 

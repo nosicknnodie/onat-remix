@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { lucia } from "~/libs/db/lucia.server";
-import { sendVerificationEmail } from "~/libs/mail";
+import { sendVerificationEmail } from "~/libs/mail.server";
 import { findKeyByEmail } from "../core/queries.server";
 import { issueVerificationToken } from "../core/token.service.server";
 import { parseLoginForm } from "./validators";

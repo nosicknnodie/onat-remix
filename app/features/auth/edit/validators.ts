@@ -1,4 +1,4 @@
-import { parseRequestData } from "~/libs/requestData";
+import { parseRequestData } from "~/libs/requestData.server";
 import { editorSchema } from "./schema";
 
 // 회원정보 수정 validation

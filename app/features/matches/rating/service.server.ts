@@ -1,5 +1,5 @@
-import { getRatingAttendances } from "~/libs/queries/attendance/atttendances";
 import * as q from "./queries.server";
+import { getRatingAttendances } from "./queries.server";
 
 export async function getRatingPageData(matchClubId: string) {
   const [matchClub, attendances] = await Promise.all([

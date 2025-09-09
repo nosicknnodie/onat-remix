@@ -8,9 +8,13 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches";
-import { create as matches } from "~/features/matches/index.server";
+import {
+  create as matches,
+  validators as matchesValidators,
+} from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import type { IKakaoLocalType } from "~/libs/map";
+import { parseRequestData } from "~/libs/requestData.server";
 import { placeHistoryAtom } from "./_libs/state";
 
 export const handle = { breadcrumb: "매치 생성" };
@@ -29,7 +33,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) throw redirect("/auth/login");
-  const parsed = await matches.validators.parseCreateForm(request);
+  const raw = await parseRequestData(request);
+  const parsed = matchesValidators.parseCreate(raw);
   if (!parsed.ok)
     return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
 
