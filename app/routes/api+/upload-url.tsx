@@ -1,4 +1,3 @@
-import fs from "node:fs/promises";
 import type { FilePurposeType } from "@prisma/client";
 import {
   type ActionFunction,
@@ -9,11 +8,8 @@ import {
   createFileUploadHandler,
   type NodeOnDiskFile,
 } from "@remix-run/node/dist/upload/fileUploadHandler";
-import sharp from "sharp";
-import slugify from "slugify";
-import { prisma } from "~/libs/db/db.server";
+import { files } from "~/features/index.server";
 import { getUser } from "~/libs/db/lucia.server";
-import { sendBufferToPublicImage } from "~/libs/db/s3.server";
 
 export const loader: LoaderFunction = async () => {
   // 필요 시 GET presigned URL도 여기서 처리 가능
@@ -33,31 +29,11 @@ export const action: ActionFunction = async ({ request }) => {
   const purpose = (formData.get("purpose") as FilePurposeType) || "PROFILE";
   if (!file || typeof file === "string")
     return Response.json({ error: "파일 없음" }, { status: 400 });
-  const ext = "webp";
   const nodeFile = file as unknown as NodeOnDiskFile;
-  const baseName = nodeFile.name?.replace(/\.[^/.]+$/, "") || "image";
-  const safeName = slugify(baseName, { lower: true, strict: true });
-
-  const fileBuffer = await fs.readFile(nodeFile.getFilePath());
-  const webpBuffer = await sharp(fileBuffer).webp({ quality: 80 }).toBuffer();
-
-  const filename = `${safeName}.${ext}`;
-  const key = `user/${user.id}/${Date.now()}_${filename}`;
-  const publicUrl = await sendBufferToPublicImage({
-    key: key,
-    body: webpBuffer,
-    contentType: "image/webp",
+  const saved = await files.service.saveImageFromNodeFile({
+    nodeFile,
+    userId: user.id,
+    purpose,
   });
-  const res = await prisma.file.create({
-    data: {
-      url: publicUrl,
-      key: key,
-      uploaderId: user.id,
-      mimeType: ext,
-      size: webpBuffer.length,
-      purpose: purpose,
-    },
-  });
-
-  return Response.json({ ...res });
+  return Response.json({ ...saved });
 };

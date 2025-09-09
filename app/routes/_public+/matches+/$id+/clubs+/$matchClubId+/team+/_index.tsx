@@ -3,7 +3,7 @@ import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { Fragment, useState, useTransition } from "react";
-import { FiHelpCircle, FiEdit2 } from "react-icons/fi";
+import { FiEdit2, FiHelpCircle } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -216,7 +216,10 @@ const TeamPage = (_props: ITeamPageProps) => {
                     isChecked={!!attendance?.isCheck}
                     teams={teams.map((t) => ({ id: t.id, name: t.name }))}
                     currentTeamId={attendance?.teamId || null}
-                    payload={{ player: attendance?.player || null, mercenary: attendance?.mercenary || null }}
+                    payload={{
+                      player: attendance?.player || null,
+                      mercenary: attendance?.mercenary || null,
+                    }}
                     onSelectTeam={async (teamId) => {
                       await fetch("/api/attendances/team", {
                         method: "POST",

@@ -136,12 +136,19 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 
 ### 5단계: 관리자 (Admin)
 - [ ] `admin+/_index.tsx`
-- [ ] `admin+/communities/_index.tsx`
-- [ ] `admin+/communities/new.tsx`
+- [x] `admin+/communities/_index.tsx`
+  - [x] Refactor: loader 로직을 `features/admin/communities/queries.server.ts:listPublicBoards`로 이전
+  - [x] UI 분리: 목록 테이블/컬럼을 `features/admin/communities/ui/BoardsTable`로 이전
+- [x] `admin+/communities/new.tsx`
+  - [x] Refactor: action 로직을 `features/admin/communities/service.server.ts:createBoard`로 이전
+  - [x] Validation 분리: `features/admin/communities/validators.ts:parseCreateBoardForm`
+  - [x] UI 분리: 생성 폼을 `features/admin/communities/ui/NewBoardForm`로 이전
 
 ### 6단계: 기타 API
-- [ ] `api+/upload-url.tsx`
-- [ ] `api+/kakao+/search.tsx`
+- [x] `api+/upload-url.tsx`
+  - [x] Refactor: 업로드/리사이즈/S3/DB 저장을 `features/files/service.server.ts:saveImageFromNodeFile`로 이전, 라우트는 FormData 파싱만 담당
+- [x] `api+/kakao+/search.tsx`
+  - [x] Refactor: 외부 API 호출을 `features/kakao/service.server.ts:searchKeyword`로 이전
 - [ ] ...기타 식별된 API 라우트
 
 ### 7단계: 설정 (Settings)

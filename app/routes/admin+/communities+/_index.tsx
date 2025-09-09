@@ -1,7 +1,6 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import DataTable from "~/components/DataTable";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,33 +15,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { prisma } from "~/libs/db/db.server";
+import { BoardsTable } from "~/features/admin/communities/index";
+import { admin } from "~/features/index.server";
 import { cn } from "~/libs/utils";
-import { boardColumns } from "./_columns";
 
 interface ICommunitiesPageProps {}
 
 export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
-  const boards = await prisma.board.findMany({
-    where: { clubId: null },
-  });
+  const boards = await admin.queries.listPublicBoards();
 
   return { boards };
 };
 
 const CommunitiesPage = (_props: ICommunitiesPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
-  const boards = loaderData.boards?.sort((a, b) => {
-    if (a.isUse && !b.isUse) return -1;
-    if (!a.isUse && b.isUse) return 1;
-
-    // Both are same in isUse
-    if (a.isUse && b.isUse) {
-      return a.order - b.order;
-    }
-
-    return 0;
-  });
+  const boards = loaderData.boards ?? [];
   return (
     <>
       <div className="w-full">
@@ -73,7 +60,7 @@ const CommunitiesPage = (_props: ICommunitiesPageProps) => {
             </DropdownMenu>
           </BreadcrumbList>
         </Breadcrumb>
-        <DataTable data={boards} columns={boardColumns} />
+        <BoardsTable boards={boards} />
       </div>
     </>
   );
