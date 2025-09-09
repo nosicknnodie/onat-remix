@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: off */
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
-import bcrypt from "bcryptjs";
 import { useEffect, useRef } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useSession } from "~/contexts/AuthUserContext";
-import { prisma } from "~/libs/db/db.server";
+import { service as settingsService } from "~/features/settings/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 
 interface ISecurityPageProps {}
@@ -18,8 +17,6 @@ interface ISecurityPageProps {}
 export const action = async ({ request }: ActionFunctionArgs) => {
   const session = await getUser(request);
   if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
-  const keyId = `email:${session.email}`;
-
   const formData = await request.formData();
   const currentPassword = formData.get("currentPassword") as string;
   const newPassword = formData.get("newPassword") as string;
@@ -31,28 +28,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (newPassword.length < 6) {
     return Response.json({ error: "비밀번호는 최소 6자 이상이어야 합니다." }, { status: 400 });
   }
-
-  const key = await prisma.key.findUnique({
-    where: { id: keyId },
-  });
-
-  if (!key || !key.hashedPassword) {
-    return Response.json(
-      { error: "사용자를 찾을 수 없거나 비밀번호 설정이 되어있지 않습니다." },
-      { status: 404 },
-    );
+  const result = await settingsService.changePassword(session.email, currentPassword, newPassword);
+  if (!result.ok) {
+    const status = result.message?.includes("현재 비밀번호") ? 401 : 404;
+    return Response.json({ error: result.message }, { status });
   }
-
-  const isValid = await bcrypt.compare(currentPassword, key.hashedPassword);
-  if (!isValid) {
-    return Response.json({ error: "현재 비밀번호가 일치하지 않습니다." }, { status: 401 });
-  }
-
-  const newHashedPassword = await bcrypt.hash(newPassword, 10);
-  await prisma.key.update({
-    where: { id: keyId },
-    data: { hashedPassword: newHashedPassword },
-  });
 
   return Response.json({ success: "비밀번호가 변경 되었습니다." });
 };

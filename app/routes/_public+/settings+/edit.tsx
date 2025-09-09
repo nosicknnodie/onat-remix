@@ -17,8 +17,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useSession } from "~/contexts/AuthUserContext";
-import { invalidateUserSessionCache } from "~/libs/db/adatper";
-import { prisma } from "~/libs/db/db.server";
+import { service as settingsService } from "~/features/settings/index.server";
 import { SIGUNGU } from "~/libs/sigungu";
 import { cn } from "~/libs/utils";
 import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
@@ -35,23 +34,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const gun = String(form.get("gun") ?? "");
   const userImageId = form.get("userImageId")?.toString() || null;
 
-  const MM = birthMonth ? String(birthMonth).padStart(2, "0") : undefined;
-  const dd = birthDay ? String(birthDay).padStart(2, "0") : undefined;
-  const birthValid = birthYear && MM && dd;
-  const birth = birthValid ? `${birthYear}-${MM}-${dd}` : null;
-  await prisma.user.update({
-    where: { id },
-    data: {
-      name,
-      gender,
-      birth,
-      si,
-      gun,
-      userImageId,
-    },
+  await settingsService.updateProfile({
+    id,
+    name,
+    gender,
+    birthYear: isNaN(birthYear) ? null : birthYear,
+    birthMonth: isNaN(birthMonth) ? null : birthMonth,
+    birthDay: isNaN(birthDay) ? null : birthDay,
+    si,
+    gun,
+    userImageId,
   });
-
-  await invalidateUserSessionCache(id);
 
   return Response.json({ success: "수정완료 했습니다." });
 };

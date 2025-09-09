@@ -14,8 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useSession } from "~/contexts/AuthUserContext";
-import { invalidateUserSessionCache } from "~/libs/db/adatper";
-import { prisma } from "~/libs/db/db.server";
+import { service as settingsService } from "~/features/settings/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { NATIVE } from "~/libs/native";
 
@@ -30,18 +29,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const heightRaw = formData.get("height")?.toString() ?? null;
 
   const height = heightRaw ? Number(heightRaw) : null;
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      playerNative,
-      clothesSize,
-      shoesSize,
-      height,
-    },
-  });
-
-  await invalidateUserSessionCache(user.id);
+  await settingsService.updateBody(user.id, { playerNative, clothesSize, shoesSize, height });
 
   return redirect("/settings/body");
 };

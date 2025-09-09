@@ -6,8 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useSession } from "~/contexts/AuthUserContext";
-import { invalidateUserSessionCache } from "~/libs/db/adatper";
-import { prisma } from "~/libs/db/db.server";
+import { service as settingsService } from "~/features/settings/index.server";
 import { getUser } from "~/libs/db/lucia.server";
 import Position from "~/template/Position";
 
@@ -20,17 +19,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const position1 = (formData.get("position1")?.toString() as PositionType) ?? null;
   const position2 = (formData.get("position2")?.toString() as PositionType) ?? null;
   const position3 = (formData.get("position3")?.toString() as PositionType) ?? null;
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      position1: position1 || null,
-      position2: position2 || null,
-      position3: position3 || null,
-    },
-  });
-
-  await invalidateUserSessionCache(userId);
+  await settingsService.updatePosition(userId, { position1, position2, position3 });
 
   return redirect("/settings/position");
 };

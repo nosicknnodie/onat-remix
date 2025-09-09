@@ -144,6 +144,19 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
 - [ ] `api+/kakao+/search.tsx`
 - [ ] ...기타 식별된 API 라우트
 
+### 7단계: 설정 (Settings)
+- [x] `_public+/settings+/_layout.tsx`
+  - [x] 확인: loader/action 없음, 네비게이션/레이아웃만 담당하도록 유지
+- [x] `_public+/settings+/edit.tsx`
+  - [x] Refactor: action 로직을 `features/settings/service.server.ts:updateProfile`로 이전
+- [x] `_public+/settings+/body.tsx`
+  - [x] Refactor: action 로직을 `features/settings/service.server.ts:updateBody`로 이전
+- [x] `_public+/settings+/position.tsx`
+  - [x] Refactor: action 로직을 `features/settings/service.server.ts:updatePosition`로 이전
+- [x] `_public+/settings+/security.tsx`
+  - [x] Refactor: action 로직을 `features/settings/service.server.ts:changePassword`로 이전 (검증/비교 후 `auth.core.setPasswordByEmail` 사용)
+
+
 ## ✅ 완료 조건 (Definition of Done)
 
 - `app/routes` 내의 모든 `loader`와 `action` 함수는 50줄 이하의 코드 라인을 유지해야 합니다.
