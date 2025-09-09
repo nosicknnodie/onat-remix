@@ -1,13 +1,15 @@
 import { redirect } from "@remix-run/node";
 import { core, edit } from "~/features/auth/index.server";
 import { getUser } from "~/libs/db/lucia.server";
+import { parseRequestData } from "~/libs/requestData.server";
 import { fail, ok } from "~/utils/action.server";
 
 export async function handleEditUserAction(request: Request) {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
 
-  const parsed = await edit.validators.parseEditorForm(request);
+  const raw = await parseRequestData(request);
+  const parsed = edit.validators.parseEditor(raw);
   if (!parsed.ok) {
     return fail("필드 수정이 필요합니다.", parsed.errors.fieldErrors);
   }

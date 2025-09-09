@@ -8,9 +8,11 @@ import {
 } from "~/components/ui/breadcrumb";
 import NewBoardForm from "~/features/admin/communities/ui/NewBoardForm";
 import { admin as adminFeature } from "~/features/index.server";
+import { parseRequestData } from "~/libs/requestData.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const parsed = await adminFeature.validators.parseCreateBoardForm(request);
+  const raw = await parseRequestData(request);
+  const parsed = adminFeature.validators.parseCreateBoard(raw);
   if (!parsed.ok) {
     return Response.json({ success: false, errors: parsed.errors }, { status: 400 });
   }

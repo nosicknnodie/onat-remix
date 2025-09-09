@@ -1,6 +1,5 @@
 import { BoardType, UserRoleType } from "@prisma/client";
 import { z } from "zod";
-import { parseRequestData } from "~/libs/requestData.server";
 
 export const createBoardSchema = z.object({
   name: z.string().min(1, "name is required"),
@@ -16,12 +15,9 @@ const toNullableRole = (role: string | null): UserRoleType | null => {
   return role as UserRoleType;
 };
 
-export async function parseCreateBoardForm(request: Request) {
-  const data = await parseRequestData(request);
+export function parseCreateBoard(data: unknown) {
   const result = createBoardSchema.safeParse(data);
-  if (!result.success) {
-    return { ok: false as const, errors: result.error.flatten() };
-  }
+  if (!result.success) return { ok: false as const, errors: result.error.flatten() };
   const dto = {
     name: result.data.name,
     slug: result.data.slug,

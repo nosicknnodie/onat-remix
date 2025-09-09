@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { parseRequestData } from "~/libs/requestData.server";
 
 export const postSchema = z.object({
   id: z.string().min(1, "ID 는 필수 입니다."),
@@ -10,15 +9,8 @@ export const postSchema = z.object({
 
 export type NewPostInput = z.infer<typeof postSchema>;
 
-export async function parseNewPostForm(request: Request) {
-  const data = await parseRequestData(request);
+export function parseNewPost(data: unknown) {
   const result = postSchema.safeParse(data);
-  if (!result.success) {
-    return {
-      ok: false as const,
-      errors: result.error.flatten(),
-      values: data,
-    };
-  }
+  if (!result.success) return { ok: false as const, errors: result.error.flatten(), values: data };
   return { ok: true as const, data: result.data };
 }

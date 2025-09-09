@@ -120,13 +120,17 @@ Feature 내부의 모듈은 배럴을 통해서만 외부에 노출됩니다. �
 
 ## 6.1. HTTP 경계 검증(DTO) 패턴
 
-- 라우트(HTTP 레이어)에서 Request/FormData/JSON을 파싱하고 zod로 유효성 검증합니다.
+- 라우트(HTTP 레이어)에서 Request/FormData/JSON을 파싱하고 validators에 데이터를 전달합니다.
+- validators는 반드시 client-safe여야 합니다. 즉, Request 같은 서버 전용 객체를 참조하지 않습니다.
+  - 규칙: validators 파일에는 zod 스키마와 `parseXxx(data: unknown)`만 존재합니다.
+  - 서버 전용 파싱은 `~/libs/requestData.server` 등 라우트(HTTP)에서 수행합니다.
 - 검증 실패 시 라우트에서 즉시 400(Response)로 반환하며, 서비스는 호출하지 않습니다.
 - 검증 성공 시, 서비스에 전달할 순수 DTO(파싱·정제된 타입)를 만들어 넘깁니다.
 - 서비스는 DTO만 받아 비즈니스 규칙을 수행하고, 순수 결과 객체를 반환합니다. HTTP 매핑은 라우트에서 수행합니다.
 
 예시 흐름
-- parse: `validators.parseNewPostForm(request)` → 실패: 400, 성공: `{ id, boardId, title, content }`
+- parse: `const raw = await parseRequestData(request);` → `validators.parseNewPost(raw)`
+- 실패: 400, 성공: `{ id, boardId, title, content }`
 - DTO 구성: `contentJSON = JSON.parse(content)` → `service.publishPost({ id, boardId, title, contentJSON })`
 - 결과 매핑: 서비스 결과를 라우트에서 `Response`(JSON/redirect)로 변환
 

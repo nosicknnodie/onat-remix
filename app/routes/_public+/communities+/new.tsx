@@ -23,7 +23,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
-  const parsed = await validators.parseNewPostForm(request);
+  const raw = await (await import("~/libs/requestData.server")).parseRequestData(request);
+  const parsed = validators.parseNewPost(raw);
   if (!parsed.ok) {
     return Response.json(
       { success: false, errors: parsed.errors, values: parsed.values },

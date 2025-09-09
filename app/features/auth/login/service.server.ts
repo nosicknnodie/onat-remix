@@ -4,16 +4,18 @@ import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { lucia } from "~/libs/db/lucia.server";
 import { sendVerificationEmail } from "~/libs/mail.server";
+import { parseRequestData } from "~/libs/requestData.server";
 import { findKeyByEmail } from "../core/queries.server";
 import { issueVerificationToken } from "../core/token.service.server";
-import { parseLoginForm } from "./validators";
+import { parseLogin } from "./validators";
 
 export async function handleLogin(request: Request) {
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}`;
 
   // 1) 파싱 & 유효성 검사
-  const parsed = await parseLoginForm(request);
+  const raw = await parseRequestData(request);
+  const parsed = parseLogin(raw);
   if (!parsed.ok) {
     return Response.json({ errors: parsed.errors }, { status: 401, statusText: "Bad Request" });
   }
