@@ -16,13 +16,13 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts/AuthUserContext";
 import { service } from "~/features/communities/index.server";
+import CommentInput from "~/features/communities/ui/CommentInput";
+import CommentSettings from "~/features/communities/ui/CommentSettings";
+import CommentVoteBadgeButton from "~/features/communities/ui/CommentVoteBadgeButton";
+import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
+import Settings from "~/features/communities/ui/Settings";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
-import CommentInput from "~/template/post/CommentInput";
-import CommentSettings from "~/template/post/CommentSettings";
-import CommentVoteBadgeButton from "~/template/post/CommentVoteBadgeButton";
-import PostVoteBadgeButton from "~/template/post/PostVoteBadgeButton";
-import Settings from "~/template/post/Settings";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);

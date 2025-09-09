@@ -1,6 +1,7 @@
 import type { File } from "@prisma/client";
 import { CameraIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
+import ImageCropperDialog from "~/components/cropper/ImageCropperDialog";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
@@ -16,7 +17,6 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { SIGUNGU } from "~/libs/sigungu";
-import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 import type { ActionData } from "~/types/action";
 
 interface ClubCreateFormProps {

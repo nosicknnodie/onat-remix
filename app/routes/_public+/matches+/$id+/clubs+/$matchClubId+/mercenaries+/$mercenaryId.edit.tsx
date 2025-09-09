@@ -5,13 +5,13 @@ import _ from "lodash";
 import { useState } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
+import Position from "~/components/Position";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { AES } from "~/libs/crypto.utils";
 import { prisma } from "~/libs/db/db.server";
-import Position from "~/template/Position";
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const mercenaryId = params.mercenaryId;
 

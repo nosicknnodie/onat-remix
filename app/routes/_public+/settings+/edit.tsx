@@ -3,6 +3,7 @@ import { CameraIcon } from "@radix-ui/react-icons";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import ImageCropperDialog from "~/components/cropper/ImageCropperDialog";
 import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -20,7 +21,6 @@ import { useSession } from "~/contexts/AuthUserContext";
 import { service as settingsService } from "~/features/settings/index.server";
 import { SIGUNGU } from "~/libs/sigungu";
 import { cn } from "~/libs/utils";
-import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const form = await request.formData();

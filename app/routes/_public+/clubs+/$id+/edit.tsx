@@ -3,6 +3,7 @@ import { CameraIcon } from "@radix-ui/react-icons";
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useActionData, useOutletContext } from "@remix-run/react";
 import { useState } from "react";
+import ImageCropperDialog from "~/components/cropper/ImageCropperDialog";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
@@ -20,7 +21,6 @@ import { Textarea } from "~/components/ui/textarea";
 import { service } from "~/features/clubs/index.server";
 import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
 import { SIGUNGU } from "~/libs/sigungu";
-import ImageCropperDialog from "~/template/cropper/ImageCropperDialog";
 import type { IClubLayoutLoaderData } from "./_layout";
 export const handle = { breadcrumb: "수정" };
 export async function action({ request }: ActionFunctionArgs) {

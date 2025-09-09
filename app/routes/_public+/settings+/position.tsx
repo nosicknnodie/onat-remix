@@ -2,13 +2,13 @@ import type { PositionType } from "@prisma/client";
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import _ from "lodash";
 import { useEffect, useState } from "react";
+import Position from "~/components/Position";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useSession } from "~/contexts/AuthUserContext";
 import { service as settingsService } from "~/features/settings/index.server";
 import { getUser } from "~/libs/db/lucia.server";
-import Position from "~/template/Position";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);

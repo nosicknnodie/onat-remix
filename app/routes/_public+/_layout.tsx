@@ -3,6 +3,7 @@
 import { Outlet, type UIMatch, useMatches } from "@remix-run/react";
 import { Fragment } from "react/jsx-runtime";
 import { Loading } from "~/components/Loading";
+import MainSideMenu from "~/components/layout/MainSideMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Breadcrumb,
@@ -11,7 +12,6 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import MainSideMenu from "~/template/layout/MainSideMenu";
 
 interface IPublicLayoutProps {}
 

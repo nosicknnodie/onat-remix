@@ -13,9 +13,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import { ClubAdminMenu, type ClubSubnavItem, ClubSubnavTabs } from "~/features/matches";
 import { club as matches } from "~/features/matches/index.server";
+import CommentSection from "~/features/matches/ui/match-comment/CommentSection";
 import { confirm } from "~/libs/confirm";
 import { getUser } from "~/libs/db/lucia.server";
-import CommentSection from "~/template/match-comment/CommentSection";
 import type { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
 const RightActions = ({ match }: { match: any }) => {

@@ -24,8 +24,8 @@ import ProgressBar from "./components/ProgressBar";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
-import AdminHeader from "./template/layout/AdminHeader";
-import Header from "./template/layout/Header";
+import AdminHeader from "./components/layout/AdminHeader";
+import Header from "./components/layout/Header";
 
 dayjs.locale("ko"); // 전역 locale 설정
 

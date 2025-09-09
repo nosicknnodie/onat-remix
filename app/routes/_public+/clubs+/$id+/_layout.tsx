@@ -17,9 +17,9 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts/AuthUserContext";
 import { service } from "~/features/clubs/index.server";
+import JoinDialog from "~/features/clubs/ui/JoinDialog";
 import { getUser } from "~/libs/db/lucia.server";
 import { cn } from "~/libs/utils";
-import JoinDialog from "~/template/club/JoinDialog";
 
 export const handle = {
   breadcrumb: (match: any) => {
