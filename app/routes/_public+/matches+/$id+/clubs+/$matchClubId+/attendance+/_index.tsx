@@ -15,7 +15,7 @@ import {
   type AttendanceMercenary,
   type AttendancePlayer,
 } from "~/features/matches";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { action, loader } from "./_data";
 import { AttendanceContext, useAttendance } from "./_hook";
 export { action, loader };

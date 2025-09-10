@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, type DialogProps } from "@radix-ui/react-dialog";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Command as CommandPrimitive } from "cmdk";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 const Command = ({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) => (
   <CommandPrimitive

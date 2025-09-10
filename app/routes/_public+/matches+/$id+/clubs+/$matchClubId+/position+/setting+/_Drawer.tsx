@@ -35,8 +35,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { cn } from "~/libs";
 import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
-import { cn } from "~/libs/utils";
 import { type IAssignedWithAttendance, usePositionSettingContext } from "./_context";
 import type { loader } from "./_index";
 

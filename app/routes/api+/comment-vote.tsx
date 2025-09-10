@@ -1,8 +1,7 @@
 // POST /api/comment-vote
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { service } from "~/features/communities/index.server";
-import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { getUser, parseRequestData } from "~/libs/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);

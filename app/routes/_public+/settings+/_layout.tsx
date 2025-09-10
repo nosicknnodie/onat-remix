@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "@remix-run/react";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 export const handle = { breadcrumb: "회원정보 수정" };
 

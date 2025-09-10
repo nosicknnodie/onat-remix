@@ -10,7 +10,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
 import { useCallback, useEffect, useState } from "react";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { Skeleton } from "../ui/skeleton";
 import { nodes } from "./nodes/nodes";
 import { CodeHighlightingPlugin } from "./plugins/CodeHighlightPlugin";

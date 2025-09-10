@@ -4,7 +4,7 @@ import _ from "lodash";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { generateShortId } from "~/libs/id";
-import { isMobile } from "~/libs/isMobile";
+import { isMobile } from "~/libs/index.server";
 import { parseRequestData } from "~/libs/requestData.server";
 
 type PostCommentWithAuthor = Awaited<ReturnType<typeof prisma.postComment.findMany>>[number];

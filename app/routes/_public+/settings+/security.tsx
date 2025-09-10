@@ -10,7 +10,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useSession } from "~/contexts";
 import { service as settingsService } from "~/features/settings/index.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 
 interface ISecurityPageProps {}
 

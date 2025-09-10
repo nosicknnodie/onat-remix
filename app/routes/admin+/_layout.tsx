@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 import AdminSideMenu from "~/components/layout/AdminSideMenu";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);

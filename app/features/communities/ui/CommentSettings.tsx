@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 type PostCommentWithExtras = PostComment & {
   author: User & { userImage: File | null };

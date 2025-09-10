@@ -1,6 +1,5 @@
 import { redirect } from "@remix-run/node";
-import { prisma } from "~/libs/db/db.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser, prisma } from "~/libs/index.server";
 
 export async function getEditUserLoader(request: Request) {
   const user = await getUser(request);

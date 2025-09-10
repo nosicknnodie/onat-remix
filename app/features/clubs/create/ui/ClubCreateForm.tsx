@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { SIGUNGU } from "~/libs/sigungu";
+import { SIGUNGU } from "~/libs";
 import type { ActionData } from "~/types/action";
 
 interface ClubCreateFormProps {

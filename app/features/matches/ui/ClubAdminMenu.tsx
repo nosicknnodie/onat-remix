@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Link } from "~/components/ui/Link";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 interface ClubAdminMenuProps {
   isAdmin: boolean;

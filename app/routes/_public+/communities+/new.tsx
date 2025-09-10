@@ -5,7 +5,7 @@ import { useSession } from "~/contexts";
 import { validators } from "~/features/communities/index";
 import { service } from "~/features/communities/index.server";
 import NewPostForm from "~/features/communities/ui/NewPostForm";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 
 export const handle = { breadcrumb: "새글 쓰기" };
 

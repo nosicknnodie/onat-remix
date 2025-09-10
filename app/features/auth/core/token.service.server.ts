@@ -1,6 +1,6 @@
 import { TokenType } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/index.server";
 import * as repo from "./token.repo.server";
 
 /**

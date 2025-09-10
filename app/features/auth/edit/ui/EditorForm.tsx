@@ -6,7 +6,7 @@ import FormSuccess from "~/components/FormSuccess";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import type { IEditorUserErrors } from "../schema";
 
 interface IEditorFormProps extends ComponentProps<typeof Form> {

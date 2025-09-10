@@ -1,7 +1,6 @@
 import { redirect } from "@remix-run/node";
 import bcrypt from "bcryptjs";
-import { prisma } from "~/libs/db/db.server";
-import { getUser, lucia } from "~/libs/db/lucia.server";
+import { getUser, lucia, prisma } from "~/libs/index.server";
 import * as q from "./queries.server";
 import { getVerificationTokenByToken } from "./token.service.server";
 

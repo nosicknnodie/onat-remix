@@ -18,8 +18,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/componen
 import { Separator } from "~/components/ui/separator";
 import { InfiniteListProvider, useInfiniteList, useSession } from "~/contexts";
 import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
-import { prisma } from "~/libs/db/db.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser, prisma } from "~/libs/index.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);

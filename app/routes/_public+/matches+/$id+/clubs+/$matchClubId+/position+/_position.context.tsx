@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { useParams } from "@remix-run/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
-import { BrowserStableWebSocket } from "~/libs/browserStableWebSocket";
+import { BrowserStableWebSocket } from "~/libs";
 
 type PositionContextType = {
   query: Awaited<ReturnType<typeof usePositionQuery>>;

@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import { Skeleton } from "~/components/ui/skeleton";
-import { getBoardIcon } from "~/libs/getBoardIcons";
+import { getBoardIcon } from "~/libs";
 
 const MainSideMenu = () => {
   const { open, toggleSidebar, setOpenMobile } = useSidebar();

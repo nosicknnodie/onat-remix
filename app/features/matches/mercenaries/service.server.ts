@@ -1,6 +1,5 @@
 import type { PositionType } from "@prisma/client";
-import { AES } from "~/libs/crypto.utils";
-import { prisma } from "~/libs/db/db.server";
+import { AES, prisma } from "~/libs/index.server";
 import * as q from "./queries.server";
 
 export async function getMercenaries(matchId: string, matchClubId: string) {

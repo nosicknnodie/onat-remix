@@ -27,11 +27,11 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useSession } from "~/contexts";
-import { prisma } from "~/libs/db/db.server";
+import { cn } from "~/libs";
 import { getUser } from "~/libs/db/lucia.server";
 import { deletePublicImage } from "~/libs/db/s3.server";
+import { prisma } from "~/libs/index.server";
 import { parseRequestData } from "~/libs/requestData.server";
-import { cn } from "~/libs/utils";
 
 export const handle = { breadcrumb: "새글 쓰기" };
 

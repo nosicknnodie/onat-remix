@@ -4,7 +4,7 @@
  * - 복잡한 Prisma 쿼리를 추상화하여 비즈니스 로직에서 쉽게 사용
  */
 
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/index.server";
 import type { Club, Player } from "./types";
 
 /**

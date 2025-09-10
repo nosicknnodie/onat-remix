@@ -4,8 +4,8 @@ import { Fragment } from "react/jsx-runtime";
 import { FaRegComment } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
-import { prisma } from "~/libs/db/db.server";
-import { getBoardIcon } from "~/libs/getBoardIcons";
+import { getBoardIcon } from "~/libs";
+import { prisma } from "~/libs/index.server";
 
 export const handle = {
   breadcrumb: "게시판",

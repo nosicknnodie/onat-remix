@@ -1,6 +1,6 @@
 import React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 const DrawerContext = React.createContext<{
   direction?: "top" | "bottom" | "right" | "left";

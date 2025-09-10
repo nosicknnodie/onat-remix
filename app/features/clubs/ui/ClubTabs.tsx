@@ -7,7 +7,7 @@
 
 import type React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import type { CategorizedClubs, Player } from "../types";
 import { ClubList } from "./ClubList";
 

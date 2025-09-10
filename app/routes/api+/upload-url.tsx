@@ -9,7 +9,7 @@ import {
   type NodeOnDiskFile,
 } from "@remix-run/node/dist/upload/fileUploadHandler";
 import { files } from "~/features/index.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 
 export const loader: LoaderFunction = async () => {
   // 필요 시 GET presigned URL도 여기서 처리 가능

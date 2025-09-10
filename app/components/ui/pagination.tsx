@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import { ChevronLeftIcon, ChevronRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { type ButtonProps, buttonVariants } from "~/components/ui/button";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav

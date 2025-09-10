@@ -4,7 +4,7 @@
  * - 쿼리 결과를 UI에 적합한 형태로 변환
  */
 
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/index.server";
 import {
   findClubsAndPlayers,
   getAllClubPlayers as getAllClubPlayersQuery,

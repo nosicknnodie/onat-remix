@@ -1,7 +1,7 @@
 import type { LexicalEditor, SerializedEditorState } from "lexical";
 import { useState, useTransition } from "react";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { useCommentInput, useGetMatchCommentsQuery, useMatchCommentContext } from "./_hooks";
 
 const CommentInput = () => {

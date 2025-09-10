@@ -1,7 +1,7 @@
 import type { LexicalEditor, SerializedEditorState } from "lexical";
 import { useState } from "react";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 interface ICommentInputProps {
   className?: string;

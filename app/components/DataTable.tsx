@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-table";
 import _ from "lodash";
 import { useMemo } from "react";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 interface ITableProps<TData, TValue> {

@@ -19,7 +19,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 import ProgressBar from "./components/ProgressBar";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { UserContext } from "./contexts/AuthUserContext";

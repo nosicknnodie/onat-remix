@@ -1,6 +1,6 @@
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Circle } from "lucide-react";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 const RadioGroup = ({
   className,

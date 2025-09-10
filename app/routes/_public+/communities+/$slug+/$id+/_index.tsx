@@ -21,8 +21,8 @@ import CommentSettings from "~/features/communities/ui/CommentSettings";
 import CommentVoteBadgeButton from "~/features/communities/ui/CommentVoteBadgeButton";
 import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
 import Settings from "~/features/communities/ui/Settings";
-import { getUser } from "~/libs/db/lucia.server";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
+import { getUser } from "~/libs/index.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);

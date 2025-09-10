@@ -1,4 +1,4 @@
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/index.server";
 
 export async function getQuartersWithGoals(matchClubId: string) {
   return await prisma.quarter.findMany({

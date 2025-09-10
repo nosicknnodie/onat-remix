@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { useDrag } from "react-dnd";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { Button } from "../ui/button";
 
 interface IDragButtonProps<TItem> extends Omit<ComponentProps<typeof Button>, "className"> {

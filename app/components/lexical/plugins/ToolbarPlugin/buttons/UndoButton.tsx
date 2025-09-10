@@ -1,7 +1,7 @@
 import { UNDO_COMMAND } from "lexical";
 import { FaUndo } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { useActiveEditor, useToolbarState } from "../Context";
 
 interface IUndoButtonProps {}

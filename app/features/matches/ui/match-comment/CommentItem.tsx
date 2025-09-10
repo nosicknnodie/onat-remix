@@ -9,7 +9,7 @@ import { View } from "~/components/lexical/View";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import type { IMatchClubComment } from "~/routes/api+/matchClubs+/$matchClubId+/comments";
 import { useCommentInput, useGetMatchCommentsQuery, useMatchCommentContext } from "./_hooks";
 

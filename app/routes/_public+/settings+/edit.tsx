@@ -19,8 +19,7 @@ import {
 } from "~/components/ui/select";
 import { useSession } from "~/contexts";
 import { service as settingsService } from "~/features/settings/index.server";
-import { SIGUNGU } from "~/libs/sigungu";
-import { cn } from "~/libs/utils";
+import { cn, SIGUNGU } from "~/libs";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const form = await request.formData();

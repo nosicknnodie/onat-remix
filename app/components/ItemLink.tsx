@@ -1,6 +1,6 @@
 import { NavLink } from "@remix-run/react";
 import type { ComponentProps } from "react";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 interface IItemLinkProps extends ComponentProps<typeof NavLink> {}
 const ItemLink = ({ className, ..._props }: IItemLinkProps) => {

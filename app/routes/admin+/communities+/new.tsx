@@ -8,7 +8,7 @@ import {
 } from "~/components/ui/breadcrumb";
 import NewBoardForm from "~/features/admin/communities/ui/NewBoardForm";
 import { admin as adminFeature } from "~/features/index.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { parseRequestData } from "~/libs/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const raw = await parseRequestData(request);

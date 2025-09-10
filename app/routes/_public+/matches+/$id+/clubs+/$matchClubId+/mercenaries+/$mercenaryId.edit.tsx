@@ -10,7 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { AES } from "~/libs/crypto.utils";
+// 서버 전용 AES는 loader/action 내부에서 동적 import로 사용
 import { prisma } from "~/libs/db/db.server";
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const mercenaryId = params.mercenaryId;
@@ -22,6 +22,7 @@ export const loader = async ({ request: _request, params }: LoaderFunctionArgs) 
       },
       include: { user: { include: { userImage: true } } },
     });
+    const { AES } = await import("~/libs/index.server");
     const decryptMercenary = {
       ...mercenary,
       hp: mercenary?.hp ? AES.decrypt(mercenary.hp) : "",
@@ -44,6 +45,7 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
   const position2 = formData.get("position2")?.toString() as PositionType | undefined;
   const position3 = formData.get("position3")?.toString() as PositionType | undefined;
   try {
+    const { AES } = await import("~/libs/index.server");
     const mercenary = await prisma.mercenary.update({
       where: {
         id: mercenaryId,

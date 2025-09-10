@@ -1,7 +1,7 @@
 import { FORMAT_TEXT_COMMAND } from "lexical";
 import { VscItalic } from "react-icons/vsc";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 import { useActiveEditor, useToolbarState } from "../Context";
 
 interface IItalicButtonProps {}

@@ -21,6 +21,7 @@ import {
   useOptimisticPositionUpdate,
   usePositionSettingQuery,
 } from "~/features/matches/ui/position/setting.context";
+import { cn } from "~/libs";
 import {
   isDiffPosition,
   isRLDiffPostion,
@@ -32,7 +33,6 @@ import {
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
 import { getUser } from "~/libs/db/lucia.server";
-import { cn } from "~/libs/utils";
 // removed local context/drawer; using features UI
 // const isTouchDevice = () => {
 //   return typeof window !== "undefined" ? "ontouchstart" in window : false;

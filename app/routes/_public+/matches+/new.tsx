@@ -12,9 +12,8 @@ import {
   create as matches,
   validators as matchesValidators,
 } from "~/features/matches/index.server";
-import { getUser } from "~/libs/db/lucia.server";
-import type { IKakaoLocalType } from "~/libs/map";
-import { parseRequestData } from "~/libs/requestData.server";
+import type { IKakaoLocalType } from "~/libs";
+import { getUser, parseRequestData } from "~/libs/index.server";
 import { placeHistoryAtom } from "./_libs/state";
 
 export const handle = { breadcrumb: "매치 생성" };

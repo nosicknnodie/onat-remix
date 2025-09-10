@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 interface IProps extends ComponentProps<"span"> {
   id: string;

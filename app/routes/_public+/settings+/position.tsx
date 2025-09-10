@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useSession } from "~/contexts";
 import { service as settingsService } from "~/features/settings/index.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);

@@ -1,4 +1,4 @@
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 const Table = ({ className, ...props }: React.ComponentPropsWithRef<"table">) => (
   <div className="relative w-full overflow-auto max-h-full">

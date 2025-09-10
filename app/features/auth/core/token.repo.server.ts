@@ -1,5 +1,5 @@
 import { TokenType } from "@prisma/client";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/index.server";
 
 export function findTokenByEmail(email: string, type: TokenType) {
   return prisma.confirmToken.findFirst({ where: { email, type } });

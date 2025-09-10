@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 
 export const handle = {
   breadcrumb: "Dashboard",

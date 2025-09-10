@@ -18,8 +18,8 @@ import {
 import { useSession } from "~/contexts";
 import { service } from "~/features/clubs/index.server";
 import JoinDialog from "~/features/clubs/ui/JoinDialog";
-import { getUser } from "~/libs/db/lucia.server";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
+import { getUser } from "~/libs/index.server";
 
 export const handle = {
   breadcrumb: (match: any) => {

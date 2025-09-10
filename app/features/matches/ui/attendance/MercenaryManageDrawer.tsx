@@ -16,7 +16,7 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
-import { formatPhoneNumber, removePhoneHyphen } from "~/libs/convert";
+import { formatPhoneNumber, removePhoneHyphen } from "~/libs";
 
 export type AttendanceMercenary = {
   id: string;

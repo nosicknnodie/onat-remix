@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/heading-has-content */
 import type { ComponentProps } from "react";
 import { FaCheckCircle } from "react-icons/fa";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 export const AttendanceGroupCard = ({ className, ...props }: ComponentProps<"div">) => (
   <div

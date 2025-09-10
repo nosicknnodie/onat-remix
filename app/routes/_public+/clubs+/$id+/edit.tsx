@@ -19,8 +19,8 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { service } from "~/features/clubs/index.server";
-import { getUser } from "~/libs/db/lucia.server"; // 사용자 인증 함수 예시
-import { SIGUNGU } from "~/libs/sigungu";
+import { SIGUNGU } from "~/libs";
+import { getUser } from "~/libs/index.server"; // 사용자 인증 함수 예시
 import type { IClubLayoutLoaderData } from "./_layout";
 export const handle = { breadcrumb: "수정" };
 export async function action({ request }: ActionFunctionArgs) {

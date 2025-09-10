@@ -6,7 +6,7 @@ import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/index.server";
 
 interface IMatchesPageProps {}
 export const handle = { breadcrumb: "매치" };

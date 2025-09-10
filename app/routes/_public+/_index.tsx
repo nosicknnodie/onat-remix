@@ -1,8 +1,8 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
-import { getUser } from "~/libs/db/lucia.server";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
+import { getUser } from "~/libs/index.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);

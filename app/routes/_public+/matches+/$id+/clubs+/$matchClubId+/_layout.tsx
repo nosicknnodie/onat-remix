@@ -15,7 +15,7 @@ import { confirm } from "~/components/ui/confirm";
 import { ClubAdminMenu, type ClubSubnavItem, ClubSubnavTabs } from "~/features/matches";
 import { club as matches } from "~/features/matches/index.server";
 import CommentSection from "~/features/matches/ui/match-comment/CommentSection";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/index.server";
 import type { IMatchesIdLayoutPageLoaderReturnType } from "../../_layout";
 
 const RightActions = ({ match }: { match: any }) => {

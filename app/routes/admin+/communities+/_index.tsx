@@ -17,7 +17,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { BoardsTable } from "~/features/admin/communities/index";
 import { admin } from "~/features/index.server";
-import { cn } from "~/libs/utils";
+import { cn } from "~/libs";
 
 interface ICommunitiesPageProps {}
 

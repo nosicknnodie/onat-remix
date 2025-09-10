@@ -47,6 +47,7 @@ created_date: "2025-09-09"
 실행 계획(Phase)
 - Phase 1: 배럴 추가 (contexts/hooks) 및 사용 가이드 문서화
 - Phase 2: libs 서버/클라 경계 식별 + 파일명/배럴 정리 (PR 분리)
+  - 진행 내역: `isMobile.ts` → `isMobile.server.ts`, `db/adatper.ts` → `db/adapter.server.ts`, `nodeModule.ts` → `nodeModule.server.ts`, server 라우트에서 `~/libs/index.server` 사용
 - Phase 3: confirm 컴포넌트 승격, utils 문서화/보강
 - Phase 4: 전역 import 경로 통일 작업 (검색 치환 + 린트 룰 보강 검토)
 
