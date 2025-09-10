@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { service } from "~/features/communities/index.server";
 import CommentInput from "~/features/communities/ui/CommentInput";
 import CommentSettings from "~/features/communities/ui/CommentSettings";

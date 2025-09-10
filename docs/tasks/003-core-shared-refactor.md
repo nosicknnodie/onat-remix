@@ -1,6 +1,6 @@
 ---
 title: "Core 공유 모듈 정리(contexts/hooks/libs/utils)"
-status: "계획 수립/초기 착수"
+status: "Phase 1 진행 중"
 priority: "중간"
 category: "Refactoring"
 created_date: "2025-09-09"
@@ -17,18 +17,18 @@ created_date: "2025-09-09"
 
 체크리스트
 1) contexts
-- [ ] `app/contexts/index.ts` 배럴 추가 (AuthUserContext, infinite/* 일괄 export)
-- [ ] 전역에서 배럴 경로로 통일(`~/contexts`) (기존 개별 경로 점진 교체)
-- [ ] 컨텍스트 별 타입/Provider/훅 정리 및 JSDoc 부착
+- [x] `app/contexts/index.ts` 배럴 추가 (AuthUserContext, infinite/* 일괄 export)
+- [x] 전역에서 배럴 경로로 통일(`~/contexts`) (기존 개별 경로 점진 교체)
+- [x] 컨텍스트 별 타입/Provider/훅 정리 및 JSDoc 부착
 
 2) hooks
-- [ ] `app/hooks/index.ts` 배럴 추가 (`use-mobile`, `use-toast` 등)
-- [ ] 네이밍 정규화: 접두사 `use-` 유지, 기본 export -> named export 통일 검토
-- [ ] 사용처 import 경로 정리(`~/hooks`)
+- [x] `app/hooks/index.ts` 배럴 추가 (`use-mobile`, `use-toast` 등)
+- [x] 네이밍 정규화: 접두사 `use-` 유지, named export 사용 (`useMobile`, `useToast`)
+- [x] 사용처 import 경로 정리(`~/hooks`)
 
 3) libs
 - [ ] 서버 전용 식별 및 `*.server.ts`로 통일 (mail, map, queries 하위 등)
-- [ ] `libs/index.server.ts`(서버) / `libs/index.ts`(클라이언트/범용) 배럴 설계
+- [x] `libs/index.server.ts`(서버) / `libs/index.ts`(클라이언트/범용) 배럴 설계
 - [ ] 유틸/상수 모듈 분리: `const/`, `utils.ts` 역할 문서화
 - [ ] confirm.tsx 컴포넌트화 검토 (`components/ui/confirm`로 승격)
   - [x] confirm 승격 및 전역 경로 교체, 기존 파일 제거
@@ -37,7 +37,7 @@ created_date: "2025-09-09"
   - [ ] 나머지 libs/queries/* 이동 대상 식별 및 마이그레이션 계획 수립
 
 4) utils
-- [ ] `utils/action.server.ts` 공통 응답 스키마/헬퍼 보강(JSDoc, 타입 노출)
+- [x] `utils/action.server.ts` 공통 응답 스키마/헬퍼 보강(JSDoc, 타입 노출)
 - [ ] utils 배럴 도입 여부 결정 (현 단계는 유지하되 문서화)
 
 5) 품질/안전망
@@ -52,4 +52,5 @@ created_date: "2025-09-09"
 
 현황
 - [x] 템플릿/라우터 정리(이전 작업)
-- [ ] Phase 1 진행 중: contexts/hooks 배럴 추가 및 점진적 도입
+- [x] Phase 1: contexts/hooks 배럴 추가 및 도입 일부 완료
+- [ ] Phase 2: libs 서버/클라 경계 식별 및 통일 예정

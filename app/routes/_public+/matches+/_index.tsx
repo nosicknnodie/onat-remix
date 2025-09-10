@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { MatchList } from "~/features/matches";
 import { list as matches } from "~/features/matches/index.server";
 import { getUser } from "~/libs/db/lucia.server";

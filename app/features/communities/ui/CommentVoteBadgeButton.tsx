@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { FaRegThumbsDown, FaRegThumbsUp, FaThumbsDown, FaThumbsUp } from "react-icons/fa";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { cn } from "~/libs/utils";
 
 type PostCommentWithExtras = PostComment & {

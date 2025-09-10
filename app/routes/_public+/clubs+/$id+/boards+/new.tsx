@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 import { deletePublicImage } from "~/libs/db/s3.server";

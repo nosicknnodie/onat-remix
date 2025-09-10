@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { service } from "~/features/clubs/index.server";
 import JoinDialog from "~/features/clubs/ui/JoinDialog";
 import { getUser } from "~/libs/db/lucia.server";

@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { getUser } from "~/libs/db/lucia.server";
 
 export const handle = {

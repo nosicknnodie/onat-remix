@@ -1,7 +1,7 @@
 import { useFetcher, useLoaderData, useRevalidator } from "@remix-run/react";
 import dayjs from "dayjs";
 import { createContext, useContext, useEffect } from "react";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import type { loader } from "./_data";
 
 export const AttendanceContext = createContext({} as ReturnType<typeof useAttendance>);

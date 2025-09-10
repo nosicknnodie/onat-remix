@@ -1,7 +1,7 @@
 //
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { validators } from "~/features/communities/index";
 import { service } from "~/features/communities/index.server";
 import NewPostForm from "~/features/communities/ui/NewPostForm";

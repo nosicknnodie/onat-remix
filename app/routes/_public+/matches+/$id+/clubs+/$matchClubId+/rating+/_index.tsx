@@ -13,7 +13,7 @@ import StarRating from "~/components/StarRating";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { TooltipProvider } from "~/components/ui/tooltip";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { RatingCard } from "~/features/matches";
 import { rating as matches } from "~/features/matches/index.server";
 import { RightDrawer as RatingRightDrawer } from "~/features/matches/ui/rating/RightDrawer";

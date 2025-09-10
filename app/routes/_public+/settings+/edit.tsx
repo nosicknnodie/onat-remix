@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useSession } from "~/contexts/AuthUserContext";
+import { useSession } from "~/contexts";
 import { service as settingsService } from "~/features/settings/index.server";
 import { SIGUNGU } from "~/libs/sigungu";
 import { cn } from "~/libs/utils";

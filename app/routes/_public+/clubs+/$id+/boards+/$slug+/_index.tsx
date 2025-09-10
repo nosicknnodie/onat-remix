@@ -15,7 +15,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { InfiniteListProvider, useInfiniteList } from "~/contexts/infinite";
+import { InfiniteListProvider, useInfiniteList } from "~/contexts";
 import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
 import Settings from "~/features/communities/ui/Settings";
 import { prisma } from "~/libs/db/db.server";
