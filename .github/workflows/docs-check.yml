@@ -1,0 +1,59 @@
+name: Docs Check (warn-only)
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute changed files
+        id: diff
+        run: |
+          set -eu
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+          if [ -z "${BASE}" ] || [ "${BASE}" = "0000000000000000000000000000000000000000" ]; then
+            echo "No base commit (first push). Skipping check." > "$GITHUB_STEP_SUMMARY"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE".."$HEAD" | tr -d '\r')
+          echo "changed<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          DOCS=$(echo "$CHANGED" | grep -E '^docs/' || true)
+          NON_DOCS=$(echo "$CHANGED" | grep -Ev '^(docs/|README.md|LICENSE|\.github/|\.codexignore)$' || true)
+
+          if [ -n "$NON_DOCS" ] && [ -z "$DOCS" ]; then
+            echo "warn=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "warn=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Emit warning if docs not updated
+        if: steps.diff.outputs.skip != 'true' && steps.diff.outputs.warn == 'true'
+        run: |
+          echo "::warning title=Docs not updated::Code changes detected without docs updates (docs/**)." \
+            "Consider updating ADR/RFC/Feature/Task/Runbook as needed."
+          echo "### Docs Check\n" >> "$GITHUB_STEP_SUMMARY"
+          echo "Code changes detected without docs updates (docs/**)." >> "$GITHUB_STEP_SUMMARY"
+          echo "\nChanged files:\n" >> "$GITHUB_STEP_SUMMARY"
+          echo '${{ steps.diff.outputs.changed }}' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Summary (ok)
+        if: steps.diff.outputs.skip == 'true' || steps.diff.outputs.warn != 'true'
+        run: |
+          echo "Docs check passed or skipped." >> "$GITHUB_STEP_SUMMARY"
+

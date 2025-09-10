@@ -1,0 +1,24 @@
+# <type>(<scope>): <summary>
+# types: feat | fix | refactor | docs | test | chore | perf | build | ci | style
+
+## Context
+- 왜 변경했는지, 배경/문제 요약
+
+## Changes
+- 핵심 변경점 나열
+
+## Tests
+- 실행한 테스트/검증 방법 (명령 포함 가능)
+
+## Docs
+- 관련 문서 링크(이슈/ADR/RFC/Feature/Task/Runbook)
+
+## Rollout
+- 배포/마이그레이션/롤백/모니터링 메모
+
+## Checklist
+- [ ] 문서 반영(필요 시): ADR/RFC/Feature/Runbook
+- [ ] 마이그레이션/롤백 절차 기재(해당 시)
+- [ ] 테스트 추가/수정, lint/format 통과
+- [ ] Breaking change 라벨/노트(해당 시)
+

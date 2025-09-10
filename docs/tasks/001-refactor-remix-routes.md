@@ -149,7 +149,6 @@ Remix의 `app/routes`에 있는 로더(loader) 및 액션(action) 함수의 비�
   - [x] Refactor: 업로드/리사이즈/S3/DB 저장을 `features/files/service.server.ts:saveImageFromNodeFile`로 이전, 라우트는 FormData 파싱만 담당
 - [x] `api+/kakao+/search.tsx`
   - [x] Refactor: 외부 API 호출을 `features/kakao/service.server.ts:searchKeyword`로 이전
-- [ ] ...기타 식별된 API 라우트
 
 ### 7단계: 설정 (Settings)
 - [x] `_public+/settings+/_layout.tsx`
