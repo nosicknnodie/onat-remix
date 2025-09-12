@@ -35,7 +35,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const raw = await parseRequestData(request);
   const parsed = matchesValidators.parseCreate(raw);
   if (!parsed.ok)
-    return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
+    return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 422 });
 
   const { clubId, title, description, date, hour, minute, placeName, address, lat, lng, isSelf } =
     parsed.data;
@@ -52,7 +52,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     isSelf: isSelf === "on",
     createUserId: user.id,
   });
-  if (!res.ok) return Response.json({ ok: false, message: res.message }, { status: 400 });
+  if (!res.ok) return Response.json({ ok: false, message: res.message }, { status: 422 });
   return redirect(`/matches/${res.id}`);
 };
 

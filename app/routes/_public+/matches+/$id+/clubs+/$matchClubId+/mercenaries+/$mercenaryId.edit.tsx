@@ -60,10 +60,10 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
         position3,
       },
     });
-    return { success: "수정 완료했습니다.", mercenary };
+    return Response.json({ success: "수정 완료했습니다.", mercenary });
   } catch (e) {
     console.error(e);
-    return { error: "수정 중 오류가 발생했습니다." };
+    return Response.json({ error: "수정 중 오류가 발생했습니다." }, { status: 500 });
   }
 };
 

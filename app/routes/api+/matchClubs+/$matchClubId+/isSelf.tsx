@@ -11,11 +11,16 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const result = matchClubSchema.safeParse(data);
   const matchClubId = params.matchClubId;
   if (!result.success) {
-    return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
+    const flat = result.error.flatten();
+    return Response.json(
+      { ok: false, message: "Invalid input", code: "VALIDATION", fieldErrors: flat.fieldErrors },
+      { status: 422 },
+    );
   }
   const isSelf = result.data.isSelf;
 
   const res = await matches.service.setIsSelf(matchClubId!, isSelf);
-  if (!res.ok) return Response.json({ success: false, errors: res.message }, { status: 500 });
-  return Response.json({ success: "success" });
+  if (!res.ok)
+    return Response.json({ ok: false, message: res.message, code: "SERVER" }, { status: 500 });
+  return Response.json({ ok: true, message: "success", success: "success" });
 };

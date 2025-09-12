@@ -16,17 +16,33 @@ const PlayerUpdateSchema = z.object({
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const user = await getUser(request);
-  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return Response.json(
+      { ok: false, message: "Unauthorized", code: "AUTH_REQUIRED" },
+      { status: 401 },
+    );
   const playerId = params.id;
   if (!playerId) {
-    return Response.json({ error: "playerId is required" }, { status: 400 });
+    return Response.json(
+      {
+        ok: false,
+        message: "playerId is required",
+        code: "VALIDATION",
+        fieldErrors: { id: ["required"] },
+      },
+      { status: 422 },
+    );
   }
 
   const raw = await request.json();
   const result = PlayerUpdateSchema.safeParse(raw);
 
   if (!result.success) {
-    return Response.json({ error: "Invalid input", issues: result.error.issues }, { status: 400 });
+    const flat = result.error.flatten();
+    return Response.json(
+      { ok: false, message: "Invalid input", code: "VALIDATION", fieldErrors: flat.fieldErrors },
+      { status: 422 },
+    );
   }
 
   const existingPlayer = await prisma.player.findUnique({
@@ -36,7 +52,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   });
 
   if (!existingPlayer) {
-    return Response.json({ error: "Player not found" }, { status: 404 });
+    return Response.json(
+      { ok: false, message: "Player not found", code: "NOT_FOUND" },
+      { status: 404 },
+    );
   }
 
   const requestPlayer = await prisma.player.findUnique({
@@ -48,7 +67,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
   });
   if (!requestPlayer) {
-    return Response.json({ error: "You are not a member of this club" }, { status: 403 });
+    return Response.json(
+      { ok: false, message: "You are not a member of this club", code: "FORBIDDEN" },
+      { status: 403 },
+    );
   }
 
   const isAllow =
@@ -57,7 +79,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     requestPlayer?.id === existingPlayer.id;
   if (!isAllow) {
     return Response.json(
-      { error: "You don't have permission to update this player" },
+      { ok: false, message: "You don't have permission to update this player", code: "FORBIDDEN" },
       { status: 403 },
     );
   }
@@ -118,7 +140,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   });
 
   if (Object.keys(cleaned).length === 0) {
-    return Response.json({ error: "No valid fields to update" }, { status: 400 });
+    return Response.json(
+      {
+        ok: false,
+        message: "No valid fields to update",
+        code: "VALIDATION",
+        fieldErrors: { formErrors: ["No valid fields to update"] },
+      },
+      { status: 422 },
+    );
   }
 
   try {
@@ -136,11 +166,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     });
 
     return Response.json({
+      ok: true,
+      message: "성공적으로 수정했습니다.",
+      data: { player: updated },
       success: "성공적으로 수정했습니다.",
       player: updated,
     });
   } catch (error) {
     console.error(error);
-    return Response.json({ error: "Failed to update player" }, { status: 500 });
+    return Response.json(
+      { ok: false, message: "Failed to update player", code: "SERVER" },
+      { status: 500 },
+    );
   }
 };

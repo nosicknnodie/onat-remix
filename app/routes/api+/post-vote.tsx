@@ -10,14 +10,33 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const postId = data.postId as string;
   const vote = parseInt(data.vote as string, 10) as -1 | 0 | 1;
 
-  if (!userId || !postId) return Response.json({ success: false }, { status: 400 });
+  if (!userId)
+    return Response.json(
+      { ok: false, message: "Unauthorized", code: "AUTH_REQUIRED" },
+      { status: 401 },
+    );
+  if (!postId)
+    return Response.json(
+      {
+        ok: false,
+        message: "postId is required",
+        code: "VALIDATION",
+        fieldErrors: { postId: ["required"] },
+      },
+      { status: 422 },
+    );
 
   const result = await service.votePost(userId, postId, vote);
   if (!result.ok) {
-    return Response.json(
-      { success: false, error: result.message },
-      { status: result.status ?? 500 },
-    );
+    const status = result.status ?? 500;
+    const code = status >= 500 ? "SERVER" : status === 403 ? "FORBIDDEN" : "UNKNOWN";
+    return Response.json({ ok: false, message: result.message, code }, { status });
   }
-  return Response.json({ success: true, vote: result.vote, sum: result.sum });
+  return Response.json({
+    ok: true,
+    data: { vote: result.vote, sum: result.sum },
+    success: true,
+    vote: result.vote,
+    sum: result.sum,
+  });
 };

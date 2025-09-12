@@ -16,12 +16,29 @@ function isActionData(value: unknown): value is ActionData<unknown> {
   );
 }
 
+function isValidationLike(value: unknown): boolean {
+  if (typeof value !== "object" || value === null) return false;
+  const o = value as Record<string, unknown>;
+  // Common server response shapes
+  if ("fieldErrors" in o && o.fieldErrors) return true;
+  if ("errors" in o && o.errors) return true;
+  if ("success" in o && o.success === false) return true;
+  return false;
+}
+
 export function useActionToast(actionData: ActionData | unknown) {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isActionData(actionData)) return;
-    if (actionData.ok === false) {
+    // Primary: standardized ActionData failure
+    if (isActionData(actionData)) {
+      if (actionData.ok === false) {
+        toast(getToastForError(actionData));
+      }
+      return;
+    }
+    // Fallback: validation-like or error-shaped payloads
+    if (isValidationLike(actionData)) {
       toast(getToastForError(actionData));
     }
   }, [actionData, toast]);

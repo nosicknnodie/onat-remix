@@ -37,7 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (result.ok && result.club) {
     return redirect(`/clubs/${result.club.id}`);
   } else {
-    return Response.json({ error: result.message }, { status: 400 });
+    return Response.json({ error: result.message }, { status: 422 });
   }
 }
 

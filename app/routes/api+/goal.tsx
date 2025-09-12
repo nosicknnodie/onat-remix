@@ -19,7 +19,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (method === "POST") {
     const parsed = goalSchema.safeParse(data);
     if (!parsed.success) {
-      return Response.json({ success: false, errors: parsed.error.flatten() }, { status: 400 });
+      const flat = parsed.error.flatten();
+      return Response.json(
+        { ok: false, message: "Invalid input", code: "VALIDATION", fieldErrors: flat.fieldErrors },
+        { status: 422 },
+      );
     }
 
     const res = await matches.service.createGoal({
@@ -30,16 +34,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       isOwnGoal: data.isOwnGoal,
       goalType: data.goalType,
     });
-    if (!res.ok) return Response.json({ success: false }, { status: 500 });
-    return Response.json({ success: "success" });
+    if (!res.ok)
+      return Response.json({ ok: false, message: "Server error", code: "SERVER" }, { status: 500 });
+    return Response.json({ ok: true, message: "success", success: "success" });
   } else if (method === "DELETE") {
     const id = data.id;
     if (!id) {
-      return Response.json({ success: false, errors: "id is required" }, { status: 400 });
+      return Response.json(
+        {
+          ok: false,
+          message: "id is required",
+          code: "VALIDATION",
+          fieldErrors: { id: ["required"] },
+        },
+        { status: 422 },
+      );
     }
 
     const res = await matches.service.deleteGoal(id);
-    if (!res.ok) return Response.json({ success: false }, { status: 500 });
-    return Response.json({ success: "success" });
+    if (!res.ok)
+      return Response.json({ ok: false, message: "Server error", code: "SERVER" }, { status: 500 });
+    return Response.json({ ok: true, message: "success", success: "success" });
   }
 };

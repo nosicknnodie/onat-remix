@@ -29,5 +29,5 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
     mercenaryId,
   });
   if ("redirectTo" in res) return redirect(res.redirectTo as string);
-  return { success: true };
+  return Response.json({ success: true });
 };

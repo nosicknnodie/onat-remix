@@ -5,7 +5,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { teamId, attendanceIds } = await request.json();
 
   if (!teamId || !Array.isArray(attendanceIds)) {
-    return Response.json({ error: "Invalid data" }, { status: 400 });
+    return Response.json(
+      {
+        ok: false,
+        message: "Invalid data",
+        code: "VALIDATION",
+        fieldErrors: { formErrors: ["Invalid data"] },
+      },
+      { status: 422 },
+    );
   }
 
   // 해당 attendance에 teamId 할당
@@ -18,5 +26,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  return Response.json({ success: "팀정보를 수정했습니다." });
+  return Response.json({
+    ok: true,
+    message: "팀정보를 수정했습니다.",
+    success: "팀정보를 수정했습니다.",
+  });
 };

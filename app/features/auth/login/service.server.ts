@@ -17,7 +17,7 @@ export async function handleLogin(request: Request) {
   const raw = await parseRequestData(request);
   const parsed = parseLogin(raw);
   if (!parsed.ok) {
-    return Response.json({ errors: parsed.errors }, { status: 401, statusText: "Bad Request" });
+    return Response.json({ errors: parsed.errors }, { status: 422 });
   }
 
   try {

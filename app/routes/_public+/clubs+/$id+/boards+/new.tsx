@@ -94,11 +94,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const result = postScheme.safeParse(data);
   if (!result.success) {
-    return {
-      success: false,
-      errors: result.error.flatten(),
-      post: result.data,
-    };
+    return Response.json(
+      {
+        success: false,
+        errors: result.error.flatten(),
+        post: result.data,
+      },
+      { status: 422 },
+    );
   }
   try {
     const contentJSON = JSON.parse(result.data.content);
@@ -130,7 +133,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       },
     });
     if (post?.authorId !== user.id) {
-      return { error: "게시글 권한이 없습니다." };
+      return Response.json({ error: "게시글 권한이 없습니다." }, { status: 403 });
     }
     const usedImageIds = extractImageIds(contentJSON);
     const notUsedImages = post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
@@ -183,7 +186,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return redirect(`/clubs/${clubId}/boards/${board?.slug}/${res.id}`);
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Internal Server Error" };
+    return Response.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 };
 

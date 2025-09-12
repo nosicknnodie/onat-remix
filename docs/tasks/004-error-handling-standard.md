@@ -19,7 +19,7 @@ created_date: "2025-09-10"
 범위
 - UI 라우트(페이지/컴포넌트): `useToast()` + `getToastForError()`로 표준 토스트 출력.
 - 서버 경계(로더/액션/서비스): 표준 응답/예외 정책 정립 및 문서화.
-- API 라우트(`app/routes/api+/**`): 여전히 `Response` 강제, JSON 스키마에 코드 포함 검토.
+- API 라우트(`app/routes/api+/**`): `Response.json(ActionData)` 채택 + `code?: ErrorCode` 권장.
 
 표준 정의
 - 에러 코드(`ErrorCode`): `AUTH_REQUIRED | FORBIDDEN | NOT_FOUND | VALIDATION | NETWORK | SERVER | UNKNOWN`
@@ -33,6 +33,10 @@ created_date: "2025-09-10"
   - `getToastForError(err)` → `{ title, description, variant:'destructive' }`
   - `buildErrorToast(code, extra?)` → 문구 커스터마이즈용
 
+추가 헬퍼(서버 응답)
+- `jsonOk(data?, message?, init?)` → `Response.json({ ok:true, data, message }, { status:200 })`
+- `jsonFail(message?, fieldErrors?, init?)` → `Response.json({ ok:false, message, fieldErrors }, { status: fieldErrors ? 422 : 400 })`
+
 사용 지침(클라이언트/UI)
 - 임포트: `import { useToast } from "~/hooks"; import { getToastForError } from "~/libs";`
 - 패턴:
@@ -43,7 +47,25 @@ created_date: "2025-09-10"
 - UI 라우트 `action`: 실패 시 기존 `ActionData` 유지(AGENTS 규칙 준수), 필요 시 422 상태와 함께 반환
   - 예: `return Response.json(fail("입력 오류", fieldErrors), { status: 422 })`
 - 로더: 인증 요구 시 `throw redirect(...)` 또는 `throw new Response(..., {status:401})`
-- API 라우트: JSON 바디에 `code?: ErrorCode`, `message?: string`, `fieldErrors?` 포함 권장
+- API 라우트: `Response.json(ActionData)` 채택. 실패 시 `code?: ErrorCode`, `message?: string`, `fieldErrors?` 포함 권장
+
+API 응답 스키마(표준)
+- 성공: `{ ok: true, data?: T, message?: string }`
+- 실패: `{ ok: false, message?: string, fieldErrors?: FieldErrors, code?: ErrorCode }`
+- 상태코드 매핑:
+  - 422: 검증 실패(Zod 등) → `fieldErrors` 포함 권장
+  - 401: 미인증(AUTH_REQUIRED)
+  - 403: 권한 없음(FORBIDDEN)
+  - 404: 리소스 없음(NOT_FOUND)
+  - 5xx: 서버 오류(SERVER)
+- 예시(Zod 검증 실패):
+  ```ts
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    const flat = parsed.error.flatten()
+    return Response.json({ ok:false, code:"VALIDATION", message:"Invalid input", fieldErrors: flat.fieldErrors }, { status: 422 })
+  }
+  ```
 
 파일 배치/임포트 규칙
 - 상수: `app/libs/const/error.const.ts` (client-safe)
@@ -56,6 +78,10 @@ created_date: "2025-09-10"
   - [x] ErrorCode/메시지/매핑 헬퍼 도입
 - Phase 2: 서버 경계 정리
   - [ ] UI 라우트 액션에서 422(VALIDATION) 사용 가이드 적용
+    - 초기 적용: `/auth/edit` 액션에 422 매핑 반영(Response.json)
+    - 추가 적용: `/clubs/new`, `/clubs/$id/edit`, `/matches/new`, `/matches/$id/edit`, `/communities/new`, `/communities/$slug/$id/edit`, `/settings/security`
+  - [ ] API 라우트 응답을 `ActionData`로 표준화(검증 422, 권한 403, 미인증 401, 없음 404, 서버 5xx)
+    - 적용 예: `/api/comment-vote`, `/api/post-vote`, `/api/goal`, `/api/upload-url`, `/api/players/:id`, `/api/clubs/:id/join`, `/api/evaluations/like|score`, `/api/team`, `/api/clubs/:id/{players,mercenaries}`, `/api/matchClubs/:matchClubId/isSelf`
   - [ ] 인증/권한/404에서 표준 `Response` 상태코드 사용 점검
 - Phase 3: 클라이언트 적용
   - [ ] 폼/상호작용 주요 지점에 `getToastForError` 적용(로그인, 게시글 작성/수정, 매치 편집 등)
@@ -73,6 +99,7 @@ created_date: "2025-09-10"
 - [ ] `ActionData` 실패 응답과 토스트 매핑 간극 없는지 점검
 - [ ] 배럴 임포트 준수(`~/libs`, `~/libs/index.server`), 딥 임포트 미사용
 - [ ] 테스트 케이스(단위/통합)에서 에러 코드/문구 매핑 검증 (선택)
+- [ ] API 라우트 응답이 `ActionData` 스키마와 상태코드 표준을 준수하는지 점검
 
 예시 스니펫
 ```ts
@@ -96,4 +123,3 @@ export async function action() {
 - 과도한 토스트 노출 → 동일 코드/메시지 중복 시 지연/스로틀 고려(후속 개선)
 - 서버 커스텀 오류 다양성 → 표준 코드 매핑 테이블 주기적 보강
 - 다국어 요구 → 문구 테이블을 분리(i18n)하도록 설계해 향후 확장 용이
-

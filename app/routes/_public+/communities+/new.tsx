@@ -29,7 +29,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!parsed.ok) {
     return Response.json(
       { success: false, errors: parsed.errors, values: parsed.values },
-      { status: 400 },
+      { status: 422 },
     );
   }
   // content JSON은 라우트에서 파싱하여 서비스로 DTO 전달
@@ -39,7 +39,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   } catch {
     return Response.json(
       { success: false, errors: { formErrors: ["본문 포맷이 올바르지 않습니다."] } },
-      { status: 400 },
+      { status: 422 },
     );
   }
   const result = await service.publishPost(
@@ -53,7 +53,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (result.reason === "validation") {
     return Response.json(
       { success: false, errors: result.errors, values: result.values },
-      { status: 400 },
+      { status: 422 },
     );
   }
   if (result.reason === "forbidden") {

@@ -17,7 +17,7 @@ export async function handleRegister(request: Request) {
   if (!result.success) {
     return Response.json(
       { errors: result.error.flatten().fieldErrors, values: result.data },
-      { status: 400 },
+      { status: 422 },
     );
   }
 
@@ -25,7 +25,7 @@ export async function handleRegister(request: Request) {
 
   // 서비스 레이어의 결과를 기반으로 HTTP 응답을 생성합니다.
   if (serviceResult.errors) {
-    return Response.json({ errors: serviceResult.errors, values: result.data }, { status: 400 });
+    return Response.json({ errors: serviceResult.errors, values: result.data }, { status: 422 });
   }
 
   if (serviceResult.errorMessage) {

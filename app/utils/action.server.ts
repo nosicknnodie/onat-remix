@@ -19,3 +19,15 @@ export const fail = (message?: string, fieldErrors?: FieldErrors): ActionFailure
   message,
   fieldErrors,
 });
+
+/**
+ * Convenience helpers to return standardized JSON Responses
+ * with appropriate HTTP status codes.
+ */
+export const jsonOk = <T = undefined>(data?: T, message?: string, init?: ResponseInit) =>
+  Response.json(ok(data, message), { status: 200, ...(init ?? {}) });
+
+export const jsonFail = (message?: string, fieldErrors?: FieldErrors, init?: ResponseInit) => {
+  const status = fieldErrors ? 422 : 400;
+  return Response.json(fail(message, fieldErrors), { status, ...(init ?? {}) });
+};

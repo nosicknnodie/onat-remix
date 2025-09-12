@@ -24,10 +24,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const confirmPassword = formData.get("confirmPassword") as string;
 
   if (newPassword !== confirmPassword) {
-    return Response.json({ error: "비밀번호 확인이 일치하지 않습니다." }, { status: 400 });
+    return Response.json({ error: "비밀번호 확인이 일치하지 않습니다." }, { status: 422 });
   }
   if (newPassword.length < 6) {
-    return Response.json({ error: "비밀번호는 최소 6자 이상이어야 합니다." }, { status: 400 });
+    return Response.json({ error: "비밀번호는 최소 6자 이상이어야 합니다." }, { status: 422 });
   }
   const result = await settingsService.changePassword(session.email, currentPassword, newPassword);
   if (!result.ok) {

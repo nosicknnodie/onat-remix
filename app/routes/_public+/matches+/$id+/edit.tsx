@@ -41,7 +41,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const raw = await parseRequestData(request);
   const parsed = matchesValidators.parseUpdate(raw);
   if (!parsed.ok)
-    return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
+    return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 422 });
 
   const { title, description, date, hour, minute, placeName, address, lat, lng } = parsed.data;
   const stDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
@@ -55,7 +55,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     lng: lng ? Number.parseFloat(lng) : null,
     createUserId: user.id,
   });
-  if (!res.ok) return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 400 });
+  if (!res.ok) return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 422 });
   return redirect(`/matches/${matchId}`);
 };
 

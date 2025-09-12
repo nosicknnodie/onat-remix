@@ -5,11 +5,24 @@ import { getUser } from "~/libs/index.server";
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   // user check
   const user = await getUser(request);
-  if (!user) return Response.json({ success: true, redirectTo: "/auth/login" });
+  if (!user)
+    return Response.json(
+      { ok: false, message: "Unauthorized", code: "AUTH_REQUIRED", redirectTo: "/auth/login" },
+      { status: 401 },
+    );
 
   // club check
   const clubId = params.id;
-  if (!clubId) return Response.json({ error: "clubId is required" }, { status: 400 });
+  if (!clubId)
+    return Response.json(
+      {
+        ok: false,
+        message: "clubId is required",
+        code: "VALIDATION",
+        fieldErrors: { id: ["required"] },
+      },
+      { status: 422 },
+    );
 
   // nick check
   const raw = await request.json();
@@ -19,10 +32,16 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   if (result.ok) {
     return Response.json({
+      ok: true,
+      message: result.message,
+      data: { redirectTo: `/clubs/${clubId}` },
       success: result.message,
       redirectTo: `/clubs/${clubId}`,
     });
   } else {
-    return Response.json({ error: result.message }, { status: 400 });
+    return Response.json(
+      { ok: false, message: result.message, code: "VALIDATION" },
+      { status: 422 },
+    );
   }
 };

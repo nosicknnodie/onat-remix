@@ -5,12 +5,20 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const clubId = params.id;
 
   if (!clubId) {
-    return Response.json({ error: "clubId is required" }, { status: 400 });
+    return Response.json(
+      {
+        ok: false,
+        message: "clubId is required",
+        code: "VALIDATION",
+        fieldErrors: { id: ["required"] },
+      },
+      { status: 422 },
+    );
   }
   try {
     const mercenaries = await service.getClubMercenaries(clubId);
-    return Response.json({ mercenaries });
+    return Response.json({ ok: true, data: { mercenaries }, mercenaries });
   } catch (e) {
-    return Response.json({ error: e }, { status: 500 });
+    return Response.json({ ok: false, message: String(e), code: "SERVER" }, { status: 500 });
   }
 }

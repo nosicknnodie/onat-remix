@@ -7,7 +7,7 @@ import { NewMercenaryContext, useNewMercenary } from "~/features/matches/ui/merc
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const matchClubId = params.matchClubId;
-  if (!matchClubId) return null;
+  if (!matchClubId) return Response.json({ error: "잘못된 요청입니다." }, { status: 422 });
   const formData = await request.formData();
   const actionType = formData.get("actionType")?.toString();
   const email = formData.get("email")?.toString();
@@ -21,8 +21,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   if (actionType === "email" && email) {
     const user = await mercenaryService.findUserForMercenaryByEmail(email);
-    if (!user) return null;
-    return { user };
+    return Response.json({ user: user ?? null });
   }
   await mercenaryService.createMercenaryForMatchClub({
     matchClubId,
@@ -37,7 +36,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const club = await mercenaryService.getMatchClub(matchClubId);
   return club
     ? Response.redirect(`/matches/${club.matchId}/clubs/${matchClubId}/mercenaries`)
-    : null;
+    : Response.json({ error: "클럽 정보를 찾을 수 없습니다." }, { status: 404 });
 };
 
 interface IMercenaryNewPageProps {}

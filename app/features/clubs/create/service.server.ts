@@ -19,7 +19,7 @@ export async function handleCreateClubAction({ request }: ActionFunctionArgs): P
   if (!result.success) {
     return Response.json(
       { ok: false, fieldErrors: result.error.flatten().fieldErrors },
-      { status: 400 },
+      { status: 422 },
     );
   }
 

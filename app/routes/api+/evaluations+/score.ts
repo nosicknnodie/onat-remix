@@ -11,13 +11,25 @@ const EvaluationValidate = z.object({
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  if (!user) return { error: "Unauthorized" };
+  if (!user)
+    return Response.json(
+      { ok: false, message: "Unauthorized", code: "AUTH_REQUIRED" },
+      { status: 401 },
+    );
   const data = await parseRequestData(request);
   const result = EvaluationValidate.safeParse(data);
   if (!result.success) {
-    return { error: result.error.flatten() };
+    const flat = result.error.flatten();
+    return Response.json(
+      { ok: false, message: "Invalid input", code: "VALIDATION", fieldErrors: flat.fieldErrors },
+      { status: 422 },
+    );
   }
   const res = await matches.service.upsertScore(user.id, result.data);
-  if (!res.ok) return Response.json({ error: "Internal Server Error" }, { status: 500 });
-  return Response.json({ success: "success" });
+  if (!res.ok)
+    return Response.json(
+      { ok: false, message: "Internal Server Error", code: "SERVER" },
+      { status: 500 },
+    );
+  return Response.json({ ok: true, message: "success", success: "success" });
 };

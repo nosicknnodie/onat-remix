@@ -31,6 +31,13 @@ export function toErrorCode(err: unknown): ErrorCode {
     }
   }
 
+  // Generic validation-like shape { fieldErrors? } or { errors? }
+  if (typeof err === "object" && err !== null) {
+    const e = err as { fieldErrors?: unknown; errors?: unknown };
+    if (e.fieldErrors) return "VALIDATION";
+    if (e.errors) return "VALIDATION";
+  }
+
   // 네트워크 오류 시나리오 (fetch 등)
   if (typeof err === "object" && err && "message" in err) {
     const m = err as { message?: unknown };
