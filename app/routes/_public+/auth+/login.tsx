@@ -3,6 +3,7 @@ import { Link, useActionData, useNavigation } from "@remix-run/react";
 import { Separator } from "~/components/ui/separator";
 import { login } from "~/features/auth/index.server";
 import LoginForm from "~/features/auth/login/ui/LoginForm";
+import { useActionToast } from "~/hooks";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   return login.service.handleLogin(request);
@@ -10,6 +11,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 const Login = () => {
   const actions = useActionData<typeof action>();
+  useActionToast(actions);
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
   return (

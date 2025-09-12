@@ -19,6 +19,7 @@ import {
 } from "~/components/ui/select";
 import { useSession } from "~/contexts";
 import { service as settingsService } from "~/features/settings/index.server";
+import { useActionToast } from "~/hooks";
 import { cn, SIGUNGU } from "~/libs";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -52,6 +53,7 @@ interface IEditPageProps {}
 
 const EditPage = (_props: IEditPageProps) => {
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const user = useSession();
   const [si, setSi] = useState(user?.si);
   const [imageFile, setImageFile] = useState<undefined | File>(user?.userImage);

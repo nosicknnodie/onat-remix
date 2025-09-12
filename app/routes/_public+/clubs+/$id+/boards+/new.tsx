@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useSession } from "~/contexts";
+import { useActionToast } from "~/hooks";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/db/lucia.server";
 import { deletePublicImage } from "~/libs/db/s3.server";
@@ -191,6 +192,7 @@ interface IBoardNewPageProps {}
 const BoardNewPage = (_props: IBoardNewPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const user = useSession();
   const formRef = useRef<HTMLFormElement>(null);
   const post = loaderData.post;

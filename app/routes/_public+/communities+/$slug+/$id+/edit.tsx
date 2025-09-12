@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useActionToast } from "~/hooks";
 import { cn } from "~/libs";
 import { deletePublicImage, getUser, parseRequestData, prisma } from "~/libs/index.server";
 
@@ -178,6 +179,7 @@ const CommunityEditPage = (_props: ICommunityEditPageProps) => {
   const formRef = useRef<HTMLFormElement>(null);
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const post = loaderData.post;
   const boards = loaderData.boards;
   const form = useForm<z.infer<typeof postScheme>>({

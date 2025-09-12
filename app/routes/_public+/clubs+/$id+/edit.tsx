@@ -19,6 +19,7 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { service } from "~/features/clubs/index.server";
+import { useActionToast } from "~/hooks";
 import { SIGUNGU } from "~/libs";
 import { getUser } from "~/libs/index.server"; // 사용자 인증 함수 예시
 import type { IClubLayoutLoaderData } from "./_layout";
@@ -66,6 +67,7 @@ interface IClubEditPageProps {}
 const ClubEditPage = (_props: IClubEditPageProps) => {
   const loaderData = useOutletContext<IClubLayoutLoaderData>();
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const club = loaderData.club;
 
   const [sis, setSis] = useState(club.si ?? "null");

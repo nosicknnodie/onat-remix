@@ -10,6 +10,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useSession } from "~/contexts";
 import { service as settingsService } from "~/features/settings/index.server";
+import { useActionToast } from "~/hooks";
 import { getUser } from "~/libs/index.server";
 
 interface ISecurityPageProps {}
@@ -41,6 +42,7 @@ const SecurityPage = (_props: ISecurityPageProps) => {
   const user = useSession();
 
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

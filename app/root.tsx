@@ -24,6 +24,7 @@ import ProgressBar from "./components/ProgressBar";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
+import { Toaster } from "~/components/ui/toaster";
 import AdminHeader from "./components/layout/AdminHeader";
 import Header from "./components/layout/Header";
 
@@ -118,6 +119,7 @@ export default function App() {
                 {isAdminRoute ? <AdminHeader /> : <Header />}
 
                 <Outlet />
+                <Toaster />
               </SidebarProvider>
             </DndProvider>
           </UserContext.Provider>

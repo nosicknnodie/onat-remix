@@ -10,6 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useActionToast } from "~/hooks";
 // 서버 전용 AES는 loader/action 내부에서 동적 import로 사용
 import { prisma } from "~/libs/db/db.server";
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
@@ -71,6 +72,7 @@ interface IMercenaryEditPageProps {}
 const MercenaryEditPage = (_props: IMercenaryEditPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const mercenary = loaderData.mercenary;
   const defaultPositions = mercenary?.user
     ? _.compact([

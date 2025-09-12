@@ -2,6 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { register } from "~/features/auth/index.server";
 import { RegisterForm } from "~/features/auth/register/ui/RegisterForm";
+import { useActionToast } from "~/hooks";
 
 /**
  * Remix의 액션 함수로, HTTP 요청을 처리하는 레이어입니다.
@@ -18,6 +19,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
  */
 const Register = () => {
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const nav = useNavigation();
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
 

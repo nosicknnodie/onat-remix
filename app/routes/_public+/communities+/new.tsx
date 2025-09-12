@@ -5,6 +5,7 @@ import { useSession } from "~/contexts";
 import { validators } from "~/features/communities/index";
 import { service } from "~/features/communities/index.server";
 import NewPostForm from "~/features/communities/ui/NewPostForm";
+import { useActionToast } from "~/hooks";
 import { getUser } from "~/libs/index.server";
 
 export const handle = { breadcrumb: "새글 쓰기" };
@@ -66,6 +67,7 @@ interface ICommunityNewPageProps {}
 const CommunityNewPage = (_props: ICommunityNewPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  useActionToast(actionData);
   const user = useSession();
   const post = loaderData.post;
   const boards = loaderData?.boards
