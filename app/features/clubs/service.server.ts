@@ -4,9 +4,17 @@
  * - 쿼리 결과를 UI에 적합한 형태로 변환
  */
 
+import dayjs from "dayjs";
+import { summary as matchSummary } from "~/features/matches/index.server";
 import { prisma } from "~/libs/index.server";
 import {
+  countAnnualAttendance,
+  findAnnualEvaluations,
+  findAnnualGoals,
   findClubsAndPlayers,
+  findRecentMatchForClub,
+  findRecentNotices,
+  findUpcomingMatchForClub,
   getAllClubPlayers as getAllClubPlayersQuery,
   getClubMembers as getClubMembersQuery,
   getClubMercenaries as getClubMercenariesQuery,
@@ -14,7 +22,15 @@ import {
   getClubWithPlayer,
   getPendingClubMembers as getPendingClubMembersQuery,
 } from "./queries.server";
-import type { CategorizedClubs, Club, ClubsData, Player } from "./types";
+import type {
+  CategorizedClubs,
+  Club,
+  ClubInfoData,
+  ClubLeaderboardItem,
+  ClubMatchHighlight,
+  ClubsData,
+  Player,
+} from "./types";
 
 /**
  * 클럽들을 카테고리별로 분류
@@ -64,6 +80,165 @@ export function getPlayerStatus(clubId: string, players: Player[]): Player["stat
  */
 export async function getClubLayoutData(clubId: string, userId?: string) {
   return await getClubWithPlayer(clubId, userId);
+}
+
+type AttendanceWithMember = Awaited<
+  ReturnType<typeof findAnnualGoals>
+>[number]["assigned"]["attendance"];
+
+function extractMember(attendance: AttendanceWithMember | null | undefined) {
+  if (!attendance) return null;
+  if (attendance.player) {
+    return {
+      id: attendance.player.id,
+      name: attendance.player.user?.name ?? attendance.player.nick ?? "",
+      imageUrl: attendance.player.user?.userImage?.url ?? undefined,
+      memberType: "PLAYER" as const,
+    };
+  }
+  if (attendance.mercenary) {
+    return {
+      id: attendance.mercenary.id,
+      name: attendance.mercenary.user?.name ?? attendance.mercenary.name ?? "",
+      imageUrl: attendance.mercenary.user?.userImage?.url ?? undefined,
+      memberType: "MERCENARY" as const,
+    };
+  }
+  return null;
+}
+
+function mapGoalsToLeaders(
+  goals: Awaited<ReturnType<typeof findAnnualGoals>>,
+): ClubLeaderboardItem[] {
+  const map = new Map<string, ClubLeaderboardItem & { count: number }>();
+  goals.forEach((goal) => {
+    const member = extractMember(goal.assigned?.attendance);
+    if (!member || !member.name) return;
+    const key = `${member.memberType}-${member.id}`;
+    const existing = map.get(key) ?? {
+      id: member.id,
+      name: member.name,
+      imageUrl: member.imageUrl,
+      memberType: member.memberType,
+      value: 0,
+      formattedValue: "0",
+      count: 0,
+    };
+    const nextCount = existing.count + 1;
+    map.set(key, {
+      ...existing,
+      value: nextCount,
+      formattedValue: String(nextCount),
+      count: nextCount,
+    });
+  });
+  return Array.from(map.values())
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
+    .slice(0, 5)
+    .map(({ count, ...item }) => item);
+}
+
+function mapEvaluationsToLeaders(
+  evaluations: Awaited<ReturnType<typeof findAnnualEvaluations>>,
+): ClubLeaderboardItem[] {
+  type MemberInfo = NonNullable<ReturnType<typeof extractMember>>;
+  const map = new Map<string, { member: MemberInfo; sum: number; count: number }>();
+  evaluations.forEach((evaluation) => {
+    const member = extractMember(evaluation.attendance);
+    if (!member || !member.name) return;
+    const safeMember: MemberInfo = member;
+    const key = `${safeMember.memberType}-${safeMember.id}`;
+    const existing = map.get(key) ?? { member: safeMember, sum: 0, count: 0 };
+    map.set(key, {
+      member: safeMember,
+      sum: existing.sum + evaluation.score,
+      count: existing.count + 1,
+    });
+  });
+
+  return Array.from(map.values())
+    .map(({ member, sum, count }) => {
+      const averageRaw = count > 0 ? sum / count : 0;
+      const average = averageRaw / 20;
+      return {
+        id: member.id,
+        name: member.name,
+        imageUrl: member.imageUrl,
+        memberType: member.memberType,
+        value: average,
+        formattedValue: average.toFixed(1),
+      } satisfies ClubLeaderboardItem;
+    })
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
+    .slice(0, 5);
+}
+
+function toMatchHighlight(
+  match: Awaited<ReturnType<typeof findRecentMatchForClub>>,
+  clubId: string,
+) {
+  if (!match) return null;
+  const { summaries } = matchSummary.summarizeMatch(match);
+  const matchClubIndex = match.matchClubs.findIndex((mc) => mc.clubId === clubId);
+  if (matchClubIndex < 0) return null;
+  const summary = summaries[matchClubIndex];
+  if (!summary) return null;
+  const matchClub = match.matchClubs[matchClubIndex];
+  const opponents = match.matchClubs
+    .filter((mc) => mc.clubId !== clubId)
+    .map((mc) => ({ clubName: mc.club?.name ?? "" }));
+
+  return {
+    matchId: match.id,
+    matchClubId: matchClub.id,
+    title: match.title,
+    stDate: match.stDate.toISOString(),
+    placeName: match.placeName,
+    summary,
+    opponents,
+  } satisfies ClubMatchHighlight;
+}
+
+export async function getClubInfoData(clubId: string): Promise<ClubInfoData> {
+  const now = dayjs();
+  const startOfYear = now.startOf("year").toDate();
+  const endOfYear = now.endOf("year").toDate();
+
+  const [recentMatch, upcomingMatch, attendanceCounts, goals, evaluations, notices] =
+    await Promise.all([
+      findRecentMatchForClub(clubId, now.toDate()),
+      findUpcomingMatchForClub(clubId, now.toDate()),
+      countAnnualAttendance({ clubId, start: startOfYear, end: endOfYear }),
+      findAnnualGoals({ clubId, start: startOfYear, end: endOfYear }),
+      findAnnualEvaluations({ clubId, start: startOfYear, end: endOfYear }),
+      findRecentNotices({ clubId, take: 5 }),
+    ]);
+
+  const attendanceRate =
+    attendanceCounts.total === 0 ? 0 : attendanceCounts.checkedIn / attendanceCounts.total;
+  const voteRate =
+    attendanceCounts.total === 0 ? 0 : attendanceCounts.voted / attendanceCounts.total;
+
+  return {
+    recentMatch: toMatchHighlight(recentMatch, clubId),
+    upcomingMatch: toMatchHighlight(upcomingMatch, clubId),
+    attendance: {
+      total: attendanceCounts.total,
+      voted: attendanceCounts.voted,
+      checkedIn: attendanceCounts.checkedIn,
+      voteRate: Number((voteRate * 100).toFixed(1)),
+      checkRate: Number((attendanceRate * 100).toFixed(1)),
+    },
+    goalLeaders: mapGoalsToLeaders(goals),
+    ratingLeaders: mapEvaluationsToLeaders(evaluations),
+    notices: notices.map((notice) => ({
+      id: notice.id,
+      title: notice.title,
+      createdAt: notice.createdAt.toISOString(),
+      boardSlug: notice.board?.slug ?? null,
+      boardName: notice.board?.name ?? null,
+    })),
+  } satisfies ClubInfoData;
 }
 
 /**

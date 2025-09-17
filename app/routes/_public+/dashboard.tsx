@@ -1,6 +1,10 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts";
+import { MatchInsightList, MomHighlightList, PostHighlightList } from "~/features/dashboard";
+import type { DashboardData } from "~/features/dashboard/index.server";
+import { service as dashboardService } from "~/features/dashboard/index.server";
 import { getUser } from "~/libs/index.server";
 
 export const handle = {
@@ -15,14 +19,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // 로그인 안된 사용자는 로그인 페이지로 리디렉트
     throw redirect("/auth/login");
   }
-  return null;
+
+  const data = await dashboardService.getDashboardData(user.id);
+  return data satisfies DashboardData;
 }
 
 const DashBoardPage = (_props: IDashBoardPageProps) => {
+  const dashboardData = useLoaderData<typeof loader>();
   const user = useSession();
   if (!user) return null;
   return (
-    <>
+    <div className="space-y-4">
       <Card className="mx-auto w-full">
         <CardHeader className="flex flex-row items-center gap-4">
           <img
@@ -64,31 +71,35 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
           </div>
         </CardContent>
       </Card>
-      {/* 
-          1. 다가오는 매치 정보
-            - 다음 경기 일정, 시간, 장소
-            - 출석 여부 및 포지션 배치 상태
-            - 출석 요청 버튼 (미출석 시)
-
-          2. 내 출석 / 포지션 현황
-            - 출석 여부 표시
-            - 주포지션 / 보조포지션 / 미배치 안내
-
-          3. 소속 팀 / 클럽 정보
-            - 팀명, 클럽명, 내 역할 (주장 등)
-            - 최근 경기 요약
-
-          4. 최근 경기 활동 이력
-            - 출전 경기 리스트 (최근 3회)
-            - 득점, MOM 여부 등 요약
-
-          5. 클럽 공지사항
-            - 최근 공지 1~2개 요약
-            - '더보기' 링크
-
-          ⚠️ 위 내용은 우선순위 순으로 차례차례 구현 예정
-        */}
-    </>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <MatchInsightList
+          title="오늘의 경기"
+          description="오늘 예정된 매치를 확인하세요"
+          emptyMessage="오늘 진행되는 경기가 없습니다."
+          items={dashboardData.todayMatches}
+        />
+        <MatchInsightList
+          title="다가오는 참석 요청"
+          description="출석 여부를 빠르게 남겨주세요"
+          emptyMessage="앞으로 2주 내 참석 요청이 없습니다."
+          items={dashboardData.upcomingAttendances}
+        />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <PostHighlightList
+          title="하이라이트 게시글"
+          description="내가 쓴 글과 중요 게시글"
+          emptyMessage="표시할 게시글이 없습니다."
+          items={dashboardData.highlightPosts}
+        />
+        <MomHighlightList
+          title="이번 주 MOM"
+          description="클럽별 활약상을 확인하세요"
+          emptyMessage="이번 주 MOM 정보가 없습니다."
+          items={dashboardData.weeklyMoms}
+        />
+      </div>
+    </div>
   );
 };
 

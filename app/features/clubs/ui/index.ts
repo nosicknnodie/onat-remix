@@ -6,5 +6,9 @@
 
 export { ClubActionsDropdown } from "./ClubActionsDropDown";
 export { ClubCard } from "./ClubCard";
+export { ClubInfoAttendanceCard } from "./ClubInfoAttendanceCard";
+export { ClubInfoMatchCard } from "./ClubInfoMatchCard";
+export { ClubLeaderboardCard } from "./ClubLeaderboardCard";
 export { ClubList } from "./ClubList";
+export { ClubNoticeList } from "./ClubNoticeList";
 export { ClubTabs } from "./ClubTabs";

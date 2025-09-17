@@ -1,7 +1,7 @@
 import { useNavigate, useOutletContext, useParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { MatchHeaderCard } from "~/features/matches";
-import type { loader as layoutLoader } from "./_layout";
+import { MatchHeaderCard, MatchSummarySection } from "~/features/matches";
+import type { MatchSummary } from "~/features/matches/index.server";
 
 /**
  * 축구 경기 매치 디테일 화면
@@ -38,7 +38,7 @@ import type { loader as layoutLoader } from "./_layout";
 interface IMatchesIdPageProps {}
 
 const MatchesIdPage = (_props: IMatchesIdPageProps) => {
-  const data = useOutletContext<Awaited<ReturnType<typeof layoutLoader>>>();
+  const data = useOutletContext<MatchSummary>();
 
   const params = useParams();
   const navigate = useNavigate();
@@ -58,17 +58,20 @@ const MatchesIdPage = (_props: IMatchesIdPageProps) => {
   };
 
   return (
-    <MatchHeaderCard
-      title={match.title}
-      description={match.description}
-      placeName={match.placeName}
-      address={match.address}
-      stDate={match.stDate}
-      matchClubs={matchClubs}
-      selectedMatchClubId={selectedMatchClubId}
-      onSelectMatchClubId={handleSelectedMatchClubIdChange}
-      makeClubHref={(id) => `/matches/${params.id}/clubs/${id}`}
-    />
+    <div className="space-y-4">
+      <MatchHeaderCard
+        title={match.title}
+        description={match.description}
+        placeName={match.placeName}
+        address={match.address}
+        stDate={match.stDate}
+        matchClubs={matchClubs}
+        selectedMatchClubId={selectedMatchClubId}
+        onSelectMatchClubId={handleSelectedMatchClubIdChange}
+        makeClubHref={(id) => `/matches/${params.id}/clubs/${id}`}
+      />
+      <MatchSummarySection summaries={data.summaries} />
+    </div>
   );
 };
 

@@ -5,6 +5,7 @@
  */
 
 import type { Player, Prisma } from "@prisma/client";
+import type { MatchClubSummary } from "~/features/matches/types";
 import type { getClubLayoutData, getClubMembers } from "./service.server";
 
 // 클럽 이미지와 엠블럼을 포함한 확장된 클럽 타입
@@ -42,3 +43,45 @@ export type ClubCardProps = {
 
 export type IPlayer = Awaited<ReturnType<typeof getClubMembers>>[number];
 export type IClubLayoutLoaderData = Awaited<ReturnType<typeof getClubLayoutData>>;
+
+export type ClubMatchHighlight = {
+  matchId: string;
+  matchClubId: string;
+  title: string;
+  stDate: string;
+  placeName?: string | null;
+  summary: MatchClubSummary;
+  opponents: Array<{ clubName: string }>;
+};
+
+export type ClubLeaderboardItem = {
+  id: string;
+  name: string;
+  imageUrl?: string | null;
+  memberType: "PLAYER" | "MERCENARY";
+  value: number;
+  formattedValue: string;
+};
+
+export type ClubNoticeItem = {
+  id: string;
+  title: string;
+  createdAt: string;
+  boardSlug?: string | null;
+  boardName?: string | null;
+};
+
+export type ClubInfoData = {
+  recentMatch: ClubMatchHighlight | null;
+  upcomingMatch: ClubMatchHighlight | null;
+  attendance: {
+    total: number;
+    voted: number;
+    checkedIn: number;
+    voteRate: number;
+    checkRate: number;
+  };
+  goalLeaders: ClubLeaderboardItem[];
+  ratingLeaders: ClubLeaderboardItem[];
+  notices: ClubNoticeItem[];
+};

@@ -4,6 +4,7 @@
  * - 복잡한 Prisma 쿼리를 추상화하여 비즈니스 로직에서 쉽게 사용
  */
 
+import { matchSummaryRelations } from "~/features/matches/types";
 import { prisma } from "~/libs/index.server";
 import type { Club, Player } from "./types";
 
@@ -169,6 +170,151 @@ export async function getAllClubPlayers(clubId: string) {
       user: {
         include: {
           userImage: true,
+        },
+      },
+    },
+  });
+}
+
+export async function findRecentMatchForClub(clubId: string, before: Date) {
+  return await prisma.match.findFirst({
+    where: {
+      stDate: { lt: before },
+      matchClubs: { some: { clubId } },
+    },
+    orderBy: { stDate: "desc" },
+    include: {
+      matchClubs: {
+        include: matchSummaryRelations,
+      },
+    },
+  });
+}
+
+export async function findUpcomingMatchForClub(clubId: string, after: Date) {
+  return await prisma.match.findFirst({
+    where: {
+      stDate: { gt: after },
+      matchClubs: { some: { clubId } },
+    },
+    orderBy: { stDate: "asc" },
+    include: {
+      matchClubs: {
+        include: matchSummaryRelations,
+      },
+    },
+  });
+}
+
+export async function countAnnualAttendance(args: { clubId: string; start: Date; end: Date }) {
+  const where = {
+    matchClub: {
+      clubId: args.clubId,
+      match: {
+        stDate: {
+          gte: args.start,
+          lte: args.end,
+        },
+      },
+    },
+  } as const;
+
+  const [total, voted, checkedIn] = await Promise.all([
+    prisma.attendance.count({ where }),
+    prisma.attendance.count({ where: { ...where, isVote: true } }),
+    prisma.attendance.count({ where: { ...where, isCheck: true } }),
+  ]);
+
+  return { total, voted, checkedIn };
+}
+
+export async function findAnnualGoals(args: { clubId: string; start: Date; end: Date }) {
+  return await prisma.goal.findMany({
+    where: {
+      isOwnGoal: false,
+      quarter: {
+        matchClub: {
+          clubId: args.clubId,
+          match: {
+            stDate: {
+              gte: args.start,
+              lte: args.end,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      assigned: {
+        include: {
+          attendance: {
+            include: {
+              player: {
+                include: {
+                  user: { include: { userImage: true } },
+                },
+              },
+              mercenary: {
+                include: {
+                  user: { include: { userImage: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function findAnnualEvaluations(args: { clubId: string; start: Date; end: Date }) {
+  return await prisma.evaluation.findMany({
+    where: {
+      matchClub: {
+        clubId: args.clubId,
+        match: {
+          stDate: {
+            gte: args.start,
+            lte: args.end,
+          },
+        },
+      },
+    },
+    include: {
+      attendance: {
+        include: {
+          player: {
+            include: {
+              user: { include: { userImage: true } },
+            },
+          },
+          mercenary: {
+            include: {
+              user: { include: { userImage: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function findRecentNotices(args: { clubId: string; take: number }) {
+  return await prisma.post.findMany({
+    where: {
+      state: "PUBLISHED",
+      board: { clubId: args.clubId, type: "NOTICE" },
+    },
+    orderBy: { createdAt: "desc" },
+    take: args.take,
+    select: {
+      id: true,
+      title: true,
+      createdAt: true,
+      board: {
+        select: {
+          slug: true,
+          name: true,
         },
       },
     },

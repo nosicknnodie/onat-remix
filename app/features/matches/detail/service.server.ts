@@ -1,9 +1,10 @@
+import { type MatchSummary, summarizeMatch } from "../summary.server";
 import * as q from "./queries.server";
 
-export async function getMatchDetail(matchId: string) {
+export async function getMatchDetail(matchId: string): Promise<MatchSummary | null> {
   const match = await q.findMatchByIdWithClubs(matchId);
   if (!match) return null;
-  return { match };
+  return summarizeMatch(match);
 }
 
 export async function updateMatch(

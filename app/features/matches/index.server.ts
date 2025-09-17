@@ -12,5 +12,7 @@ export * as mercenaries from "./mercenaries/index.server";
 export * as position from "./position/index.server";
 export * as rating from "./rating/index.server";
 export * as record from "./record/index.server";
+export type { MatchSummary } from "./summary.server";
+export * as summary from "./summary.server";
 export * as team from "./team/index.server";
 export * as validators from "./validators";

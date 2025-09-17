@@ -1,4 +1,6 @@
 import { prisma } from "~/libs/db/db.server";
+import { summarizeMatchClubs } from "../summary.server";
+import type { MatchClubSummary } from "../types";
 import * as q from "./queries.server";
 
 export async function getMatchClubLayoutData(userId: string | undefined, matchClubId: string) {
@@ -11,7 +13,12 @@ export async function getMatchClubLayoutData(userId: string | undefined, matchCl
     const isMercenary = !!matchClub.attendances.find((a) => a.mercenary?.userId === userId);
     role = { isPlayer, isAdmin, isMercenary };
   }
-  return { matchClub, role };
+  let summary: MatchClubSummary | null = null;
+  if (matchClub) {
+    summary = summarizeMatchClubs([matchClub])[0] ?? null;
+  }
+
+  return { matchClub, role, summary };
 }
 
 export async function setIsSelf(matchClubId: string, isSelf: boolean) {

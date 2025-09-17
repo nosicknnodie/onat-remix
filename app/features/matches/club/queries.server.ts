@@ -1,20 +1,12 @@
+import { matchSummaryRelations } from "~/features/matches/types";
 import { prisma } from "~/libs/db/db.server";
 
 export async function findMatchClubWithRelations(id: string) {
   return await prisma.matchClub.findUnique({
     where: { id },
     include: {
-      club: { include: { image: true, emblem: true } },
+      ...matchSummaryRelations,
       quarters: { include: { team1: true, team2: true } },
-      teams: true,
-      attendances: {
-        where: { isVote: true },
-        include: {
-          assigneds: true,
-          player: { include: { user: { include: { userImage: true } } } },
-          mercenary: { include: { user: { include: { userImage: true } } } },
-        },
-      },
     },
   });
 }
