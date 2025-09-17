@@ -3,6 +3,22 @@ import { ERROR_MESSAGES } from "~/libs/const/error.const";
 
 /** HTTP 상태코드, ActionData, Exception을 표준 에러코드로 매핑 */
 export function toErrorCode(err: unknown): ErrorCode {
+  // Explicit API-provided code takes precedence when present
+  if (typeof err === "object" && err !== null && "code" in err) {
+    const code = (err as { code?: unknown }).code;
+    if (
+      code === "AUTH_REQUIRED" ||
+      code === "FORBIDDEN" ||
+      code === "NOT_FOUND" ||
+      code === "VALIDATION" ||
+      code === "NETWORK" ||
+      code === "SERVER" ||
+      code === "UNKNOWN"
+    ) {
+      return code;
+    }
+  }
+
   // Remix Response (loader/action throw new Response)
   if (err instanceof Response) {
     const s = err.status;

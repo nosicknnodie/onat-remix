@@ -14,6 +14,8 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useSession } from "~/contexts";
+import { useToast } from "~/hooks";
+import { getToastForError, postJson } from "~/libs";
 
 interface IJoinDialogProps extends PropsWithChildren {
   player?: Player;
@@ -23,19 +25,26 @@ const JoinDialog = ({ children, player }: IJoinDialogProps) => {
   const user = useSession();
   const params = useParams();
   const nav = useNavigate();
+  const { toast } = useToast();
   const { mutateAsync } = useMutation({
     mutationFn: async (value: { nick: string }) =>
-      await fetch(`/api/clubs/${params.id}/join`, { method: "POST", body: JSON.stringify(value) }),
+      await postJson<{ redirectTo: string }>(`/api/clubs/${params.id}/join`, value),
+    onError: (e) => toast(getToastForError(e)),
   });
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const nick = formData.get("nick")?.toString();
     if (!nick) return;
-    const response = await mutateAsync({ nick });
-    const data = await response.json();
-    if (data.success) nav(`/clubs/${params.id}`);
-    else if (data.error && data.redirectTo) nav(data.redirectTo);
+    try {
+      const data = await mutateAsync({ nick });
+      // API 표준: ok=true 시 data.redirectTo를 우선 사용, 레거시 키도 보조
+      const d = data as { redirectTo?: string } & { data?: { redirectTo?: string } };
+      const redirectTo = d.redirectTo ?? d.data?.redirectTo ?? `/clubs/${params.id}`;
+      nav(redirectTo);
+    } catch (_e) {
+      // onError에서 토스트 처리
+    }
   };
   return (
     <Dialog>

@@ -13,6 +13,7 @@ import {
 } from "~/features/matches/index.server";
 import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs";
 import { getUser, parseRequestData } from "~/libs/index.server";
+import { jsonFail } from "~/utils/action.server";
 import { placeHistoryAtom } from "../_libs/state";
 
 export const handle = { breadcrumb: "매치 수정" };
@@ -40,8 +41,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
   const raw = await parseRequestData(request);
   const parsed = matchesValidators.parseUpdate(raw);
-  if (!parsed.ok)
-    return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 422 });
+  if (!parsed.ok) return jsonFail("잘못된 요청입니다.", { formErrors: ["INVALID_INPUT"] });
 
   const { title, description, date, hour, minute, placeName, address, lat, lng } = parsed.data;
   const stDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
@@ -55,7 +55,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     lng: lng ? Number.parseFloat(lng) : null,
     createUserId: user.id,
   });
-  if (!res.ok) return Response.json({ ok: false, message: "잘못된 요청입니다." }, { status: 422 });
+  if (!res.ok) return jsonFail("요청을 처리할 수 없습니다.");
   return redirect(`/matches/${matchId}`);
 };
 

@@ -28,7 +28,7 @@ const MainSideMenu = () => {
   const location = useLocation();
   const { data, isLoading } = useQuery({
     queryKey: ["BOARDS_MENU_QUERY"],
-    queryFn: async () => await fetch("/api/boards").then((res) => res.json()),
+    queryFn: async () => await (await fetch("/api/boards")).json(),
   });
   const boards = data?.boards as Board[] | undefined;
   const communityMenus = [

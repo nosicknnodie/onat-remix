@@ -17,6 +17,8 @@ import { useSession } from "~/contexts";
 import { RatingCard } from "~/features/matches";
 import { rating as matches } from "~/features/matches/index.server";
 import { RightDrawer as RatingRightDrawer } from "~/features/matches/ui/rating/RightDrawer";
+import { useToast } from "~/hooks";
+import { getJson, getToastForError, postJson } from "~/libs";
 import {
   isAttackPosition,
   isDefensePosition,
@@ -45,13 +47,10 @@ const RatingPage = (_props: IRatingPageProps) => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  const { toast } = useToast();
   const { data } = useQuery<Awaited<ReturnType<typeof loader>>>({
     queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
-    queryFn: async () => {
-      return await fetch(`/api/attendances/rating?matchClubId=${params.matchClubId}`).then((res) =>
-        res.json(),
-      );
-    },
+    queryFn: async () => await getJson(`/api/attendances/rating?matchClubId=${params.matchClubId}`),
     initialData: loaderData,
   });
   const attendances = data.attendances;
@@ -62,15 +61,11 @@ const RatingPage = (_props: IRatingPageProps) => {
   // update score
   const updateEvaluation = useMutation({
     mutationFn: async ({ attendanceId, score }: { attendanceId: string; score: number }) => {
-      const res = await fetch("/api/evaluations/score", {
-        method: "POST",
-        body: JSON.stringify({
-          matchClubId: params.matchClubId,
-          attendanceId,
-          score,
-        }),
+      await postJson("/api/evaluations/score", {
+        matchClubId: params.matchClubId,
+        attendanceId,
+        score,
       });
-      if (!res.ok) throw new Error("Failed to update score");
     },
 
     onMutate: async ({ attendanceId, score }) => {
@@ -102,10 +97,11 @@ const RatingPage = (_props: IRatingPageProps) => {
       return { prevData };
     },
 
-    onError: (_err, _vars, context) => {
+    onError: (e, _vars, context) => {
       if (context?.prevData) {
         queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], context.prevData);
       }
+      toast(getToastForError(e));
     },
 
     onSettled: () => {
@@ -118,15 +114,13 @@ const RatingPage = (_props: IRatingPageProps) => {
   // update like
   const toggleLike = useMutation({
     mutationFn: async ({ attendanceId, liked }: { attendanceId: string; liked: boolean }) => {
-      await fetch("/api/evaluations/like", {
-        method: "POST",
-        body: JSON.stringify({
-          matchClubId: params.matchClubId,
-          attendanceId,
-          liked,
-        }),
+      await postJson("/api/evaluations/like", {
+        matchClubId: params.matchClubId,
+        attendanceId,
+        liked,
       });
     },
+    onError: (e) => toast(getToastForError(e)),
     onMutate: async ({ attendanceId, liked }) => {
       await queryClient.cancelQueries({
         queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
@@ -154,11 +148,6 @@ const RatingPage = (_props: IRatingPageProps) => {
       }
 
       return { prevData };
-    },
-    onError: (_err, _vars, context) => {
-      if (context?.prevData) {
-        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], context.prevData);
-      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({

@@ -15,7 +15,9 @@ import {
   type AttendanceMercenary,
   type AttendancePlayer,
 } from "~/features/matches";
-import { cn } from "~/libs";
+import { useToast } from "~/hooks";
+import { cn, postJson } from "~/libs";
+import { getToastForError } from "~/libs/errors";
 import { action, loader } from "./_data";
 import { AttendanceContext, useAttendance } from "./_hook";
 export { action, loader };
@@ -43,6 +45,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const params = useParams();
   const [_isPending] = useTransition();
+  const { toast } = useToast();
 
   const statusIcons = {
     ATTEND: <MdEventAvailable className="text-primary" />,
@@ -125,15 +128,18 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   return players;
                 })()}
                 onTogglePlayer={async (playerId, isVote) => {
-                  const res = await fetch("/api/attendances/player", {
-                    method: "POST",
-                    body: JSON.stringify({ matchClubId: params.matchClubId, playerId, isVote }),
-                  }).then((r) => r.json());
-                  if (res.success) {
+                  try {
+                    await postJson("/api/attendances/player", {
+                      matchClubId: params.matchClubId,
+                      playerId,
+                      isVote,
+                    });
                     revalidate();
                     return true;
+                  } catch (e) {
+                    toast(getToastForError(e));
+                    return false;
                   }
-                  return false;
                 }}
                 mercenaries={(() => {
                   const attendedIds = loaderData.matchClub.attendances
@@ -150,15 +156,18 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   return mercenaries;
                 })()}
                 onToggleMercenary={async (mercenaryId, isVote) => {
-                  const res = await fetch("/api/attendances/mercenary", {
-                    method: "POST",
-                    body: JSON.stringify({ matchClubId: params.matchClubId, mercenaryId, isVote }),
-                  }).then((r) => r.json());
-                  if (res.success) {
+                  try {
+                    await postJson("/api/attendances/mercenary", {
+                      matchClubId: params.matchClubId,
+                      mercenaryId,
+                      isVote,
+                    });
                     revalidate();
                     return true;
+                  } catch (e) {
+                    toast(getToastForError(e));
+                    return false;
                   }
-                  return false;
                 }}
                 attendances={(() => {
                   const attendeds = loaderData.matchClub.attendances.filter((att) => att.isVote);
@@ -175,15 +184,14 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   return arr;
                 })()}
                 onToggleCheck={async (attendanceId, isCheck) => {
-                  const res = await fetch("/api/attendances", {
-                    method: "POST",
-                    body: JSON.stringify({ id: attendanceId, isCheck }),
-                  }).then((r) => r.json());
-                  if (res.success) {
+                  try {
+                    await postJson("/api/attendances", { id: attendanceId, isCheck });
                     revalidate();
                     return true;
+                  } catch (e) {
+                    toast(getToastForError(e));
+                    return false;
                   }
-                  return false;
                 }}
                 mercenariesHref={"../mercenaries"}
               />

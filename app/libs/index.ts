@@ -1,5 +1,6 @@
 // Client-safe and shared utilities
 
+export * from "./api-client";
 export * from "./browserStableWebSocket";
 export * from "./const/error.const";
 export * from "./const/position.const";
