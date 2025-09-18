@@ -13,6 +13,7 @@ interface ILoginFormProps extends ComponentProps<typeof Form> {
   errors?: { email?: string; password?: string };
   success?: string;
   isSubmitting?: boolean;
+  redirectTo?: string;
 }
 
 const LoginForm = ({
@@ -20,6 +21,7 @@ const LoginForm = ({
   errors,
   success,
   isSubmitting,
+  redirectTo,
   className,
   method,
   ...props
@@ -58,6 +60,7 @@ const LoginForm = ({
         <FormSuccess>{success}</FormSuccess>
         <FormError>{errors?.email}</FormError>
         <FormError>{errors?.password}</FormError>
+        {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
         <Button
           type="submit"
           className="w-full font-semibold flex justify-center items-center gap-x-2"

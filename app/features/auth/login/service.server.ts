@@ -9,6 +9,18 @@ import { findKeyByEmail } from "../core/queries.server";
 import { issueVerificationToken } from "../core/token.service.server";
 import { parseLogin } from "./validators";
 
+function sanitizeRedirectPath(redirectTo?: string | null) {
+  if (!redirectTo) return null;
+  if (!redirectTo.startsWith("/")) return null;
+  if (redirectTo.startsWith("//")) return null;
+  try {
+    const url = new URL(redirectTo, "https://example.com");
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (_error) {
+    return null;
+  }
+}
+
 export async function handleLogin(request: Request) {
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}`;
@@ -19,6 +31,9 @@ export async function handleLogin(request: Request) {
   if (!parsed.ok) {
     return Response.json({ errors: parsed.errors }, { status: 422 });
   }
+  const redirectTo = sanitizeRedirectPath(
+    typeof raw.redirectTo === "string" ? raw.redirectTo : url.searchParams.get("redirectTo"),
+  );
 
   try {
     // 2) 사용자 키 조회
@@ -57,7 +72,8 @@ export async function handleLogin(request: Request) {
     const { sessionCookie } = await createSessionAndCleanup(key.userId, user?.id);
 
     // 6) 홈으로 redirect
-    return redirect("/", {
+    const target = redirectTo ?? "/";
+    return redirect(target, {
       headers: { "Set-Cookie": sessionCookie.serialize() },
     });
   } catch (_error) {
