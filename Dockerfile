@@ -1,4 +1,5 @@
-FROM node:22-bullseye-slim AS base
+# FROM node:22-bullseye-slim AS base
+FROM harbor.onsoa.net/library/node:22-bullseye-slim AS base
 RUN corepack enable && corepack prepare pnpm@10.7.1 --activate
 WORKDIR /app
 
@@ -24,7 +25,8 @@ RUN pnpm prune --prod
 #     pnpm install
 
 # 2단계 (런타임 이미지)
-FROM node:22-bullseye-slim AS runner
+# FROM node:22-bullseye-slim AS runner
+FROM harbor.onsoa.net/library/node:22-bullseye-slim AS runner
 
 RUN corepack enable && corepack prepare pnpm@10.7.1 --activate
 WORKDIR /app
