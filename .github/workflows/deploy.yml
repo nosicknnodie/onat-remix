@@ -36,11 +36,11 @@ jobs:
           echo "REMIX_PUBLIC_MAP_KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST }}" >> .env
           echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.KAKAO_JS }}" >> .env
 
-      - name: Notify n8n webhook Init
-        run: |
-          curl -X POST https://n8n.onsoa.net/webhook/github-webhook \
-            -H "Content-Type: application/json" \
-            -d '{"status":"init","repo":"onat-remix","ref":"${{ github.ref }}","sha":"${{ github.sha }}"}'
+      # - name: Notify n8n webhook Init
+      #   run: |
+      #     curl -X POST https://n8n.onsoa.net/webhook/github-webhook \
+      #       -H "Content-Type: application/json" \
+      #       -d '{"status":"init","repo":"onat-remix","ref":"${{ github.ref }}","sha":"${{ github.sha }}"}'
 
       - name: Build and push Docker image for ARM64
         run: |
