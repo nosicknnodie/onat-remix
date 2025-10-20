@@ -44,7 +44,15 @@ jobs:
 
       - name: Build and push Docker image for ARM64
         run: |
-          docker buildx create --use || true
+          if docker buildx inspect harbor-builder >/dev/null 2>&1; then
+            docker buildx use harbor-builder
+          else
+            docker buildx create \
+              --name harbor-builder \
+              --driver docker-container \
+              --driver-opt image=harbor.onsoa.net/library/buildkit:buildx-stable-1 \
+              --use
+          fi
           docker buildx build \
             --platform linux/arm64 \
             --tag harbor.onsoa.net/onat/onat-remix:latest \
