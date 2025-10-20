@@ -1,9 +1,9 @@
-import { createCookie, redirect } from "@remix-run/node";
-import type { User } from "@prisma/client";
 import { randomBytes } from "node:crypto";
-import type { OAuthProvider, OAuthProfile, OAuthSessionPayload } from "./types";
-import * as queries from "./queries.server";
+import type { User } from "@prisma/client";
+import { createCookie, redirect } from "@remix-run/node";
 import { service as loginService } from "~/features/auth/login/index.server";
+import * as queries from "./queries.server";
+import type { OAuthProfile, OAuthProvider, OAuthSessionPayload } from "./types";
 
 const SECURE_COOKIES = process.env.NODE_ENV === "production";
 
@@ -324,7 +324,8 @@ export async function handleCallback(provider: OAuthProvider, request: Request) 
   headers.append("Set-Cookie", await clearSessionCookie(provider));
 
   if (errorParam) {
-    const message = errorParam === "access_denied" ? "동의가 취소되었습니다." : "OAuth 오류가 발생했습니다.";
+    const message =
+      errorParam === "access_denied" ? "동의가 취소되었습니다." : "OAuth 오류가 발생했습니다.";
     return redirect(buildLoginRedirect(request.url, message).toString(), { headers });
   }
 
@@ -334,13 +335,18 @@ export async function handleCallback(provider: OAuthProvider, request: Request) 
 
   const sessionPayload = await readSessionPayload(provider, request);
   if (!sessionPayload) {
-    return redirect(buildLoginRedirect(request.url, "세션이 만료되었습니다. 다시 시도해주세요.").toString(), {
-      headers,
-    });
+    return redirect(
+      buildLoginRedirect(request.url, "세션이 만료되었습니다. 다시 시도해주세요.").toString(),
+      {
+        headers,
+      },
+    );
   }
 
   if (sessionPayload.state !== stateParam) {
-    return redirect(buildLoginRedirect(request.url, "상태 검증에 실패했습니다.").toString(), { headers });
+    return redirect(buildLoginRedirect(request.url, "상태 검증에 실패했습니다.").toString(), {
+      headers,
+    });
   }
 
   try {
@@ -359,6 +365,8 @@ export async function handleCallback(provider: OAuthProvider, request: Request) 
     return redirect(targetPath, { headers });
   } catch (error) {
     console.error(`${provider} OAuth callback failed`, error);
-    return redirect(buildLoginRedirect(request.url, "로그인에 실패했습니다.").toString(), { headers });
+    return redirect(buildLoginRedirect(request.url, "로그인에 실패했습니다.").toString(), {
+      headers,
+    });
   }
 }
