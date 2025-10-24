@@ -34,7 +34,6 @@ const Header = () => {
           </div>
           <Link to={"/"} className="">
             <div className="px-4 py-0.5">
-              123
               <img src="/images/logo-onsoa.png" alt="logo" className="h-8 cursor-pointer" />
             </div>
           </Link>
