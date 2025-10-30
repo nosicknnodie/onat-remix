@@ -36,6 +36,7 @@ COPY --from=build-deps /app/build ./build
 COPY --from=build-deps /app/public ./public
 COPY --from=build-deps /app/package.json ./package.json
 COPY --from=build-deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=build-deps /app/prisma ./prisma
 # COPY --from=build-deps /app/.env ./.env
 
 EXPOSE 3000
