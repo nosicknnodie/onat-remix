@@ -24,24 +24,23 @@ jobs:
       - name: Notify n8n (start)
         run: |
           TIME=$(date -u +%FT%TZ)
-          cat <<JSON | curl -sS -X POST "${{ env.N8N_WEBHOOK_URL }}" -H 'Content-Type: application/json' -d @-
-          {
-            "source":"github",
-            "event":"workflow-started",
-            "repo":"${{ github.repository }}",
-            "workflow":"${{ github.workflow }}",
-            "job":"build-and-deploy",
-            "status":"started",
-            "actor":"${{ github.actor }}",
-            "branch":"${{ github.ref }}",
-            "sha":"${{ github.sha }}",
-            "runId": ${{ github.run_id }},
-            "runNumber": ${{ github.run_number }},
-            "url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "message":"${{ github.event.head_commit.message || '' }}",
-            "time":"'"$TIME"'"
-          }
-          JSON
+          jq -n \
+            --arg source   "github" \
+            --arg event    "workflow-started" \
+            --arg repo     "${{ github.repository }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg job      "build-and-deploy" \
+            --arg status   "started" \
+            --arg actor    "${{ github.actor }}" \
+            --arg branch   "${{ github.ref }}" \
+            --arg sha      "${{ github.sha }}" \
+            --arg url      "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg message  "${{ github.event.head_commit.message || '' }}" \
+            --arg time     "$TIME" \
+            --argjson runId     ${{ github.run_id }} \
+            --argjson runNumber ${{ github.run_number }} \
+            '{source:$source,event:$event,repo:$repo,workflow:$workflow,job:$job,status:$status,actor:$actor,branch:$branch,sha:$sha,url:$url,message:$message,time:$time,runId:$runId,runNumber:$runNumber}' \
+          | curl -sS -X POST "${{ env.N8N_WEBHOOK_URL }}" -H 'Content-Type: application/json' -d @-
 
       - name: Log in to Harbor
         run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.onsoa.net -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
@@ -92,21 +91,20 @@ jobs:
             EVENT="workflow-finished"
           fi
           TIME=$(date -u +%FT%TZ)
-          cat <<JSON | curl -sS -X POST "${{ env.N8N_WEBHOOK_URL }}" -H 'Content-Type: application/json' -d @-
-          {
-            "source":"github",
-            "event":"'"$EVENT"'",
-            "repo":"${{ github.repository }}",
-            "workflow":"${{ github.workflow }}",
-            "job":"build-and-deploy",
-            "status":"'"$STATUS"'",
-            "actor":"${{ github.actor }}",
-            "branch":"${{ github.ref }}",
-            "sha":"${{ github.sha }}",
-            "runId": ${{ github.run_id }},
-            "runNumber": ${{ github.run_number }},
-            "url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "message":"${{ github.event.head_commit.message || '' }}",
-            "time":"'"$TIME"'"
-          }
-          JSON
+          jq -n \
+            --arg source   "github" \
+            --arg event    "$EVENT" \
+            --arg repo     "${{ github.repository }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg job      "build-and-deploy" \
+            --arg status   "$STATUS" \
+            --arg actor    "${{ github.actor }}" \
+            --arg branch   "${{ github.ref }}" \
+            --arg sha      "${{ github.sha }}" \
+            --arg url      "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg message  "${{ github.event.head_commit.message || '' }}" \
+            --arg time     "$TIME" \
+            --argjson runId     ${{ github.run_id }} \
+            --argjson runNumber ${{ github.run_number }} \
+            '{source:$source,event:$event,repo:$repo,workflow:$workflow,job:$job,status:$status,actor:$actor,branch:$branch,sha:$sha,url:$url,message:$message,time:$time,runId:$runId,runNumber:$runNumber}' \
+          | curl -sS -X POST "${{ env.N8N_WEBHOOK_URL }}" -H 'Content-Type: application/json' -d @-
