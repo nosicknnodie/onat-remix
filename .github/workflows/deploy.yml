@@ -8,16 +8,40 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      N8N_WEBHOOK_URL: ${{ secrets.N8N_WEBHOOK_URL }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set tag variables
         id: vars
         run: |
           echo "SHA_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           echo "DATE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Notify n8n (start)
+        run: |
+          TIME=$(date -u +%FT%TZ)
+          cat <<JSON | curl -sS -X POST "${{ env.N8N_WEBHOOK_URL }}" -H 'Content-Type: application/json' -d @-
+          {
+            "source":"github",
+            "event":"workflow-started",
+            "repo":"${{ github.repository }}",
+            "workflow":"${{ github.workflow }}",
+            "job":"build-and-deploy",
+            "status":"started",
+            "actor":"${{ github.actor }}",
+            "branch":"${{ github.ref }}",
+            "sha":"${{ github.sha }}",
+            "runId": ${{ github.run_id }},
+            "runNumber": ${{ github.run_number }},
+            "url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "message":"${{ github.event.head_commit.message || '' }}",
+            "time":"'"$TIME"'"
+          }
+          JSON
 
       - name: Log in to Harbor
         run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.onsoa.net -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
@@ -35,12 +59,6 @@ jobs:
       #     echo "SMTP_PW=${{ secrets.SMTP_PW }}" >> .env
       #     echo "REMIX_PUBLIC_MAP_KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST }}" >> .env
       #     echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.KAKAO_JS }}" >> .env
-
-      # - name: Notify n8n webhook Init
-      #   run: |
-      #     curl -X POST https://n8n.onsoa.net/webhook/github-webhook \
-      #       -H "Content-Type: application/json" \
-      #       -d '{"status":"init","repo":"onat-remix","ref":"${{ github.ref }}","sha":"${{ github.sha }}"}'
 
       - name: Build and push Docker image for ARM64
         run: |
@@ -60,15 +78,35 @@ jobs:
             --tag harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }} \
             --push .
 
-      # - name: Notify n8n webhook
-      #   run: |
-      #     curl -X POST https://n8n.onsoa.net/webhook/github-webhook \
-      #       -H "Content-Type: application/json" \
-      #       -d '{"status":"success","repo":"onat-remix","ref":"${{ github.ref }}","sha":"${{ github.sha }}"}'
-
-      # - name: Notify n8n webhook (fail)
-      #   if: failure()
-      #   run: |
-      #     curl -X POST https://n8n.onsoa.net/webhook/github-webhook \
-      #       -H "Content-Type: application/json" \
-      #       -d '{"status":"fail","repo":"onat-remix","ref":"${{ github.ref }}","sha":"${{ github.sha }}"}'
+      - name: Notify n8n (end)
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"  # success | failure | cancelled
+          if [ "$STATUS" = "success" ]; then
+            EVENT="workflow-succeeded"
+          elif [ "$STATUS" = "failure" ]; then
+            EVENT="workflow-failed"
+          elif [ "$STATUS" = "cancelled" ]; then
+            EVENT="workflow-cancelled"
+          else
+            EVENT="workflow-finished"
+          fi
+          TIME=$(date -u +%FT%TZ)
+          cat <<JSON | curl -sS -X POST "${{ env.N8N_WEBHOOK_URL }}" -H 'Content-Type: application/json' -d @-
+          {
+            "source":"github",
+            "event":"'"$EVENT"'",
+            "repo":"${{ github.repository }}",
+            "workflow":"${{ github.workflow }}",
+            "job":"build-and-deploy",
+            "status":"'"$STATUS"'",
+            "actor":"${{ github.actor }}",
+            "branch":"${{ github.ref }}",
+            "sha":"${{ github.sha }}",
+            "runId": ${{ github.run_id }},
+            "runNumber": ${{ github.run_number }},
+            "url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "message":"${{ github.event.head_commit.message || '' }}",
+            "time":"'"$TIME"'"
+          }
+          JSON
