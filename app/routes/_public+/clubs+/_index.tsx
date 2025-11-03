@@ -49,7 +49,6 @@ export const handle = {
  * - UI 로직은 feature의 컴포넌트에 위임
  */
 const ClubsPage = () => {
-  const session = useSession();
   const clubsData = useLoaderData<typeof loader>();
 
   return (

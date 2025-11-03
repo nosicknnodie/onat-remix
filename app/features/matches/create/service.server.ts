@@ -1,5 +1,10 @@
 import * as q from "./queries.server";
 
+export async function getMatchData(userId: string, clubId: string) {
+  const club = await q.getManagerClub(userId, clubId);
+  return { club };
+}
+
 export async function getNewMatchData(userId: string) {
   const clubs = await q.getManagerClubs(userId);
   return { clubs };

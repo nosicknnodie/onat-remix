@@ -1,6 +1,13 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "~/libs/index.server";
 
+export async function getManagerClub(userId: string, clubId: string) {
+  return await prisma.player.findFirst({
+    where: { userId, clubId, role: { in: ["MASTER", "MANAGER"] } },
+    include: { club: true },
+  });
+}
+
 export async function getManagerClubs(userId: string) {
   const players = await prisma.player.findMany({
     where: { userId, role: { in: ["MASTER", "MANAGER"] } },

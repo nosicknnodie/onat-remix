@@ -53,7 +53,7 @@ export const handle = {
                 <Link to={`/clubs/${params.id}/edit`}>클럽 수정</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to={"/matches/new"}>매치 추가</Link>
+                <Link to={`/clubs/${params.id}/matches/new`}>매치 추가</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to={`/clubs/${params.id}/boards/new`}>게시글 추가</Link>
