@@ -12,6 +12,7 @@ import {
   findAnnualEvaluations,
   findAnnualGoals,
   findClubsAndPlayers,
+  findMemberClubsWithMemberships,
   findRecentMatchForClub,
   findRecentNotices,
   findUpcomingMatchForClub,
@@ -70,10 +71,13 @@ export async function getClubsData(userId?: string): Promise<ClubsData> {
  * 사용자의 클럽 데이터를 조회
  */
 export async function getMyClubsData(userId?: string): Promise<ClubWithMembership[]> {
-  const [clubs, players] = await findClubsAndPlayers(userId);
-  return clubs.map((club) => ({
+  if (!userId) {
+    return [];
+  }
+  const memberships = await findMemberClubsWithMemberships(userId);
+  return memberships.map(({ club, ...player }) => ({
     ...club,
-    membership: players.find((player) => player.clubId === club.id) ?? null,
+    membership: player,
   }));
 }
 

@@ -47,6 +47,7 @@ import { useSession } from "~/contexts";
 import type { ClubWithMembership } from "~/features/clubs/types";
 import { cn, getBoardIcon } from "~/libs";
 import type { IClubLayoutLoaderData } from "~/routes/_public+/clubs+/$id+/_layout";
+import ItemLink from "../ItemLink";
 
 const currentClubIdAtom = atomWithStorage<string | null>("currentClub", null);
 
@@ -160,7 +161,11 @@ const MainSideMenu = () => {
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold">
-                    {user?.name ?? "로그인이 필요합니다"}
+                    {user?.name ? (
+                      user.name
+                    ) : (
+                      <ItemLink to="/auth/login">로그인이 필요합니다</ItemLink>
+                    )}
                   </span>
                   {user?.email && (
                     <span className="truncate text-xs text-muted-foreground">{user.email}</span>

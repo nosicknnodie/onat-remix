@@ -57,6 +57,27 @@ export async function findClubsAndPlayers(userId?: string) {
 }
 
 /**
+ * 사용자가 멤버로 속한 클럽과 멤버십 정보를 조회
+ * - 승인(PENDING 포함)된 플레이어 레코드만 포함
+ */
+export async function findMemberClubsWithMemberships(userId: string) {
+  return await prisma.player.findMany({
+    where: {
+      userId,
+      status: { in: ["APPROVED", "PENDING"] },
+    },
+    include: {
+      club: {
+        include: {
+          image: { select: { url: true } },
+          emblem: { select: { url: true } },
+        },
+      },
+    },
+  });
+}
+
+/**
  * ID를 기준으로 특정 클럽 정보와 사용자의 플레이어 정보를 함께 조회
  * - 클럽 레이아웃과 같은 곳에서 클럽 상세 정보와 사용자 권한을 동시에 확인하기 위해 사용
  */
