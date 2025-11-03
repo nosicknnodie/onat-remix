@@ -3,13 +3,13 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useSession } from "~/contexts";
 import { MatchList } from "~/features/matches";
 import { list as matches } from "~/features/matches/index.server";
@@ -91,65 +91,28 @@ const MatchsPage = (_props: IMatchsPageProps) => {
           </BreadcrumbList>
         </Breadcrumb> */}
         <div className="space-y-8">
-          {/* 나의 클럽 섹션 */}
-          <Tabs defaultValue={session ? "my" : "public"} className="flex-1">
-            <TabsList className="bg-transparent  space-x-2">
-              {session && (
-                <TabsTrigger
-                  value="my"
-                  className={cn(
-                    "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
-                    "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                    "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
-                  )}
-                >
-                  나의 클럽 매치
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="public"
-                className={cn(
-                  "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
-                  "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  "data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:after:absolute data-[state=active]:after:-right-0 data-[state=active]:after:-top-0.5 data-[state=active]:after:content-[''] data-[state=active]:after:w-2 data-[state=active]:after:h-2 data-[state=active]:after:bg-primary data-[state=active]:after:rounded-full",
-                )}
-              >
-                공개 클럽 매치
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="my">
-              <section>
-                <MatchList
-                  matches={categorized.my.today}
-                  myClubIds={myClubIds}
-                  title="오늘자 매치"
-                />
+          {session && (
+            <section className="space-y-6">
+              <Badge variant="outline" className="w-fit border-primary text-primary">
+                나의 클럽 매치
+              </Badge>
+              <MatchList matches={categorized.my.today} myClubIds={myClubIds} title="오늘자 매치" />
+              <MatchList
+                matches={categorized.my.upcoming}
+                myClubIds={myClubIds}
+                title="다가올 매치"
+              />
+              <MatchList matches={categorized.my.past} myClubIds={myClubIds} title="지난 매치" />
+            </section>
+          )}
 
-                <MatchList
-                  matches={categorized.my.upcoming}
-                  myClubIds={myClubIds}
-                  title="다가올 매치"
-                />
-
-                <MatchList matches={categorized.my.past} myClubIds={myClubIds} title="지난 매치" />
-              </section>
-            </TabsContent>
-            <TabsContent value="public">
-              {/* 공개 매치 섹션 */}
-              <section>
-                <MatchList
-                  matches={categorized.public.ongoing}
-                  myClubIds={[]}
-                  title="진행 중인 매치"
-                />
-                <MatchList
-                  matches={categorized.public.upcoming}
-                  myClubIds={[]}
-                  title="다가올 매치"
-                />
-              </section>
-            </TabsContent>
-          </Tabs>
+          <section className="space-y-6">
+            <Badge variant="outline" className="w-fit border-primary text-primary">
+              공개 클럽 매치
+            </Badge>
+            <MatchList matches={categorized.public.ongoing} myClubIds={[]} title="진행 중인 매치" />
+            <MatchList matches={categorized.public.upcoming} myClubIds={[]} title="다가올 매치" />
+          </section>
         </div>
       </div>
     </>

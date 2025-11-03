@@ -54,11 +54,7 @@ const ClubsPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <ClubTabs
-        categorizedClubs={clubsData.categorized}
-        players={clubsData.players}
-        isAuthenticated={!!session}
-      />
+      <ClubTabs publicClubs={clubsData.categorized.public} players={clubsData.players} />
     </div>
   );
 };
