@@ -75,6 +75,7 @@ export async function createClub({
         clubId: txClub.id,
         nick: ownerUser.name || "Unknown",
         role: "MASTER",
+        status: "APPROVED",
       },
     });
 

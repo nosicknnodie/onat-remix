@@ -6,7 +6,6 @@ import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
-import ItemLink from "~/components/ItemLink";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import {
@@ -133,58 +132,6 @@ const Layout = (_props: ILayoutProps) => {
               </JoinDialog>
             )}
           </div>
-        </div>
-        <div className="flex gap-6 px-4 text-base w-full">
-          <ItemLink to={`/clubs/${data.club.id}`} end>
-            정보
-          </ItemLink>
-
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger className="flex gap-1 items-center ring-0 outline-none">
-              <div
-                className={cn(
-                  "text-foreground pb-1 relative incline-block font-semibold hover:text-primary ",
-                  "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-                  {
-                    "text-primary font-bold after:absolute after:-right-1.5 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full":
-                      location.pathname.startsWith(
-                        `/clubs/${data.club.id}/boards`
-                      ),
-                  }
-                )}
-              >
-                게시판
-              </div>
-              <ChevronDown
-                className={cn("ml-1 w-4 h-4", {
-                  "text-primary": location.pathname.startsWith(
-                    `/clubs/${data.club.id}/boards`
-                  ),
-                })}
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {boards?.map((board) => (
-                <DropdownMenuItem key={board.id} asChild>
-                  <Link
-                    to={`/clubs/${data.club.id}/boards/${board.slug}`}
-                    className="space-x-1 flex"
-                  >
-                    {getBoardIcon(board.type)}
-                    <span>{board.name}</span>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu> */}
-          {isInJoined && (
-            <>
-              <ItemLink to={`/clubs/${data.club.id}/boards`}>게시판</ItemLink>
-              <ItemLink to={`/clubs/${data.club.id}/matches`}>매치</ItemLink>
-              <ItemLink to={`/clubs/${data.club.id}/members`}>멤버</ItemLink>
-            </>
-          )}
-          {isAdmin && <ItemLink to={`/clubs/${data.club.id}/pendings`}>승인대기</ItemLink>}
         </div>
         <Outlet context={{ club: data.club, player: data.player }} />
       </div>

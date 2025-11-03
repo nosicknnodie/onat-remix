@@ -30,6 +30,7 @@ import type {
   ClubMatchHighlight,
   ClubsData,
   Player,
+  ClubWithMembership,
 } from "./types";
 
 /**
@@ -63,6 +64,17 @@ export async function getClubsData(userId?: string): Promise<ClubsData> {
     categorized,
     players,
   };
+}
+
+/**
+ * 사용자의 클럽 데이터를 조회
+ */
+export async function getMyClubsData(userId?: string): Promise<ClubWithMembership[]> {
+  const [clubs, players] = await findClubsAndPlayers(userId);
+  return clubs.map((club) => ({
+    ...club,
+    membership: players.find((player) => player.clubId === club.id) ?? null,
+  }));
 }
 
 /**

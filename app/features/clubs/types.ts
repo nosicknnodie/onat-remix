@@ -17,6 +17,10 @@ export type Club = Prisma.ClubGetPayload<{
 }>;
 
 export type { Player };
+
+export type ClubWithMembership = Club & {
+  membership: Player | null;
+};
 // 클럽 카테고리별 분류 타입
 export type CategorizedClubs = {
   my: Club[]; // 내가 속한 클럽들
