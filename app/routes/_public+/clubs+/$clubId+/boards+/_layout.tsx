@@ -1,0 +1,64 @@
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { Outlet } from "@remix-run/react";
+import { prisma } from "~/libs/index.server";
+
+export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
+  const clubId = params.clubId;
+  const slug = params.slug;
+
+  const boards = await prisma.board.findMany({
+    where: {
+      slug,
+      clubId,
+    },
+  });
+
+  if (boards.length === 0) {
+    await prisma.board.createMany({
+      data: [
+        {
+          clubId,
+          name: "공지사항",
+          slug: "notice",
+          order: 0,
+          type: "NOTICE",
+        },
+        {
+          clubId,
+          name: "자유게시판",
+          slug: "free",
+          order: 10,
+          type: "TEXT",
+        },
+        {
+          clubId,
+          name: "갤러리",
+          slug: "gallery",
+          order: 20,
+          type: "GALLERY",
+        },
+        {
+          clubId,
+          name: "자료실",
+          slug: "archive",
+          order: 30,
+          type: "ARCHIVE",
+        },
+      ],
+    });
+  }
+
+  return {};
+};
+
+interface ILayoutProps {}
+
+const Layout = (_props: ILayoutProps) => {
+  return (
+    <>
+      <Outlet />
+    </>
+  );
+};
+
+export default Layout;

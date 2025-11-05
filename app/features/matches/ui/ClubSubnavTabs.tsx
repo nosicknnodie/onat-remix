@@ -14,21 +14,35 @@ interface ClubSubnavTabsProps {
 
 export const ClubSubnavTabs = ({ items, className }: ClubSubnavTabsProps) => {
   return (
-    <div className={cn("flex gap-x-4 p-2", className)}>
-      {items.map((item) => (
-        <Link
-          key={item.href}
-          to={item.href}
-          className={cn(
-            "text-foreground pb-1 relative incline-block font-semibold hover:text-primary",
-            "bg-[linear-gradient(hsl(var(--primary)),_hsl(var(--primary)))] bg-no-repeat bg-bottom bg-[length:0_3px] py-1 hover:bg-[length:100%_3px] transition-all",
-            item.active &&
-              "text-primary font-bold after:absolute after:-right-0 after:-top-0.5 after:content-[''] after:w-2 after:h-2 after:bg-primary after:rounded-full",
-          )}
-        >
-          {item.label}
-        </Link>
-      ))}
+    <div className={cn("flex flex-wrap gap-2", className)}>
+      <nav
+        aria-label="Match navigation"
+        className="flex w-full items-center gap-1 overflow-x-auto rounded-xl border border-border bg-muted/40 p-1"
+      >
+        {items.map((item) => {
+          const isActive = !!item.active;
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "group relative flex shrink-0 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all",
+                isActive
+                  ? "bg-background text-primary shadow-sm"
+                  : "text-muted-foreground hover:bg-background/80 hover:text-foreground",
+              )}
+            >
+              <span>{item.label}</span>
+              <span
+                className={cn(
+                  "pointer-events-none absolute inset-x-2 bottom-1 h-1 rounded-full bg-primary/40 transition-opacity",
+                  isActive ? "opacity-100" : "opacity-0 group-hover:opacity-60",
+                )}
+              />
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 };

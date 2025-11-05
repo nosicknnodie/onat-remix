@@ -5,6 +5,7 @@ export async function findMatchByIdWithClubs(id: string) {
   return await prisma.match.findUnique({
     where: { id },
     include: {
+      createUser: { include: { userImage: true } },
       matchClubs: {
         include: matchSummaryRelations,
       },

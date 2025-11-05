@@ -1,9 +1,16 @@
 import { AES } from "~/libs/index.server";
 import * as q from "./queries.server";
 
-export async function getAttendancePageData(userId: string, matchId: string, matchClubId: string) {
+const buildRedirectPath = (clubId: string, matchClubId: string) =>
+  `/clubs/${clubId}/matches/${matchClubId}`;
+
+export async function getAttendancePageData(
+  userId: string,
+  clubId: string,
+  matchClubId: string,
+) {
   const matchClub = await q.findMatchClubWithRelations(matchClubId);
-  if (!matchClub) return { redirectTo: `/matches/${matchId}/clubs/${matchClubId}` } as const;
+  if (!matchClub) return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
 
   const filteredMercenaries: typeof matchClub.club.mercenarys = matchClub.club.mercenarys
     .filter(
@@ -24,7 +31,7 @@ export async function getAttendancePageData(userId: string, matchId: string, mat
     q.findMercenaryByUserInClubWithAttendance(userId, matchClub.clubId, matchClubId),
   ]);
   if (!currentPlayer && !currentMercenary)
-    return { redirectTo: `/matches/${matchId}/clubs/${matchClubId}` } as const;
+    return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
 
   const currentStatus = currentPlayer
     ? currentPlayer.attendances?.at(0)
@@ -55,18 +62,18 @@ export async function getAttendancePageData(userId: string, matchId: string, mat
 
 export async function submitAttendance(
   userId: string,
-  matchId: string,
+  clubId: string,
   matchClubId: string,
   args: { isVote: boolean; isCheck: boolean; mercenaryId?: string | null },
 ) {
   const current = await q.findMatchClubWithRelations(matchClubId);
-  if (!current) return { redirectTo: `/matches/${matchId}/clubs/${matchClubId}` } as const;
+  if (!current) return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
   const currentPlayer = await q.findApprovedPlayerWithUserAndAttendance(
     userId,
     current.clubId,
     matchClubId,
   );
-  if (!currentPlayer) return { redirectTo: `/matches/${matchId}/clubs/${matchClubId}` } as const;
+  if (!currentPlayer) return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
   await q.upsertAttendance({
     matchClubId,
     playerId: args.mercenaryId ? null : currentPlayer.id,

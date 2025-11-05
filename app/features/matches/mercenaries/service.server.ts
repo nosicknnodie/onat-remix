@@ -2,9 +2,12 @@ import type { PositionType } from "@prisma/client";
 import { AES, prisma } from "~/libs/index.server";
 import * as q from "./queries.server";
 
-export async function getMercenaries(matchId: string, matchClubId: string) {
+const buildRedirectPath = (clubId: string, matchClubId: string) =>
+  `/clubs/${clubId}/matches/${matchClubId}`;
+
+export async function getMercenaries(clubId: string, matchClubId: string) {
   const matchClub = await q.findMatchClubById(matchClubId);
-  if (!matchClub) return { redirectTo: `/matches/${matchId}/clubs/${matchClubId}` } as const;
+  if (!matchClub) return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
   const [players, mercenaries] = await Promise.all([
     q.findApprovedPlayersByClub(matchClub.clubId),
     q.findMercenariesByClub(matchClub.clubId),

@@ -53,6 +53,7 @@ export type MatchClubWithSummaryRelations = Prisma.MatchClubGetPayload<{
 
 export type MatchWithSummary = Prisma.MatchGetPayload<{
   include: {
+    createUser: { include: { userImage?: true } };
     matchClubs: {
       include: typeof matchSummaryRelations;
     };

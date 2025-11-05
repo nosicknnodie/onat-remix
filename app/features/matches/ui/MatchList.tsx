@@ -38,12 +38,10 @@ export function MatchList({
       </h3>
       <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
         {matches?.map((match) => {
-          const matchClubId = match.matchClubs.find((mc) => myClubIds.includes(mc.clubId))?.id;
+          const matchClub = match.matchClubs.find((mc) => myClubIds.includes(mc.clubId));
+          const matchClubId = matchClub?.id;
           return (
-            <Link
-              key={match.id}
-              to={`/matches/${match.id}${matchClubId ? `/clubs/${matchClubId}` : ""}`}
-            >
+            <Link key={match.id} to={`/clubs/${matchClub?.clubId}/matches/${matchClubId}`}>
               <Card
                 key={match.id}
                 className="col-span-1 flex flex-col border border-gray-200 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300"
