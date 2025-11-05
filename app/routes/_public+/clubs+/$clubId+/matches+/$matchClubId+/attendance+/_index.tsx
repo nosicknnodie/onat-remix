@@ -55,37 +55,9 @@ const AttendancePage = (_props: IAttendancePageProps) => {
 
   return (
     <AttendanceContext.Provider value={hooks}>
-      <div className="space-y-2">
-        <div className="border p-2 rounded-md space-y-2">
-          {isBeforeDay && (
-            <div className="flex items-center gap-x-1 text-sm overflow-hidden">
-              <fetcher.Form method="post">
-                <input type="hidden" name="isCheck" value="false" />
-                <input type="hidden" name="isVote" value="true" />
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-x-1 w-32"
-                  disabled={fetcher.state !== "idle"}
-                >
-                  {statusIcons.ATTEND} 참석
-                  {"ATTEND" === currentStatus && <FaCheck className="text-primary" />}
-                </Button>
-              </fetcher.Form>
-              <fetcher.Form method="post">
-                <input type="hidden" name="isCheck" value="false" />
-                <input type="hidden" name="isVote" value="false" />
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-x-1 w-32"
-                  disabled={fetcher.state !== "idle"}
-                >
-                  {statusIcons.ABSENT} 불참
-                  {"ABSENT" === currentStatus && <FaCheck className="text-primary" />}
-                </Button>
-              </fetcher.Form>
-            </div>
-          )}
-          <div className="flex justify-between">
+      <div className="space-y-4">
+        <div className="border rounded-md p-3 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
             <div className={cn("flex items-center gap-x-2 text-sm px-2")}>
               <FaInfoCircle className="text-muted-foreground" /> 현재 상태:{" "}
               <span
@@ -100,7 +72,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
               </span>
               {fetcher.state !== "idle" && <Loading size={16} />}
             </div>
-            {isCheckTimeOpen && currentStatus === "ATTEND" && (
+            {isCheckTimeOpen && currentStatus === "ATTEND" ? (
               <fetcher.Form method="post">
                 <input type="hidden" name="isCheck" value="true" />
                 <input type="hidden" name="isVote" value="true" />
@@ -111,8 +83,36 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   {currentChecked === "CHECKED" ? "출석완" : "출석체크"}
                 </Button>
               </fetcher.Form>
-            )}
-            <div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2 ml-auto">
+              {isBeforeDay ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <fetcher.Form method="post">
+                    <input type="hidden" name="isCheck" value="false" />
+                    <input type="hidden" name="isVote" value="true" />
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-x-1 w-32"
+                      disabled={fetcher.state !== "idle"}
+                    >
+                      {statusIcons.ATTEND} 참석
+                      {"ATTEND" === currentStatus && <FaCheck className="text-primary" />}
+                    </Button>
+                  </fetcher.Form>
+                  <fetcher.Form method="post">
+                    <input type="hidden" name="isCheck" value="false" />
+                    <input type="hidden" name="isVote" value="false" />
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-x-1 w-32"
+                      disabled={fetcher.state !== "idle"}
+                    >
+                      {statusIcons.ABSENT} 불참
+                      {"ABSENT" === currentStatus && <FaCheck className="text-primary" />}
+                    </Button>
+                  </fetcher.Form>
+                </div>
+              ) : null}
               <AttendanceManageAction
                 players={(() => {
                   const attendedIds = loaderData.matchClub.attendances
@@ -196,6 +196,18 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 mercenariesHref={"../mercenaries"}
               />
             </div>
+            {isCheckTimeOpen && currentStatus === "ATTEND" ? (
+              <fetcher.Form method="post">
+                <input type="hidden" name="isCheck" value="true" />
+                <input type="hidden" name="isVote" value="true" />
+                <Button
+                  disabled={fetcher.state !== "idle" || currentChecked === "CHECKED"}
+                  className={cn({ "bg-green-500": currentChecked === "CHECKED" })}
+                >
+                  {currentChecked === "CHECKED" ? "출석완" : "출석체크"}
+                </Button>
+              </fetcher.Form>
+            ) : null}
           </div>
         </div>
 

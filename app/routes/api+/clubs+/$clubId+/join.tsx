@@ -12,7 +12,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     );
 
   // club check
-  const clubId = params.id;
+  const clubId = params.clubId;
   if (!clubId)
     return Response.json(
       {
