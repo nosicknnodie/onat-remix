@@ -74,7 +74,7 @@ jobs:
             --platform linux/arm64 \
             --tag harbor.onsoa.net/onat/onat-remix:latest \
             --tag harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.SHA_TAG }} \
-            --tag harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }} \
+            # --tag harbor.onsoa.net/onat/onat-remix:${{ steps.vars.outputs.DATE_TAG }} \
             --push .
 
       - name: Notify n8n (end)
