@@ -56,7 +56,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     createUserId: user.id,
   });
   if (!res.ok) return jsonFail("요청을 처리할 수 없습니다.");
-  return redirect(`/matches/${res.id}`);
+  return redirect(`/clubs/${clubId}/matches/${res.matchClubId}`);
 };
 
 const MatchesNew = (_props: IMatchesNewProps) => {

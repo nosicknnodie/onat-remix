@@ -73,9 +73,9 @@ export async function createMatch(dto: {
         ),
       );
 
-      return match;
+      return { match, matchClub };
     });
-    return { ok: true as const, id: res.id };
+    return { ok: true as const, id: res.match.id, matchClubId: res.matchClub.id };
   } catch (e) {
     console.error("[matches:createMatch] error - ", e);
     return { ok: false as const, message: "Internal Server Error" };

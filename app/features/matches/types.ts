@@ -14,6 +14,16 @@ export const matchSummaryRelations = {
     include: {
       image: true,
       emblem: true,
+      players: {
+        where: { status: "APPROVED" },
+        include: {
+          user: {
+            include: {
+              userImage: true,
+            },
+          },
+        },
+      },
     },
   },
   teams: true,
