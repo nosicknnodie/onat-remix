@@ -7,11 +7,9 @@ import { useAtomCallback } from "jotai/utils";
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches";
-import {
-  create as matches,
-  validators as matchesValidators,
-} from "~/features/matches/index.server";
+import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
+import { parseCreate } from "~/features/matches/isomorphic";
+import { createService } from "~/features/matches/server";
 import type { IKakaoLocalType } from "~/libs";
 import { getUser, parseRequestData } from "~/libs/index.server";
 import { jsonFail } from "~/utils/action.server";
@@ -25,7 +23,7 @@ interface IMatchesNewProps {}
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) throw redirect("/auth/login");
-  const { clubs } = await matches.service.getNewMatchData(user.id);
+  const { clubs } = await createService.getNewMatchData(user.id);
   return { clubs };
 };
 
@@ -34,13 +32,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) throw redirect("/auth/login");
   const raw = await parseRequestData(request);
-  const parsed = matchesValidators.parseCreate(raw);
+  const parsed = parseCreate(raw);
   if (!parsed.ok) return jsonFail("잘못된 요청입니다.", { formErrors: ["INVALID_INPUT"] });
 
   const { clubId, title, description, date, hour, minute, placeName, address, lat, lng, isSelf } =
     parsed.data;
   const stDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
-  const res = await matches.service.createMatch({
+  const res = await createService.createMatch({
     clubId,
     title,
     description,

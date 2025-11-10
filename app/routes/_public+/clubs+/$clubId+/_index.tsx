@@ -1,13 +1,13 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext } from "@remix-run/react";
-import type { ClubInfoData } from "~/features/clubs";
 import {
   ClubInfoAttendanceCard,
   ClubInfoMatchCard,
   ClubLeaderboardCard,
   ClubNoticeList,
-} from "~/features/clubs";
-import { service as clubService } from "~/features/clubs/index.server";
+} from "~/features/clubs/client";
+import type { ClubInfoData } from "~/features/clubs/isomorphic";
+import { service as clubService } from "~/features/clubs/server";
 import type { IClubLayoutLoaderData } from "./_layout";
 
 interface IClubPageProps {}

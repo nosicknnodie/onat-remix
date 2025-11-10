@@ -1,0 +1,11 @@
+export * as attendanceService from "./attendance.service";
+export * as clubService from "./club.service";
+export * as createService from "./create.service";
+export * as detailService from "./detail.service";
+export * as listSerivce from "./list.service";
+export * as mercenaryService from "./mercenaries.service";
+export * as positionSerivce from "./position.service";
+export * as ratingService from "./rating.service";
+export * as recordService from "./record.service";
+export * as summaryService from "./summary.service";
+export * as teamService from "./team.service";

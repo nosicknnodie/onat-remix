@@ -1,0 +1,9 @@
+export * as editService from "./edit.service";
+export * as loginService from "./login.service";
+export * as newPasswordService from "./newPassword.service";
+export * as oauthService from "./oauth.service";
+export * as registerService from "./register.service";
+export * as resetService from "./reset.service";
+export * as service from "./service";
+export * as settingsService from "./settings.service";
+export * as tokenService from "./token.service";

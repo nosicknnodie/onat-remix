@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { position as matches } from "~/features/matches/index.server";
+import { positionSerivce } from "~/features/matches/server";
 import { parseRequestData } from "~/libs/requestData.server";
 
 const newQuarterSchema = z.object({
@@ -14,7 +14,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
 
-  const res = await matches.service.createQuarter(result.data.matchClubId, result.data.order);
+  const res = await positionSerivce.createQuarter(result.data.matchClubId, result.data.order);
   if (!res.ok) return Response.json({ error: res.message }, { status: 400 });
   return Response.json({ success: "success" });
 };

@@ -6,11 +6,9 @@ import { useAtomCallback } from "jotai/utils";
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches";
-import {
-  detail as matches,
-  validators as matchesValidators,
-} from "~/features/matches/index.server";
+import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
+import { parseUpdate } from "~/features/matches/isomorphic";
+import { detailService } from "~/features/matches/server";
 import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs";
 import { getUser, parseRequestData } from "~/libs/index.server";
 import { jsonFail } from "~/utils/action.server";
@@ -26,7 +24,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
   const matchId = params.matchId;
 
-  const data = await matches.service.getMatchDetail(matchId!);
+  const data = await detailService.getMatchDetail(matchId!);
   if (!data) throw redirect("/404");
   return data;
 };
@@ -40,12 +38,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     throw redirect("/auth/login");
   }
   const raw = await parseRequestData(request);
-  const parsed = matchesValidators.parseUpdate(raw);
+  const parsed = parseUpdate(raw);
   if (!parsed.ok) return jsonFail("잘못된 요청입니다.", { formErrors: ["INVALID_INPUT"] });
 
   const { title, description, date, hour, minute, placeName, address, lat, lng } = parsed.data;
   const stDate = new Date(`${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
-  const res = await matches.service.updateMatch(matchId!, {
+  const res = await detailService.updateMatch(matchId!, {
     title,
     description,
     stDate,

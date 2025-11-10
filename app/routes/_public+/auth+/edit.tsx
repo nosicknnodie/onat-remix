@@ -1,15 +1,19 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
-import EditorForm from "~/features/auth/edit/ui/EditorForm";
-import { edit } from "~/features/auth/index.server";
+import { redirect, useActionData, useLoaderData } from "@remix-run/react";
+import { EditorForm } from "~/features/auth/client";
+import { editService } from "~/features/auth/server";
+import { getUser } from "~/libs/index.server";
 import type { ActionData } from "~/types/action";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return edit.queries.getEditUserLoader(request);
+  const user = await getUser(request);
+  if (!user) return redirect("/auth/login");
+  const dbUser = await editService.getEditUser(user.id);
+  return { user: dbUser };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const result = await edit.service.handleEditUserAction(request);
+  const result = await editService.handleEditUserAction(request);
   // Pass through redirects or native Responses
   if (result instanceof Response) return result;
   // Normalize to Response with 422 for validation failures

@@ -1,7 +1,7 @@
 import { GoalType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { record as matches } from "~/features/matches/index.server";
+import { recordService } from "~/features/matches/server";
 import { parseRequestData } from "~/libs/index.server";
 
 const goalSchema = z.object({
@@ -26,7 +26,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       );
     }
 
-    const res = await matches.service.createGoal({
+    const res = await recordService.createGoal({
       assignedId: data.assignedId,
       assistAssignedId: data.assistAssignedId,
       teamId: data.teamId,
@@ -51,7 +51,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       );
     }
 
-    const res = await matches.service.deleteGoal(id);
+    const res = await recordService.deleteGoal(id);
     if (!res.ok)
       return Response.json({ ok: false, message: "Server error", code: "SERVER" }, { status: 500 });
     return Response.json({ ok: true, message: "success", success: "success" });

@@ -1,9 +1,12 @@
 import type { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { service as mercenaryService } from "~/features/matches/mercenaries/index.server";
-import AddMercenary from "~/features/matches/ui/mercenaries/New/AddMercenary";
-import EmailSearch from "~/features/matches/ui/mercenaries/New/EmailSearch";
-import { NewMercenaryContext, useNewMercenary } from "~/features/matches/ui/mercenaries/New/hook";
+import {
+  AddMercenary,
+  EmailSearch,
+  NewMercenaryContext,
+  useNewMercenary,
+} from "~/features/matches/client";
+import { mercenaryService } from "~/features/matches/server";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const matchClubId = params.matchClubId;

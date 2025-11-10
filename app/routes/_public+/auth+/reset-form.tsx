@@ -1,11 +1,11 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
-import { service } from "~/features/auth/reset/index.server";
-import ResetForm from "~/features/auth/reset/ui/ResetForm";
+import { ResetForm } from "~/features/auth/client";
+import { resetService } from "~/features/auth/server";
 import { useActionToast } from "~/hooks";
 
 export const action = async (args: ActionFunctionArgs) => {
-  return service.handleResetFormAction(args);
+  return resetService.handleResetFormAction(args);
 };
 
 // 클라이언트 측 UI 렌더링

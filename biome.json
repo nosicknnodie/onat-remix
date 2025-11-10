@@ -33,23 +33,11 @@
                 "group": [
                   "~/features/*/**",
                   "**/features/*/**",
-                  "!~/features/*/index",
-                  "!~/features/*/*/index",
-                  "!~/features/*/types",
-                  "!~/features/*/*/types",
-                  "!~/features/*/*/types/**",
-                  "!~/features/*/*/schema",
-                  "!~/features/*/*/schema/**",
-                  "!~/features/*/index.server",
-                  "!~/features/*/ui/**",
-                  "!~/features/*/*/ui/**",
-                  "!**/features/*/ui/index",
-                  "!~/features/index",
-                  "!**/features/*/index",
-                  "!**/features/*/*/index",
-                  "!**/features/index",
-                  "!**/features/*/index.server",
-                  "!**/features/*/*/index.server"
+                  "!~/features/*/client/index",
+                  "!~/features/*/client",
+                  "!~/features/*/server",
+                  "!~/features/*/isom",
+                  "!~/features/*/isomorphic"
                 ],
                 "message": "Deep import 금지: feature 배럴(index)로만 import 하세요."
               }

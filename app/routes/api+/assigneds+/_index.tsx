@@ -1,7 +1,7 @@
 import { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { position as matches } from "~/features/matches/index.server";
+import { positionSerivce } from "~/features/matches/server";
 import { parseRequestData } from "~/libs/requestData.server";
 
 const assignedSchema = z.object({
@@ -34,14 +34,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     if (method === "POST") {
-      const created = await matches.service.createAssigneds(parsedData.map((p) => p.data!));
+      const created = await positionSerivce.createAssigneds(parsedData.map((p) => p.data!));
       return Response.json({ success: true, assigned: created.assigneds });
     } else if (method === "PUT" || method === "PATCH") {
       const items = parsedData.map((p) => {
         const raw = isArray ? res[parsedData.indexOf(p)] : res;
         return { id: raw.id as string, ...p.data! };
       });
-      const updated = await matches.service.updateAssigneds(items);
+      const updated = await positionSerivce.updateAssigneds(items);
       return Response.json({ success: true, assigned: updated.assigneds });
     } else if (method === "DELETE") {
       const data = parsedData.map((p) => p.data);
@@ -52,7 +52,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           { status: 400 },
         );
       }
-      await matches.service.deleteAssigneds(
+      await positionSerivce.deleteAssigneds(
         ids.map((id) => ({ id, quarterId: data.at(0)!.quarterId! })),
       );
       return Response.json({ success: true });

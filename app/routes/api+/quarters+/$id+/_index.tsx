@@ -1,10 +1,10 @@
 import type { Prisma } from "@prisma/client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { record as matches } from "~/features/matches/index.server";
+import { recordService } from "~/features/matches/server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const quarterId = params.id!;
-  const data = await matches.service.getQuarterDetail(quarterId);
+  const data = await recordService.getQuarterDetail(quarterId);
   return Response.json(data);
 };
 

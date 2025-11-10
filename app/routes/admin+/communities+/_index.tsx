@@ -15,14 +15,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { BoardsTable } from "~/features/admin/communities/index";
-import { admin } from "~/features/index.server";
+import { BoardsTable } from "~/features/communities/client";
+import { adminService } from "~/features/communities/server";
 import { cn } from "~/libs";
 
 interface ICommunitiesPageProps {}
 
 export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
-  const boards = await admin.queries.listPublicBoards();
+  const boards = await adminService.listPublicBoards();
 
   return { boards };
 };

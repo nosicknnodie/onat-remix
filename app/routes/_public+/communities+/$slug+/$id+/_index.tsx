@@ -15,12 +15,14 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts";
-import { service } from "~/features/communities/index.server";
-import CommentInput from "~/features/communities/ui/CommentInput";
-import CommentSettings from "~/features/communities/ui/CommentSettings";
-import CommentVoteBadgeButton from "~/features/communities/ui/CommentVoteBadgeButton";
-import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
-import Settings from "~/features/communities/ui/Settings";
+import {
+  CommentInput,
+  CommentSettings,
+  CommentVoteBadgeButton,
+  PostVoteBadgeButton,
+  Settings,
+} from "~/features/communities/client";
+import { service } from "~/features/communities/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 

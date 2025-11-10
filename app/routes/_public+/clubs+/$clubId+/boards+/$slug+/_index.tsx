@@ -16,8 +16,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { InfiniteListProvider, useInfiniteList } from "~/contexts";
-import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
-import Settings from "~/features/communities/ui/Settings";
+import { PostVoteBadgeButton, Settings } from "~/features/communities/client";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 

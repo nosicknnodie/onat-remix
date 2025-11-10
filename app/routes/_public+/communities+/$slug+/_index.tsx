@@ -17,7 +17,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { InfiniteListProvider, useInfiniteList, useSession } from "~/contexts";
-import PostVoteBadgeButton from "~/features/communities/ui/PostVoteBadgeButton";
+import { PostVoteBadgeButton } from "~/features/communities/client";
 import { getUser, prisma } from "~/libs/index.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {

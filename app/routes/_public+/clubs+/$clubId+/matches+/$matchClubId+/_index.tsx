@@ -7,7 +7,7 @@ import {
   MatchSummarySection,
   type PendingSummaryItem,
   PreMatchAttendanceSummary,
-} from "~/features/matches";
+} from "~/features/matches/client";
 import type { MatchClubLayoutLoaderData } from "./_layout";
 
 interface IMatchClubIdPageProps {}

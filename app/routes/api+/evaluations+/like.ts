@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { rating as matches } from "~/features/matches/index.server";
+import { ratingService } from "~/features/matches/server";
 import { getUser, parseRequestData } from "~/libs/index.server";
 
 const EvaluationValidate = z.object({
@@ -25,7 +25,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       { status: 422 },
     );
   }
-  const res = await matches.service.upsertLike(user.id, result.data);
+  const res = await ratingService.upsertLike(user.id, result.data);
   if (!res.ok)
     return Response.json(
       { ok: false, message: "Internal Server Error", code: "SERVER" },

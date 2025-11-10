@@ -6,18 +6,19 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import NewBoardForm from "~/features/admin/communities/ui/NewBoardForm";
-import { admin as adminFeature } from "~/features/index.server";
+import { NewBoardForm } from "~/features/communities/client";
+import { adminValidators } from "~/features/communities/isomorphic";
+import { adminService } from "~/features/communities/server";
 import { parseRequestData } from "~/libs/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const raw = await parseRequestData(request);
-  const parsed = adminFeature.validators.parseCreateBoard(raw);
+  const parsed = adminValidators.parseCreateBoard(raw);
   if (!parsed.ok) {
     return Response.json({ success: false, errors: parsed.errors }, { status: 400 });
   }
   try {
-    const res = await adminFeature.service.createBoard(parsed.data);
+    const res = await adminService.createBoard(parsed.data);
     if (res.id) {
       return redirect("../");
     }

@@ -1,6 +1,6 @@
 // POST /api/comment-vote
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { service } from "~/features/communities/index.server";
+import { service } from "~/features/communities/server";
 import { getUser, parseRequestData } from "~/libs/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {

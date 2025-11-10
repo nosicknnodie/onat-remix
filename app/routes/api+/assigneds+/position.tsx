@@ -3,7 +3,7 @@
 import { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { position as matches } from "~/features/matches/index.server";
+import { positionSerivce } from "~/features/matches/server";
 import { parseRequestData } from "~/libs/index.server";
 
 const assignedSchema = z.object({
@@ -18,7 +18,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!result.success) {
     return Response.json({ success: false, errors: result.error.flatten() }, { status: 400 });
   }
-  const res = await matches.service.swapAssignedPosition(
+  const res = await positionSerivce.swapAssignedPosition(
     result.data.assignedId,
     result.data.toPosition,
   );

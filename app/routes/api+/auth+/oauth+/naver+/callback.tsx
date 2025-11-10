@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { oauth } from "~/features/auth/index.server";
+import { oauthService } from "~/features/auth/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return oauth.service.handleCallback("naver", request);
+  return oauthService.handleCallback("naver", request);
 };
 
 export const action = async () => {

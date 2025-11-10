@@ -14,7 +14,7 @@ import {
   AttendanceManageAction,
   type AttendanceMercenary,
   type AttendancePlayer,
-} from "~/features/matches";
+} from "~/features/matches/client";
 import { useToast } from "~/hooks";
 import { cn, postJson } from "~/libs";
 import { getToastForError } from "~/libs/errors";

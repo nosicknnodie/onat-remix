@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
 
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { service } from "~/features/communities/index.server";
+import { service } from "~/features/communities/server";
 import { getUser } from "~/libs/db/lucia.server";
 import { parseRequestData } from "~/libs/requestData.server";
 

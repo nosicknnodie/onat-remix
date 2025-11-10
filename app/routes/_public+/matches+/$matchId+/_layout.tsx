@@ -4,7 +4,7 @@ import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
-import { detail as matches } from "~/features/matches/index.server";
+import { detailService } from "~/features/matches/server";
 
 export const handle = {
   breadcrumb: (match: any) => {
@@ -23,7 +23,7 @@ export const handle = {
 interface IMatchesIdLayoutPageProps {}
 
 export async function loader({ request: _request, params }: LoaderFunctionArgs) {
-  const data = await matches.service.getMatchDetail(params.matchId!);
+  const data = await detailService.getMatchDetail(params.matchId!);
   if (!data) throw redirect("/404");
   return data;
 }

@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
-import { register } from "~/features/auth/index.server";
-import { RegisterForm } from "~/features/auth/register/ui/RegisterForm";
+import { RegisterForm } from "~/features/auth/client";
+import { registerService } from "~/features/auth/server";
 import { useActionToast } from "~/hooks";
 
 /**
@@ -10,7 +10,7 @@ import { useActionToast } from "~/hooks";
  * 여기서는 데이터베이스 접근이나 기타 복잡한 로직을 직접 수행하지 않습니다.
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
-  return register.service.handleRegister(request);
+  return registerService.handleRegister(request);
 };
 
 /**

@@ -3,13 +3,13 @@ import { useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react
 import { useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { position as matches } from "~/features/matches/index.server";
+import { positionSerivce } from "~/features/matches/server";
 import { Board } from "./_Board";
 import { PositionContext, usePositionQuery } from "./_position.context";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
-  const data = await matches.service.getPositionPageData(matchClubId);
+  const data = await positionSerivce.getPositionPageData(matchClubId);
   if (!data) return redirect("../");
   return { ...data, env: { WS_SERVER_URL: process.env.WS_SERVER_URL } };
 };

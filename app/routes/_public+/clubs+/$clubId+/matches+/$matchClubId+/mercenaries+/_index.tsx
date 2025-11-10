@@ -3,15 +3,15 @@ import { useLoaderData } from "@remix-run/react";
 import type { Row, SortingState } from "@tanstack/react-table";
 import Hangul from "hangul-js";
 import { useState, useTransition } from "react";
-import { MercenariesTable, mercenaryColumns } from "~/features/matches";
-import { mercenaries as matches } from "~/features/matches/index.server";
+import { MercenariesTable, mercenaryColumns } from "~/features/matches/client";
+import { mercenaryService } from "~/features/matches/server";
 import { removePhoneHyphen } from "~/libs/convert";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const clubId = params.clubId;
   const matchClubId = params.matchClubId;
   if (!clubId || !matchClubId) return redirect("/clubs");
-  const data = await matches.service.getMercenaries(clubId, matchClubId);
+  const data = await mercenaryService.getMercenaries(clubId, matchClubId);
   if ("redirectTo" in data) return redirect(data.redirectTo as string);
   return data;
 }

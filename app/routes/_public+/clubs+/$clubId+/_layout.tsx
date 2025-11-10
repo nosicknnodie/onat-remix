@@ -15,8 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts";
-import { service } from "~/features/clubs/index.server";
-import JoinDialog from "~/features/clubs/ui/JoinDialog";
+import { JoinDialog } from "~/features/clubs/client";
+import { service } from "~/features/clubs/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
@@ -93,10 +93,10 @@ const Layout = (_props: ILayoutProps) => {
   const user = useSession();
 
   // 회원
-  const isInJoined = !!data.player;
-  // 관리자
-  const isAdmin =
-    !!data.player && (data.player.role === "MANAGER" || data.player.role === "MASTER");
+  // const isInJoined = !!data.player;
+  // // 관리자
+  // const isAdmin =
+  //   !!data.player && (data.player.role === "MANAGER" || data.player.role === "MASTER");
 
   const isJoined = !!user && !data.player;
   // 재가입버튼

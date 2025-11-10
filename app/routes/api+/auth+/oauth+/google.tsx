@@ -1,9 +1,9 @@
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-import { oauth } from "~/features/auth/index.server";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { oauthService } from "~/features/auth/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
-    return await oauth.service.startAuthorization("google", request);
+    return await oauthService.startAuthorization("google", request);
   } catch (error) {
     console.error("Google OAuth start failed", error);
     const url = new URL("/auth/login", request.url);

@@ -2,8 +2,8 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts";
-import { MatchList } from "~/features/matches";
-import { list as matches } from "~/features/matches/index.server";
+import { MatchList } from "~/features/matches/client";
+import { listSerivce } from "~/features/matches/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
@@ -47,7 +47,7 @@ export const handle = {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  const data = await matches.service.getIndexData(user?.id);
+  const data = await listSerivce.getIndexData(user?.id);
   return data;
 };
 

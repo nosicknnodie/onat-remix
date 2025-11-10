@@ -15,13 +15,10 @@ import {
   ClubAdminMenu,
   type ClubSubnavItem,
   ClubSubnavTabs,
+  CommentSection,
   MatchHeaderCard,
-} from "~/features/matches";
-import {
-  club as matchClubFeature,
-  detail as matchDetailFeature,
-} from "~/features/matches/index.server";
-import CommentSection from "~/features/matches/ui/match-comment/CommentSection";
+} from "~/features/matches/client";
+import { clubService, detailService } from "~/features/matches/server";
 import { getUser, prisma } from "~/libs/index.server";
 
 export const handle = {
@@ -34,15 +31,12 @@ export const handle = {
 interface IMatchClubIdLayoutProps {}
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  const matchClubData = await matchClubFeature.service.getMatchClubLayoutData(
-    user?.id,
-    params.matchClubId!,
-  );
+  const matchClubData = await clubService.getMatchClubLayoutData(user?.id, params.matchClubId!);
   const matchClub = matchClubData.matchClub;
   if (!matchClub) {
     throw redirect("/404");
   }
-  const matchSummary = await matchDetailFeature.service.getMatchDetail(matchClub.matchId);
+  const matchSummary = await detailService.getMatchDetail(matchClub.matchId);
   if (!matchSummary) {
     throw redirect("/404");
   }

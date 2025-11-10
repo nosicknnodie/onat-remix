@@ -8,7 +8,7 @@ import {
   createFileUploadHandler,
   type NodeOnDiskFile,
 } from "@remix-run/node/dist/upload/fileUploadHandler";
-import { files } from "~/features/index.server";
+import { fileService } from "~/features/files/server";
 import { getUser } from "~/libs/index.server";
 
 export const loader: LoaderFunction = async () => {
@@ -37,7 +37,7 @@ export const action: ActionFunction = async ({ request }) => {
       { status: 422 },
     );
   const nodeFile = file as unknown as NodeOnDiskFile;
-  const saved = await files.service.saveImageFromNodeFile({
+  const saved = await fileService.saveImageFromNodeFile({
     nodeFile,
     userId: user.id,
     purpose,

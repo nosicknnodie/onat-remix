@@ -14,9 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts";
-import { RatingCard } from "~/features/matches";
-import { rating as matches } from "~/features/matches/index.server";
-import { RightDrawer as RatingRightDrawer } from "~/features/matches/ui/rating/RightDrawer";
+import { RatingCard, RatingRightDrawer } from "~/features/matches/client";
+import { ratingService } from "~/features/matches/server";
 import { useToast } from "~/hooks";
 import { getJson, getToastForError, postJson } from "~/libs";
 import {
@@ -29,7 +28,7 @@ import type { MatchClubLayoutLoaderData } from "../_layout";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
-  const data = await matches.service.getRatingPageData(matchClubId);
+  const data = await ratingService.getRatingPageData(matchClubId);
   return data;
 };
 

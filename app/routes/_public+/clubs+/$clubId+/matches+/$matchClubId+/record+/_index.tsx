@@ -8,12 +8,11 @@ import { Loading } from "~/components/Loading";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
-import { GoalItem, QuarterRecord } from "~/features/matches";
-import { record as matches } from "~/features/matches/index.server";
-import { RightDrawer as RecordRightDrawer } from "~/features/matches/ui/record/RightDrawer";
+import { GoalItem, QuarterRecord, RecordRightDrawer } from "~/features/matches/client";
+import { recordService } from "~/features/matches/server";
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
-  const data = await matches.service.getRecordPageData(matchClubId);
+  const data = await recordService.getRecordPageData(matchClubId);
   return data;
 };
 

@@ -1,7 +1,11 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { AiFillSkin } from "react-icons/ai";
 import { Button } from "~/components/ui/button";
-import { type PositionAssigned, PositionBoard, PositionTeamActions } from "~/features/matches";
+import {
+  type PositionAssigned,
+  PositionBoard,
+  PositionTeamActions,
+} from "~/features/matches/client";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs/const/position.const";
 import type { loader } from "./_index";
 import { usePositionContext, usePositionUpdate } from "./_position.context";

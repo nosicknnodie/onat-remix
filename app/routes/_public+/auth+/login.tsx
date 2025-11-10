@@ -1,11 +1,11 @@
-import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { useEffect, useMemo } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { SiNaver } from "react-icons/si";
 import { Separator } from "~/components/ui/separator";
-import { login } from "~/features/auth/index.server";
-import LoginForm from "~/features/auth/login/ui/LoginForm";
+import { LoginForm } from "~/features/auth/client";
+import { loginService } from "~/features/auth/server";
 import { useActionToast } from "~/hooks";
 import { useToast } from "~/hooks/use-toast";
 
@@ -13,14 +13,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirectTo");
   const oauthError = url.searchParams.get("oauthError");
-  return json({
+  return {
     redirectTo,
     oauthError,
-  });
+  };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  return login.service.handleLogin(request);
+  return loginService.handleLogin(request);
 };
 
 const Login = () => {

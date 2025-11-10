@@ -2,9 +2,9 @@ import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts";
-import { MatchInsightList, MomHighlightList, PostHighlightList } from "~/features/dashboard";
-import type { DashboardData } from "~/features/dashboard/index.server";
-import { service as dashboardService } from "~/features/dashboard/index.server";
+import { MatchInsightList, MomHighlightList, PostHighlightList } from "~/features/dashboard/client";
+import type { DashboardData } from "~/features/dashboard/isomorphic";
+import { dashboardService } from "~/features/dashboard/server";
 import { getUser } from "~/libs/index.server";
 
 export const handle = {

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useSession } from "~/contexts";
-import { service as settingsService } from "~/features/settings/index.server";
+import { settingsService } from "~/features/auth/server";
 import { useActionToast } from "~/hooks";
 import { cn, SIGUNGU } from "~/libs";
 

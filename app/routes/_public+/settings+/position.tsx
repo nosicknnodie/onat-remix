@@ -7,7 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useSession } from "~/contexts";
-import { service as settingsService } from "~/features/settings/index.server";
+import { settingsService } from "~/features/auth/server";
 import { getUser } from "~/libs/index.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {

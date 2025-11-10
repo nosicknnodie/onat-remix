@@ -13,14 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { DraggableChip, DropSpot, PositionToolbar, QuarterStepper } from "~/features/matches";
-import { position as matches } from "~/features/matches/index.server";
-import { PositionSettingDrawer } from "~/features/matches/ui/position/SettingDrawer";
 import {
+  DraggableChip,
+  DropSpot,
   PositionSettingContext,
+  PositionSettingDrawer,
+  PositionToolbar,
+  QuarterStepper,
   useOptimisticPositionUpdate,
   usePositionSettingQuery,
-} from "~/features/matches/ui/position/setting.context";
+} from "~/features/matches/client";
+import { positionSerivce } from "~/features/matches/server";
 import { cn } from "~/libs";
 import {
   isDiffPosition,
@@ -44,7 +47,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
   const matchClubId = params.matchClubId!;
-  const data = await matches.service.getPositionSettingData(matchClubId);
+  const data = await positionSerivce.getPositionSettingData(matchClubId);
   if (!data) return redirect("../");
   return data;
 };

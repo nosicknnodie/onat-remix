@@ -8,8 +8,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useSession } from "~/contexts";
-import { service } from "~/features/clubs/index.server";
-import { ClubActionsDropdown, ClubTabs } from "~/features/clubs/ui/index";
+import { ClubActionsDropdown, ClubTabs } from "~/features/clubs/client";
+import { service } from "~/features/clubs/server";
 import { getUser } from "~/libs/index.server";
 
 /**

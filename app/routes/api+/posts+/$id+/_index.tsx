@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
-import { service } from "~/features/communities/index.server";
+import { service } from "~/features/communities/server";
 import { getUser } from "~/libs/db/lucia.server";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {

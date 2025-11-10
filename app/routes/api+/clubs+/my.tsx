@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { service } from "~/features/clubs/index.server";
+import { service } from "~/features/clubs/server";
 import { getUser } from "~/libs/index.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

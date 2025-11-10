@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
-import { service } from "~/features/clubs/create/index.server";
-import { ClubCreateForm } from "~/features/clubs/create/ui/ClubCreateForm";
+import { ClubCreateForm } from "~/features/clubs/client";
+import { createService as service } from "~/features/clubs/server";
 import { useActionToast } from "~/hooks";
 
 export const handle = {

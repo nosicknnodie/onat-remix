@@ -1,6 +1,6 @@
 import { useOutletContext } from "@remix-run/react";
-import { MatchHeaderCard, MatchSummarySection } from "~/features/matches";
-import type { MatchSummary } from "~/features/matches/index.server";
+import { MatchHeaderCard, MatchSummarySection } from "~/features/matches/client";
+import type { MatchSummary } from "~/features/matches/isomorphic";
 
 /**
  * 축구 경기 매치 디테일 화면

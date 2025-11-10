@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData, useLocation } from "@remix-run/react";
 import { useMemo } from "react";
-import { service } from "~/features/clubs/index.server";
-import Pendings from "~/features/clubs/ui/Pendings";
+import { Pendings } from "~/features/clubs/client";
+import { service } from "~/features/clubs/server";
 
 interface IPendingsPageProps {}
 export const handle = { breadcrumb: "승인대기" };

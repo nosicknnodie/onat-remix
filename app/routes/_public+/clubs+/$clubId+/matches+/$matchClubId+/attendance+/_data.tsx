@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { attendance as matches } from "~/features/matches/index.server";
+import { attendanceService } from "~/features/matches/server";
 import { getUser } from "~/libs/index.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -8,7 +8,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const clubId = params.clubId;
   const matchClubId = params.matchClubId;
   if (!clubId || !matchClubId) return redirect("/clubs");
-  const data = await matches.service.getAttendancePageData(user.id, clubId, matchClubId);
+  const data = await attendanceService.getAttendancePageData(user.id, clubId, matchClubId);
   if ("redirectTo" in data) return redirect(data.redirectTo as string);
   return data;
 };
@@ -24,7 +24,7 @@ export const action = async ({ request, params }: LoaderFunctionArgs) => {
   const mercenaryId = formData.get("mercenaryId")?.toString();
 
   if (!clubId || !matchClubId) return redirect("/clubs");
-  const res = await matches.service.submitAttendance(user.id, clubId, matchClubId, {
+  const res = await attendanceService.submitAttendance(user.id, clubId, matchClubId, {
     isVote,
     isCheck,
     mercenaryId,

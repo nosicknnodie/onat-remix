@@ -23,8 +23,8 @@ import {
   TeamCard,
   TeamEditDialog,
   type UIAttendance,
-} from "~/features/matches";
-import { team as matches } from "~/features/matches/index.server";
+} from "~/features/matches/client";
+import { teamService } from "~/features/matches/server";
 // replaced with features TeamEditDialog
 
 /**
@@ -39,7 +39,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   const clubId = params.clubId;
   const matchClubId = params.matchClubId;
   if (!clubId || !matchClubId) return redirect("/clubs");
-  const data = await matches.service.getTeamPageData(clubId, matchClubId);
+  const data = await teamService.getTeamPageData(clubId, matchClubId);
   if ("redirectTo" in data) return redirect(data.redirectTo as string);
   return data;
 };
