@@ -26,10 +26,9 @@ export const ClubList: React.FC<ClubListProps> = ({ clubs, players }) => {
     <div className="grid max-sm:grid-cols-1 sm:max-xl:grid-cols-3 xl:grid-cols-4 gap-4">
       {clubs.map((club) => {
         // 현재 사용자의 해당 클럽에서의 상태 확인
-        const myPlayer = players.find((p) => p.clubId === club.id);
-        const isPending = myPlayer?.status === "PENDING";
+        const membership = players.find((p) => p.clubId === club.id) ?? null;
 
-        return <ClubCard key={club.id} club={club} isPending={isPending} />;
+        return <ClubCard key={club.id} club={club} membership={membership} />;
       })}
     </div>
   );

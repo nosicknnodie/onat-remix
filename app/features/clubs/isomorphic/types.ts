@@ -42,7 +42,7 @@ export type ClubListProps = {
 // 개별 클럽 카드 컴포넌트 Props 타입
 export type ClubCardProps = {
   club: Club;
-  isPending?: boolean;
+  membership?: Player | null;
 };
 
 export type IPlayer = Awaited<ReturnType<typeof service.getClubMembers>>[number];

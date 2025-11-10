@@ -4,29 +4,17 @@
  * - 쿼리 결과를 UI에 적합한 형태로 변환
  */
 
-import dayjs from "dayjs";
-import type { MatchWithSummary } from "~/features/matches/isomorphic";
-import { summaryService } from "~/features/matches/server";
 import { prisma } from "~/libs/index.server";
 import type {
   CategorizedClubs,
   Club,
-  ClubInfoData,
-  ClubLeaderboardItem,
-  ClubMatchHighlight,
   ClubsData,
   ClubWithMembership,
   Player,
 } from "../isomorphic";
 import {
-  countAnnualAttendance,
-  findAnnualEvaluations,
-  findAnnualGoals,
   findClubsAndPlayers,
   findMemberClubsWithMemberships,
-  findRecentMatchForClub,
-  findRecentNotices,
-  findUpcomingMatchForClub,
   getAllClubPlayers as getAllClubPlayersQuery,
   getClubMembers as getClubMembersQuery,
   getClubMercenaries as getClubMercenariesQuery,
@@ -34,6 +22,15 @@ import {
   getClubWithPlayer,
   getPendingClubMembers as getPendingClubMembersQuery,
 } from "./queries";
+export {
+  getAttendanceSummary,
+  getClubInfoData,
+  getGoalLeaders,
+  getRatingLeaders,
+  getRecentMatchHighlight,
+  getRecentNoticesSummary,
+  getUpcomingMatchHighlight,
+} from "./info.service";
 
 /**
  * 클럽들을 카테고리별로 분류
@@ -41,8 +38,11 @@ import {
  * - 공개 클럽: 내 클럽이 아닌 공개 클럽들
  */
 export function categorizeClubs(clubs: Club[], players: Player[]): CategorizedClubs {
-  // 사용자가 속한 클럽 ID 목록 추출
-  const myClubIds = new Set(players.map((p) => p.clubId));
+  // 승인/대기 상태만 내 클럽으로 분류
+  const activeMembershipStatuses: Array<Player["status"]> = ["APPROVED", "PENDING"];
+  const myClubIds = new Set(
+    players.filter((p) => activeMembershipStatuses.includes(p.status)).map((p) => p.clubId),
+  );
 
   // 클럽을 내 클럽과 공개 클럽으로 분류
   const myClubs = clubs.filter((club) => myClubIds.has(club.id));
@@ -97,162 +97,6 @@ export function getPlayerStatus(clubId: string, players: Player[]): Player["stat
  */
 export async function getClubLayoutData(clubId: string, userId?: string) {
   return await getClubWithPlayer(clubId, userId);
-}
-
-type AttendanceWithMember = Awaited<
-  ReturnType<typeof findAnnualGoals>
->[number]["assigned"]["attendance"];
-
-function extractMember(attendance: AttendanceWithMember | null | undefined) {
-  if (!attendance) return null;
-  if (attendance.player) {
-    return {
-      id: attendance.player.id,
-      name: attendance.player.user?.name ?? attendance.player.nick ?? "",
-      imageUrl: attendance.player.user?.userImage?.url ?? undefined,
-      memberType: "PLAYER" as const,
-    };
-  }
-  if (attendance.mercenary) {
-    return {
-      id: attendance.mercenary.id,
-      name: attendance.mercenary.user?.name ?? attendance.mercenary.name ?? "",
-      imageUrl: attendance.mercenary.user?.userImage?.url ?? undefined,
-      memberType: "MERCENARY" as const,
-    };
-  }
-  return null;
-}
-
-function mapGoalsToLeaders(
-  goals: Awaited<ReturnType<typeof findAnnualGoals>>,
-): ClubLeaderboardItem[] {
-  const map = new Map<string, ClubLeaderboardItem & { count: number }>();
-  goals.forEach((goal) => {
-    const member = extractMember(goal.assigned?.attendance);
-    if (!member || !member.name) return;
-    const key = `${member.memberType}-${member.id}`;
-    const existing = map.get(key) ?? {
-      id: member.id,
-      name: member.name,
-      imageUrl: member.imageUrl,
-      memberType: member.memberType,
-      value: 0,
-      formattedValue: "0",
-      count: 0,
-    };
-    const nextCount = existing.count + 1;
-    map.set(key, {
-      ...existing,
-      value: nextCount,
-      formattedValue: String(nextCount),
-      count: nextCount,
-    });
-  });
-  return Array.from(map.values())
-    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
-    .slice(0, 5)
-    .map(({ count, ...item }) => item);
-}
-
-function mapEvaluationsToLeaders(
-  evaluations: Awaited<ReturnType<typeof findAnnualEvaluations>>,
-): ClubLeaderboardItem[] {
-  type MemberInfo = NonNullable<ReturnType<typeof extractMember>>;
-  const map = new Map<string, { member: MemberInfo; sum: number; count: number }>();
-  evaluations.forEach((evaluation) => {
-    const member = extractMember(evaluation.attendance);
-    if (!member || !member.name) return;
-    const safeMember: MemberInfo = member;
-    const key = `${safeMember.memberType}-${safeMember.id}`;
-    const existing = map.get(key) ?? { member: safeMember, sum: 0, count: 0 };
-    map.set(key, {
-      member: safeMember,
-      sum: existing.sum + evaluation.score,
-      count: existing.count + 1,
-    });
-  });
-
-  return Array.from(map.values())
-    .map(({ member, sum, count }) => {
-      const averageRaw = count > 0 ? sum / count : 0;
-      const average = averageRaw / 20;
-      return {
-        id: member.id,
-        name: member.name,
-        imageUrl: member.imageUrl,
-        memberType: member.memberType,
-        value: average,
-        formattedValue: average.toFixed(1),
-      } satisfies ClubLeaderboardItem;
-    })
-    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
-    .slice(0, 5);
-}
-
-function toMatchHighlight(match: MatchWithSummary | null | undefined, clubId: string) {
-  if (!match) return null;
-  const { summaries } = summaryService.summarizeMatch(match);
-  const matchClubIndex = match.matchClubs.findIndex((mc) => mc.clubId === clubId);
-  if (matchClubIndex < 0) return null;
-  const summary = summaries[matchClubIndex];
-  if (!summary) return null;
-  const matchClub = match.matchClubs[matchClubIndex];
-  const opponents = match.matchClubs
-    .filter((mc) => mc.clubId !== clubId)
-    .map((mc) => ({ clubName: mc.club?.name ?? "" }));
-
-  return {
-    matchId: match.id,
-    matchClubId: matchClub.id,
-    title: match.title,
-    stDate: match.stDate.toISOString(),
-    placeName: match.placeName,
-    summary,
-    opponents,
-  } satisfies ClubMatchHighlight;
-}
-
-export async function getClubInfoData(clubId: string): Promise<ClubInfoData> {
-  const now = dayjs();
-  const startOfYear = now.startOf("year").toDate();
-  const endOfYear = now.endOf("year").toDate();
-
-  const [recentMatch, upcomingMatch, attendanceCounts, goals, evaluations, notices] =
-    await Promise.all([
-      findRecentMatchForClub(clubId, now.toDate()),
-      findUpcomingMatchForClub(clubId, now.toDate()),
-      countAnnualAttendance({ clubId, start: startOfYear, end: endOfYear }),
-      findAnnualGoals({ clubId, start: startOfYear, end: endOfYear }),
-      findAnnualEvaluations({ clubId, start: startOfYear, end: endOfYear }),
-      findRecentNotices({ clubId, take: 5 }),
-    ]);
-
-  const attendanceRate =
-    attendanceCounts.total === 0 ? 0 : attendanceCounts.checkedIn / attendanceCounts.total;
-  const voteRate =
-    attendanceCounts.total === 0 ? 0 : attendanceCounts.voted / attendanceCounts.total;
-
-  return {
-    recentMatch: toMatchHighlight(recentMatch, clubId),
-    upcomingMatch: toMatchHighlight(upcomingMatch, clubId),
-    attendance: {
-      total: attendanceCounts.total,
-      voted: attendanceCounts.voted,
-      checkedIn: attendanceCounts.checkedIn,
-      voteRate: Number((voteRate * 100).toFixed(1)),
-      checkRate: Number((attendanceRate * 100).toFixed(1)),
-    },
-    goalLeaders: mapGoalsToLeaders(goals),
-    ratingLeaders: mapEvaluationsToLeaders(evaluations),
-    notices: notices.map((notice) => ({
-      id: notice.id,
-      title: notice.title,
-      createdAt: notice.createdAt.toISOString(),
-      boardSlug: notice.board?.slug ?? null,
-      boardName: notice.board?.name ?? null,
-    })),
-  } satisfies ClubInfoData;
 }
 
 /**
@@ -382,6 +226,51 @@ export async function joinClub(clubId: string, userId: string, nick: string) {
   } catch (e) {
     console.error(e);
     return { ok: false, message: "가입 처리 중 오류가 발생했습니다." };
+  }
+}
+
+/**
+ * 가입 신청 취소
+ */
+export async function cancelJoinRequest(clubId: string, userId: string) {
+  try {
+    const player = await prisma.player.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+      },
+    });
+
+    if (!player || player.status !== "PENDING") {
+      return { ok: false, message: "취소할 가입 신청이 없습니다." };
+    }
+
+    await prisma.$transaction([
+      prisma.player.update({
+        where: { id: player.id },
+        data: {
+          status: "CANCELLED",
+          role: "PENDING",
+        },
+      }),
+      prisma.playerLog.create({
+        data: {
+          playerId: player.id,
+          type: "STATUS",
+          value: "END",
+          from: player.status,
+          to: "CANCELLED",
+          createUserId: userId,
+        },
+      }),
+    ]);
+
+    return { ok: true, message: "가입 신청을 취소했습니다." };
+  } catch (e) {
+    console.error(e);
+    return { ok: false, message: "가입 신청 취소 중 오류가 발생했습니다." };
   }
 }
 

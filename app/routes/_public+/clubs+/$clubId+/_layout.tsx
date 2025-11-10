@@ -4,6 +4,12 @@ import type { Board, Club, File, Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import {
+  type DehydratedState,
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
@@ -14,9 +20,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { useSession } from "~/contexts";
-import { JoinDialog } from "~/features/clubs/client";
-import { service } from "~/features/clubs/server";
+import { clubInfoQueryKeys } from "~/features/clubs/isomorphic";
+import { infoService, service } from "~/features/clubs/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
@@ -69,14 +74,28 @@ export const handle = {
 interface ILayoutProps {}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
+  const clubId = params.clubId;
+  if (!clubId) {
+    throw redirect("/404");
+  }
   const user = await getUser(request);
-  const { club, player } = await service.getClubLayoutData(params.clubId as string, user?.id);
+  const { club, player } = await service.getClubLayoutData(clubId, user?.id);
 
   if (!club) {
     throw redirect("/404");
   }
 
-  return { club, player };
+  const queryClient = new QueryClient();
+  const infoData = await infoService.getClubInfoData(clubId);
+
+  queryClient.setQueryData(clubInfoQueryKeys.recentMatch(clubId), infoData.recentMatch);
+  queryClient.setQueryData(clubInfoQueryKeys.upcomingMatch(clubId), infoData.upcomingMatch);
+  queryClient.setQueryData(clubInfoQueryKeys.attendance(clubId), infoData.attendance);
+  queryClient.setQueryData(clubInfoQueryKeys.goalLeaders(clubId), infoData.goalLeaders);
+  queryClient.setQueryData(clubInfoQueryKeys.ratingLeaders(clubId), infoData.ratingLeaders);
+  queryClient.setQueryData(clubInfoQueryKeys.notices(clubId), infoData.notices);
+
+  return { club, player, dehydratedState: dehydrate(queryClient) };
 }
 
 export type IClubLayoutLoaderData = {
@@ -86,77 +105,38 @@ export type IClubLayoutLoaderData = {
     boards?: Board[];
   };
   player: (Player & { user: { userImage: string } }) | null;
+  dehydratedState: DehydratedState;
 };
 
 const Layout = (_props: ILayoutProps) => {
   const data = useLoaderData<IClubLayoutLoaderData>();
-  const user = useSession();
 
-  // 회원
-  // const isInJoined = !!data.player;
-  // // 관리자
-  // const isAdmin =
-  //   !!data.player && (data.player.role === "MANAGER" || data.player.role === "MASTER");
-
-  const isJoined = !!user && !data.player;
-  // 재가입버튼
-  const isReJoined =
-    user &&
-    data.player &&
-    new Date(Date.now() - 1000 * 60 * 60) > new Date(data.player.updatedAt) &&
-    (data.player.status === "LEFT" ||
-      data.player.status === "BANNED" ||
-      data.player.status === "REJECTED");
-  // 승인 대기중
-  // 가입 취소
-  const isJoinPending = user && data.player && data.player.status === "PENDING";
-  // 거절
-  const isRejected = user && data.player && data.player.status === "REJECTED";
+  const status = data.player?.status;
+  const isPending = status === "PENDING";
+  const isRejected = status === "REJECTED";
 
   return (
-    <>
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex justify-between items-center">
-          <div className="flex gap-2 items-center">
-            {/* 가입하기 버튼 */}
-            {isJoined && (
-              <JoinDialog>
-                <Button>가입</Button>
-              </JoinDialog>
-            )}
-            {isRejected && <FormError className="py-2">가입 승인 거절되었습니다.</FormError>}
-            {isJoinPending && <FormSuccess>가입 승인 대기중입니다.</FormSuccess>}
-            {isReJoined && (
-              <JoinDialog player={data.player ?? undefined}>
-                <Button>재가입</Button>
-              </JoinDialog>
-            )}
+    <HydrationBoundary state={data.dehydratedState}>
+      <div className="flex flex-col gap-4 w-full">
+        {isPending && (
+          <div className="space-y-2">
+            <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
+            <p className="text-sm text-muted-foreground">
+              클럽 관리자가 승인하면 클럽 정보를 확인하실 수 있습니다.
+            </p>
           </div>
-        </div>
-        <Outlet context={{ club: data.club, player: data.player }} />
+        )}
+
+        {isRejected && (
+          <FormError className="py-2">
+            가입 신청이 거절되었습니다. 필요시 다시 신청해 주세요.
+          </FormError>
+        )}
+
+        {!isPending && !isRejected && <Outlet context={{ club: data.club, player: data.player }} />}
       </div>
-    </>
+    </HydrationBoundary>
   );
 };
-
-// function ListItem({
-//   title,
-//   children,
-//   href,
-//   ...props
-// }: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
-//   return (
-//     <li {...props}>
-//       <NavigationMenuLink asChild>
-//         <Link to={href}>
-//           <div className="text-sm leading-none font-medium">{title}</div>
-//           <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
-//             {children}
-//           </p>
-//         </Link>
-//       </NavigationMenuLink>
-//     </li>
-//   );
-// }
 
 export default Layout;

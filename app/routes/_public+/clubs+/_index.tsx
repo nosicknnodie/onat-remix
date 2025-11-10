@@ -53,7 +53,11 @@ const ClubsPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <ClubTabs publicClubs={clubsData.categorized.public} players={clubsData.players} />
+      <ClubTabs
+        myClubs={clubsData.categorized.my}
+        publicClubs={clubsData.categorized.public}
+        players={clubsData.players}
+      />
     </div>
   );
 };

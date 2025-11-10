@@ -1,5 +1,5 @@
 import type { Player } from "@prisma/client";
-import { useNavigate, useParams } from "@remix-run/react";
+import { useNavigate } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { Button } from "~/components/ui/button";
@@ -18,17 +18,17 @@ import { useToast } from "~/hooks";
 import { getToastForError, postJson } from "~/libs";
 
 interface IJoinDialogProps extends PropsWithChildren {
+  clubId: string;
   player?: Player;
 }
 
-export const JoinDialog = ({ children, player }: IJoinDialogProps) => {
+export const JoinDialog = ({ children, player, clubId }: IJoinDialogProps) => {
   const user = useSession();
-  const params = useParams();
   const nav = useNavigate();
   const { toast } = useToast();
   const { mutateAsync } = useMutation({
     mutationFn: async (value: { nick: string }) =>
-      await postJson<{ redirectTo: string }>(`/api/clubs/${params.id}/join`, value),
+      await postJson<{ redirectTo: string }>(`/api/clubs/${clubId}/join`, value),
     onError: (e) => toast(getToastForError(e)),
   });
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,7 +40,7 @@ export const JoinDialog = ({ children, player }: IJoinDialogProps) => {
       const data = await mutateAsync({ nick });
       // API 표준: ok=true 시 data.redirectTo를 우선 사용, 레거시 키도 보조
       const d = data as { redirectTo?: string } & { data?: { redirectTo?: string } };
-      const redirectTo = d.redirectTo ?? d.data?.redirectTo ?? `/clubs/${params.id}`;
+      const redirectTo = d.redirectTo ?? d.data?.redirectTo ?? `/clubs/${clubId}`;
       nav(redirectTo);
     } catch (_e) {
       // onError에서 토스트 처리

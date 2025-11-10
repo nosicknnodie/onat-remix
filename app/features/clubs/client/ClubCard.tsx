@@ -5,16 +5,60 @@
  * - 클럽 상세페이지로의 네비게이션 링크
  */
 
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
+import { useMutation } from "@tanstack/react-query";
 import type React from "react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import FormError from "~/components/FormError";
+import FormSuccess from "~/components/FormSuccess";
+import { useSession } from "~/contexts";
+import { useToast } from "~/hooks";
+import { getToastForError, postJson } from "~/libs";
 import type { ClubCardProps } from "../isomorphic/types";
+import { JoinDialog } from "./JoinDialog";
+
+const REJOINABLE_STATUSES = new Set(["LEFT", "BANNED", "REJECTED", "CANCELLED"]);
 
 interface ClubCardPropsWithNavigation extends ClubCardProps {
   // Link 컴포넌트를 props로 받아서 Remix 의존성 제거
 }
 
-export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, isPending = false }) => {
+export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, membership = null }) => {
+  const user = useSession();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const updatedAt = membership?.updatedAt ? new Date(membership.updatedAt) : null;
+  const hoursSinceUpdate =
+    updatedAt != null ? (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60) : null;
+
+  const isPending = membership?.status === "PENDING";
+  const isRejected = membership?.status === "REJECTED";
+  const isCancelled = membership?.status === "CANCELLED";
+  const canJoin = !!user && !membership;
+  const canRejoin =
+    !!user &&
+    !!membership &&
+    updatedAt != null &&
+    REJOINABLE_STATUSES.has(membership.status) &&
+    (membership.status === "CANCELLED" || (hoursSinceUpdate ?? 0) > 1);
+  const showStatusArea = canJoin || canRejoin || isPending || isRejected || isCancelled;
+
+  const { mutateAsync: cancelJoinRequest, isPending: isCancelling } = useMutation({
+    mutationFn: async () => await postJson(`/api/clubs/${club.id}/join/cancel`),
+    onError: (error) => toast(getToastForError(error)),
+  });
+
+  const handleCancel = async () => {
+    try {
+      await cancelJoinRequest();
+      toast({ title: "가입 신청을 취소했습니다." });
+      navigate(0);
+    } catch (_e) {
+      // handled via onError
+    }
+  };
+
   return (
     <div className="border rounded-lg shadow-sm overflow-hidden relative">
       {/* 가입 대기 상태 배지 */}
@@ -63,6 +107,44 @@ export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, isPendin
           </p>
         </div>
       </div>
+
+      {showStatusArea && (
+        <div className="border-t p-3 flex flex-col gap-2">
+          {canJoin && (
+            <JoinDialog clubId={club.id}>
+              <Button size="sm" className="w-full">
+                가입
+              </Button>
+            </JoinDialog>
+          )}
+
+          {canRejoin && (
+            <JoinDialog clubId={club.id} player={membership ?? undefined}>
+              <Button size="sm" variant="outline" className="w-full">
+                재가입
+              </Button>
+            </JoinDialog>
+          )}
+
+          {isPending && <FormSuccess>가입 승인 대기중입니다.</FormSuccess>}
+          {isPending && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              disabled={isCancelling}
+              onClick={handleCancel}
+            >
+              {isCancelling ? "취소 중..." : "신청 취소"}
+            </Button>
+          )}
+          {isRejected && <FormError className="py-2">가입 승인 거절되었습니다.</FormError>}
+          {isCancelled && (
+            <FormSuccess>가입 신청이 취소되었습니다. 다시 신청하려면 재가입을 눌러주세요.</FormSuccess>
+          )}
+        </div>
+      )}
     </div>
   );
 };
