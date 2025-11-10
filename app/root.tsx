@@ -1,6 +1,11 @@
-import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type {
+  LinksFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
+  SerializeFrom,
+} from "@remix-run/node";
+import { json } from "@remix-run/node";
 import {
-  data,
   Links,
   Meta,
   Outlet,
@@ -9,17 +14,16 @@ import {
   useLoaderData,
   useLocation,
 } from "@remix-run/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import "dayjs/locale/ko"; // 한국어 locale import
 import type { User } from "lucia";
 import { OverlayProvider } from "overlay-kit";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
-import { getUser } from "~/libs/index.server";
 import ProgressBar from "./components/ProgressBar";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { UserContext } from "./contexts/AuthUserContext";
@@ -53,16 +57,6 @@ export const links: LinksFunction = () => [
   { rel: "apple-touch-icon-precomposed", href: "/favicon.ico?v=1" },
 ];
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const user = getUser(request);
-  return data({
-    user,
-    env: {
-      PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY: process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
-    },
-  });
-}
-
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
@@ -87,44 +81,86 @@ export function Layout({ children }: { children: ReactNode }) {
 
 const queryClient = new QueryClient();
 
+const CURRENT_USER_QUERY_KEY = ["current-user"] as const;
+
+type CurrentUserResponse = {
+  user: User | null;
+};
+
+const fetchCurrentUser = async (): Promise<User | null> => {
+  const response = await fetch("/api/auth/me", {
+    credentials: "include",
+  });
+
+  if (response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch current user");
+  }
+
+  const result = (await response.json()) as CurrentUserResponse;
+  return result.user;
+};
+
+function useCurrentUserQuery(enabled: boolean) {
+  return useQuery<User | null>({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: fetchCurrentUser,
+    enabled,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+  });
+}
+
 export default function App() {
-  const data = useLoaderData<typeof loader>();
-  const location = useLocation(); // 👈 여기가 핵심
-  const [user, setUser] = useState<User | null | undefined>(undefined);
-  const appKey = data?.env?.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
+  return (
+    <OverlayProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppContent />
+      </QueryClientProvider>
+    </OverlayProvider>
+  );
+}
+
+function AppContent() {
+  const location = useLocation();
+  const appKey = process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
   const backendForDND =
     typeof window !== "undefined" && "ontouchstart" in window ? TouchBackend : HTML5Backend;
   useKakaoLoader({
     appkey: appKey,
   });
-  useEffect(() => {
-    data.user.then(setUser);
-  }, [data.user]);
+  const isBrowser = typeof window !== "undefined";
+  const userQuery = useCurrentUserQuery(isBrowser);
+  const isLoadingUser = !isBrowser || userQuery.isPending || userQuery.isFetching;
+  const user = isLoadingUser ? undefined : (userQuery.data ?? null);
   const isAdminRoute = location.pathname.startsWith("/admin");
   return (
     <>
-      <OverlayProvider>
-        <QueryClientProvider client={queryClient}>
-          <UserContext.Provider value={user}>
-            <DndProvider
-              backend={backendForDND}
-              options={{
-                enableKeyboardEvents: true,
-                enableMouseEvents: true,
-                enableTouchEvents: true,
-              }}
-            >
-              <ProgressBar />
-              <SidebarProvider>
-                {isAdminRoute ? <AdminHeader /> : <Header />}
+      <UserContext.Provider value={user}>
+        <DndProvider
+          backend={backendForDND}
+          options={{
+            enableKeyboardEvents: true,
+            enableMouseEvents: true,
+            enableTouchEvents: true,
+          }}
+        >
+          <ProgressBar />
+          <SidebarProvider>
+            {isAdminRoute ? <AdminHeader /> : <Header />}
 
-                <Outlet />
-                <Toaster />
-              </SidebarProvider>
-            </DndProvider>
-          </UserContext.Provider>
-        </QueryClientProvider>
-      </OverlayProvider>
+            <Outlet />
+            {appKey}
+            <Toaster />
+          </SidebarProvider>
+        </DndProvider>
+      </UserContext.Provider>
     </>
   );
 }
