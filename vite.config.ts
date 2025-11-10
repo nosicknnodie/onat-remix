@@ -29,9 +29,6 @@ export default defineConfig({
     svgr(),
     tsconfigPaths(),
   ].filter(Boolean),
-  define: {
-    "process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY": `"${process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? ""}"` ,
-  },
   server: {
     host: true,
     watch: {

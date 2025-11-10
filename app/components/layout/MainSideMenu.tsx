@@ -163,7 +163,13 @@ const MainSideMenu = () => {
                     {user?.name ? (
                       user.name
                     ) : (
-                      <ItemLink to="/auth/login">로그인이 필요합니다</ItemLink>
+                      <>
+                        {typeof user === "undefined" ? (
+                          ""
+                        ) : (
+                          <ItemLink to="/auth/login">로그인이 필요합니다</ItemLink>
+                        )}
+                      </>
                     )}
                   </span>
                   {user?.email && (

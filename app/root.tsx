@@ -1,16 +1,11 @@
-import type {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
-  SerializeFrom,
-} from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  type ShouldRevalidateFunction,
   useLoaderData,
   useLocation,
 } from "@remix-run/react";
@@ -24,13 +19,13 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
+import { Toaster } from "~/components/ui/toaster";
+import AdminHeader from "./components/layout/AdminHeader";
+import Header from "./components/layout/Header";
 import ProgressBar from "./components/ProgressBar";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { UserContext } from "./contexts/AuthUserContext";
 import "./tailwind.css";
-import { Toaster } from "~/components/ui/toaster";
-import AdminHeader from "./components/layout/AdminHeader";
-import Header from "./components/layout/Header";
 
 dayjs.locale("ko"); // 전역 locale 설정
 
@@ -56,6 +51,18 @@ export const links: LinksFunction = () => [
   { rel: "apple-touch-icon", href: "/favicon.ico?v=1" },
   { rel: "apple-touch-icon-precomposed", href: "/favicon.ico?v=1" },
 ];
+
+export async function loader() {
+  return {
+    env: {
+      PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY: process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
+    },
+  };
+}
+
+export const shouldRevalidate: ShouldRevalidateFunction = () => {
+  return false;
+};
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -128,8 +135,9 @@ export default function App() {
 }
 
 function AppContent() {
+  const loaderData = useLoaderData<typeof loader>();
   const location = useLocation();
-  const appKey = process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
+  const appKey = loaderData.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY ?? "";
   const backendForDND =
     typeof window !== "undefined" && "ontouchstart" in window ? TouchBackend : HTML5Backend;
   useKakaoLoader({
@@ -156,7 +164,6 @@ function AppContent() {
             {isAdminRoute ? <AdminHeader /> : <Header />}
 
             <Outlet />
-            {appKey}
             <Toaster />
           </SidebarProvider>
         </DndProvider>
