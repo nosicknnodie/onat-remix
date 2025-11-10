@@ -45,8 +45,9 @@ jobs:
       - name: Log in to Harbor
         run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.onsoa.net -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
-      # - name: Generate .env from secrets
-      #   run: |
+      - name: Generate .env from secrets
+        run: |
+          echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY }}" >> .env
       #     echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
       #     echo "MINIO_ACCESS_KEY=${{ secrets.MINIO_ACCESS_KEY }}" >> .env
       #     echo "MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}" >> .env
@@ -57,7 +58,6 @@ jobs:
       #     echo "SMTP_ID=${{ secrets.SMTP_ID }}" >> .env
       #     echo "SMTP_PW=${{ secrets.SMTP_PW }}" >> .env
       #     echo "REMIX_PUBLIC_MAP_KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST }}" >> .env
-      #     echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.KAKAO_JS }}" >> .env
 
       - name: Build and push Docker image for ARM64
         run: |
