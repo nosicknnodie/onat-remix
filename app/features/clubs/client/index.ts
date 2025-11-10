@@ -5,6 +5,7 @@
  */
 
 export * from "./ClubActionsDropDown";
+export * from "./ClubBoardPostCard";
 export * from "./ClubCard";
 export * from "./ClubCreateForm";
 export * from "./ClubInfoAttendanceCard";

@@ -28,9 +28,8 @@ import {
 } from "~/components/ui/select";
 import { useActionToast } from "~/hooks";
 import { cn } from "~/libs";
-import { prisma } from "~/libs/db/db.server";
+import { boardService } from "~/features/clubs/server";
 import { getUser } from "~/libs/db/lucia.server";
-import { deletePublicImage } from "~/libs/db/s3.server";
 import { parseRequestData } from "~/libs/requestData.server";
 
 export const handle = {
@@ -40,28 +39,20 @@ export const handle = {
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
-  // const slug = params.slug;
   const id = params.postId;
+  const clubId = params.clubId;
   /**
    * TODO:
    * 1. user Id 를 기반으로 state 필드가 draft 인것이 있는지 확인해서 first 인것 가져오기
    * 2. draft 의 내용이 없으면 create post 를 해서 draft 해서 가져오기
    *
    */
+  if (!id || !clubId) return redirect("../");
 
   try {
-    const res = await prisma.post.findUnique({
-      where: {
-        id,
-        authorId: user.id,
-      },
-    });
-    if (!res) return redirect("../");
-    const boards = await prisma.board.findMany({
-      where: { isUse: true },
-      orderBy: { order: "asc" },
-    });
-    return { post: res, boards };
+    const data = await boardService.getEditablePost(id, user.id, clubId);
+    if (!data) return redirect("../");
+    return data;
   } catch (error) {
     console.error(error);
     return redirect("../");
@@ -79,6 +70,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   if (!user) return redirect("/auth/login");
   const id = params.postId;
   const clubId = params.clubId;
+  if (!id || !clubId) return redirect("../");
   const data = await parseRequestData(request);
 
   const result = postScheme.safeParse(data);
@@ -93,88 +85,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     );
   }
   try {
-    const contentJSON = JSON.parse(result.data.content);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const extractImageIds = (node: any): string[] => {
-      if (!node || typeof node !== "object") return [];
-      let ids: string[] = [];
-
-      if (node.type === "image" && node.imageId) {
-        ids.push(node.imageId);
-      }
-
-      if (node.root) {
-        ids = ids.concat(extractImageIds(node.root));
-      } else if (node.children && Array.isArray(node.children)) {
-        for (const child of node.children) {
-          ids = ids.concat(extractImageIds(child));
-        }
-      }
-
-      return ids;
-    };
-
-    const usedImageIds = extractImageIds(contentJSON);
-    const post = await prisma.post.findUnique({
-      where: {
-        id: id,
-      },
-      include: {
-        files: true,
-      },
-    });
-    const notUsedImages = post?.files.filter((file) => !usedImageIds.includes(file.id)) ?? [];
-
-    if (post?.authorId !== user.id) {
-      return Response.json({ error: "게시글 권한이 없습니다." }, { status: 403 });
-    }
-
-    /**
-     * Delete Not Used Images
-     */
-    if (notUsedImages.length > 0) {
-      const successfullyDeletedIds: string[] = [];
-
-      for (const file of notUsedImages) {
-        try {
-          if (file.key) {
-            await deletePublicImage(file.key);
-            successfullyDeletedIds.push(file.id);
-          }
-        } catch (err) {
-          console.error("이미지 삭제 실패:", file.key, err);
-        }
-      }
-
-      if (successfullyDeletedIds.length > 0) {
-        await prisma.file.deleteMany({
-          where: {
-            id: {
-              in: successfullyDeletedIds,
-            },
-          },
-        });
-      }
-    }
-
-    const res = await prisma.post.update({
-      where: {
-        id: id,
-      },
-      data: {
-        boardId: result.data.boardId,
-        state: "PUBLISHED",
-        title: result.data.title,
-        content: JSON.parse(result.data.content),
-      },
-    });
-    const board = await prisma.board.findUnique({
-      where: {
-        id: result.data.boardId,
-      },
+    const { post, board } = await boardService.publishPost({
+      postId: id,
+      boardId: result.data.boardId,
+      title: result.data.title,
+      content: result.data.content,
+      authorId: user.id,
     });
 
-    return redirect(`/clubs/${clubId}/boards/${board?.slug}/${res?.id}`);
+    return redirect(`/clubs/${clubId}/boards/${board?.slug}/${post?.id}`);
   } catch (error) {
     console.error(error);
     return Response.json({ success: false, error: "Internal Server Error" }, { status: 500 });

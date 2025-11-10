@@ -1,3 +1,4 @@
+export * from "./board.hooks";
 export * from "./create.schema";
 export * from "./info.hooks";
 export * from "./schema";

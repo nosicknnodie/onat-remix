@@ -1,63 +1,40 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
-import { prisma } from "~/libs/index.server";
-
-export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
-  const clubId = params.clubId;
-  const slug = params.slug;
-
-  const boards = await prisma.board.findMany({
-    where: {
-      slug,
-      clubId,
-    },
-  });
-
-  if (boards.length === 0) {
-    await prisma.board.createMany({
-      data: [
-        {
-          clubId,
-          name: "공지사항",
-          slug: "notice",
-          order: 0,
-          type: "NOTICE",
-        },
-        {
-          clubId,
-          name: "자유게시판",
-          slug: "free",
-          order: 10,
-          type: "TEXT",
-        },
-        {
-          clubId,
-          name: "갤러리",
-          slug: "gallery",
-          order: 20,
-          type: "GALLERY",
-        },
-        {
-          clubId,
-          name: "자료실",
-          slug: "archive",
-          order: 30,
-          type: "ARCHIVE",
-        },
-      ],
-    });
-  }
-
-  return {};
+import { Outlet, type ShouldRevalidateFunction, useParams } from "@remix-run/react";
+import ItemLink from "~/components/ItemLink";
+import { useClubBoardsTabsQuery } from "~/features/clubs/isomorphic";
+export const shouldRevalidate: ShouldRevalidateFunction = () => {
+  return false;
 };
+// export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
+//   const clubId = params.clubId;
+//   const boards = clubId ? await boardService.getBoardTabs(clubId) : [];
+
+//   return { boards, clubId };
+// };
 
 interface ILayoutProps {}
 
 const Layout = (_props: ILayoutProps) => {
+  // const data = useLoaderData<typeof loader>();
+  const { clubId } = useParams();
+  if (!clubId) {
+    throw new Error("clubId is missing from route params");
+  }
+  const { data: boards } = useClubBoardsTabsQuery(clubId);
+
   return (
-    <>
+    <div className="flex flex-col gap-6 w-full">
+      <div className="flex flex-wrap gap-3 border-b pb-2">
+        <ItemLink to={`/clubs/${clubId}/boards`} end>
+          전체
+        </ItemLink>
+        {boards?.map((board) => (
+          <ItemLink key={board.id} to={`/clubs/${board.clubId}/boards/${board.slug}`}>
+            {board.name}
+          </ItemLink>
+        ))}
+      </div>
       <Outlet />
-    </>
+    </div>
   );
 };
 

@@ -4,7 +4,7 @@
  * - Prisma 타입을 기반으로 한 확장된 클럽 타입 정의
  */
 
-import type { Player, Prisma } from "@prisma/client";
+import type { Board, Player, Prisma } from "@prisma/client";
 import type { MatchClubSummary } from "~/features/matches/isomorphic";
 import type { infoService, service } from "../server";
 
@@ -89,3 +89,5 @@ export type ClubInfoData = {
   ratingLeaders: ClubLeaderboardItem[];
   notices: ClubNoticeItem[];
 };
+
+export type ClubBoardTabs = Board[];

@@ -20,8 +20,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { clubInfoQueryKeys } from "~/features/clubs/isomorphic";
-import { infoService } from "~/features/clubs/server";
+import { clubBoardQueryKeys, clubInfoQueryKeys } from "~/features/clubs/isomorphic";
+import { boardService, infoService } from "~/features/clubs/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
@@ -102,6 +102,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     queryClient.setQueryData(clubInfoQueryKeys.club(clubId), club);
   }
   queryClient.setQueryData(clubInfoQueryKeys.membership(clubId), player ?? null);
+
+  const boards = clubId ? await boardService.getBoardTabs(clubId) : [];
+  queryClient.setQueryData(clubBoardQueryKeys.tabs(clubId), boards);
 
   return { club, player, dehydratedState: dehydrate(queryClient) };
 }

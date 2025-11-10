@@ -1,20 +1,16 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet } from "@remix-run/react";
-import { prisma } from "~/libs/db/db.server";
+import { boardService } from "~/features/clubs/server";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const slug = params.slug;
   const clubId = params.clubId;
-  try {
-    const res = await prisma.board.findFirst({
-      where: { slug, clubId },
-    });
-    return { board: res };
-  } catch (error) {
-    console.error(error);
-    return { success: false, errors: "Internal Server Error" };
+  if (!clubId || !slug) {
+    return { board: null };
   }
+  const board = await boardService.getBoardBySlug(clubId, slug);
+  return { board };
 };
 
 export const handle = {
