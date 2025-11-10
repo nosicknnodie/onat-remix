@@ -89,35 +89,86 @@ function buildMatchInsights(
 }
 
 export async function getDashboardData(userId: string): Promise<DashboardData> {
-  const players = await q.findApprovedPlayers(userId);
-  const clubIds = players.map((player) => player.clubId);
-
-  const now = dayjs();
-  const startOfToday = now.startOf("day").toDate();
-  const upcomingRangeEnd = now.add(14, "day").endOf("day").toDate();
-  const weekStart = now.startOf("week").toDate();
-  const weekEnd = now.endOf("week").toDate();
-
-  const [upcomingMatchClubs, weekMatchClubs, posts] = await Promise.all([
-    q.findUpcomingMatchClubs({ clubIds, start: startOfToday, end: upcomingRangeEnd }),
-    q.findMatchClubsInRange({ clubIds, start: weekStart, end: weekEnd }),
-    q.findHighlightPosts({ userId, clubIds, take: 8 }),
+  const clubIds = await getApprovedClubIds(userId);
+  const [todayMatches, upcomingAttendances, highlightPosts, weeklyMoms] = await Promise.all([
+    getTodayMatchInsights(userId, clubIds),
+    getUpcomingAttendanceInsights(userId, clubIds),
+    getHighlightPostsData(userId, clubIds),
+    getWeeklyMomHighlights(userId, clubIds),
   ]);
 
-  const groupedUpcoming = groupMatchClubsByMatch(upcomingMatchClubs as MatchClubWithMatch[]);
-  const upcomingInsights = buildMatchInsights(groupedUpcoming, userId).sort(
+  return {
+    todayMatches,
+    upcomingAttendances,
+    highlightPosts,
+    weeklyMoms,
+  };
+}
+
+async function getApprovedClubIds(userId: string, preset?: string[]) {
+  if (preset) return preset;
+  const players = await q.findApprovedPlayers(userId);
+  return players.map((player) => player.clubId);
+}
+
+type MatchClubRangeArgs = {
+  userId: string;
+  clubIds: string[];
+  start: Date;
+  end: Date;
+  query: typeof q.findMatchClubsInRange;
+};
+
+async function getInsightsByRange({
+  userId,
+  clubIds,
+  start,
+  end,
+  query,
+}: MatchClubRangeArgs): Promise<DashboardMatchInsight[]> {
+  if (clubIds.length === 0) return [];
+  const matchClubs = (await query({ clubIds, start, end })) as MatchClubWithMatch[];
+  const grouped = groupMatchClubsByMatch(matchClubs);
+  return buildMatchInsights(grouped, userId).sort(
     (a, b) => dayjs(a.stDate).valueOf() - dayjs(b.stDate).valueOf(),
   );
+}
 
-  const todayMatches = upcomingInsights.filter((insight) =>
-    dayjs(insight.stDate).isSame(now, "day"),
-  );
+export async function getTodayMatchInsights(userId: string, presetClubIds?: string[]) {
+  const now = dayjs();
+  const start = now.startOf("day").toDate();
+  const end = now.endOf("day").toDate();
+  const clubIds = await getApprovedClubIds(userId, presetClubIds);
 
-  const upcomingAttendances = upcomingInsights.filter(
+  return await getInsightsByRange({
+    userId,
+    clubIds,
+    start,
+    end,
+    query: q.findUpcomingMatchClubs,
+  });
+}
+
+export async function getUpcomingAttendanceInsights(userId: string, presetClubIds?: string[]) {
+  const now = dayjs();
+  const start = now.startOf("day").toDate();
+  const end = now.add(14, "day").endOf("day").toDate();
+  const clubIds = await getApprovedClubIds(userId, presetClubIds);
+  const insights = await getInsightsByRange({
+    userId,
+    clubIds,
+    start,
+    end,
+    query: q.findUpcomingMatchClubs,
+  });
+
+  return insights.filter(
     (insight) => dayjs(insight.stDate).isSame(now, "day") || dayjs(insight.stDate).isAfter(now),
   );
+}
 
-  const groupedWeek = groupMatchClubsByMatch(weekMatchClubs as MatchClubWithMatch[]);
+function buildWeeklyMomHighlights(matchClubs: MatchClubWithMatch[]): DashboardMom[] {
+  const groupedWeek = groupMatchClubsByMatch(matchClubs);
   const weeklyMomMap = new Map<string, DashboardMom>();
   groupedWeek.forEach(({ match, matchClubs }) => {
     const summaries = summaryService.summarizeMatchClubs(matchClubs);
@@ -137,11 +188,29 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     });
   });
 
-  const weeklyMoms = Array.from(weeklyMomMap.values()).sort(
+  return Array.from(weeklyMomMap.values()).sort(
     (a, b) => dayjs(b.stDate).valueOf() - dayjs(a.stDate).valueOf(),
   );
+}
 
-  const highlightPosts: DashboardPost[] = posts.map((post) => ({
+export async function getWeeklyMomHighlights(userId: string, presetClubIds?: string[]) {
+  const now = dayjs();
+  const clubIds = await getApprovedClubIds(userId, presetClubIds);
+  if (clubIds.length === 0) return [];
+  const weekMatchClubs = (await q.findMatchClubsInRange({
+    clubIds,
+    start: now.startOf("week").toDate(),
+    end: now.endOf("week").toDate(),
+  })) as MatchClubWithMatch[];
+
+  return buildWeeklyMomHighlights(weekMatchClubs);
+}
+
+export async function getHighlightPostsData(userId: string, presetClubIds?: string[]) {
+  const clubIds = await getApprovedClubIds(userId, presetClubIds);
+  const posts = await q.findHighlightPosts({ userId, clubIds, take: 8 });
+
+  return posts.map((post) => ({
     id: post.id,
     title: post.title,
     createdAt: post.createdAt.toISOString(),
@@ -150,12 +219,5 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     boardSlug: post.board?.slug ?? null,
     boardClubId: post.board?.clubs?.id ?? null,
     isMine: post.authorId === userId,
-  }));
-
-  return {
-    todayMatches,
-    upcomingAttendances,
-    highlightPosts,
-    weeklyMoms,
-  };
+  })) satisfies DashboardPost[];
 }
