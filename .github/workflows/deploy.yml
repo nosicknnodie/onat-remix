@@ -47,7 +47,7 @@ jobs:
 
       - name: Generate .env from secrets
         run: |
-          echo "REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.REMIX_PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY }}" >> .env
+          echo "PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY=${{ secrets.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY }}" >> .env
       #     echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
       #     echo "MINIO_ACCESS_KEY=${{ secrets.MINIO_ACCESS_KEY }}" >> .env
       #     echo "MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}" >> .env
