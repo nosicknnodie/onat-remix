@@ -18,7 +18,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   try {
     const goalLeaders = await infoService.getGoalLeaders(clubId);
-    return Response.json({ ok: true, data: { goalLeaders }, goalLeaders });
+    return Response.json({ ok: true, data: goalLeaders, goalLeaders });
   } catch (e) {
     return Response.json({ ok: false, message: String(e), code: "SERVER" }, { status: 500 });
   }

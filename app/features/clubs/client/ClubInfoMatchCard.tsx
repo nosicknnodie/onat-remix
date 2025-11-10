@@ -9,7 +9,11 @@ interface ClubInfoMatchCardProps {
 }
 
 export function ClubInfoMatchCard({ title, match, emptyMessage }: ClubInfoMatchCardProps) {
-  const hasMatch = Boolean(match);
+  const summary = match?.summary;
+  const attendance = summary?.attendance;
+  const goals = summary?.goals;
+  const opponents = match?.opponents ?? [];
+  const hasMatch = Boolean(match && summary);
   return (
     <Card>
       <CardHeader>
@@ -29,21 +33,16 @@ export function ClubInfoMatchCard({ title, match, emptyMessage }: ClubInfoMatchC
                 <p className="text-muted-foreground text-xs">{match!.placeName ?? "장소 미정"}</p>
               </div>
               <div className="text-right">
-                <span className="text-2xl font-bold text-primary">
-                  {match!.summary.goals.scored}
-                </span>
-                <span className="text-muted-foreground text-sm">
-                  {" "}
-                  : {match!.summary.goals.conceded}
-                </span>
+                <span className="text-2xl font-bold text-primary">{goals?.scored ?? 0}</span>
+                <span className="text-muted-foreground text-sm"> : {goals?.conceded ?? 0}</span>
                 <p className="text-xs text-muted-foreground">
-                  출석 {match!.summary.attendance.voted}/{match!.summary.attendance.total}
+                  출석 {attendance?.voted ?? 0}/{attendance?.total ?? 0}
                 </p>
               </div>
             </div>
-            {match!.opponents.length > 0 ? (
+            {opponents.length > 0 ? (
               <div className="text-xs text-muted-foreground">
-                상대팀: {match!.opponents.map((opponent) => opponent.clubName).join(", ")}
+                상대팀: {opponents.map((opponent) => opponent.clubName).join(", ")}
               </div>
             ) : null}
           </>

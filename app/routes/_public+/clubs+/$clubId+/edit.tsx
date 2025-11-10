@@ -1,7 +1,7 @@
 import type { File } from "@prisma/client";
 import { CameraIcon } from "@radix-ui/react-icons";
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useActionData, useOutletContext } from "@remix-run/react";
+import { useActionData, useParams } from "@remix-run/react";
 import { useState } from "react";
 import ImageCropperDialog from "~/components/cropper/ImageCropperDialog";
 import FormError from "~/components/FormError";
@@ -18,11 +18,11 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { useClubDetailsQuery } from "~/features/clubs/isomorphic";
 import { service } from "~/features/clubs/server";
 import { useActionToast } from "~/hooks";
 import { SIGUNGU } from "~/libs";
 import { getUser } from "~/libs/index.server"; // 사용자 인증 함수 예시
-import type { IClubLayoutLoaderData } from "./_layout";
 export const handle = { breadcrumb: "수정" };
 export async function action({ request }: ActionFunctionArgs) {
   const user = await getUser(request); // 로그인한 사용자 확인 (없으면 리다이렉트 등 처리 가능)
@@ -65,16 +65,19 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 interface IClubEditPageProps {}
 
 const ClubEditPage = (_props: IClubEditPageProps) => {
-  const loaderData = useOutletContext<IClubLayoutLoaderData>();
+  const { clubId } = useParams();
+  const { data: club } = useClubDetailsQuery(clubId ?? "", { enabled: Boolean(clubId) });
   const actionData = useActionData<typeof action>();
   useActionToast(actionData);
-  const club = loaderData.club;
 
-  const [sis, setSis] = useState(club.si ?? "null");
-  const [gun, setGun] = useState(club.gun ?? "null");
-  const [image, setImage] = useState<null | File | undefined>(club.image);
-  const [emblem, setEmblem] = useState<null | File | undefined>(club.emblem);
+  const [sis, setSis] = useState(club?.si ?? "null");
+  const [gun, setGun] = useState(club?.gun ?? "null");
+  const [image, setImage] = useState<null | File | undefined>(club?.image);
+  const [emblem, setEmblem] = useState<null | File | undefined>(club?.emblem);
   const isPending = false;
+  if (!club) {
+    return null;
+  }
 
   const handleSetSi = (value: string) => {
     setSis((v: string) => {
@@ -84,8 +87,6 @@ const ClubEditPage = (_props: IClubEditPageProps) => {
       return value;
     });
   };
-  if (!club) return null;
-
   return (
     <>
       <Card>

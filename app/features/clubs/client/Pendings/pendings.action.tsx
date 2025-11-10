@@ -1,6 +1,6 @@
 import type { Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { useOutletContext } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { IClubLayoutLoaderData, IPlayer } from "../../isomorphic/types";
+import type { IPlayer } from "../../isomorphic/types";
+import { useMembershipInfoQuery } from "../../isomorphic";
 import { InfoDrawer } from "../index";
 import { useGetPendingPlayers } from "./pendings.context";
 
@@ -22,7 +23,10 @@ interface IPendingsActionProps {
 }
 
 export const PendingsAction = ({ payload }: IPendingsActionProps) => {
-  const { player } = useOutletContext<IClubLayoutLoaderData>();
+  const { clubId } = useParams();
+  const { data: player } = useMembershipInfoQuery(clubId ?? "", {
+    enabled: Boolean(clubId),
+  });
   const isMaster = player?.role === "MASTER";
   const isManager = player?.role === "MANAGER";
   const context = useGetPendingPlayers();

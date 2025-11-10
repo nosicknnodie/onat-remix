@@ -3,7 +3,7 @@
 import type { Board, Club, File, Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Link, Outlet, type ShouldRevalidateFunction, useLoaderData } from "@remix-run/react";
 import {
   type DehydratedState,
   dehydrate,
@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { clubInfoQueryKeys } from "~/features/clubs/isomorphic";
-import { infoService, service } from "~/features/clubs/server";
+import { infoService } from "~/features/clubs/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
@@ -73,13 +73,17 @@ export const handle = {
 
 interface ILayoutProps {}
 
+export const shouldRevalidate: ShouldRevalidateFunction = () => {
+  return false;
+};
+
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const clubId = params.clubId;
   if (!clubId) {
     throw redirect("/404");
   }
   const user = await getUser(request);
-  const { club, player } = await service.getClubLayoutData(clubId, user?.id);
+  const { club, player } = await infoService.getClubLayoutData(clubId, user?.id);
 
   if (!club) {
     throw redirect("/404");
@@ -94,6 +98,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   queryClient.setQueryData(clubInfoQueryKeys.goalLeaders(clubId), infoData.goalLeaders);
   queryClient.setQueryData(clubInfoQueryKeys.ratingLeaders(clubId), infoData.ratingLeaders);
   queryClient.setQueryData(clubInfoQueryKeys.notices(clubId), infoData.notices);
+  if (club) {
+    queryClient.setQueryData(clubInfoQueryKeys.club(clubId), club);
+  }
+  queryClient.setQueryData(clubInfoQueryKeys.membership(clubId), player ?? null);
 
   return { club, player, dehydratedState: dehydrate(queryClient) };
 }
@@ -133,7 +141,7 @@ const Layout = (_props: ILayoutProps) => {
           </FormError>
         )}
 
-        {!isPending && !isRejected && <Outlet context={{ club: data.club, player: data.player }} />}
+        {!isPending && !isRejected && <Outlet />}
       </div>
     </HydrationBoundary>
   );

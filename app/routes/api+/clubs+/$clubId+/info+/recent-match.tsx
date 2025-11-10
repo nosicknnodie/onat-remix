@@ -18,7 +18,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   try {
     const recentMatch = await infoService.getRecentMatchHighlight(clubId);
-    return Response.json({ ok: true, data: { recentMatch }, recentMatch });
+    return Response.json({ ok: true, data: recentMatch, recentMatch });
   } catch (e) {
     return Response.json({ ok: false, message: String(e), code: "SERVER" }, { status: 500 });
   }

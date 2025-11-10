@@ -19,12 +19,12 @@ import {
   getClubMembers as getClubMembersQuery,
   getClubMercenaries as getClubMercenariesQuery,
   getClubOwner as getClubOwnerQuery,
-  getClubWithPlayer,
   getPendingClubMembers as getPendingClubMembersQuery,
 } from "./queries";
 export {
   getAttendanceSummary,
   getClubInfoData,
+  getClubLayoutData,
   getGoalLeaders,
   getRatingLeaders,
   getRecentMatchHighlight,
@@ -89,14 +89,6 @@ export async function getMyClubsData(userId?: string): Promise<ClubWithMembershi
 export function getPlayerStatus(clubId: string, players: Player[]): Player["status"] | null {
   const player = players.find((p) => p.clubId === clubId);
   return player?.status || null;
-}
-
-/**
- * 클럽 레이아웃에 필요한 데이터를 조회
- * - 클럽 정보와 현재 사용자의 멤버십 정보를 함께 반환
- */
-export async function getClubLayoutData(clubId: string, userId?: string) {
-  return await getClubWithPlayer(clubId, userId);
 }
 
 /**

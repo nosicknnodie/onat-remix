@@ -6,6 +6,8 @@ import {
   countAnnualAttendance,
   findAnnualEvaluations,
   findAnnualGoals,
+  findClubById,
+  findPlayerMembership,
   findRecentMatchForClub,
   findRecentNotices,
   findUpcomingMatchForClub,
@@ -217,4 +219,12 @@ export async function getClubInfoData(clubId: string): Promise<ClubInfoData> {
     ratingLeaders,
     notices,
   };
+}
+
+export async function getClubLayoutData(clubId: string, userId?: string) {
+  const [club, player] = await Promise.all([
+    findClubById(clubId),
+    userId ? findPlayerMembership(clubId, userId) : Promise.resolve(null),
+  ]);
+  return { club, player };
 }

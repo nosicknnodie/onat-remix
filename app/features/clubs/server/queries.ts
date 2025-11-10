@@ -29,8 +29,8 @@ export async function findAccessibleClubs(userId?: string): Promise<Club[]> {
     },
     orderBy: { createdAt: "desc" },
     include: {
-      image: { select: { url: true } },
-      emblem: { select: { url: true } },
+      image: true,
+      emblem: true,
     },
   });
 }
@@ -69,8 +69,8 @@ export async function findMemberClubsWithMemberships(userId: string) {
     include: {
       club: {
         include: {
-          image: { select: { url: true } },
-          emblem: { select: { url: true } },
+          image: true,
+          emblem: true,
         },
       },
     },
@@ -81,33 +81,30 @@ export async function findMemberClubsWithMemberships(userId: string) {
  * ID를 기준으로 특정 클럽 정보와 사용자의 플레이어 정보를 함께 조회
  * - 클럽 레이아웃과 같은 곳에서 클럽 상세 정보와 사용자 권한을 동시에 확인하기 위해 사용
  */
-export async function getClubWithPlayer(clubId: string, userId?: string) {
-  const [club, player] = await Promise.all([
-    prisma.club.findUnique({
-      where: { id: clubId },
-      include: {
-        image: { select: { url: true } },
-        emblem: { select: { url: true } },
-      },
-    }),
-    userId
-      ? prisma.player.findFirst({
-          where: {
-            userId,
-            clubId,
-          },
-          include: {
-            user: {
-              include: {
-                userImage: true,
-              },
-            },
-          },
-        })
-      : null,
-  ]);
+export async function findClubById(clubId: string) {
+  return await prisma.club.findUnique({
+    where: { id: clubId },
+    include: {
+      image: true,
+      emblem: true,
+    },
+  });
+}
 
-  return { club, player };
+export async function findPlayerMembership(clubId: string, userId: string) {
+  return await prisma.player.findFirst({
+    where: {
+      userId,
+      clubId,
+    },
+    include: {
+      user: {
+        include: {
+          userImage: true,
+        },
+      },
+    },
+  });
 }
 
 /**

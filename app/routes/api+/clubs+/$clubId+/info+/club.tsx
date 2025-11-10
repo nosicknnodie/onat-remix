@@ -16,10 +16,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
     );
   }
 
-  try {
-    const ratingLeaders = await infoService.getRatingLeaders(clubId);
-    return Response.json({ ok: true, data: ratingLeaders, ratingLeaders });
-  } catch (e) {
-    return Response.json({ ok: false, message: String(e), code: "SERVER" }, { status: 500 });
+  const { club } = await infoService.getClubLayoutData(clubId);
+  if (!club) {
+    return Response.json({ ok: false, message: "클럽을 찾을 수 없습니다." }, { status: 404 });
   }
+
+  return Response.json({ ok: true, data: club, club });
 }

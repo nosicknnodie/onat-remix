@@ -36,7 +36,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     const notices = await infoService.getRecentNoticesSummary(clubId, take);
-    return Response.json({ ok: true, data: { notices }, notices });
+    return Response.json({ ok: true, data: notices, notices });
   } catch (e) {
     return Response.json({ ok: false, message: String(e), code: "SERVER" }, { status: 500 });
   }

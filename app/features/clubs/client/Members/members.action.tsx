@@ -1,6 +1,6 @@
 import type { JobTitle, Player, RoleType, StatusType } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { useOutletContext } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
@@ -16,7 +16,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { IClubLayoutLoaderData, IPlayer } from "../../isomorphic/types";
+import type { IPlayer } from "../../isomorphic/types";
+import { useMembershipInfoQuery } from "../../isomorphic";
 import { InfoDrawer } from "../index";
 import { useGetPlayers } from "./member.context";
 
@@ -25,7 +26,10 @@ interface IMembersActionProps {
 }
 
 export const MembersAction = ({ payload }: IMembersActionProps) => {
-  const { player } = useOutletContext<IClubLayoutLoaderData>();
+  const { clubId } = useParams();
+  const { data: player } = useMembershipInfoQuery(clubId ?? "", {
+    enabled: Boolean(clubId),
+  });
   const isMaster = player?.role === "MASTER";
   const isManager = player?.role === "MANAGER";
   // const isNormal = player?.role === "NORMAL";

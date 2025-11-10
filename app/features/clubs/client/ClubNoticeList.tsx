@@ -5,7 +5,7 @@ import type { ClubNoticeItem } from "~/features/clubs/isomorphic";
 
 interface ClubNoticeListProps {
   clubId: string;
-  notices: ClubNoticeItem[];
+  notices?: ClubNoticeItem[];
 }
 
 export function ClubNoticeList({ clubId, notices }: ClubNoticeListProps) {
@@ -16,20 +16,20 @@ export function ClubNoticeList({ clubId, notices }: ClubNoticeListProps) {
         <CardDescription>최근 등록된 공지를 확인하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        {notices.length === 0 ? (
+        {notices && notices.length === 0 ? (
           <p className="text-muted-foreground">등록된 공지사항이 없습니다.</p>
         ) : (
-          notices.map((notice) => {
+          notices?.map((notice) => {
             const href = notice.boardSlug
               ? `/clubs/${clubId}/boards/${notice.boardSlug}/${notice.id}`
               : `/clubs/${clubId}/boards/notice/${notice.id}`;
             return (
               <div key={notice.id} className="space-y-1">
                 <Link to={href} className="font-medium">
-                  {notice.title}
+                  {notice.title || "제목 없음"}
                 </Link>
                 <p className="text-xs text-muted-foreground">
-                  {dayjs(notice.createdAt).format("YYYY-MM-DD HH:mm")}
+                  {notice.createdAt ? dayjs(notice.createdAt).format("YYYY-MM-DD HH:mm") : ""}
                 </p>
               </div>
             );

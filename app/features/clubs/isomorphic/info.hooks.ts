@@ -1,10 +1,12 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { ClubInfoData } from "./types";
 import { getJson } from "~/libs/api-client";
+import type { Club, ClubInfoData, IClubLayoutLoaderData } from "./types";
 
 export const clubInfoQueryKeys = {
   base: (clubId: string) => ["club", clubId, "info"] as const,
+  club: (clubId: string) => ["club", clubId, "info", "club"] as const,
+  membership: (clubId: string) => ["club", clubId, "info", "membership"] as const,
   recentMatch: (clubId: string) => ["club", clubId, "info", "recent-match"] as const,
   upcomingMatch: (clubId: string) => ["club", clubId, "info", "upcoming-match"] as const,
   attendance: (clubId: string) => ["club", clubId, "info", "attendance"] as const,
@@ -25,7 +27,10 @@ function useClubInfoQuery<TData>(key: readonly unknown[], url: string, options?:
   });
 }
 
-export function useRecentMatchQuery(clubId: string, options?: Options<ClubInfoData["recentMatch"]>) {
+export function useRecentMatchQuery(
+  clubId: string,
+  options?: Options<ClubInfoData["recentMatch"]>,
+) {
   return useClubInfoQuery<ClubInfoData["recentMatch"]>(
     clubInfoQueryKeys.recentMatch(clubId),
     `/api/clubs/${clubId}/info/recent-match`,
@@ -89,6 +94,25 @@ export function useNoticesQuery(
   return useClubInfoQuery<ClubInfoData["notices"]>(
     clubInfoQueryKeys.notices(clubId),
     queryUrl,
+    options,
+  );
+}
+
+export function useClubDetailsQuery(clubId: string, options?: Options<Club>) {
+  return useClubInfoQuery<Club>(
+    clubInfoQueryKeys.club(clubId),
+    `/api/clubs/${clubId}/info/club`,
+    options,
+  );
+}
+
+export function useMembershipInfoQuery(
+  clubId: string,
+  options?: Options<IClubLayoutLoaderData["player"]>,
+) {
+  return useClubInfoQuery<IClubLayoutLoaderData["player"]>(
+    clubInfoQueryKeys.membership(clubId),
+    `/api/clubs/${clubId}/info/membership`,
     options,
   );
 }
