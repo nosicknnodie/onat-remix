@@ -6,9 +6,9 @@ import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, Outlet, type ShouldRevalidateFunction, useLoaderData } from "@remix-run/react";
 import {
   type DehydratedState,
-  type InfiniteData,
   dehydrate,
   HydrationBoundary,
+  type InfiniteData,
   QueryClient,
 } from "@tanstack/react-query";
 import FormError from "~/components/FormError";
@@ -22,12 +22,13 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import {
-  type ClubBoardFeedResponse,
   CLUB_BOARD_FEED_TAKE,
+  type ClubBoardFeedResponse,
   clubBoardQueryKeys,
   clubInfoQueryKeys,
+  clubMemberQueryKeys,
 } from "~/features/clubs/isomorphic";
-import { boardService, infoService } from "~/features/clubs/server";
+import { boardService, service as clubService, infoService } from "~/features/clubs/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
@@ -96,7 +97,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const queryClient = new QueryClient();
-  const infoData = await infoService.getClubInfoData(clubId);
+  const [infoData, boards, approvedMembers, pendingMembers, clubFeed] = await Promise.all([
+    infoService.getClubInfoData(clubId),
+    boardService.getBoardTabs(clubId),
+    clubService.getClubMembers(clubId),
+    clubService.getPendingClubMembers(clubId),
+    boardService.getClubFeed({
+      clubId,
+      take: CLUB_BOARD_FEED_TAKE,
+      userId: user?.id,
+    }),
+  ]);
 
   queryClient.setQueryData(clubInfoQueryKeys.recentMatch(clubId), infoData.recentMatch);
   queryClient.setQueryData(clubInfoQueryKeys.upcomingMatch(clubId), infoData.upcomingMatch);
@@ -104,19 +115,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   queryClient.setQueryData(clubInfoQueryKeys.goalLeaders(clubId), infoData.goalLeaders);
   queryClient.setQueryData(clubInfoQueryKeys.ratingLeaders(clubId), infoData.ratingLeaders);
   queryClient.setQueryData(clubInfoQueryKeys.notices(clubId), infoData.notices);
-  if (club) {
-    queryClient.setQueryData(clubInfoQueryKeys.club(clubId), club);
-  }
+  queryClient.setQueryData(clubInfoQueryKeys.club(clubId), club);
   queryClient.setQueryData(clubInfoQueryKeys.membership(clubId), player ?? null);
 
-  const boards = clubId ? await boardService.getBoardTabs(clubId) : [];
   queryClient.setQueryData(clubBoardQueryKeys.tabs(clubId), boards);
-
-  const clubFeed = await boardService.getClubFeed({
-    clubId,
-    take: CLUB_BOARD_FEED_TAKE,
-    userId: user?.id,
-  });
+  queryClient.setQueryData(clubMemberQueryKeys.approved(clubId), approvedMembers);
+  queryClient.setQueryData(clubMemberQueryKeys.pendings(clubId), pendingMembers);
   const initialFeed: InfiniteData<ClubBoardFeedResponse, string | null> = {
     pages: [clubFeed],
     pageParams: [null],

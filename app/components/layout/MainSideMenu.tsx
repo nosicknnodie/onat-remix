@@ -268,18 +268,18 @@ const MainSideMenu = () => {
                       },
                       {
                         label: "멤버",
-                        url: `${baseUrl}/members`,
+                        url: `${baseUrl}/members/approved`,
                         isActive: location.pathname.startsWith(`${baseUrl}/members`),
                         visible: isJoined,
                         icon: HiOutlineUsers,
                       },
-                      {
-                        label: "승인대기",
-                        url: `${baseUrl}/pendings`,
-                        isActive: location.pathname.startsWith(`${baseUrl}/pendings`),
-                        visible: isAdmin,
-                        icon: HiOutlineClock,
-                      },
+                      // {
+                      //   label: "승인대기",
+                      //   url: `${baseUrl}/members/pendings`,
+                      //   isActive: location.pathname.startsWith(`${baseUrl}/pendings`),
+                      //   visible: isAdmin,
+                      //   icon: HiOutlineClock,
+                      // },
                     ].filter((item) => item.visible);
 
                     return (
