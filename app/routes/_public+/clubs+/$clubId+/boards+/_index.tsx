@@ -1,67 +1,75 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useParams } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
+import { useCallback, useMemo } from "react";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
-import { InfiniteListProvider, useInfiniteList } from "~/contexts";
+import { Loading } from "~/components/Loading";
 import { ClubBoardPostCard } from "~/features/clubs/client";
-import { useClubBoardsTabsQuery } from "~/features/clubs/isomorphic";
-import { boardService } from "~/features/clubs/server";
-import { getUser } from "~/libs/db/lucia.server";
+import {
+  type ClubBoardFeedResponse,
+  useClubBoardFeedInfiniteQuery,
+} from "~/features/clubs/isomorphic";
 
 export const handle = {
   breadcrumb: "게시판",
 };
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const clubId = params.clubId;
+const Boards = () => {
+  const { clubId } = useParams();
   if (!clubId) {
-    throw new Response("Club not found", { status: 404 });
+    throw new Error("clubId is missing from route params");
   }
 
-  const user = await getUser(request);
-  const url = new URL(request.url);
-  const take = Math.min(Number(url.searchParams.get("take")) || 30, 50);
-  const cursor = url.searchParams.get("cursor");
+  const { data, isLoading, error, fetchNextPage, isFetchingNextPage, refetch } =
+    useClubBoardFeedInfiniteQuery({ clubId });
+  const posts = useMemo<ClubBoardFeedResponse["posts"]>(() => {
+    if (!data) {
+      return [];
+    }
+    return data.pages.flatMap((page) => page.posts);
+  }, [data]);
 
-  const feed = await boardService.getClubFeed({
-    clubId,
-    take,
-    cursor,
-    userId: user?.id,
-  });
+  const lastPageInfo = useMemo<ClubBoardFeedResponse["pageInfo"] | undefined>(() => {
+    if (!data || data.pages.length === 0) {
+      return undefined;
+    }
+    const lastPage = data.pages[data.pages.length - 1];
+    return lastPage?.pageInfo;
+  }, [data]);
 
-  return feed;
-};
+  const hasMore = lastPageInfo?.hasMore ?? false;
+  const handleLoadMore = useCallback(async () => {
+    await fetchNextPage();
+  }, [fetchNextPage]);
 
-type LoaderData = Awaited<ReturnType<typeof loader>>;
-type Post = LoaderData["posts"][number];
+  if (error) {
+    return (
+      <div className="py-8 flex flex-col items-center gap-2 text-sm text-muted-foreground">
+        <p>게시글을 불러오는 중 오류가 발생했습니다.</p>
+        <button type="button" className="text-primary" onClick={() => void refetch()}>
+          다시 시도하기
+        </button>
+      </div>
+    );
+  }
 
-const Boards = () => {
-  const loaderData = useLoaderData<typeof loader>();
-  const { clubId } = useParams();
-  return (
-    <InfiniteListProvider<Post>
-      slug={`all-${clubId ?? "unknown"}`}
-      type="card"
-      initialItems={loaderData.posts}
-      initialPageInfo={loaderData.pageInfo}
-      keySelector={(post) => post.id}
-    >
-      <AllBoardsFeed />
-    </InfiniteListProvider>
-  );
-};
-
-const AllBoardsFeed = () => {
-  const context = useInfiniteList<Post>();
-  const items = context.state.items;
-  const pageInfo = context.state.pageInfo;
+  if (isLoading && posts.length === 0) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
-      {items.map((post) => (
+      {posts.map((post) => (
         <ClubBoardPostCard key={post.id} post={post} />
       ))}
-      <InfiniteSentinel hasMore={pageInfo.hasMore} onLoadMore={context.loadMore} />
+      <InfiniteSentinel
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        disabled={isFetchingNextPage}
+        loadingText="불러오는 중..."
+      />
     </div>
   );
 };

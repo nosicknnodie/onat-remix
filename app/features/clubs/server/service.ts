@@ -5,13 +5,7 @@
  */
 
 import { prisma } from "~/libs/index.server";
-import type {
-  CategorizedClubs,
-  Club,
-  ClubsData,
-  ClubWithMembership,
-  Player,
-} from "../isomorphic";
+import type { CategorizedClubs, Club, ClubsData, ClubWithMembership, Player } from "../isomorphic";
 import {
   findClubsAndPlayers,
   findMemberClubsWithMemberships,
@@ -21,6 +15,7 @@ import {
   getClubOwner as getClubOwnerQuery,
   getPendingClubMembers as getPendingClubMembersQuery,
 } from "./queries";
+
 export {
   getAttendanceSummary,
   getClubInfoData,

@@ -6,6 +6,7 @@ import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, Outlet, type ShouldRevalidateFunction, useLoaderData } from "@remix-run/react";
 import {
   type DehydratedState,
+  type InfiniteData,
   dehydrate,
   HydrationBoundary,
   QueryClient,
@@ -20,7 +21,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { clubBoardQueryKeys, clubInfoQueryKeys } from "~/features/clubs/isomorphic";
+import {
+  type ClubBoardFeedResponse,
+  CLUB_BOARD_FEED_TAKE,
+  clubBoardQueryKeys,
+  clubInfoQueryKeys,
+} from "~/features/clubs/isomorphic";
 import { boardService, infoService } from "~/features/clubs/server";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
@@ -105,6 +111,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const boards = clubId ? await boardService.getBoardTabs(clubId) : [];
   queryClient.setQueryData(clubBoardQueryKeys.tabs(clubId), boards);
+
+  const clubFeed = await boardService.getClubFeed({
+    clubId,
+    take: CLUB_BOARD_FEED_TAKE,
+    userId: user?.id,
+  });
+  const initialFeed: InfiniteData<ClubBoardFeedResponse, string | null> = {
+    pages: [clubFeed],
+    pageParams: [null],
+  };
+  queryClient.setQueryData(clubBoardQueryKeys.feed(clubId, "all"), initialFeed);
 
   return { club, player, dehydratedState: dehydrate(queryClient) };
 }
