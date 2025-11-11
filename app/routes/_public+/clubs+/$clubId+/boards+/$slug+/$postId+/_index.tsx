@@ -1,7 +1,5 @@
-import type { CommentVote, File, PostComment, User } from "@prisma/client";
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useParams } from "@remix-run/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { LexicalEditor, SerializedEditorState } from "lexical";
@@ -16,78 +14,43 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts";
 import {
+  type ClubBoardCommentTreeNode,
+  type ClubBoardPostDetail,
+  clubBoardQueryKeys,
+  useClubPostCommentsQuery,
+  useClubPostDetailQuery,
+  useCreateClubPostCommentMutation,
+} from "~/features/clubs/isomorphic";
+import {
   CommentInput,
   CommentSettings,
   CommentVoteBadgeButton,
   PostVoteBadgeButton,
   Settings,
 } from "~/features/communities/client";
-import { service } from "~/features/communities/server";
 import { cn } from "~/libs";
-import { getUser } from "~/libs/db/lucia.server";
-
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const user = await getUser(request);
-  const id = params.postId as string;
-  try {
-    const result = await service.getPostDetail(id, user?.id);
-    if (!result) return { success: false, errors: "Not Found" };
-    return result;
-  } catch (_error) {
-    console.error(_error);
-    return { success: false, errors: "Internal Server Error" };
-  }
-};
 
 interface IPostViewProps {}
 
 const PostView = (_props: IPostViewProps) => {
-  const loaderData = useLoaderData<typeof loader>();
-  // const fetcher = useFetcher();
+  const { postId } = useParams();
   const session = useSession();
   const [isTextMode, setIsTextMode] = useState(false);
   const [path, setPath] = useState<string | undefined>(undefined);
-  const post = "post" in loaderData ? loaderData.post : undefined;
+  const {
+    data: postDetail,
+    isLoading: isPostLoading,
+    error: postError,
+    refetch: refetchPost,
+  } = useClubPostDetailQuery(postId);
+  const post = postDetail?.post;
 
-  const mutation = useMutation({
-    mutationFn: async ({ root, parentId }: { root: SerializedEditorState; parentId?: string }) => {
-      const res = await fetch(`/api/posts/${post?.id}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: root, postId: post?.id, parentId }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result?.errors || "댓글 등록 실패");
-      return result;
-    },
-  });
-
-  const { data, refetch } = useQuery<{
-    comments: CommentTreeNode[];
-    success: boolean;
-    isMobile: boolean;
-    limitDepth: number;
-    startDepth: number;
-  }>({
-    queryKey: ["COMMENTS_QUERY", post?.id, path],
-    queryFn: async ({ queryKey }) => {
-      try {
-        const res = await fetch(
-          `/api/posts/${post?.id}/comments${path ? `?path=${queryKey[2]}` : ""}`,
-        ).then((res) => res.json());
-        if (res.success) {
-          return res;
-        } else {
-          throw new Error(res.errors);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    enabled: Boolean(post?.id),
-  });
+  const createComment = useCreateClubPostCommentMutation();
+  const { data: commentData, refetch } = useClubPostCommentsQuery({ postId: post?.id, path });
   // Helper to recursively sort a comment tree node array by createdAt descending
-  function sortCommentTreeRedditLike(nodes: CommentTreeNode[]): CommentTreeNode[] {
+  function sortCommentTreeRedditLike(
+    nodes: ClubBoardCommentTreeNode[],
+  ): ClubBoardCommentTreeNode[] {
     return nodes
       .map((node) => ({
         ...node,
@@ -107,14 +70,18 @@ const PostView = (_props: IPostViewProps) => {
       });
   }
 
-  const comments = data ? sortCommentTreeRedditLike(data.comments) : [];
+  const comments = commentData ? sortCommentTreeRedditLike(commentData.comments) : [];
   const handleInputComment = async (
     root?: SerializedEditorState,
     editor?: LexicalEditor,
     parentId?: string,
   ) => {
-    if (!root) return;
-    const res = await mutation.mutateAsync({ root, parentId });
+    if (!root || !post) return;
+    const res = await createComment.mutateAsync({
+      postId: post.id,
+      content: root,
+      parentId,
+    });
     if (!res.success) return false;
     editor?.update(() => {
       editor.setEditorState(
@@ -139,8 +106,32 @@ const PostView = (_props: IPostViewProps) => {
     refetch();
   };
 
-  if (!post) {
-    return <div>게시글이 존재하지 않습니다.</div>;
+  if (!postId) {
+    return <div>잘못된 게시글 접근입니다.</div>;
+  }
+
+  if (isPostLoading) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (postError || !post) {
+    return (
+      <div className="py-10 flex flex-col items-center gap-3 text-sm text-muted-foreground">
+        <p>게시글을 불러오지 못했습니다.</p>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => void refetchPost()}
+          className="text-primary"
+        >
+          다시 시도하기
+        </Button>
+      </div>
+    );
   }
   return (
     <>
@@ -217,7 +208,7 @@ const PostView = (_props: IPostViewProps) => {
               </>
             )}
             <div className="py-2">
-              {(data?.startDepth || 0) > 0 && (
+              {(commentData?.startDepth || 0) > 0 && (
                 <Button
                   variant={"ghost"}
                   className="text-xs space-x-2"
@@ -232,9 +223,10 @@ const PostView = (_props: IPostViewProps) => {
                 <CommentItem
                   key={comment.id}
                   comment={comment}
-                  limitDepth={data?.limitDepth}
-                  isMobile={data?.isMobile}
+                  limitDepth={commentData?.limitDepth}
+                  isMobile={commentData?.isMobile}
                   onMoreReplies={(path) => setPath(path)}
+                  post={post}
                 />
               ))}
             </div>
@@ -245,56 +237,33 @@ const PostView = (_props: IPostViewProps) => {
   );
 };
 
-// 1. PostComment와 관계가 포함된 형태 (author + userImage 포함)
-export type PostCommentWithAuthor = PostComment & {
-  author: User & {
-    userImage: File | null;
-  };
-  sumVote: number;
-  currentVote: CommentVote | null;
-};
-
-// 2. 트리 구조를 위한 children 필드 포함
-export type CommentTreeNode = PostCommentWithAuthor & {
-  children: CommentTreeNode[];
-};
-
 function CommentItem({
   comment,
   isMobile,
   limitDepth,
   onMoreReplies,
+  post,
 }: {
-  comment: CommentTreeNode;
+  comment: ClubBoardCommentTreeNode;
   isMobile?: boolean;
   limitDepth?: number;
   onMoreReplies?: (path: string) => void;
+  post: ClubBoardPostDetail["post"];
 }) {
-  const loaderData = useLoaderData<typeof loader>();
-  const post = "post" in loaderData ? loaderData.post : undefined;
   const session = useSession();
   const queryClient = useQueryClient();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditorMode, setIsEditorMode] = useState(false);
   const [, _startTransition] = useTransition();
 
-  const mutation = useMutation({
-    mutationFn: async ({ root, parentId }: { root: SerializedEditorState; parentId?: string }) => {
-      const res = await fetch(`/api/posts/${post?.id}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: root, postId: post?.id, parentId }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result?.errors || "댓글 등록 실패");
-      return result;
-    },
-  });
-  if (!post) return null;
-
+  const createComment = useCreateClubPostCommentMutation();
   const handleInputComment = async (root?: SerializedEditorState, editor?: LexicalEditor) => {
     if (!root) return;
-    const res = await mutation.mutateAsync({ root, parentId: comment.id });
+    const res = await createComment.mutateAsync({
+      postId: post.id,
+      content: root,
+      parentId: comment.id,
+    });
     if (!res.success) return false;
     editor?.update(() => {
       editor.setEditorState(
@@ -317,7 +286,7 @@ function CommentItem({
     });
     setIsReplying(false);
     queryClient.invalidateQueries({
-      queryKey: ["COMMENTS_QUERY", post?.id],
+      queryKey: clubBoardQueryKeys.postCommentsRoot(post.id),
     });
   };
   const handleEditComment = async (
@@ -336,7 +305,7 @@ function CommentItem({
       return false;
     }
     await queryClient.invalidateQueries({
-      queryKey: ["COMMENTS_QUERY", post?.id],
+      queryKey: clubBoardQueryKeys.postCommentsRoot(post.id),
     });
     setIsEditorMode(false);
     return true;
@@ -445,6 +414,7 @@ function CommentItem({
               isMobile={isMobile}
               limitDepth={limitDepth}
               onMoreReplies={onMoreReplies}
+              post={post}
             />
           ))}
       </div>

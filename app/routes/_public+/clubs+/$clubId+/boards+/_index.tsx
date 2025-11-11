@@ -1,16 +1,16 @@
 import { useParams } from "@remix-run/react";
-import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo } from "react";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { ClubBoardPostCard } from "~/features/clubs/client";
 import {
   type ClubBoardFeedResponse,
+  clubBoardQueryKeys,
+  prefetchClubBoardFeed,
   useClubBoardFeedInfiniteQuery,
+  useClubBoardsTabsQuery,
 } from "~/features/clubs/isomorphic";
-
-export const handle = {
-  breadcrumb: "게시판",
-};
 
 const Boards = () => {
   const { clubId } = useParams();
@@ -18,8 +18,28 @@ const Boards = () => {
     throw new Error("clubId is missing from route params");
   }
 
+  const queryClient = useQueryClient();
+  const { data: tabs } = useClubBoardsTabsQuery(clubId);
   const { data, isLoading, error, fetchNextPage, isFetchingNextPage, refetch } =
     useClubBoardFeedInfiniteQuery({ clubId });
+
+  useEffect(() => {
+    if (!tabs || isLoading) {
+      return;
+    }
+    tabs.forEach((board) => {
+      if (!board.slug) {
+        return;
+      }
+      const key = clubBoardQueryKeys.feed(clubId, board.slug);
+      const state = queryClient.getQueryState(key);
+      if (state?.data) {
+        return;
+      }
+      void prefetchClubBoardFeed(queryClient, { clubId, slug: board.slug });
+    });
+  }, [clubId, isLoading, queryClient, tabs]);
+
   const posts = useMemo<ClubBoardFeedResponse["posts"]>(() => {
     if (!data) {
       return [];

@@ -1,17 +1,11 @@
-import { Outlet, type ShouldRevalidateFunction, useParams } from "@remix-run/react";
+import { Outlet, useParams } from "@remix-run/react";
 import ItemLink from "~/components/ItemLink";
 import { useClubBoardsTabsQuery } from "~/features/clubs/isomorphic";
-export const shouldRevalidate: ShouldRevalidateFunction = () => {
-  return false;
-};
-// export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
-//   const clubId = params.clubId;
-//   const boards = clubId ? await boardService.getBoardTabs(clubId) : [];
-
-//   return { boards, clubId };
-// };
 
 interface ILayoutProps {}
+export const handle = {
+  breadcrumb: "게시판",
+};
 
 const Layout = (_props: ILayoutProps) => {
   // const data = useLoaderData<typeof loader>();

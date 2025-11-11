@@ -4,8 +4,17 @@
  * - Prisma 타입을 기반으로 한 확장된 클럽 타입 정의
  */
 
-import type { Board, Player, Prisma } from "@prisma/client";
+import type {
+  Board,
+  CommentVote,
+  File,
+  Player,
+  PostComment,
+  Prisma,
+  User,
+} from "@prisma/client";
 import type { MatchClubSummary } from "~/features/matches/isomorphic";
+import type { service as communityService } from "~/features/communities/server";
 import type { infoService, service } from "../server";
 
 // 클럽 이미지와 엠블럼을 포함한 확장된 클럽 타입
@@ -91,3 +100,28 @@ export type ClubInfoData = {
 };
 
 export type ClubBoardTabs = Board[];
+
+export type ClubBoardPostComment = PostComment & {
+  author: User & {
+    userImage: File | null;
+  };
+  sumVote: number;
+  currentVote: CommentVote | null;
+};
+
+export type ClubBoardCommentTreeNode = ClubBoardPostComment & {
+  children: ClubBoardCommentTreeNode[];
+};
+
+export type ClubBoardCommentsResponse = {
+  comments: ClubBoardCommentTreeNode[];
+  success: boolean;
+  isMobile: boolean;
+  limitDepth: number;
+  startDepth: number;
+};
+
+type CommunityService = typeof communityService;
+type PostDetailResult = Awaited<ReturnType<CommunityService["getPostDetail"]>>;
+
+export type ClubBoardPostDetail = NonNullable<PostDetailResult>;

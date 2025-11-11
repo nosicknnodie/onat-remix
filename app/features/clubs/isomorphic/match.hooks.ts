@@ -55,7 +55,7 @@ export function useClubMatchFeedInfiniteQuery(
       });
     },
     getNextPageParam: (lastPage) =>
-      lastPage.pageInfo.hasMore ? lastPage.pageInfo.nextCursor ?? undefined : undefined,
+      lastPage.pageInfo.hasMore ? (lastPage.pageInfo.nextCursor ?? undefined) : undefined,
     refetchOnWindowFocus: false,
     ...options,
   });

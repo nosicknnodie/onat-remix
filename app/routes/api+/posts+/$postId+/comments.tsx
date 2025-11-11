@@ -41,7 +41,7 @@ function buildCommentTree(comments: PostCommentWithAuthor[]): CommentTreeNode[] 
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  const postId = params.id;
+  const postId = params.postId;
 
   if (!postId) {
     throw new Response("Post ID is required", { status: 400 });
@@ -91,7 +91,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 export async function action({ params, request }: ActionFunctionArgs) {
   const user = await getUser(request);
   if (!user) return Response.json({ success: false }, { status: 401 });
-  const postId = params.id as string;
+  const postId = params.postId as string;
   const data = await parseRequestData(request);
   const { parentId, content } = data;
 
