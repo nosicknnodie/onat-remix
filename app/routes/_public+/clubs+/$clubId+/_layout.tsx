@@ -23,9 +23,12 @@ import {
 } from "~/components/ui/dropdown-menu";
 import {
   CLUB_BOARD_FEED_TAKE,
+  CLUB_MATCH_FEED_TAKE,
   type ClubBoardFeedResponse,
+  type ClubMatchFeed,
   clubBoardQueryKeys,
   clubInfoQueryKeys,
+  clubMatchQueryKeys,
   clubMemberQueryKeys,
 } from "~/features/clubs/isomorphic";
 import { boardService, service as clubService, infoService } from "~/features/clubs/server";
@@ -97,17 +100,22 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const queryClient = new QueryClient();
-  const [infoData, boards, approvedMembers, pendingMembers, clubFeed] = await Promise.all([
-    infoService.getClubInfoData(clubId),
-    boardService.getBoardTabs(clubId),
-    clubService.getClubMembers(clubId),
-    clubService.getPendingClubMembers(clubId),
-    boardService.getClubFeed({
-      clubId,
-      take: CLUB_BOARD_FEED_TAKE,
-      userId: user?.id,
-    }),
-  ]);
+  const [infoData, boards, approvedMembers, pendingMembers, matchesFeed, clubFeed] =
+    await Promise.all([
+      infoService.getClubInfoData(clubId),
+      boardService.getBoardTabs(clubId),
+      clubService.getClubMembers(clubId),
+      clubService.getPendingClubMembers(clubId),
+      clubService.getClubMatchesFeed({
+        clubId,
+        take: CLUB_MATCH_FEED_TAKE,
+      }),
+      boardService.getClubFeed({
+        clubId,
+        take: CLUB_BOARD_FEED_TAKE,
+        userId: user?.id,
+      }),
+    ]);
 
   queryClient.setQueryData(clubInfoQueryKeys.recentMatch(clubId), infoData.recentMatch);
   queryClient.setQueryData(clubInfoQueryKeys.upcomingMatch(clubId), infoData.upcomingMatch);
@@ -121,6 +129,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   queryClient.setQueryData(clubBoardQueryKeys.tabs(clubId), boards);
   queryClient.setQueryData(clubMemberQueryKeys.approved(clubId), approvedMembers);
   queryClient.setQueryData(clubMemberQueryKeys.pendings(clubId), pendingMembers);
+  const initialMatches: InfiniteData<ClubMatchFeed, string | null> = {
+    pages: [matchesFeed],
+    pageParams: [null],
+  };
+  queryClient.setQueryData(clubMatchQueryKeys.feed(clubId), initialMatches);
   const initialFeed: InfiniteData<ClubBoardFeedResponse, string | null> = {
     pages: [clubFeed],
     pageParams: [null],

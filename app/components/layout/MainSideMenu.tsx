@@ -342,7 +342,7 @@ const MainSideMenu = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => handleMenuClick("/clubs")}
-                    isActive={location.pathname.startsWith("/clubs")}
+                    isActive={location.pathname === "/clubs"}
                   >
                     <MdGroups2 />
                     공개 클럽

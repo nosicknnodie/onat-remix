@@ -274,3 +274,51 @@ export async function getClubMercenaries(clubId: string) {
 export async function getAllClubPlayers(clubId: string) {
   return await getAllClubPlayersQuery(clubId);
 }
+
+type ClubMatchesFeedParams = {
+  clubId: string;
+  take: number;
+  cursor?: string | null;
+};
+
+export async function getClubMatchesFeed({ clubId, take, cursor }: ClubMatchesFeedParams) {
+  const matches = await prisma.matchClub.findMany({
+    where: { clubId },
+    include: {
+      club: { include: { image: true, emblem: true } },
+      match: {
+        include: {
+          matchClubs: {
+            include: {
+              club: { include: { image: true, emblem: true } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: [
+      { match: { stDate: "desc" } },
+      { createdAt: "desc" },
+    ],
+    take: take + 1,
+    ...(cursor
+      ? {
+          cursor: { id: cursor },
+          skip: 1,
+        }
+      : {}),
+  });
+
+  const hasMore = matches.length > take;
+  const sliced = hasMore ? matches.slice(0, take) : matches;
+  const nextCursor = hasMore ? sliced[sliced.length - 1]?.id ?? null : null;
+
+  return {
+    matches: sliced,
+    pageInfo: {
+      hasMore,
+      nextCursor,
+      take,
+    },
+  };
+}
