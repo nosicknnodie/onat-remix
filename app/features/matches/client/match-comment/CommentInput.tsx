@@ -1,31 +1,23 @@
 import type { LexicalEditor, SerializedEditorState } from "lexical";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
 import { cn } from "~/libs";
-import { useCommentInput, useGetMatchCommentsQuery, useMatchCommentContext } from "./_hooks";
+import { useCommentInput, useCreateMatchComment, useMatchCommentContext } from "./_hooks";
 
 const CommentInput = () => {
   const context = useMatchCommentContext();
-  const query = useGetMatchCommentsQuery();
-  const [, startTransition] = useTransition();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createComment = useCreateMatchComment();
   const inputHook = useCommentInput();
   const [isTextMode, setIsTextMode] = useState(false);
   const handleCancel = () => setIsTextMode(false);
   const handleSubmit = async (root?: SerializedEditorState, _editor?: LexicalEditor) => {
-    setIsSubmitting(true);
-    startTransition(async () => {
-      const res = await fetch(`/api/matchClubs/${context.matchClubId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: root, matchClubId: context.matchClubId }),
-      });
-      if (res.ok) {
-        setIsTextMode(false);
-        query.refetch();
-      }
-    });
-    setIsSubmitting(false);
+    if (!context.matchClubId) return;
+    try {
+      await createComment.mutateAsync({ matchClubId: context.matchClubId, content: root });
+      setIsTextMode(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
   return (
     <>
@@ -47,7 +39,7 @@ const CommentInput = () => {
             onSubmit={handleSubmit}
             onUploadImage={inputHook.handleInsertImage}
             placeholder={"코멘트를 입력하세요."}
-            isSubmitting={isSubmitting}
+            isSubmitting={createComment.isPending}
           />
         </div>
       )}

@@ -1,7 +1,7 @@
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { SerializedEditorState, SerializedLexicalNode } from "lexical";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { FaRegComment } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
 import { CommentEditor } from "~/components/lexical/CommentEditor";
@@ -9,36 +9,30 @@ import { View } from "~/components/lexical/View";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import type { MatchClubComment } from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
-import type { IMatchClubComment } from "~/routes/api+/matchClubs+/$matchClubId+/comments";
-import { useCommentInput, useGetMatchCommentsQuery, useMatchCommentContext } from "./_hooks";
+import { useCommentInput, useCreateMatchComment, useMatchCommentContext } from "./_hooks";
 
-const CommentItem = ({ comment }: { comment: Omit<IMatchClubComment, "replys"> }) => {
+const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> }) => {
   const context = useMatchCommentContext();
-  const query = useGetMatchCommentsQuery();
   const [replyOpen, setReplyOpen] = useState(false);
-  const [, startTransition] = useTransition();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createComment = useCreateMatchComment();
   const { handleInsertImage } = useCommentInput();
   const handleSubmit = async (root?: SerializedEditorState) => {
-    setIsSubmitting(true);
-    startTransition(async () => {
-      const res = await fetch(`/api/matchClubs/${context.matchClubId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: root,
-          matchClubId: context.matchClubId,
-          parentId: comment.parentId || comment.id,
-          replyToUserId: comment.user.id,
-        }),
+    if (!context.matchClubId) {
+      return;
+    }
+    try {
+      await createComment.mutateAsync({
+        matchClubId: context.matchClubId,
+        content: root,
+        parentId: comment.parentId || comment.id,
+        replyToUserId: comment.user.id,
       });
-      if (res.ok) {
-        query.refetch();
-        setReplyOpen(false);
-      }
-    });
-    setIsSubmitting(false);
+      setReplyOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
   return (
     <div className="flex gap-2">
@@ -85,7 +79,7 @@ const CommentItem = ({ comment }: { comment: Omit<IMatchClubComment, "replys"> }
               onSubmit={handleSubmit}
               onUploadImage={handleInsertImage}
               placeholder={"코멘트를 입력하세요."}
-              isSubmitting={isSubmitting}
+              isSubmitting={createComment.isPending}
             />
           </div>
         )}
