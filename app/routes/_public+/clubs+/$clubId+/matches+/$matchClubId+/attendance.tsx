@@ -1,0 +1,319 @@
+import { useNavigate, useParams } from "@remix-run/react";
+import dayjs from "dayjs";
+import { useEffect, useMemo } from "react";
+import { FaCheck, FaInfoCircle, FaQuestionCircle, FaTimesCircle } from "react-icons/fa";
+import { MdEventAvailable } from "react-icons/md";
+import { Loading } from "~/components/Loading";
+import { Button } from "~/components/ui/button";
+import { useSession } from "~/contexts";
+import {
+  type AttendanceCheckItem,
+  AttendanceGroupCard,
+  AttendanceGroupCardContent,
+  AttendanceGroupCardHeader,
+  AttendanceGroupCardItem,
+  AttendanceGroupCardTitle,
+  AttendanceManageAction,
+  type AttendanceMercenary,
+  type AttendancePlayer,
+} from "~/features/matches/client";
+import type { AttendanceClubPlayer, AttendanceRecord } from "~/features/matches/isomorphic";
+import { useAttendanceMutation, useAttendanceQuery } from "~/features/matches/isomorphic";
+import { useToast } from "~/hooks";
+import { cn, postJson } from "~/libs";
+import { getToastForError } from "~/libs/errors";
+
+interface IAttendancePageProps {}
+
+const AttendancePage = (_props: IAttendancePageProps) => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const user = useSession();
+  const matchClubId = params.matchClubId;
+  const clubId = params.clubId;
+
+  const attendanceQuery = useAttendanceQuery(matchClubId, {
+    clubId: clubId ?? "",
+    enabled: Boolean(matchClubId && clubId),
+  });
+  const attendanceMutation = useAttendanceMutation(matchClubId, { clubId: clubId ?? "" });
+
+  useEffect(() => {
+    if (attendanceQuery.data && "redirectTo" in attendanceQuery.data) {
+      navigate(attendanceQuery.data.redirectTo);
+    }
+  }, [attendanceQuery.data, navigate]);
+
+  const resolvedData =
+    attendanceQuery.data && !("redirectTo" in attendanceQuery.data) ? attendanceQuery.data : null;
+  const matchClub = resolvedData?.matchClub ?? null;
+  const currentStatus = resolvedData?.currentStatus ?? "PENDING";
+  const currentChecked = resolvedData?.currentChecked ?? "PENDING";
+  const matchDate = matchClub ? new Date(matchClub.match.stDate) : null;
+  const now = new Date();
+  const isBeforeDay = matchDate ? now < dayjs(matchDate).subtract(1, "day").toDate() : false;
+  const isCheckTimeOpen = matchDate ? now > dayjs(matchDate).subtract(2, "hour").toDate() : false;
+  const mercenaryAttedances = matchClub
+    ? matchClub.attendances.filter((a) => !!a.mercenary && a.isVote)
+    : [];
+
+  const attend = useMemo<{
+    ATTEND: AttendanceRecord[];
+    ABSENT: AttendanceRecord[];
+    PENDING: AttendanceClubPlayer[];
+  }>(() => {
+    if (!matchClub) {
+      return { ATTEND: [], ABSENT: [], PENDING: [] };
+    }
+    return {
+      ATTEND: matchClub.attendances.filter((a) => !!a.player && a.isVote),
+      ABSENT: matchClub.attendances.filter((a) => !!a.player && !a.isVote),
+      PENDING: matchClub.club.players.filter(
+        (p) =>
+          p.userId && !matchClub.attendances.some((attendance) => attendance.playerId === p.id),
+      ),
+    };
+  }, [matchClub]);
+
+  if (attendanceQuery.isLoading || !resolvedData || !matchClub || !matchClubId || !clubId) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
+  const statusIcons = {
+    ATTEND: <MdEventAvailable className="text-primary" />,
+    ABSENT: <FaTimesCircle className="text-destructive" />,
+    PENDING: <FaQuestionCircle className="text-muted-foreground" />,
+  } as const;
+
+  const handleAttendanceChange = async (input: { isVote: boolean; isCheck: boolean }) => {
+    try {
+      await attendanceMutation.mutateAsync({ ...input });
+      await attendanceQuery.refetch();
+    } catch (error) {
+      toast(getToastForError(error));
+    }
+  };
+
+  const matchClubAttendances = matchClub.attendances ?? [];
+  const refetchAttendance = () => attendanceQuery.refetch();
+
+  return (
+    <div className="space-y-4">
+      <div className="border rounded-md p-3 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className={cn("flex items-center gap-x-2 text-sm px-2")}>
+            <FaInfoCircle className="text-muted-foreground" /> 현재 상태:{" "}
+            <span
+              className={cn("flex items-center gap-x-1", {
+                "text-primary": currentStatus === "ATTEND",
+                "text-destructive": currentStatus === "ABSENT",
+                "text-muted-foreground": currentStatus === "PENDING",
+              })}
+            >
+              {statusIcons[currentStatus as keyof typeof statusIcons]}
+              {{ ATTEND: "참석", ABSENT: "불참", PENDING: "선택안함" }[currentStatus]}
+            </span>
+            {attendanceMutation.isPending && <Loading size={16} />}
+          </div>
+          {isCheckTimeOpen && currentStatus === "ATTEND" ? (
+            <Button
+              disabled={attendanceMutation.isPending || currentChecked === "CHECKED"}
+              className={cn({ "bg-green-500": currentChecked === "CHECKED" })}
+              onClick={() => handleAttendanceChange({ isCheck: true, isVote: true })}
+            >
+              {currentChecked === "CHECKED" ? "출석완" : "출석체크"}
+            </Button>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2 ml-auto">
+            {isBeforeDay ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-x-1 w-32"
+                  disabled={attendanceMutation.isPending}
+                  onClick={() => handleAttendanceChange({ isVote: true, isCheck: false })}
+                >
+                  {statusIcons.ATTEND} 참석
+                  {currentStatus === "ATTEND" && <FaCheck className="text-primary" />}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-x-1 w-32"
+                  disabled={attendanceMutation.isPending}
+                  onClick={() => handleAttendanceChange({ isVote: false, isCheck: false })}
+                >
+                  {statusIcons.ABSENT} 불참
+                  {currentStatus === "ABSENT" && <FaCheck className="text-primary" />}
+                </Button>
+              </div>
+            ) : null}
+            <AttendanceManageAction
+              players={(() => {
+                const attendedIds = matchClubAttendances
+                  .filter((att) => att.playerId && att.isVote)
+                  .map((att) => att.playerId!);
+                const players: AttendancePlayer[] = matchClub.club.players.map((p) => ({
+                  id: p.id,
+                  user: p.user,
+                  isAttended: attendedIds.includes(p.id),
+                }));
+                return players;
+              })()}
+              onTogglePlayer={async (playerId, isVote) => {
+                try {
+                  await postJson("/api/attendances/player", {
+                    matchClubId,
+                    playerId,
+                    isVote,
+                  });
+                  await refetchAttendance();
+                  return true;
+                } catch (e) {
+                  toast(getToastForError(e));
+                  return false;
+                }
+              }}
+              mercenaries={(() => {
+                const attendedIds = matchClubAttendances
+                  .filter((att) => att.mercenaryId && att.isVote)
+                  .map((att) => att.mercenaryId!);
+                const mercenaries: AttendanceMercenary[] = matchClub.club.mercenarys.map((m) => ({
+                  id: m.id,
+                  name: m.name,
+                  hp: m.hp,
+                  user: m.user,
+                  isAttended: attendedIds.includes(m.id),
+                }));
+                return mercenaries;
+              })()}
+              onToggleMercenary={async (mercenaryId, isVote) => {
+                try {
+                  await postJson("/api/attendances/mercenary", {
+                    matchClubId,
+                    mercenaryId,
+                    isVote,
+                  });
+                  await refetchAttendance();
+                  return true;
+                } catch (e) {
+                  toast(getToastForError(e));
+                  return false;
+                }
+              }}
+              attendances={(() => {
+                const attendeds = matchClubAttendances.filter((att) => att.isVote);
+                const arr: AttendanceCheckItem[] = attendeds.map((a) => ({
+                  id: a.id,
+                  name: a.player?.user?.name || a.mercenary?.user?.name || a.mercenary?.name || "",
+                  imageUrl:
+                    a.player?.user?.userImage?.url ||
+                    a.mercenary?.user?.userImage?.url ||
+                    undefined,
+                  isCheck: a.isCheck,
+                }));
+                return arr;
+              })()}
+              onToggleCheck={async (attendanceId, isCheck) => {
+                try {
+                  await postJson("/api/attendances", { id: attendanceId, isCheck });
+                  await refetchAttendance();
+                  return true;
+                } catch (e) {
+                  toast(getToastForError(e));
+                  return false;
+                }
+              }}
+              mercenariesHref={"../mercenaries"}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <AttendanceGroupCard className="bg-primary/5">
+          <AttendanceGroupCardHeader>
+            <AttendanceGroupCardTitle>
+              {statusIcons.ATTEND} 참석: {attend.ATTEND.length + mercenaryAttedances.length}
+              {mercenaryAttedances.length > 0 &&
+                `(${attend.ATTEND.length}+${mercenaryAttedances.length})`}
+              {currentStatus === "ATTEND" && <FaCheck className="text-primary" />}
+            </AttendanceGroupCardTitle>
+          </AttendanceGroupCardHeader>
+          <AttendanceGroupCardContent>
+            {attend.ATTEND.map((u) => (
+              <AttendanceGroupCardItem
+                key={u.id}
+                className={cn({
+                  "border-primary font-semibold text-primary": user?.id === u.player?.user?.id,
+                })}
+                isChecked={u.isCheck}
+              >
+                {u.player?.user?.name}
+              </AttendanceGroupCardItem>
+            ))}
+            {mercenaryAttedances.map((ma) => (
+              <AttendanceGroupCardItem
+                key={ma.id}
+                className={cn({
+                  "border-primary font-semibold text-primary": user?.id === ma.mercenary?.userId,
+                })}
+                isChecked={ma.isCheck}
+              >
+                {ma.mercenary?.user?.name ?? ma.mercenary?.name}
+              </AttendanceGroupCardItem>
+            ))}
+          </AttendanceGroupCardContent>
+        </AttendanceGroupCard>
+
+        <AttendanceGroupCard className="bg-destructive/5">
+          <AttendanceGroupCardHeader>
+            <AttendanceGroupCardTitle>
+              {statusIcons.ABSENT} 불참: {attend.ABSENT.length}
+              {currentStatus === "ABSENT" && <FaCheck className="text-primary" />}
+            </AttendanceGroupCardTitle>
+          </AttendanceGroupCardHeader>
+          <AttendanceGroupCardContent>
+            {attend.ABSENT.map((u) => (
+              <AttendanceGroupCardItem
+                key={u.id}
+                className={cn({
+                  "border-primary font-semibold text-primary": user?.id === u.player?.user?.id,
+                })}
+              >
+                {u.player?.user?.name}
+              </AttendanceGroupCardItem>
+            ))}
+          </AttendanceGroupCardContent>
+        </AttendanceGroupCard>
+
+        <AttendanceGroupCard className="bg-muted-foreground/5">
+          <AttendanceGroupCardHeader>
+            <AttendanceGroupCardTitle>
+              {statusIcons.PENDING} 선택안함: {attend.PENDING.length}
+              {currentStatus === "PENDING" && <FaCheck className="text-primary" />}
+            </AttendanceGroupCardTitle>
+          </AttendanceGroupCardHeader>
+          <AttendanceGroupCardContent>
+            {attend.PENDING.map((u) => (
+              <AttendanceGroupCardItem
+                key={u.id}
+                className={cn({
+                  "border-primary font-semibold text-primary": user?.id === u.user?.id,
+                })}
+              >
+                {u.user?.name}
+              </AttendanceGroupCardItem>
+            ))}
+          </AttendanceGroupCardContent>
+        </AttendanceGroupCard>
+      </div>
+    </div>
+  );
+};
+
+export default AttendancePage;

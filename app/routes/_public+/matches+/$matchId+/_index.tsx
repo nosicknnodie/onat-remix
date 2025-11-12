@@ -1,6 +1,8 @@
-import { useOutletContext } from "@remix-run/react";
+import { useParams, useRouteLoaderData } from "@remix-run/react";
+import { Loading } from "~/components/Loading";
 import { MatchHeaderCard, MatchSummarySection } from "~/features/matches/client";
-import type { MatchSummary } from "~/features/matches/isomorphic";
+import { useMatchDetailQuery } from "~/features/matches/isomorphic";
+import type { IMatchesIdLayoutPageLoaderReturnType } from "./_layout";
 
 /**
  * 축구 경기 매치 디테일 화면
@@ -37,7 +39,23 @@ import type { MatchSummary } from "~/features/matches/isomorphic";
 interface IMatchesIdPageProps {}
 
 const MatchesIdPage = (_props: IMatchesIdPageProps) => {
-  const data = useOutletContext<MatchSummary>();
+  const params = useParams();
+  const matchId = params.matchId;
+  const layoutData = useRouteLoaderData<IMatchesIdLayoutPageLoaderReturnType>(
+    "routes/_public+/matches+/$matchId+/_layout",
+  );
+  const { data, isLoading } = useMatchDetailQuery(matchId, {
+    enabled: Boolean(matchId),
+    initialData: layoutData ?? undefined,
+  });
+
+  if (isLoading || !data) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   const match = data.match;
   return (

@@ -27,6 +27,12 @@ export const matchSummaryRelations = {
     },
   },
   teams: true,
+  quarters: {
+    include: {
+      team1: true,
+      team2: true,
+    },
+  },
   attendances: {
     include: {
       evaluations: true,

@@ -1,6 +1,7 @@
-import { useOutletContext } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useMemo } from "react";
+import { Loading } from "~/components/Loading";
 import { Separator } from "~/components/ui/separator";
 import {
   type AttendanceSummaryItem,
@@ -8,16 +9,16 @@ import {
   type PendingSummaryItem,
   PreMatchAttendanceSummary,
 } from "~/features/matches/client";
-import type { MatchClubLayoutLoaderData } from "./_layout";
+import {
+  type MatchClubQueryResponse,
+  useMatchClubQuery,
+  useMatchSummaryQuery,
+} from "~/features/matches/isomorphic";
 
 interface IMatchClubIdPageProps {}
 
-type MatchClubAttendance = NonNullable<
-  MatchClubLayoutLoaderData["matchClub"]
->["attendances"][number];
-type MatchClubPlayer = NonNullable<
-  MatchClubLayoutLoaderData["matchClub"]
->["club"]["players"][number];
+type MatchClubAttendance = NonNullable<MatchClubQueryResponse["matchClub"]>["attendances"][number];
+type MatchClubPlayer = NonNullable<MatchClubQueryResponse["matchClub"]>["club"]["players"][number];
 
 const getAttendanceDisplayName = (attendance: MatchClubAttendance) =>
   attendance.player?.user?.name ??
@@ -29,12 +30,27 @@ const getAttendanceDisplayName = (attendance: MatchClubAttendance) =>
 const getPendingPlayerName = (player: MatchClubPlayer) => player.user?.name ?? player.nick ?? "";
 
 const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
-  const data = useOutletContext<MatchClubLayoutLoaderData>();
-  const match = data.matchSummary.match;
-  const hasStarted = !dayjs(match.stDate).isAfter(dayjs());
+  const params = useParams();
+  const matchClubId = params.matchClubId;
+  const clubId = params.clubId;
+  const { data: matchClubQueryData, isLoading: isMatchClubLoading } = useMatchClubQuery(
+    matchClubId,
+    {
+      clubId,
+      enabled: Boolean(matchClubId),
+    },
+  );
+  const { data: matchSummaryData, isLoading: isMatchSummaryLoading } = useMatchSummaryQuery(
+    matchClubId,
+    {
+      enabled: Boolean(matchClubId),
+    },
+  );
+  const matchClub = matchClubQueryData?.matchClub ?? null;
+  const matchSummary = matchSummaryData ?? null;
+  const summaryHighlight = matchClubQueryData?.summary ?? null;
 
   const preMatchSummary = useMemo(() => {
-    const matchClub = data.matchClub;
     if (!matchClub) {
       return {
         attend: [] as AttendanceSummaryItem[],
@@ -42,7 +58,6 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
         pending: [] as PendingSummaryItem[],
       };
     }
-
     const attendances = matchClub.attendances ?? [];
     const players = matchClub.club?.players ?? [];
 
@@ -84,18 +99,29 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
       });
 
     return { attend, absent, pending };
-  }, [data.matchClub]);
+  }, [matchClub]);
+
+  if (isMatchClubLoading || isMatchSummaryLoading || !matchClub || !matchSummary) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
+  const match = matchSummary.match;
+  const hasStarted = !dayjs(match.stDate).isAfter(dayjs());
 
   return (
     <div className="space-y-6">
-      {data.matchSummary.match.description ? (
+      {matchSummary.match.description ? (
         <p className="text-sm text-muted-foreground whitespace-pre-line">
-          {data.matchSummary.match.description}
+          {matchSummary.match.description}
         </p>
       ) : null}
       <Separator orientation="horizontal" className="h-[1px]" />
       {hasStarted ? (
-        <MatchSummarySection summaries={data.matchSummary.summaries} highlight={data.summary} />
+        <MatchSummarySection summaries={matchSummary.summaries} highlight={summaryHighlight} />
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">

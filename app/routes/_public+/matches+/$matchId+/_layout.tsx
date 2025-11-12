@@ -31,12 +31,9 @@ export async function loader({ request: _request, params }: LoaderFunctionArgs) 
 export type IMatchesIdLayoutPageLoaderReturnType = Awaited<ReturnType<typeof loader>>;
 
 const MatchesIdLayoutPage = (_props: IMatchesIdLayoutPageProps) => {
-  const data = useLoaderData<typeof loader>();
-  return (
-    <>
-      <Outlet context={data} />
-    </>
-  );
+  const _data = useLoaderData<typeof loader>();
+  void _data;
+  return <Outlet />;
 };
 
 export default MatchesIdLayoutPage;

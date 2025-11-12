@@ -14,8 +14,6 @@ import {
   MatchHeaderCard,
 } from "~/features/matches/client";
 import {
-  type MatchClubQueryResponse,
-  type MatchSummary,
   matchClubQueryKeys,
   matchSummaryQueryKeys,
   useMatchClubQuery,
@@ -24,11 +22,6 @@ import {
 } from "~/features/matches/isomorphic";
 
 interface IMatchClubIdLayoutProps {}
-export type MatchClubLayoutLoaderData = {
-  matchClub: NonNullable<MatchClubQueryResponse["matchClub"]>;
-  summary: MatchClubQueryResponse["summary"];
-  matchSummary: MatchSummary;
-};
 
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const params = useParams();
@@ -90,7 +83,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     });
     if (matchClub?.isSelf) {
       items.push({
-        label: "Team",
+        label: "팀",
         href: `${base}/team`,
         active: location.pathname.startsWith(`${base}/team`),
       });

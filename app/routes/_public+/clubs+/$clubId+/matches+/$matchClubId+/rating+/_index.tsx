@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
+import { useLoaderData, useParams } from "@remix-run/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
@@ -15,6 +15,7 @@ import { Button } from "~/components/ui/button";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts";
 import { RatingCard, RatingRightDrawer } from "~/features/matches/client";
+import { useMatchClubQuery, useMatchSummaryQuery } from "~/features/matches/isomorphic";
 import { ratingService } from "~/features/matches/server";
 import { useToast } from "~/hooks";
 import { getJson, getToastForError, postJson } from "~/libs";
@@ -24,7 +25,6 @@ import {
   isMiddlePosition,
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
-import type { MatchClubLayoutLoaderData } from "../_layout";
 
 export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId!;
@@ -37,7 +37,8 @@ interface IRatingPageProps {}
 const RatingPage = (_props: IRatingPageProps) => {
   const user = useSession();
   const params = useParams();
-  const outletData = useOutletContext<MatchClubLayoutLoaderData>();
+  const matchClubId = params.matchClubId;
+  const clubId = params.clubId;
 
   const loaderData = useLoaderData<typeof loader>();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -53,8 +54,20 @@ const RatingPage = (_props: IRatingPageProps) => {
     initialData: loaderData,
   });
   const attendances = data.attendances;
-  const match = outletData.matchSummary.match;
-  const quarters = loaderData.matchClub?.quarters.sort((a, b) => a.order - b.order);
+  const { data: matchClubData, isLoading: isMatchClubLoading } = useMatchClubQuery(matchClubId, {
+    clubId,
+    enabled: Boolean(matchClubId),
+  });
+  const { data: matchSummaryData, isLoading: isMatchSummaryLoading } = useMatchSummaryQuery(
+    matchClubId,
+    {
+      enabled: Boolean(matchClubId),
+    },
+  );
+  const match = matchSummaryData?.match ?? null;
+  const quarters = matchClubData?.matchClub?.quarters
+    ? [...matchClubData.matchClub.quarters].sort((a, b) => a.order - b.order)
+    : null;
   const queryClient = useQueryClient();
 
   // update score
@@ -154,7 +167,13 @@ const RatingPage = (_props: IRatingPageProps) => {
       });
     },
   });
-  if (!isMounted) return null;
+  if (!isMounted || isMatchClubLoading || isMatchSummaryLoading || !match || !quarters) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <>

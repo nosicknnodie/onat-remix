@@ -1,3 +1,5 @@
+export * from "./attendance.hooks";
+export * from "./attnedance.types";
 export * from "./comment.hooks";
 export * from "./comment.types";
 export * from "./matchClub.hooks";
