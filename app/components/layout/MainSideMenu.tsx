@@ -9,7 +9,6 @@ import { Fragment } from "react/jsx-runtime";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight, FaUser } from "react-icons/fa";
 import {
   HiOutlineArrowsUpDown,
-  HiOutlineClock,
   HiOutlineInformationCircle,
   HiOutlineNewspaper,
   HiOutlineSquares2X2,
@@ -243,7 +242,7 @@ const MainSideMenu = () => {
                         ? clubLayoutData.player
                         : club.membership;
                     const isJoined = !!membership;
-                    const isAdmin = membership?.role === "MANAGER" || membership?.role === "MASTER";
+                    // const isAdmin = membership?.role === "MANAGER" || membership?.role === "MASTER";
                     const subItems = [
                       {
                         label: "정보",

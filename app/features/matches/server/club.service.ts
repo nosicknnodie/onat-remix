@@ -3,22 +3,14 @@ import type { MatchClubSummary } from "../isomorphic/types";
 import * as q from "./club.queries";
 import { summarizeMatchClubs } from "./summary.service";
 
-export async function getMatchClubLayoutData(userId: string | undefined, matchClubId: string) {
+export async function getMatchClubLayoutData(matchClubId: string) {
   const matchClub = await q.findMatchClubWithRelations(matchClubId);
-  let role = { isPlayer: false, isAdmin: false, isMercenary: false };
-  if (userId && matchClub?.clubId) {
-    const player = await q.findApprovedPlayer(userId, matchClub.clubId);
-    const isPlayer = !!player;
-    const isAdmin = !!player && (player.role === "MANAGER" || player.role === "MASTER");
-    const isMercenary = !!matchClub.attendances.find((a) => a.mercenary?.userId === userId);
-    role = { isPlayer, isAdmin, isMercenary };
-  }
   let summary: MatchClubSummary | null = null;
   if (matchClub) {
     summary = summarizeMatchClubs([matchClub])[0] ?? null;
   }
 
-  return { matchClub, role, summary };
+  return { matchClub, summary };
 }
 
 export async function setIsSelf(matchClubId: string, isSelf: boolean) {

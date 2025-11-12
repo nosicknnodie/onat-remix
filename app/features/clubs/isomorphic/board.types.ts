@@ -6,9 +6,7 @@ type BoardFeed = Awaited<ReturnType<typeof getBoardFeed>>;
 type ClubFeedPost = ClubFeed["posts"][number];
 type BoardFeedPost = BoardFeed["posts"][number];
 
-export type ClubBoardFeedPost =
-  | ClubFeedPost
-  | (BoardFeedPost & { board?: ClubFeedPost["board"] });
+export type ClubBoardFeedPost = ClubFeedPost | (BoardFeedPost & { board?: ClubFeedPost["board"] });
 
 export type ClubBoardFeedResponse = {
   posts: ClubBoardFeedPost[];

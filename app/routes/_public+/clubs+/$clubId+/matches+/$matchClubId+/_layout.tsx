@@ -1,16 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import {
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-  useParams,
-  useRevalidator,
-} from "@remix-run/react";
+import { Outlet, useLocation, useNavigate, useParams, useRevalidator } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
+import { Loading } from "~/components/Loading";
 import { confirm } from "~/components/ui/confirm";
+import { useSession } from "~/contexts";
+import { useMembershipInfoQuery } from "~/features/clubs/isomorphic";
 import {
   ClubAdminMenu,
   type ClubSubnavItem,
@@ -18,55 +13,71 @@ import {
   CommentSection,
   MatchHeaderCard,
 } from "~/features/matches/client";
-import { clubService, detailService } from "~/features/matches/server";
-import { getUser, prisma } from "~/libs/index.server";
-
-export const handle = {
-  breadcrumb: (match: any) => {
-    return match.data.matchSummary.match.title || "매치";
-  },
-  // right: (match: any) => ,
-};
+import {
+  type MatchClubQueryResponse,
+  type MatchSummary,
+  matchClubQueryKeys,
+  matchSummaryQueryKeys,
+  useMatchClubQuery,
+  useMatchCommentsQuery,
+  useMatchSummaryQuery,
+} from "~/features/matches/isomorphic";
 
 interface IMatchClubIdLayoutProps {}
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const user = await getUser(request);
-  const matchClubData = await clubService.getMatchClubLayoutData(user?.id, params.matchClubId!);
-  const matchClub = matchClubData.matchClub;
-  if (!matchClub) {
-    throw redirect("/404");
-  }
-  const matchSummary = await detailService.getMatchDetail(matchClub.matchId);
-  if (!matchSummary) {
-    throw redirect("/404");
-  }
-  const commentCount = await prisma.comment.count({
-    where: {
-      targetId: params.matchClubId!,
-      targetType: "MATCH_CLUB",
-      isDeleted: false,
-    },
-  });
-  return {
-    ...matchClubData,
-    matchSummary,
-    commentCount,
-  };
+export type MatchClubLayoutLoaderData = {
+  matchClub: NonNullable<MatchClubQueryResponse["matchClub"]>;
+  summary: MatchClubQueryResponse["summary"];
+  matchSummary: MatchSummary;
 };
 
-export type MatchClubLayoutLoaderData = Awaited<ReturnType<typeof loader>>;
-
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
-  const loaderData = useLoaderData<typeof loader>();
   const params = useParams();
+  const session = useSession();
   const location = useLocation();
   const navigate = useNavigate();
   const { revalidate } = useRevalidator();
   const queryClient = useQueryClient();
   const [, startTransition] = useTransition();
-  const role = loaderData.role;
-  const matchClub = loaderData.matchClub;
-  const match = loaderData.matchSummary.match;
+  const matchClubId = params.matchClubId;
+  const clubId = params.clubId;
+  const { data: matchClubQueryData, isLoading: isMatchClubLoading } = useMatchClubQuery(
+    matchClubId,
+    {
+      clubId,
+      enabled: Boolean(matchClubId),
+    },
+  );
+  const { data: membership } = useMembershipInfoQuery(clubId ?? "", {
+    enabled: Boolean(clubId),
+  });
+  const { data: matchSummary, isLoading: isMatchSummaryLoading } = useMatchSummaryQuery(
+    matchClubId,
+    {
+      enabled: Boolean(matchClubId),
+    },
+  );
+  const { data: commentsData } = useMatchCommentsQuery(matchClubId, {
+    enabled: Boolean(matchClubId),
+  });
+  const isLoading = isMatchClubLoading || isMatchSummaryLoading;
+  const matchClub = matchClubQueryData?.matchClub;
+  const summary = matchClubQueryData?.summary ?? null;
+  if (isLoading || !matchClub || !matchSummary) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+  const role = {
+    isPlayer: Boolean(membership),
+    isAdmin: Boolean(membership && (membership.role === "MANAGER" || membership.role === "MASTER")),
+    isMercenary: Boolean(
+      session?.id &&
+        matchClub.attendances?.some((attendance) => attendance.mercenary?.userId === session.id),
+    ),
+  } as const;
+  const match = matchSummary.match;
   const base = `/clubs/${params.clubId}/matches/${params.matchClubId}`;
   const items: ClubSubnavItem[] = [
     { label: "정보", href: base, active: location.pathname === base },
@@ -109,7 +120,12 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         method: "POST",
         body: JSON.stringify({ isSelf }),
       });
-      queryClient.invalidateQueries();
+      await queryClient.invalidateQueries({
+        queryKey: matchClubQueryKeys.detail(matchClubId ?? ""),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: matchSummaryQueryKeys.detail(matchClubId ?? ""),
+      });
       revalidate();
       navigate(`/clubs/${params.clubId}/matches/${params.matchClubId}`);
     });
@@ -143,9 +159,15 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
             />
           ) : null
         }
-        commentCount={loaderData.commentCount}
+        commentCount={commentsData?.comments.length ?? 0}
       >
-        <Outlet context={loaderData} />
+        <Outlet
+          context={{
+            matchClub,
+            summary,
+            matchSummary,
+          }}
+        />
       </MatchHeaderCard>
       <CommentSection matchClubId={params.matchClubId} />
     </>

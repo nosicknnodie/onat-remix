@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react";
 import { useParams } from "@remix-run/react";
+import { useCallback, useMemo } from "react";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { ClubBoardPostCard } from "~/features/clubs/client";
@@ -19,14 +19,8 @@ const SlugPage = () => {
   const { data: tabs } = useClubBoardsTabsQuery(clubId);
   const board = useMemo(() => tabs?.find((item) => item.slug === slug), [tabs, slug]);
 
-  const {
-    data,
-    error,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage,
-    refetch,
-  } = useClubBoardFeedInfiniteQuery({ clubId, slug });
+  const { data, error, isLoading, isFetchingNextPage, fetchNextPage, refetch } =
+    useClubBoardFeedInfiniteQuery({ clubId, slug });
 
   const posts = useMemo<ClubBoardFeedResponse["posts"]>(() => {
     if (!data) return [];

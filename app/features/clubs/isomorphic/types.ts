@@ -4,17 +4,9 @@
  * - Prisma 타입을 기반으로 한 확장된 클럽 타입 정의
  */
 
-import type {
-  Board,
-  CommentVote,
-  File,
-  Player,
-  PostComment,
-  Prisma,
-  User,
-} from "@prisma/client";
-import type { MatchClubSummary } from "~/features/matches/isomorphic";
+import type { Board, CommentVote, File, Player, PostComment, Prisma, User } from "@prisma/client";
 import type { service as communityService } from "~/features/communities/server";
+import type { MatchClubSummary } from "~/features/matches/isomorphic";
 import type { infoService, service } from "../server";
 
 // 클럽 이미지와 엠블럼을 포함한 확장된 클럽 타입

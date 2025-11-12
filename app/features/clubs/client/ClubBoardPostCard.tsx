@@ -3,43 +3,19 @@ import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { SerializedEditorState } from "lexical";
 import { FaRegComment } from "react-icons/fa6";
+import { Loading } from "~/components/Loading";
 import { Preview } from "~/components/lexical/Preview";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { Loading } from "~/components/Loading";
+import type { ClubBoardFeedPost } from "~/features/clubs/isomorphic";
 import { PostVoteBadgeButton, Settings } from "~/features/communities/client";
 
-type BoardInfo = {
-  clubId?: string | null;
-  slug?: string | null;
-  name?: string | null;
-};
-
-type AuthorInfo = {
-  name?: string | null;
-  userImage?: {
-    url?: string | null;
-  } | null;
-};
-
-type PostMeta = {
-  id: string;
-  title: string;
-  content: unknown;
-  createdAt: string | Date;
-  author: AuthorInfo;
-  board?: BoardInfo | null;
-  _count: {
-    comments: number;
-  };
-};
-
 interface ClubBoardPostCardProps {
-  post: PostMeta;
-  fallbackBoard?: BoardInfo | null;
+  post: ClubBoardFeedPost;
+  fallbackBoard?: Partial<ClubBoardFeedPost["board"]> | null;
 }
 
 export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProps) {
@@ -49,7 +25,7 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
   const postLink =
     board?.clubId && board?.slug
       ? `/clubs/${board.clubId}/boards/${board.slug}/${post.id}`
-      : "./" + post.id;
+      : `./${post.id}`;
 
   return (
     <Card className="w-full rounded-2xl shadow-sm border border-muted/40">
@@ -91,7 +67,7 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
         </Link>
       </CardContent>
       <CardFooter className="flex justify-end gap-3">
-        <PostVoteBadgeButton post={post as any} />
+        <PostVoteBadgeButton post={post} />
         <Badge variant="outline" className="space-x-2">
           <Button variant="ghost" size="icon" className="h-4 w-4" asChild>
             <Link to={postLink}>
@@ -102,7 +78,7 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
         </Badge>
         {board?.clubId && board?.slug ? (
           <Settings
-            post={post as any}
+            post={post}
             editTo={`/clubs/${board.clubId}/boards/${board.slug}/${post.id}/edit`}
           />
         ) : null}

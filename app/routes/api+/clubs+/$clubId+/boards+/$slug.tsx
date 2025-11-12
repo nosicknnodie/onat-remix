@@ -35,7 +35,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     });
 
     if (!feed.board) {
-      return Response.json({ ok: false, message: "Board not found", code: "NOT_FOUND" }, { status: 404 });
+      return Response.json(
+        { ok: false, message: "Board not found", code: "NOT_FOUND" },
+        { status: 404 },
+      );
     }
 
     return Response.json({ ok: true, data: feed });

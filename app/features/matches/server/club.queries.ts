@@ -10,7 +10,3 @@ export async function findMatchClubWithRelations(id: string) {
     },
   });
 }
-
-export async function findApprovedPlayer(userId: string, clubId: string) {
-  return await prisma.player.findFirst({ where: { userId, clubId, status: "APPROVED" } });
-}

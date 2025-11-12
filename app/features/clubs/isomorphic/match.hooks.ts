@@ -2,8 +2,10 @@ import {
   type InfiniteData,
   type UseInfiniteQueryOptions,
   useInfiniteQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
+import type { MatchClubQueryResponse } from "~/features/matches/isomorphic";
 import { getJson } from "~/libs/api-client";
 import type { ClubMatchFeed } from "./match.types";
 
@@ -59,4 +61,25 @@ export function useClubMatchFeedInfiniteQuery(
     refetchOnWindowFocus: false,
     ...options,
   });
+}
+
+export function useClubMatchInitialData(clubId?: string, matchClubId?: string) {
+  const queryClient = useQueryClient();
+  return useMemo<MatchClubQueryResponse | undefined>(() => {
+    if (!clubId || !matchClubId) return undefined;
+    const cache = queryClient.getQueryData<InfiniteData<ClubMatchFeed>>(
+      clubMatchQueryKeys.feed(clubId),
+    );
+    if (!cache) return undefined;
+    for (const page of cache.pages) {
+      const matchClub = page.matches.find((match) => match.id === matchClubId);
+      if (matchClub) {
+        return {
+          matchClub: matchClub as unknown as MatchClubQueryResponse["matchClub"],
+          summary: null,
+        } satisfies MatchClubQueryResponse;
+      }
+    }
+    return undefined;
+  }, [clubId, matchClubId, queryClient]);
 }

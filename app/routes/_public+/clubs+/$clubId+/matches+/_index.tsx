@@ -7,10 +7,7 @@ import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  type ClubMatchFeed,
-  useClubMatchFeedInfiniteQuery,
-} from "~/features/clubs/isomorphic";
+import { type ClubMatchFeed, useClubMatchFeedInfiniteQuery } from "~/features/clubs/isomorphic";
 
 interface IMatchesPageProps {}
 

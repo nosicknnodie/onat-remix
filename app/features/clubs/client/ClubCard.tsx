@@ -8,10 +8,10 @@
 import { Link, useNavigate } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import type React from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { useSession } from "~/contexts";
 import { useToast } from "~/hooks";
 import { getToastForError, postJson } from "~/libs";
@@ -141,7 +141,9 @@ export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, membersh
           )}
           {isRejected && <FormError className="py-2">가입 승인 거절되었습니다.</FormError>}
           {isCancelled && (
-            <FormSuccess>가입 신청이 취소되었습니다. 다시 신청하려면 재가입을 눌러주세요.</FormSuccess>
+            <FormSuccess>
+              가입 신청이 취소되었습니다. 다시 신청하려면 재가입을 눌러주세요.
+            </FormSuccess>
           )}
         </div>
       )}

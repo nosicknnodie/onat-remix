@@ -8,8 +8,8 @@ import {
   deleteFilesByIds,
   findBoardById,
   findBoardBySlug,
-  findBoardWithPosts,
   findBoardsOverview,
+  findBoardWithPosts,
   findClubPosts,
   findDraftPostByAuthor,
   findPostWithFiles,
@@ -57,7 +57,7 @@ export async function getBoardFeed(params: BoardFeedParams) {
   const posts = boardWithPosts?.posts ?? [];
   const hasMore = posts.length > params.take;
   const sliced = hasMore ? posts.slice(0, params.take) : posts;
-  const nextCursor = hasMore ? sliced[sliced.length - 1]?.id ?? null : null;
+  const nextCursor = hasMore ? (sliced[sliced.length - 1]?.id ?? null) : null;
   const mapped = sliced.map((post) => {
     const sumVote = post.votes.reduce((acc, vote) => acc + vote.vote, 0);
     const currentVote = post.votes.find((vote) => vote.userId === params.userId) ?? undefined;
@@ -179,7 +179,7 @@ export async function getClubFeed(params: ClubFeedParams) {
   const posts = await findClubPosts(params);
   const hasMore = posts.length > params.take;
   const sliced = hasMore ? posts.slice(0, params.take) : posts;
-  const nextCursor = hasMore ? sliced[sliced.length - 1]?.id ?? null : null;
+  const nextCursor = hasMore ? (sliced[sliced.length - 1]?.id ?? null) : null;
   const mapped = sliced.map((post) => {
     const sumVote = post.votes.reduce((acc, vote) => acc + vote.vote, 0);
     const currentVote = post.votes.find((vote) => vote.userId === params.userId) ?? undefined;

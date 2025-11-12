@@ -296,10 +296,7 @@ export async function getClubMatchesFeed({ clubId, take, cursor }: ClubMatchesFe
         },
       },
     },
-    orderBy: [
-      { match: { stDate: "desc" } },
-      { createdAt: "desc" },
-    ],
+    orderBy: [{ match: { stDate: "desc" } }, { createdAt: "desc" }],
     take: take + 1,
     ...(cursor
       ? {
@@ -311,7 +308,7 @@ export async function getClubMatchesFeed({ clubId, take, cursor }: ClubMatchesFe
 
   const hasMore = matches.length > take;
   const sliced = hasMore ? matches.slice(0, take) : matches;
-  const nextCursor = hasMore ? sliced[sliced.length - 1]?.id ?? null : null;
+  const nextCursor = hasMore ? (sliced[sliced.length - 1]?.id ?? null) : null;
 
   return {
     matches: sliced,

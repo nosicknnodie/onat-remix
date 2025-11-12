@@ -13,7 +13,11 @@ type Options<TData> = Omit<
   "queryKey" | "queryFn"
 >;
 
-function useClubMembersQuery<TData>(key: readonly unknown[], url: string, options?: Options<TData>) {
+function useClubMembersQuery<TData>(
+  key: readonly unknown[],
+  url: string,
+  options?: Options<TData>,
+) {
   const queryKey = useMemo(() => key, [key]);
   return useQuery<TData, unknown, TData, readonly unknown[]>({
     queryKey,
@@ -23,7 +27,10 @@ function useClubMembersQuery<TData>(key: readonly unknown[], url: string, option
   });
 }
 
-export function useClubApprovedMembersQuery(clubId: string, options?: Options<ClubApprovedMembers>) {
+export function useClubApprovedMembersQuery(
+  clubId: string,
+  options?: Options<ClubApprovedMembers>,
+) {
   return useClubMembersQuery<ClubApprovedMembers>(
     clubMemberQueryKeys.approved(clubId),
     `/api/clubs/${clubId}/members/approved`,

@@ -16,8 +16,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { IPlayer } from "../../isomorphic/types";
 import { useMembershipInfoQuery } from "../../isomorphic";
+import type { IPlayer } from "../../isomorphic/types";
 import { InfoDrawer } from "../index";
 import { useGetPlayers } from "./member.context";
 
