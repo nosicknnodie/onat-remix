@@ -44,10 +44,13 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { useSession } from "~/contexts";
 import type { ClubWithMembership, IClubLayoutLoaderData } from "~/features/clubs/isomorphic";
+import { clubInfoQueryKeys } from "~/features/clubs/isomorphic";
 import { cn, getBoardIcon } from "~/libs";
+import { getJson } from "~/libs/api-client";
 import ItemLink from "../ItemLink";
 
 const currentClubIdAtom = atomWithStorage<string | null>("currentClub", null);
+const myClubsQueryKey = clubInfoQueryKeys.myClubs();
 
 const MainSideMenu = () => {
   const { open, toggleSidebar, setOpenMobile } = useSidebar();
@@ -58,10 +61,14 @@ const MainSideMenu = () => {
     queryFn: async () => await (await fetch("/api/boards")).json(),
   });
   const user = useSession();
-
-  const { data: clubsData, isLoading: isClubsLoading } = useQuery<ClubWithMembership[]>({
-    queryKey: ["CLUBS_MENU_QUERY"],
-    queryFn: async () => await (await fetch("/api/clubs/my")).json(),
+  const { data: clubsData = [], isLoading: isClubsLoading } = useQuery<ClubWithMembership[]>({
+    queryKey: myClubsQueryKey,
+    queryFn: () =>
+      getJson<ClubWithMembership[]>("/api/clubs/my", {
+        auth: true,
+      }),
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 
   const matches = useMatches();

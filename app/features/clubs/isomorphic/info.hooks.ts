@@ -1,9 +1,10 @@
-import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
+import { type UseQueryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getJson } from "~/libs/api-client";
-import type { Club, ClubInfoData, IClubLayoutLoaderData } from "./types";
+import type { Club, ClubInfoData, ClubWithMembership, IClubLayoutLoaderData } from "./types";
 
 export const clubInfoQueryKeys = {
+  myClubs: () => ["club", "my", "list"] as const,
   base: (clubId: string) => ["club", clubId, "info"] as const,
   club: (clubId: string) => ["club", clubId, "info", "club"] as const,
   membership: (clubId: string) => ["club", clubId, "info", "membership"] as const,
@@ -99,20 +100,38 @@ export function useNoticesQuery(
 }
 
 export function useClubDetailsQuery(clubId: string, options?: Options<Club>) {
-  return useClubInfoQuery<Club>(
-    clubInfoQueryKeys.club(clubId),
-    `/api/clubs/${clubId}/info/club`,
-    options,
-  );
+  const queryClient = useQueryClient();
+  const initialData = useMemo(() => {
+    if (!clubId) return undefined;
+    const myClubs = queryClient.getQueryData<ClubWithMembership[]>(clubInfoQueryKeys.myClubs());
+    return myClubs?.find((club) => club.id === clubId);
+  }, [clubId, queryClient]);
+
+  return useClubInfoQuery<Club>(clubInfoQueryKeys.club(clubId), `/api/clubs/${clubId}/info/club`, {
+    ...options,
+    initialData: initialData ?? options?.initialData,
+  });
 }
 
 export function useMembershipInfoQuery(
   clubId: string,
   options?: Options<IClubLayoutLoaderData["player"]>,
 ) {
+  const queryClient = useQueryClient();
+  const initialData = useMemo<IClubLayoutLoaderData["player"] | null | undefined>(() => {
+    if (!clubId) return undefined;
+    const myClubs = queryClient.getQueryData<ClubWithMembership[]>(clubInfoQueryKeys.myClubs());
+    if (!myClubs) return undefined;
+    const target = myClubs.find((club) => club.id === clubId);
+    return (target?.membership ?? null) as IClubLayoutLoaderData["player"] | null;
+  }, [clubId, queryClient]);
+
   return useClubInfoQuery<IClubLayoutLoaderData["player"]>(
     clubInfoQueryKeys.membership(clubId),
     `/api/clubs/${clubId}/info/membership`,
-    options,
+    {
+      ...options,
+      initialData: initialData ?? options?.initialData,
+    },
   );
 }
