@@ -7,5 +7,7 @@ export * from "./matchClub.types";
 export * from "./schema";
 export * from "./summary.hooks";
 export * from "./summary.types";
+export * from "./team.hooks";
+export * from "./team.types";
 export * from "./types";
 export * from "./validators";

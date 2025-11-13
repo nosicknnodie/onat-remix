@@ -1,8 +1,6 @@
-import type { Attendance, File, Mercenary, Player, User } from "@prisma/client";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
-import { Fragment, useState, useTransition } from "react";
+import { useNavigate, useParams } from "@remix-run/react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiHelpCircle } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -24,41 +22,77 @@ import {
   TeamEditDialog,
   type UIAttendance,
 } from "~/features/matches/client";
-import { teamService } from "~/features/matches/server";
-// replaced with features TeamEditDialog
+import {
+  useAttendanceQuery,
+  useTeamAssignmentMutation,
+  useTeamQuery,
+  useTeamUpdateMutation,
+} from "~/features/matches/isomorphic";
 
-/**
- * [LOGIC]
- * 1. 해당 매치가 isSelf일경우만
- * 2. 매치에 팀이 생성되지 않은경우
- * 3. 해당 클럽내의 이전 팀정보가 있는경우 이전 팀 정보에서 정보 가져오기
- * 4. 이전 팀 정보의 내용을 토대로 팀을 생성
- * 5. 최소 2개의 팀을 생성해야함
- */
-export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const clubId = params.clubId;
-  const matchClubId = params.matchClubId;
-  if (!clubId || !matchClubId) return redirect("/clubs");
-  const data = await teamService.getTeamPageData(clubId, matchClubId);
-  if ("redirectTo" in data) return redirect(data.redirectTo as string);
-  return data;
+export const handle = {
+  breadcrumb: () => {
+    return <>팀</>;
+  },
 };
 
 interface ITeamPageProps {}
 
 const TeamPage = (_props: ITeamPageProps) => {
-  const loaderData = useLoaderData<typeof loader>();
-  const { revalidate } = useRevalidator();
-  const teams = loaderData.teams;
-  const attendances = loaderData.attendances;
+  const params = useParams();
+  const clubId = params.clubId;
+  const matchClubId = params.matchClubId;
+  const hasParams = Boolean(clubId && matchClubId);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!hasParams) {
+      navigate("/clubs");
+    }
+  }, [hasParams, navigate]);
+  const teamQuery = useTeamQuery(matchClubId, {
+    clubId,
+    enabled: hasParams,
+  });
+  const attendanceQuery = useAttendanceQuery(matchClubId, {
+    clubId,
+    enabled: hasParams,
+  });
+  useEffect(() => {
+    if (attendanceQuery.data && "redirectTo" in attendanceQuery.data) {
+      navigate(attendanceQuery.data.redirectTo);
+    }
+  }, [attendanceQuery.data, navigate]);
+  useEffect(() => {
+    if (teamQuery.data && "redirectTo" in teamQuery.data) {
+      navigate(teamQuery.data.redirectTo);
+    }
+  }, [navigate, teamQuery.data]);
+  const teamResult = teamQuery.data && !("redirectTo" in teamQuery.data) ? teamQuery.data : null;
+  const teams = teamResult?.teams ?? [];
+  const attendanceResult =
+    attendanceQuery.data && !("redirectTo" in attendanceQuery.data) ? attendanceQuery.data : null;
+  const attendances = attendanceResult?.matchClub.attendances ?? [];
   const notTeamAttendances = attendances.filter(
-    (attendance) => !teams.some((team) => team.id === attendance.teamId),
+    (attendance) => !attendance.teamId || !teams.some((team) => team.id === attendance.teamId),
   );
-  const [isPending, startTransition] = useTransition();
-  const [selectedAttends, setSelectedAttends] = useState<typeof attendances>([]);
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(teams?.[0]?.id ?? null);
+  const teamsWithAttendances = useMemo(
+    () =>
+      teams.map((team) => ({
+        ...team,
+        attendances: attendances.filter((attendance) => attendance.teamId === team.id),
+      })),
+    [attendances, teams],
+  );
+  const [selectedAttends, setSelectedAttends] = useState<UIAttendance[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const teamAssignmentMutation = useTeamAssignmentMutation(matchClubId);
+  const teamUpdateMutation = useTeamUpdateMutation(matchClubId);
+  useEffect(() => {
+    if (!selectedTeamId && teams.length > 0) {
+      setSelectedTeamId(teams[0]?.id ?? null);
+    }
+  }, [selectedTeamId, teams]);
   // 팀없는 선수들 체크했을경우 attends 에 모아두기
-  const handleSelectedAtted = async (attendance: (typeof attendances)[number]) => {
+  const handleSelectedAtted = async (attendance: UIAttendance) => {
     setSelectedAttends((prev) => {
       if (prev?.some((item) => item.id === attendance.id)) {
         return prev.filter((item) => item.id !== attendance.id);
@@ -68,18 +102,30 @@ const TeamPage = (_props: ITeamPageProps) => {
   };
   const handleAddTeam = async () => {
     if (!selectedTeamId || selectedAttends?.length <= 0) return;
-    startTransition(async () => {
-      await fetch("/api/attendances/team", {
-        method: "POST",
-        body: JSON.stringify({
-          teamId: selectedTeamId,
-          attendanceIds: selectedAttends.map((item) => item.id),
-        }),
-      });
-      setSelectedAttends([]);
-      revalidate();
+    await teamAssignmentMutation.mutateAsync({
+      teamId: selectedTeamId,
+      attendanceIds: selectedAttends.map((item) => item.id),
     });
+    setSelectedAttends([]);
   };
+  const isPending = teamAssignmentMutation.isPending;
+  if (!hasParams) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+  const isAttendanceLoading = attendanceQuery.isLoading && !attendanceResult;
+  const isTeamLoading = teamQuery.isLoading && !teamResult;
+
+  if (isAttendanceLoading || isTeamLoading) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -148,8 +194,8 @@ const TeamPage = (_props: ITeamPageProps) => {
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row items-center gap-2">
               <Select
-                defaultValue={teams?.[0]?.id}
-                onValueChange={(value) => setSelectedTeamId(value)}
+                value={selectedTeamId ?? undefined}
+                onValueChange={setSelectedTeamId}
                 disabled={isPending}
               >
                 <SelectTrigger>
@@ -174,7 +220,7 @@ const TeamPage = (_props: ITeamPageProps) => {
         </div>
       )}
       <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
-        {teams?.map((team) => {
+        {teamsWithAttendances.map((team) => {
           return (
             <Fragment key={team.id}>
               <TeamCard
@@ -183,12 +229,18 @@ const TeamPage = (_props: ITeamPageProps) => {
                   <TeamEditDialog
                     payload={team}
                     onUpdate={async (teamId, data) => {
-                      const res = await fetch(`/api/teams/${teamId}`, {
-                        method: "POST",
-                        body: JSON.stringify({ name: data.name, color: data.color }),
-                      }).then((r) => r.json());
-                      if (res.success) revalidate();
-                      return !!res.success;
+                      try {
+                        const nextName = data.name ?? team.name ?? "";
+                        const nextColor = data.color ?? team.color ?? "#000000";
+                        await teamUpdateMutation.mutateAsync({
+                          teamId,
+                          name: nextName,
+                          color: nextColor,
+                        });
+                        return true;
+                      } catch {
+                        return false;
+                      }
                     }}
                   >
                     <Button
@@ -222,11 +274,11 @@ const TeamPage = (_props: ITeamPageProps) => {
                       mercenary: attendance?.mercenary || null,
                     }}
                     onSelectTeam={async (teamId) => {
-                      await fetch("/api/attendances/team", {
-                        method: "POST",
-                        body: JSON.stringify({ teamId, attendanceIds: [attendance?.id] }),
+                      if (!attendance?.id) return;
+                      await teamAssignmentMutation.mutateAsync({
+                        teamId,
+                        attendanceIds: [attendance.id],
                       });
-                      revalidate();
                     }}
                   >
                     {attendance?.player?.user?.name ||
@@ -243,8 +295,4 @@ const TeamPage = (_props: ITeamPageProps) => {
   );
 };
 
-export interface IAttendance extends Attendance {
-  player: (Player & { user: (User & { userImage: File | null }) | null }) | null;
-  mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
-}
 export default TeamPage;

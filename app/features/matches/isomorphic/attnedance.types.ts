@@ -23,6 +23,7 @@ export type AttendanceRecord = {
   isCheck: boolean;
   playerId: string | null;
   mercenaryId: string | null;
+  teamId?: string | null;
   player: {
     id: string;
     user: AttendanceUser;

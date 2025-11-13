@@ -15,6 +15,12 @@ import {
   useMatchSummaryQuery,
 } from "~/features/matches/isomorphic";
 
+export const handle = {
+  breadcrumb: () => {
+    return <>정보</>;
+  },
+};
+
 interface IMatchClubIdPageProps {}
 
 type MatchClubAttendance = NonNullable<MatchClubQueryResponse["matchClub"]>["attendances"][number];

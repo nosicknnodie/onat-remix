@@ -23,6 +23,12 @@ import { useToast } from "~/hooks";
 import { cn, postJson } from "~/libs";
 import { getToastForError } from "~/libs/errors";
 
+export const handle = {
+  breadcrumb: () => {
+    return <>참석</>;
+  },
+};
+
 interface IAttendancePageProps {}
 
 const AttendancePage = (_props: IAttendancePageProps) => {

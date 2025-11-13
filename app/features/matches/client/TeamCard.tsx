@@ -1,15 +1,13 @@
-import type { Attendance, File, Mercenary, Player, Team, User } from "@prisma/client";
+import type { Team } from "@prisma/client";
 import { AiFillSkin } from "react-icons/ai";
 import { FiEdit } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import type { AttendanceRecord } from "~/features/matches/isomorphic";
 
-export type UIAttendance = Attendance & {
-  player: (Player & { user: (User & { userImage: File | null }) | null }) | null;
-  mercenary: (Mercenary & { user: (User & { userImage: File | null }) | null }) | null;
-};
+export type UIAttendance = AttendanceRecord;
 
 export type TeamWithAttendances = Team & { attendances?: (UIAttendance | null)[] };
 
