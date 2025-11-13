@@ -1,16 +1,21 @@
 import { prisma } from "~/libs/db/db.server";
 import type { MatchClubSummary } from "../isomorphic/types";
 import * as q from "./club.queries";
+import * as detailService from "./detail.service";
 import { summarizeMatchClubs } from "./summary.service";
 
 export async function getMatchClubLayoutData(matchClubId: string) {
   const matchClub = await q.findMatchClubWithRelations(matchClubId);
   let summary: MatchClubSummary | null = null;
+  let matchSummary = null;
   if (matchClub) {
     summary = summarizeMatchClubs([matchClub])[0] ?? null;
+    if (matchClub.matchId) {
+      matchSummary = await detailService.getMatchDetail(matchClub.matchId);
+    }
   }
 
-  return { matchClub, summary };
+  return { matchClub, summary, matchSummary };
 }
 
 export async function setIsSelf(matchClubId: string, isSelf: boolean) {

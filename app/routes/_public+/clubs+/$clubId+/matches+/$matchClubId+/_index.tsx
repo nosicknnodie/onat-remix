@@ -9,11 +9,7 @@ import {
   type PendingSummaryItem,
   PreMatchAttendanceSummary,
 } from "~/features/matches/client";
-import {
-  type MatchClubQueryResponse,
-  useMatchClubQuery,
-  useMatchSummaryQuery,
-} from "~/features/matches/isomorphic";
+import { type MatchClubQueryResponse, useMatchClubQuery } from "~/features/matches/isomorphic";
 
 export const handle = {
   breadcrumb: () => {
@@ -46,14 +42,8 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
       enabled: Boolean(matchClubId),
     },
   );
-  const { data: matchSummaryData, isLoading: isMatchSummaryLoading } = useMatchSummaryQuery(
-    matchClubId,
-    {
-      enabled: Boolean(matchClubId),
-    },
-  );
   const matchClub = matchClubQueryData?.matchClub ?? null;
-  const matchSummary = matchSummaryData ?? null;
+  const matchSummary = matchClubQueryData?.matchSummary ?? null;
   const summaryHighlight = matchClubQueryData?.summary ?? null;
 
   const preMatchSummary = useMemo(() => {
@@ -107,7 +97,7 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
     return { attend, absent, pending };
   }, [matchClub]);
 
-  if (isMatchClubLoading || isMatchSummaryLoading || !matchClub || !matchSummary) {
+  if (isMatchClubLoading || !matchClub || !matchSummary) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />

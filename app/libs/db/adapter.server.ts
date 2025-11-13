@@ -1,4 +1,6 @@
 /** biome-ignore-all lint/correctness/noUnusedVariables: off */
+
+import { Prisma } from "@prisma/client";
 import type { Adapter } from "lucia";
 import { prisma } from "./db.server";
 import { redis } from "./redis.server";
@@ -128,10 +130,19 @@ export const adapter: Adapter = {
     }
   },
   deleteSession: async (sessionId) => {
-    await prisma.session.delete({
-      where: { id: sessionId },
-    });
-    await redis.del(`session:${sessionId}`);
+    try {
+      await prisma.session.delete({
+        where: { id: sessionId },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        // session already removed; continue to ensure cache cleanup
+      } else {
+        throw error;
+      }
+    } finally {
+      await redis.del(`session:${sessionId}`);
+    }
   },
   deleteUserSessions: async (userId) => {
     const sessions = await prisma.session.findMany({

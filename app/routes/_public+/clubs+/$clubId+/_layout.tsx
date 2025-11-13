@@ -1,18 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-
-import type { Board, Club, File, Player } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link, Outlet, type ShouldRevalidateFunction, useLoaderData } from "@remix-run/react";
-import {
-  type DehydratedState,
-  dehydrate,
-  HydrationBoundary,
-  type InfiniteData,
-  QueryClient,
-} from "@tanstack/react-query";
+import { Link, Outlet, type ShouldRevalidateFunction, useParams } from "@remix-run/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
+import { Loading } from "~/components/Loading";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import {
@@ -24,61 +17,57 @@ import {
 import {
   CLUB_BOARD_FEED_TAKE,
   CLUB_MATCH_FEED_TAKE,
-  type ClubBoardFeedResponse,
   type ClubMatchFeed,
   clubBoardQueryKeys,
   clubInfoQueryKeys,
   clubMatchQueryKeys,
   clubMemberQueryKeys,
+  prefetchClubBoardFeed,
+  useClubDetailsQuery,
+  useMembershipInfoQuery,
 } from "~/features/clubs/isomorphic";
-import { boardService, service as clubService, infoService } from "~/features/clubs/server";
-import { cn } from "~/libs";
-import { getUser } from "~/libs/index.server";
+import { getJson } from "~/libs/api-client";
+
+const ClubBreadcrumb = ({ clubId }: { clubId?: string }) => {
+  const { data } = useClubDetailsQuery(clubId ?? "", { enabled: Boolean(clubId) });
+  const label = data?.name ?? "클럽";
+  return <BreadcrumbLink to={`/clubs/${clubId}`}>{label}</BreadcrumbLink>;
+};
+
+const ClubHeaderActions = ({ clubId }: { clubId?: string }) => {
+  const { data } = useMembershipInfoQuery(clubId ?? "", { enabled: Boolean(clubId) });
+  if (!clubId || !data || (data.role !== "MANAGER" && data.role !== "MASTER")) {
+    return null;
+  }
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
+        >
+          <span className="sr-only">Open menu</span>
+          <DotsHorizontalIcon className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to={`/clubs/${clubId}/edit`}>클럽 수정</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={`/clubs/${clubId}/matches/new`}>매치 추가</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={`/clubs/${clubId}/boards/new`}>게시글 추가</Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export const handle = {
-  breadcrumb: (match: any) => {
-    const data = match.data;
-    const params = match.params;
-    return (
-      <>
-        <BreadcrumbLink to={`/clubs/${params.clubId}`}>{data.club.name}</BreadcrumbLink>
-      </>
-    );
-  },
-  right: (match: any) => {
-    const data = match.data;
-    const params = match.params;
-    return (
-      <>
-        {(data.player?.role === "MANAGER" || data.player?.role === "MASTER") && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
-                )}
-              >
-                <span className="sr-only">Open menu</span>
-                <DotsHorizontalIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to={`/clubs/${params.clubId}/edit`}>클럽 수정</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to={`/clubs/${params.clubId}/matches/new`}>매치 추가</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to={`/clubs/${params.clubId}/boards/new`}>게시글 추가</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </>
-    );
-  },
+  breadcrumb: (match: any) => <ClubBreadcrumb clubId={match.params.clubId} />,
+  right: (match: any) => <ClubHeaderActions clubId={match.params.clubId} />,
 };
 
 interface ILayoutProps {}
@@ -87,100 +76,173 @@ export const shouldRevalidate: ShouldRevalidateFunction = () => {
   return false;
 };
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  const clubId = params.clubId;
-  if (!clubId) {
-    throw redirect("/404");
-  }
-  const user = await getUser(request);
-  const { club, player } = await infoService.getClubLayoutData(clubId, user?.id);
-
-  if (!club) {
-    throw redirect("/404");
-  }
-
-  const queryClient = new QueryClient();
-  const [infoData, boards, approvedMembers, pendingMembers, matchesFeed, clubFeed] =
-    await Promise.all([
-      infoService.getClubInfoData(clubId),
-      boardService.getBoardTabs(clubId),
-      clubService.getClubMembers(clubId),
-      clubService.getPendingClubMembers(clubId),
-      clubService.getClubMatchesFeed({
-        clubId,
-        take: CLUB_MATCH_FEED_TAKE,
-      }),
-      boardService.getClubFeed({
-        clubId,
-        take: CLUB_BOARD_FEED_TAKE,
-        userId: user?.id,
-      }),
-    ]);
-
-  queryClient.setQueryData(clubInfoQueryKeys.recentMatch(clubId), infoData.recentMatch);
-  queryClient.setQueryData(clubInfoQueryKeys.upcomingMatch(clubId), infoData.upcomingMatch);
-  queryClient.setQueryData(clubInfoQueryKeys.attendance(clubId), infoData.attendance);
-  queryClient.setQueryData(clubInfoQueryKeys.goalLeaders(clubId), infoData.goalLeaders);
-  queryClient.setQueryData(clubInfoQueryKeys.ratingLeaders(clubId), infoData.ratingLeaders);
-  queryClient.setQueryData(clubInfoQueryKeys.notices(clubId), infoData.notices);
-  queryClient.setQueryData(clubInfoQueryKeys.club(clubId), club);
-  queryClient.setQueryData(clubInfoQueryKeys.membership(clubId), player ?? null);
-
-  queryClient.setQueryData(clubBoardQueryKeys.tabs(clubId), boards);
-  queryClient.setQueryData(clubMemberQueryKeys.approved(clubId), approvedMembers);
-  queryClient.setQueryData(clubMemberQueryKeys.pendings(clubId), pendingMembers);
-  const initialMatches: InfiniteData<ClubMatchFeed, string | null> = {
-    pages: [matchesFeed],
-    pageParams: [null],
-  };
-  queryClient.setQueryData(clubMatchQueryKeys.feed(clubId), initialMatches);
-  const initialFeed: InfiniteData<ClubBoardFeedResponse, string | null> = {
-    pages: [clubFeed],
-    pageParams: [null],
-  };
-  queryClient.setQueryData(clubBoardQueryKeys.feed(clubId, "all"), initialFeed);
-
-  return { club, player, dehydratedState: dehydrate(queryClient) };
-}
-
-export type IClubLayoutLoaderData = {
-  club: Club & {
-    image?: File | null;
-    emblem?: File | null;
-    boards?: Board[];
-  };
-  player: (Player & { user: { userImage: string } }) | null;
-  dehydratedState: DehydratedState;
-};
-
 const Layout = (_props: ILayoutProps) => {
-  const data = useLoaderData<IClubLayoutLoaderData>();
+  const params = useParams();
+  const clubId = params.clubId!;
+  const queryClient = useQueryClient();
+  const { data: clubData, isLoading: isClubLoading } = useClubDetailsQuery(clubId, {
+    enabled: Boolean(clubId),
+  });
+  const { data: playerData, isLoading: isMembershipLoading } = useMembershipInfoQuery(clubId, {
+    enabled: Boolean(clubId),
+  });
+  const club = clubData ?? null;
+  const player = playerData ?? null;
 
-  const status = data.player?.status;
+  useEffect(() => {
+    if (!club) return;
+    const selectedClubId = club.id;
+    queryClient.setQueryData(clubInfoQueryKeys.club(selectedClubId), club);
+    queryClient.setQueryData(clubInfoQueryKeys.membership(selectedClubId), player ?? null);
+
+    const controller = new AbortController();
+    const prefetch = async () => {
+      const tasks: Array<Promise<unknown>> = [];
+      const infoEndpoints = [
+        {
+          key: clubInfoQueryKeys.recentMatch(selectedClubId),
+          url: `/api/clubs/${selectedClubId}/info/recent-match`,
+        },
+        {
+          key: clubInfoQueryKeys.upcomingMatch(selectedClubId),
+          url: `/api/clubs/${selectedClubId}/info/upcoming-match`,
+        },
+        {
+          key: clubInfoQueryKeys.attendance(selectedClubId),
+          url: `/api/clubs/${selectedClubId}/info/attendance`,
+        },
+        {
+          key: clubInfoQueryKeys.goalLeaders(selectedClubId),
+          url: `/api/clubs/${selectedClubId}/info/goal-leaders`,
+        },
+        {
+          key: clubInfoQueryKeys.ratingLeaders(selectedClubId),
+          url: `/api/clubs/${selectedClubId}/info/rating-leaders`,
+        },
+        {
+          key: clubInfoQueryKeys.notices(selectedClubId),
+          url: `/api/clubs/${selectedClubId}/info/notices`,
+        },
+      ];
+
+      infoEndpoints.forEach(({ key, url }) => {
+        tasks.push(
+          queryClient
+            .prefetchQuery({
+              queryKey: key,
+              queryFn: () => getJson(url, { auth: true, signal: controller.signal }),
+            })
+            .catch(() => undefined),
+        );
+      });
+
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: clubBoardQueryKeys.tabs(selectedClubId),
+            queryFn: () =>
+              getJson(`/api/clubs/${selectedClubId}/boards/tabs`, {
+                auth: true,
+                signal: controller.signal,
+              }),
+          })
+          .catch(() => undefined),
+      );
+
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: clubMemberQueryKeys.approved(selectedClubId),
+            queryFn: () =>
+              getJson(`/api/clubs/${selectedClubId}/members/approved`, {
+                auth: true,
+                signal: controller.signal,
+              }),
+          })
+          .catch(() => undefined),
+      );
+
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: clubMemberQueryKeys.pendings(selectedClubId),
+            queryFn: () =>
+              getJson(`/api/clubs/${selectedClubId}/members/pendings`, {
+                auth: true,
+                signal: controller.signal,
+              }),
+          })
+          .catch(() => undefined),
+      );
+
+      tasks.push(
+        queryClient
+          .prefetchInfiniteQuery<ClubMatchFeed>({
+            queryKey: clubMatchQueryKeys.feed(selectedClubId),
+            initialPageParam: null,
+            queryFn: async ({ pageParam }) => {
+              const searchParams = new URLSearchParams({ take: String(CLUB_MATCH_FEED_TAKE) });
+              const cursor = typeof pageParam === "string" ? pageParam : null;
+              if (cursor) searchParams.set("cursor", cursor);
+              return getJson<ClubMatchFeed>(
+                `/api/clubs/${selectedClubId}/matches?${searchParams.toString()}`,
+                {
+                  auth: true,
+                  signal: controller.signal,
+                },
+              );
+            },
+            getNextPageParam: (lastPage: ClubMatchFeed) =>
+              lastPage.pageInfo.hasMore ? (lastPage.pageInfo.nextCursor ?? undefined) : undefined,
+          })
+          .catch(() => undefined),
+      );
+
+      tasks.push(
+        prefetchClubBoardFeed(queryClient, {
+          clubId: selectedClubId,
+          take: CLUB_BOARD_FEED_TAKE,
+        }).catch(() => undefined),
+      );
+
+      await Promise.all(tasks);
+    };
+
+    void prefetch();
+    return () => controller.abort();
+  }, [club, player, queryClient]);
+
+  if (isClubLoading || isMembershipLoading || !club) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
+  const status = player?.status;
   const isPending = status === "PENDING";
   const isRejected = status === "REJECTED";
 
   return (
-    <HydrationBoundary state={data.dehydratedState}>
-      <div className="flex flex-col gap-4 w-full">
-        {isPending && (
-          <div className="space-y-2">
-            <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
-            <p className="text-sm text-muted-foreground">
-              클럽 관리자가 승인하면 클럽 정보를 확인하실 수 있습니다.
-            </p>
-          </div>
-        )}
+    <div className="flex flex-col gap-4 w-full">
+      {isPending && (
+        <div className="space-y-2">
+          <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
+          <p className="text-sm text-muted-foreground">
+            클럽 관리자가 승인하면 클럽 정보를 확인하실 수 있습니다.
+          </p>
+        </div>
+      )}
 
-        {isRejected && (
-          <FormError className="py-2">
-            가입 신청이 거절되었습니다. 필요시 다시 신청해 주세요.
-          </FormError>
-        )}
+      {isRejected && (
+        <FormError className="py-2">
+          가입 신청이 거절되었습니다. 필요시 다시 신청해 주세요.
+        </FormError>
+      )}
 
-        {!isPending && !isRejected && <Outlet />}
-      </div>
-    </HydrationBoundary>
+      {!isPending && !isRejected && <Outlet />}
+    </div>
   );
 };
 

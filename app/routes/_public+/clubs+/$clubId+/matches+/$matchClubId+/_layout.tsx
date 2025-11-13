@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
 import { Outlet, useLocation, useNavigate, useParams, useRevalidator } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { Loading } from "~/components/Loading";
 import { confirm } from "~/components/ui/confirm";
 import { useSession } from "~/contexts";
@@ -15,11 +15,12 @@ import {
 } from "~/features/matches/client";
 import {
   matchClubQueryKeys,
-  matchSummaryQueryKeys,
+  positionQueryKeys,
+  teamQueryKeys,
   useMatchClubQuery,
   useMatchCommentsQuery,
-  useMatchSummaryQuery,
 } from "~/features/matches/isomorphic";
+import { getJson } from "~/libs/api-client";
 
 interface IMatchClubIdLayoutProps {}
 
@@ -43,19 +44,73 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const { data: membership } = useMembershipInfoQuery(clubId ?? "", {
     enabled: Boolean(clubId),
   });
-  const { data: matchSummary, isLoading: isMatchSummaryLoading } = useMatchSummaryQuery(
-    matchClubId,
-    {
-      enabled: Boolean(matchClubId),
-    },
-  );
   const { data: commentsData } = useMatchCommentsQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
-  const isLoading = isMatchClubLoading || isMatchSummaryLoading;
+
+  useEffect(() => {
+    if (!matchClubId) return;
+    const prefetchQueries = async () => {
+      const tasks: Array<Promise<unknown>> = [];
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: positionQueryKeys.detail(matchClubId),
+            queryFn: async () =>
+              getJson(`/api/attendances?matchClubId=${matchClubId}`, { auth: true }),
+          })
+          .catch(() => undefined),
+      );
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: positionQueryKeys.quarters(matchClubId),
+            queryFn: async () =>
+              getJson(`/api/matchClubs/${matchClubId}/position/quarters`, { auth: true }),
+          })
+          .catch(() => undefined),
+      );
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: positionQueryKeys.settingAttendances(matchClubId),
+            queryFn: async () =>
+              getJson(`/api/matchClubs/${matchClubId}/position/attendances`, { auth: true }),
+          })
+          .catch(() => undefined),
+      );
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: positionQueryKeys.settingMatchClub(matchClubId),
+            queryFn: async () =>
+              getJson(`/api/matchClubs/${matchClubId}/position/setting`, { auth: true }),
+          })
+          .catch(() => undefined),
+      );
+      if (clubId) {
+        const searchParams = new URLSearchParams({ clubId });
+        tasks.push(
+          queryClient
+            .prefetchQuery({
+              queryKey: teamQueryKeys.detail(matchClubId),
+              queryFn: async () =>
+                getJson(`/api/matchClubs/${matchClubId}/teams?${searchParams.toString()}`, {
+                  auth: true,
+                }),
+            })
+            .catch(() => undefined),
+        );
+      }
+      await Promise.all(tasks);
+    };
+    void prefetchQueries();
+  }, [matchClubId, clubId, queryClient]);
+
+  const matchSummary = matchClubQueryData?.matchSummary ?? null;
   const matchClub = matchClubQueryData?.matchClub;
-  const summary = matchClubQueryData?.summary ?? null;
-  if (isLoading || !matchClub || !matchSummary) {
+  const isLoading = isMatchClubLoading || !matchClub || !matchSummary;
+  if (isLoading) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />
@@ -116,9 +171,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
       await queryClient.invalidateQueries({
         queryKey: matchClubQueryKeys.detail(matchClubId ?? ""),
       });
-      await queryClient.invalidateQueries({
-        queryKey: matchSummaryQueryKeys.detail(matchClubId ?? ""),
-      });
       revalidate();
       navigate(`/clubs/${params.clubId}/matches/${params.matchClubId}`);
     });
@@ -154,13 +206,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         }
         commentCount={commentsData?.comments.length ?? 0}
       >
-        <Outlet
-          context={{
-            matchClub,
-            summary,
-            matchSummary,
-          }}
-        />
+        <Outlet />
       </MatchHeaderCard>
       <CommentSection matchClubId={params.matchClubId} />
     </>

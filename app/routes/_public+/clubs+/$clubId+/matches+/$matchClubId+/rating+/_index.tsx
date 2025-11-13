@@ -15,7 +15,7 @@ import { Button } from "~/components/ui/button";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts";
 import { RatingCard, RatingRightDrawer } from "~/features/matches/client";
-import { useMatchClubQuery, useMatchSummaryQuery } from "~/features/matches/isomorphic";
+import { useMatchClubQuery } from "~/features/matches/isomorphic";
 import { ratingService } from "~/features/matches/server";
 import { useToast } from "~/hooks";
 import { getJson, getToastForError, postJson } from "~/libs";
@@ -58,13 +58,7 @@ const RatingPage = (_props: IRatingPageProps) => {
     clubId,
     enabled: Boolean(matchClubId),
   });
-  const { data: matchSummaryData, isLoading: isMatchSummaryLoading } = useMatchSummaryQuery(
-    matchClubId,
-    {
-      enabled: Boolean(matchClubId),
-    },
-  );
-  const match = matchSummaryData?.match ?? null;
+  const match = matchClubData?.matchSummary?.match ?? null;
   const quarters = matchClubData?.matchClub?.quarters
     ? [...matchClubData.matchClub.quarters].sort((a, b) => a.order - b.order)
     : null;
@@ -167,7 +161,7 @@ const RatingPage = (_props: IRatingPageProps) => {
       });
     },
   });
-  if (!isMounted || isMatchClubLoading || isMatchSummaryLoading || !match || !quarters) {
+  if (!isMounted || isMatchClubLoading || !match || !quarters) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />
