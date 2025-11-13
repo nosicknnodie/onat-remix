@@ -1,9 +1,19 @@
 import { prisma } from "~/libs/index.server";
 
+export async function findMatchClubWithQuarters(matchClubId: string) {
+  return await prisma.matchClub.findUnique({
+    where: { id: matchClubId },
+    include: { quarters: { include: { team1: true, team2: true } } },
+  });
+}
+
 export async function findMatchClubWithQuartersAndTeams(matchClubId: string) {
   return await prisma.matchClub.findUnique({
     where: { id: matchClubId },
-    include: { quarters: { include: { team1: true, team2: true } }, teams: true },
+    include: {
+      quarters: { include: { team1: true, team2: true } },
+      teams: true,
+    },
   });
 }
 
@@ -19,6 +29,37 @@ export async function findMatchClubWithQuartersTeamsAttendances(matchClubId: str
           assigneds: true,
           player: { include: { user: { include: { userImage: true } } } },
           mercenary: { include: { user: { include: { userImage: true } } } },
+        },
+      },
+    },
+  });
+}
+
+export async function findAttendancesForPosition(matchClubId: string) {
+  return await prisma.attendance.findMany({
+    where: {
+      matchClubId,
+      isVote: true,
+    },
+    include: {
+      assigneds: true,
+      team: true,
+      player: {
+        include: {
+          user: {
+            include: {
+              userImage: true,
+            },
+          },
+        },
+      },
+      mercenary: {
+        include: {
+          user: {
+            include: {
+              userImage: true,
+            },
+          },
         },
       },
     },

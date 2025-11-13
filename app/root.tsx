@@ -56,6 +56,7 @@ export async function loader() {
   return {
     env: {
       PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY: process.env.PUBLIC_MAP_KAKAO_JAVASCRIPT_API_KEY,
+      WS_SERVER_URL: process.env.WS_SERVER_URL,
     },
   };
 }

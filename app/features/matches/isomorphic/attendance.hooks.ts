@@ -5,6 +5,7 @@ import type {
   AttendanceMutationInput,
   AttendanceMutationResponse,
   AttendanceQueryResponse,
+  AttendanceStateMutationInput,
 } from "./attnedance.types";
 
 export const attendanceQueryKeys = {
@@ -73,6 +74,22 @@ export function useAttendanceMutation(
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+}
+
+export function useAttendanceStateMutation() {
+  return useMutation<unknown, unknown, AttendanceStateMutationInput>({
+    mutationFn: async (input) => {
+      const res = await fetch("/api/attendances", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) {
+        throw new Error((await res.text()) || "Failed to update attendance state");
+      }
+      return res.json();
     },
   });
 }

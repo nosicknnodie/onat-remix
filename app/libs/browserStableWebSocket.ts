@@ -121,17 +121,3 @@ export class BrowserStableWebSocket {
     return this.ws;
   }
 }
-
-// 사용 예시
-/*
-const socket = new BrowserStableWebSocket('wss://your.url/ws', {
-  onOpen: () => console.log('🔌 연결됨'),
-  onMessage: (data) => console.log('📥 메시지:', data),
-  onError: (e) => console.error('❗ 오류:', e),
-  onClose: () => console.log('❎ 연결 종료'),
-  onReconnectAttempt: (n, d) => console.log(`🔁 재시도 #${n} (${d}ms 후)`),
-  pingIntervalMs: 15000,
-  maxReconnectAttempts: 5,
-  pingMessage: 'ping'
-});
-*/

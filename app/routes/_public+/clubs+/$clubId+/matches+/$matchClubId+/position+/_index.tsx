@@ -1,30 +1,69 @@
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react";
-import { useState, useTransition } from "react";
+import { useNavigate, useParams, useRouteLoaderData, useSearchParams } from "@remix-run/react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
-import { positionSerivce } from "~/features/matches/server";
-import { Board } from "./_Board";
-import { PositionContext, usePositionQuery } from "./_position.context";
-
-export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
-  const matchClubId = params.matchClubId!;
-  const data = await positionSerivce.getPositionPageData(matchClubId);
-  if (!data) return redirect("../");
-  return { ...data, env: { WS_SERVER_URL: process.env.WS_SERVER_URL } };
+import { PositionBoardSection } from "~/features/matches/client";
+import {
+  PositionContext,
+  usePositionQuery,
+  useQuarterQuery,
+  useTeamQuery,
+} from "~/features/matches/isomorphic";
+import type { loader as rootLoader } from "~/root";
+export const handle = {
+  breadcrumb: () => {
+    return <>포지션</>;
+  },
 };
 
 interface IPositionPageProps {}
 
 const PositionPage = (_props: IPositionPageProps) => {
-  const loaderData = useLoaderData<typeof loader>();
+  const rootData = useRouteLoaderData<typeof rootLoader>("root");
+  const params = useParams();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const quarterOrder = searchParams.get("quarterOrder");
-  const { revalidate } = useRevalidator();
-  const matchClub = loaderData.matchClub;
+  const matchClubId = params.matchClubId;
+  const quarterQuery = useQuarterQuery(matchClubId, { enabled: Boolean(matchClubId) });
+  const matchClub = quarterQuery.data?.matchClub;
   const [currentQuarterOrder, setCurrentQuarterOrder] = useState(Number(quarterOrder || 1));
   const [isPending, startTransition] = useTransition();
-  const query = usePositionQuery();
+  const attendanceQuery = usePositionQuery(matchClub?.id, { enabled: Boolean(matchClub?.id) });
+  const teamQuery = useTeamQuery(matchClub?.id, {
+    clubId: params.clubId,
+    enabled: Boolean(params.clubId && matchClub?.id),
+  });
+
+  useEffect(() => {
+    if (quarterQuery.error && quarterQuery.error instanceof Response) {
+      if (quarterQuery.error.status === 404) {
+        navigate("../");
+      }
+    }
+  }, [navigate, quarterQuery.error]);
+
+  const teamResponse = teamQuery.data;
+  const teams = teamResponse && "teams" in teamResponse ? teamResponse.teams : [];
+  useEffect(() => {
+    if (teamResponse && "redirectTo" in teamResponse) {
+      navigate(teamResponse.redirectTo);
+    }
+  }, [navigate, teamResponse]);
+
+  const isLoadingQuarters = quarterQuery.isLoading || !matchClub;
+  const positionQueryValue = useMemo(
+    () => ({ currentQuarterOrder, query: attendanceQuery }),
+    [attendanceQuery, currentQuarterOrder],
+  );
+  if (isLoadingQuarters) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
   /**
    * 쿼터가 최대 쿼터보다 많으면 증가시킴
    * @param quarter
@@ -43,7 +82,7 @@ const PositionPage = (_props: IPositionPageProps) => {
             order: maxOrder + 1,
           }),
         });
-        revalidate();
+        await quarterQuery.refetch();
       }
       setCurrentQuarterOrder(order);
     });
@@ -52,7 +91,7 @@ const PositionPage = (_props: IPositionPageProps) => {
   const isLoading = isPending;
 
   return (
-    <PositionContext.Provider value={{ currentQuarterOrder, query }}>
+    <PositionContext.Provider value={positionQueryValue}>
       <div className="lg:space-y-6 max-lg:space-y-2">
         <section className="flex justify-center items-center">
           <div className="flex justify-center items-center">
@@ -74,7 +113,11 @@ const PositionPage = (_props: IPositionPageProps) => {
           </div>
         </section>
         {/* 자체전일 경우와 매칭일경우 두가지 타입에 따라서 다름 */}
-        <Board />
+        <PositionBoardSection
+          matchClub={matchClub}
+          teams={teams}
+          wsServerUrl={rootData?.env.WS_SERVER_URL}
+        />
       </div>
     </PositionContext.Provider>
   );

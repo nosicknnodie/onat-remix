@@ -1,10 +1,10 @@
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { useLoaderData, useParams, useRevalidator, useSearchParams } from "@remix-run/react";
+import { useParams, useSearchParams } from "@remix-run/react";
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
 import { useEffect, useState, useTransition } from "react";
 import { Preview } from "react-dnd-preview";
+import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
 import {
   Select,
@@ -16,14 +16,16 @@ import {
 import {
   DraggableChip,
   DropSpot,
-  PositionSettingContext,
   PositionSettingDrawer,
   PositionToolbar,
   QuarterStepper,
-  useOptimisticPositionUpdate,
-  usePositionSettingQuery,
 } from "~/features/matches/client";
-import { positionSerivce } from "~/features/matches/server";
+import {
+  PositionSettingContext,
+  useOptimisticPositionUpdate,
+  usePositionSettingMatchClubQuery,
+  usePositionSettingQuery,
+} from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
 import {
   isDiffPosition,
@@ -35,22 +37,13 @@ import {
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
-import { getUser } from "~/libs/db/lucia.server";
+
 // removed local context/drawer; using features UI
 // const isTouchDevice = () => {
 //   return typeof window !== "undefined" ? "ontouchstart" in window : false;
 // };
 
 // const bandendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
-
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const user = await getUser(request);
-  if (!user) return redirect("/auth/login");
-  const matchClubId = params.matchClubId!;
-  const data = await positionSerivce.getPositionSettingData(matchClubId);
-  if (!data) return redirect("../");
-  return data;
-};
 
 const POSITION_TEMPLATE = atomWithStorage<PORMATION_TYPE>("POSITION_TEMPLATE", "4-3-3");
 
@@ -59,11 +52,13 @@ interface IPositionSettingPageProps {}
 const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const [positionTemplate, setPositionTemplate] = useAtom(POSITION_TEMPLATE);
   const [searchParams] = useSearchParams();
-  const loaderData = useLoaderData<typeof loader>();
-  const matchClub = loaderData.matchClub;
-  const { revalidate } = useRevalidator();
   const params = useParams();
   const matchClubId = params.matchClubId!;
+  const matchClubQuery = usePositionSettingMatchClubQuery(matchClubId, {
+    enabled: Boolean(matchClubId),
+  });
+  const matchClub = matchClubQuery.data?.matchClub;
+  const matchClubLoading = matchClubQuery.isLoading;
   const { mutateAsync } = useOptimisticPositionUpdate(matchClubId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
@@ -71,10 +66,8 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     Number(searchParams.get("quarter")) || 1,
   );
   const currentQuarter =
-    matchClub.quarters.find((quarter) => quarter.order === currentQuarterOrder) || null;
-  const [currentTeamId, setCurrentTeamId] = useState(
-    searchParams.get("teamId") || matchClub.teams.at(0)?.id || null,
-  );
+    matchClub?.quarters.find((quarter) => quarter.order === currentQuarterOrder) || null;
+  const [currentTeamId, setCurrentTeamId] = useState<string | null>(searchParams.get("teamId"));
   const [isLoading, startTransition] = useTransition();
 
   const query = usePositionSettingQuery(matchClubId);
@@ -86,19 +79,24 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
    */
   const handleSetQuarter = (order: number) => {
     startTransition(async () => {
-      const quarterId = matchClub.quarters.find((quarter) => quarter.order === order)?.id;
+      const quarterId = matchClub?.quarters.find((quarter) => quarter.order === order)?.id;
       if (!quarterId) {
+        if (!matchClub) return;
         const maxOrder = matchClub.quarters.reduce((max, q) => {
           return q.order > max ? q.order : max;
         }, 0);
-        await fetch("/api/quarters/new", {
+        const response = await fetch("/api/quarters/new", {
           method: "POST",
           body: JSON.stringify({
             matchClubId: matchClub.id,
             order: maxOrder + 1,
           }),
+          headers: { "Content-Type": "application/json" },
         });
-        revalidate();
+        if (!response.ok) {
+          return;
+        }
+        await matchClubQuery.refetch();
       }
       setCurrentQuarterOrder(order);
     });
@@ -292,13 +290,31 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   };
 
   useEffect(() => {
-    setCurrentQuarterOrder(Number(searchParams.get("quarter")));
-    setCurrentTeamId(searchParams.get("teamId") || null);
-    return () => {
-      setCurrentTeamId(null);
-      setCurrentQuarterOrder(1);
-    };
-  }, [searchParams]);
+    const quarterParam = Number(searchParams.get("quarter"));
+    if (!Number.isNaN(quarterParam) && quarterParam > 0) {
+      setCurrentQuarterOrder(quarterParam);
+    }
+    const teamParam = searchParams.get("teamId");
+    if (teamParam) {
+      setCurrentTeamId(teamParam);
+    } else if (!teamParam && !currentTeamId && matchClub?.teams?.length) {
+      setCurrentTeamId(matchClub.teams[0].id);
+    }
+  }, [searchParams, matchClub?.teams, currentTeamId]);
+
+  useEffect(() => {
+    if (!currentTeamId && matchClub?.teams?.length) {
+      setCurrentTeamId(matchClub.teams[0].id);
+    }
+  }, [matchClub?.teams, currentTeamId]);
+
+  if (matchClubLoading || !matchClub) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -440,23 +456,10 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               })}
 
               <PositionSettingDrawer
+                matchClubId={matchClub.id}
                 positionType={selectedPositionType}
                 open={drawerOpen}
                 onOpenChange={setDrawerOpen}
-                currentQuarter={currentQuarter}
-                currentTeamId={currentTeamId}
-                teams={matchClub.teams}
-                quarters={matchClub.quarters}
-                assigned={assigneds?.find(
-                  (a) =>
-                    a.quarterId === currentQuarter?.id &&
-                    a.teamId === currentTeamId &&
-                    a.position === selectedPositionType,
-                )}
-                attendances={query.data?.attendances || []}
-                onRefetch={() => {
-                  void query.refetch();
-                }}
               />
             </div>
           </section>

@@ -1,7 +1,13 @@
 import { redis } from "~/libs/index.server";
 import * as q from "./position.queries";
 
-export async function getPositionPageData(matchClubId: string) {
+export async function getQuarterData(matchClubId: string) {
+  const matchClub = await q.findMatchClubWithQuarters(matchClubId);
+  if (!matchClub) return null;
+  return { matchClub } as const;
+}
+
+export async function getPositionSettingMeta(matchClubId: string) {
   const matchClub = await q.findMatchClubWithQuartersAndTeams(matchClubId);
   if (!matchClub) return null;
   return { matchClub } as const;
@@ -11,6 +17,51 @@ export async function getPositionSettingData(matchClubId: string) {
   const matchClub = await q.findMatchClubWithQuartersTeamsAttendances(matchClubId);
   if (!matchClub) return null;
   return { matchClub } as const;
+}
+
+export async function getPositionAttendances(matchClubId: string) {
+  const attendances = await q.findAttendancesForPosition(matchClubId);
+  return { attendances } as const;
+}
+
+export async function upsertAssignedSlot(data: {
+  attendanceId: string;
+  quarterId: string;
+  position: import("@prisma/client").PositionType;
+  teamId?: string | null;
+}) {
+  const existing = await q.findAssignedByPosition(
+    data.quarterId,
+    data.teamId ?? null,
+    data.position,
+  );
+  if (existing) {
+    if (existing.attendanceId === data.attendanceId) {
+      return { ok: true as const, assigned: existing, action: "noop" as const };
+    }
+    const updated = await q.updateAssigned(existing.id, {
+      attendanceId: data.attendanceId,
+      quarterId: data.quarterId,
+      position: data.position,
+      teamId: data.teamId,
+    });
+    await redis.publish(
+      `position:${data.quarterId}`,
+      JSON.stringify({ type: "POSITION_UPDATED", assigneds: [updated] }),
+    );
+    return { ok: true as const, assigned: updated, action: "updated" as const };
+  }
+  const created = await q.createAssigned({
+    attendanceId: data.attendanceId,
+    quarterId: data.quarterId,
+    position: data.position,
+    teamId: data.teamId,
+  });
+  await redis.publish(
+    `position:${data.quarterId}`,
+    JSON.stringify({ type: "POSITION_CREATED", assigneds: [created] }),
+  );
+  return { ok: true as const, assigned: created, action: "created" as const };
 }
 
 export async function createQuarter(matchClubId: string, order: number) {

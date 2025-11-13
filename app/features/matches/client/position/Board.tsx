@@ -1,60 +1,70 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import type { Team } from "@prisma/client";
+import { Link } from "@remix-run/react";
 import { AiFillSkin } from "react-icons/ai";
 import { Button } from "~/components/ui/button";
-import {
-  type PositionAssigned,
-  PositionBoard,
-  PositionTeamActions,
-} from "~/features/matches/client";
+import type { PositionMatchClub } from "~/features/matches/isomorphic";
+import { usePositionContext, usePositionUpdate } from "~/features/matches/isomorphic";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs/const/position.const";
-import type { loader } from "./_index";
-import { usePositionContext, usePositionUpdate } from "./_position.context";
+import type { PositionAssigned } from "../PositionBoard";
+import { PositionBoard } from "../PositionBoard";
+import { PositionTeamActions } from "./TeamActions";
 
-export const Board = () => {
-  const loaderData = useLoaderData<typeof loader>();
+type PositionBoardSectionProps = {
+  matchClub: PositionMatchClub;
+  teams?: Team[];
+  wsServerUrl?: string | null;
+};
+
+export function PositionBoardSection({
+  matchClub,
+  teams = [],
+  wsServerUrl,
+}: PositionBoardSectionProps) {
   const context = usePositionContext();
-  const currentQuarterOrder = context?.currentQuarterOrder;
-  const currentQuarter = loaderData.matchClub.quarters.find(
+  const currentQuarterOrder = context?.currentQuarterOrder ?? 1;
+  const currentQuarter = matchClub.quarters.find(
     (quarter) => quarter.order === currentQuarterOrder,
   );
-  const isSelf = currentQuarter?.isSelf || loaderData.matchClub.isSelf;
+  const isSelf = currentQuarter?.isSelf || matchClub.isSelf;
   const team1 = currentQuarter?.team1;
   const team2 = currentQuarter?.team2;
 
-  const assigneds = context?.query.data?.attendances
-    .flatMap((attendance) =>
+  const assignedEntries =
+    context?.query.data?.attendances?.flatMap((attendance) =>
       attendance.assigneds.map((assigned) => ({
         ...assigned,
         attendance,
       })),
-    )
+    ) ?? [];
+
+  const assigneds = assignedEntries
     .filter((assigned) => assigned.quarterId === currentQuarter?.id && assigned.position)
     .map((assigned) => {
-      const isSelf = currentQuarter?.isSelf || loaderData.matchClub.isSelf;
       const { className, team1ClassName, team2ClassName } =
         PORMATION_POSITION_CLASSNAME[assigned.position];
-      let _className = "";
-      let _color: string | undefined;
+      let computedClass = "";
+      let color: string | undefined;
       if (isSelf) {
-        _className = assigned.teamId === team1?.id ? team1ClassName || "" : team2ClassName || "";
-        _color = assigned.teamId === team1?.id ? team1?.color : team2?.color;
+        computedClass = assigned.teamId === team1?.id ? team1ClassName || "" : team2ClassName || "";
+        color = assigned.teamId === team1?.id ? team1?.color : team2?.color;
       } else {
-        _className = className;
+        computedClass = className;
       }
       return {
         ...assigned,
-        className: _className,
-        color: _color,
+        className: computedClass,
+        color,
       };
     });
-  usePositionUpdate({
-    url: `${loaderData.env.WS_SERVER_URL}/position?id=${currentQuarter?.id}`,
-  });
+
+  const wsUrl =
+    wsServerUrl && currentQuarter?.id ? `${wsServerUrl}/position?id=${currentQuarter.id}` : null;
+  usePositionUpdate({ url: wsUrl, matchClubId: matchClub.id });
 
   const headerLeft = team1 ? (
     <PositionTeamActions
       teamId={team1.id}
-      teams={loaderData.matchClub.teams}
+      teams={teams}
       currentTeam={team1}
       currentQuarterOrder={currentQuarterOrder}
       team1Id={team1?.id || null}
@@ -74,7 +84,7 @@ export const Board = () => {
   const headerRight = team2 ? (
     <PositionTeamActions
       teamId={team2.id}
-      teams={loaderData.matchClub.teams}
+      teams={teams}
       currentTeam={team2}
       currentQuarterOrder={currentQuarterOrder}
       team1Id={team1?.id || null}
@@ -117,4 +127,4 @@ export const Board = () => {
       assigned={assignedList}
     />
   );
-};
+}

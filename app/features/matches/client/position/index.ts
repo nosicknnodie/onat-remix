@@ -1,3 +1,3 @@
+export * from "./Board";
 export * from "./SettingDrawer";
-export * from "./setting.context";
 export * from "./TeamActions";

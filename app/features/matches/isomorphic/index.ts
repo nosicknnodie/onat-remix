@@ -4,6 +4,8 @@ export * from "./comment.hooks";
 export * from "./comment.types";
 export * from "./matchClub.hooks";
 export * from "./matchClub.types";
+export * from "./position.hooks";
+export * from "./position.types";
 export * from "./schema";
 export * from "./summary.hooks";
 export * from "./summary.types";

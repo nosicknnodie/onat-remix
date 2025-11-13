@@ -1,13 +1,6 @@
 import type { AttendanceState, PositionType } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import {
-  createContext,
-  type PropsWithChildren,
-  useContext,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
+import { type PropsWithChildren, useEffect, useState } from "react";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -34,40 +27,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  type PositionAssignedWithAttendance,
+  usePositionAssignedDeleteMutation,
+  usePositionAssignMutation,
+  usePositionAttendanceStateMutation,
+  usePositionSettingContext,
+  usePositionSettingMatchClubQuery,
+} from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
 import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
-import type { IAssignedWithAttendance } from "./setting.context";
 
 interface IPositionSettingDrawerProps {
+  matchClubId: string;
   positionType: PositionType;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  currentQuarter: { id: string; order?: number } | null;
-  currentTeamId: string | null;
-  teams: { id: string; name: string }[];
-  quarters: { id: string; order: number }[];
-  assigned?: IAssignedWithAttendance;
-  attendances: IAssignedWithAttendance["attendance"][];
-  onRefetch: () => void | Promise<void>;
 }
 
-const PositionSettingDrawerContext = createContext<
-  { assigned: IAssignedWithAttendance | undefined } | undefined
->(undefined);
-
 export const PositionSettingDrawer = ({
+  matchClubId,
   positionType,
   open,
   onOpenChange,
-  currentQuarter,
-  currentTeamId,
-  teams,
-  quarters,
-  assigned,
-  attendances,
-  onRefetch,
 }: IPositionSettingDrawerProps) => {
-  const [isPending, startTransition] = useTransition();
+  const context = usePositionSettingContext();
+  if (!context) {
+    throw new Error("PositionSettingDrawer must be used within PositionSettingContext");
+  }
+  const { currentQuarter, currentTeamId, assigneds, query } = context;
+  const matchClubQuery = usePositionSettingMatchClubQuery(matchClubId, {
+    enabled: Boolean(matchClubId),
+  });
+  const assignMutation = usePositionAssignMutation(matchClubId);
+  const deleteMutation = usePositionAssignedDeleteMutation(matchClubId);
+  const attendanceStateMutation = usePositionAttendanceStateMutation(matchClubId);
+  const teams = matchClubQuery.data?.matchClub.teams ?? [];
+  const quarters = matchClubQuery.data?.matchClub.quarters ?? [];
+  const assigned = assigneds?.find(
+    (a) =>
+      a.quarterId === currentQuarter?.id &&
+      a.teamId === currentTeamId &&
+      a.position === positionType,
+  );
+  const attendances = query.data?.attendances ?? [];
   const [teamId, setTeamId] = useState(currentTeamId);
 
   const attendancesData = attendances
@@ -89,115 +92,145 @@ export const PositionSettingDrawer = ({
       return aTime - bTime;
     });
 
-  const handleSelectPosition = (attendance: NonNullable<typeof attendancesData>[number]) => {
-    startTransition(async () => {
-      if (assigned) {
-        await fetch("/api/assigneds", {
-          method: "DELETE",
-          body: JSON.stringify({
-            id: assigned.id,
-            attendanceId: attendance.id,
-            quarterId: currentQuarter?.id,
-            position: positionType,
-          }),
-        });
-      }
-      await fetch("/api/assigneds", {
-        method: "POST",
-        body: JSON.stringify({
-          attendanceId: attendance.id,
-          quarterId: currentQuarter?.id,
-          position: positionType,
-          teamId: currentTeamId,
-        }),
+  const handleSelectPosition = async (attendance: NonNullable<typeof attendancesData>[number]) => {
+    if (!currentQuarter?.id) return;
+    try {
+      await assignMutation.mutateAsync({
+        attendanceId: attendance.id,
+        quarterId: currentQuarter.id,
+        position: positionType,
+        teamId: currentTeamId,
       });
-      await onRefetch();
-    });
+    } catch (error) {
+      console.error(error);
+    }
   };
   useEffect(() => {
     setTeamId(currentTeamId);
   }, [currentTeamId]);
 
+  const handleCancelAssigned = async (item: PositionAssignedWithAttendance) => {
+    try {
+      await deleteMutation.mutateAsync({
+        id: item.id,
+        attendanceId: item.attendanceId,
+        quarterId: item.quarterId,
+        position: item.position,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleChangeAttendanceState = async (attendanceId: string, state: AttendanceState) => {
+    try {
+      await attendanceStateMutation.mutateAsync({ id: attendanceId, state });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const metaLoading = matchClubQuery.isLoading && !matchClubQuery.data;
+  const isMutating = assignMutation.isPending || deleteMutation.isPending;
+  const isCancelPending = deleteMutation.isPending;
+  const isStatePending = attendanceStateMutation.isPending;
+
   return (
-    <PositionSettingDrawerContext.Provider value={{ assigned }}>
-      <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>
-              포지션설정 {currentTeamId && <>({teams.find((t) => t.id === currentTeamId)?.name})</>}
-            </DrawerTitle>
-            <DrawerDescription>
-              {currentQuarter?.order}쿼터의 {positionType}의 포지션 설정
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4 space-y-2">
-            {assigned && (
-              <>
-                <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
-                <ul className="divide-y divide-gray-200">
-                  <PositionSettingRowItem
-                    attendance={assigned.attendance}
-                    isLoading={isPending}
-                    isAssigned={true}
-                    quarters={quarters}
-                    onRefetch={onRefetch}
-                  />
-                </ul>
-              </>
-            )}
-            <div className="flex justify-between items-center">
-              <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
-              {currentTeamId && (
-                <Select value={teamId ?? undefined} onValueChange={setTeamId}>
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="팀 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teams.map((team) => (
-                      <SelectItem key={team.id} value={team.id}>
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+    <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>
+            포지션설정{" "}
+            {currentTeamId && <>({teams.find((t) => t.id === currentTeamId)?.name ?? "팀 정보"})</>}
+          </DrawerTitle>
+          <DrawerDescription>
+            {currentQuarter?.order}쿼터의 {positionType}의 포지션 설정
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="p-4 space-y-2">
+          {metaLoading && (
+            <div className="flex justify-center py-6">
+              <Loading />
             </div>
-            <ul className="divide-y divide-gray-200">
-              {attendancesData?.map((attendance) => (
+          )}
+          {assigned && (
+            <>
+              <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
+              <ul className="divide-y divide-gray-200">
                 <PositionSettingRowItem
-                  onClick={() => handleSelectPosition(attendance)}
-                  key={attendance.id}
-                  attendance={attendance}
-                  isLoading={isPending}
-                  isAssigned={false}
+                  attendance={assigned.attendance}
+                  isLoading={isMutating}
+                  isAssigned={true}
                   quarters={quarters}
-                  onRefetch={onRefetch}
+                  onChangeState={(state) =>
+                    handleChangeAttendanceState(assigned.attendance.id, state)
+                  }
+                  onCancelAssigned={() => handleCancelAssigned(assigned)}
+                  isStateMutating={isStatePending}
+                  isCancelPending={isCancelPending}
                 />
-              ))}
-            </ul>
+              </ul>
+            </>
+          )}
+          <div className="flex justify-between items-center">
+            <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
+            {currentTeamId && (
+              <Select value={teamId ?? undefined} onValueChange={setTeamId}>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue placeholder="팀 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
-        </DrawerContent>
-      </Drawer>
-    </PositionSettingDrawerContext.Provider>
+          <ul className="divide-y divide-gray-200">
+            {attendancesData?.map((attendance) => (
+              <PositionSettingRowItem
+                key={attendance.id}
+                attendance={attendance}
+                isLoading={isMutating}
+                isAssigned={false}
+                quarters={quarters}
+                onAssignClick={() => handleSelectPosition(attendance)}
+                onChangeState={(state) => handleChangeAttendanceState(attendance.id, state)}
+                isStateMutating={isStatePending}
+              />
+            ))}
+          </ul>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
 
 interface IPositionsettingRowItem extends PropsWithChildren {
-  attendance: IAssignedWithAttendance["attendance"];
+  attendance: PositionAssignedWithAttendance["attendance"];
   isAssigned: boolean;
   isLoading?: boolean;
-  onClick?: () => void;
+  onAssignClick?: () => void;
   quarters: { id: string; order: number }[];
-  onRefetch: () => void | Promise<void>;
+  onChangeState?: (state: AttendanceState) => void;
+  onCancelAssigned?: () => void;
+  isStateMutating?: boolean;
+  isCancelPending?: boolean;
 }
 
 const PositionSettingRowItem = ({
   attendance,
   isAssigned,
   isLoading,
-  onClick,
+  onAssignClick,
   quarters,
-  onRefetch,
+  onChangeState,
+  onCancelAssigned,
+  isStateMutating,
+  isCancelPending,
 }: IPositionsettingRowItem) => {
   const imageUrl =
     attendance?.player?.user?.userImage?.url || attendance?.mercenary?.user?.userImage?.url || null;
@@ -240,7 +273,7 @@ const PositionSettingRowItem = ({
           <Button
             size="sm"
             variant="default"
-            onClick={onClick}
+            onClick={onAssignClick}
             disabled={isLoading}
             className="text-xs px-2 py-0.5 h-6 rounded min-w-12 text-center flex justify-center"
           >
@@ -256,7 +289,14 @@ const PositionSettingRowItem = ({
             {state}
           </span>
         )}
-        <Action isAssigned={isAssigned} attendance={attendance} onRefetch={onRefetch} />
+        <Action
+          isAssigned={isAssigned}
+          attendance={attendance}
+          onChangeState={onChangeState}
+          onCancelAssigned={onCancelAssigned}
+          isStateMutating={isStateMutating}
+          isCancelPending={isCancelPending}
+        />
       </div>
       <div className="flex gap-1 w-full items-center">
         <span className="rounded flex-1 text-xs text-center">
@@ -286,43 +326,35 @@ const PositionSettingRowItem = ({
 
 interface IActionProps {
   isAssigned: boolean;
-  attendance: IAssignedWithAttendance["attendance"];
-  onRefetch: () => void | Promise<void>;
+  attendance: PositionAssignedWithAttendance["attendance"];
+  onChangeState?: (state: AttendanceState) => void;
+  onCancelAssigned?: () => void;
+  isStateMutating?: boolean;
+  isCancelPending?: boolean;
 }
-const Action = ({ isAssigned, attendance, onRefetch }: IActionProps) => {
-  const positionContext = useContext(PositionSettingDrawerContext);
-  const [isPending, startTransition] = useTransition();
+
+const Action = ({
+  isAssigned,
+  attendance,
+  onChangeState,
+  onCancelAssigned,
+  isStateMutating = false,
+  isCancelPending = false,
+}: IActionProps) => {
   const name =
     attendance?.player?.user?.name ||
     attendance?.mercenary?.user?.name ||
     attendance?.mercenary?.name ||
     "";
 
-  const handleChangeState = (state: AttendanceState) => {
-    startTransition(async () => {
-      await fetch("/api/attendances", {
-        method: "PUT",
-        body: JSON.stringify({ id: attendance.id, state }),
-      });
-      await onRefetch();
-    });
+  const handleChangeState = async (state: AttendanceState) => {
+    if (!onChangeState) return;
+    onChangeState(state);
   };
 
   const handleCancelAssigned = () => {
-    startTransition(async () => {
-      if (isAssigned && positionContext?.assigned) {
-        await fetch("/api/assigneds", {
-          method: "DELETE",
-          body: JSON.stringify({
-            id: positionContext?.assigned.id,
-            attendanceId: attendance.id,
-            quarterId: positionContext?.assigned.quarterId,
-            position: positionContext?.assigned.position,
-          }),
-        });
-      }
-      await onRefetch();
-    });
+    if (!isAssigned || !onCancelAssigned) return;
+    void onCancelAssigned();
   };
 
   return (
@@ -331,31 +363,35 @@ const Action = ({ isAssigned, attendance, onRefetch }: IActionProps) => {
         <Button
           variant="ghost"
           className="h-8 w-8 p-0 focus:outline-none focus:ring-0 focus-visible:ring-0"
-          disabled={isPending}
+          disabled={isStateMutating || isCancelPending}
         >
           <span className="sr-only">Open menu</span>
-          {isPending ? <Loading /> : <DotsHorizontalIcon className="h-4 w-4" />}
+          {isStateMutating || isCancelPending ? (
+            <Loading />
+          ) : (
+            <DotsHorizontalIcon className="h-4 w-4" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{`${name} 님`}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
-          disabled={isPending}
+          disabled={isStateMutating}
           checked={attendance.state === "NORMAL"}
           onClick={() => handleChangeState("NORMAL")}
         >
           기용가능
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          disabled={isPending}
+          disabled={isStateMutating}
           checked={attendance.state === "EXCUSED"}
           onClick={() => handleChangeState("EXCUSED")}
         >
           불참
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          disabled={isPending}
+          disabled={isStateMutating}
           checked={attendance.state === "RETIRED"}
           onClick={() => handleChangeState("RETIRED")}
         >

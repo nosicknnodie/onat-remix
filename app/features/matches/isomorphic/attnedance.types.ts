@@ -1,4 +1,4 @@
-import type { File, User } from "@prisma/client";
+import type { AttendanceState, File, User } from "@prisma/client";
 
 type AttendanceUser = (User & { userImage?: File | null }) | null;
 
@@ -73,3 +73,8 @@ export type AttendanceMutationInput = {
 };
 
 export type AttendanceMutationResponse = { ok: true } | { redirectTo: string };
+
+export type AttendanceStateMutationInput = {
+  id: string;
+  state: AttendanceState;
+};

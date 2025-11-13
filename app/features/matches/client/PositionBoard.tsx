@@ -25,11 +25,9 @@ export function PositionBoard({
     <section>
       <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
         <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
-
         {headerLeft}
         {headerRight}
         {settingButton}
-
         {assigned.map((item) => (
           <MotionButton
             layoutId={item.id}
