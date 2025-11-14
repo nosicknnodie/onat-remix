@@ -64,7 +64,7 @@ function useClubBoardQuery<TData>(key: readonly unknown[], url: string, options?
   const mergedKey = useMemo(() => key, [key]);
   return useQuery<TData>({
     queryKey: mergedKey,
-    queryFn: () => getJson<TData>(url, { auth: true }),
+    queryFn: () => getJson<TData>(url),
     refetchOnWindowFocus: false,
     ...options,
   });
@@ -105,7 +105,7 @@ export function useClubBoardFeedInfiniteQuery(
       }
       const basePath = slug ? `/api/clubs/${clubId}/boards/${slug}` : `/api/clubs/${clubId}/boards`;
       const url = `${basePath}?${searchParams.toString()}`;
-      return getJson<ClubBoardFeedResponse>(url, { auth: true });
+      return getJson<ClubBoardFeedResponse>(url);
     },
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasMore ? (lastPage.pageInfo.nextCursor ?? undefined) : undefined,
@@ -135,7 +135,7 @@ export function prefetchClubBoardFeed(queryClient: QueryClient, args: FeedQueryA
       }
       const basePath = slug ? `/api/clubs/${clubId}/boards/${slug}` : `/api/clubs/${clubId}/boards`;
       const url = `${basePath}?${searchParams.toString()}`;
-      return getJson<ClubBoardFeedResponse>(url, { auth: true });
+      return getJson<ClubBoardFeedResponse>(url);
     },
     getNextPageParam: (lastPage: ClubBoardFeedResponse) =>
       lastPage.pageInfo.hasMore ? (lastPage.pageInfo.nextCursor ?? undefined) : undefined,
@@ -184,7 +184,7 @@ export function useClubPostDetailQuery(postId?: string, options?: Options<ClubBo
       if (!postId) {
         throw new Error("postId is required to fetch post detail");
       }
-      return getJson<ClubBoardPostDetail>(`/api/posts/${postId}`, { auth: true });
+      return getJson<ClubBoardPostDetail>(`/api/posts/${postId}`);
     },
     enabled: enabled ?? Boolean(postId),
     refetchOnWindowFocus: false,
@@ -206,7 +206,7 @@ export function useClubPostCommentsQuery({ postId, path }: CommentsQueryArgs) {
       }
       const query = searchParams.toString();
       const url = `/api/posts/${postId}/comments${query ? `?${query}` : ""}`;
-      return getJson<ClubBoardCommentsResponse>(url, { auth: true });
+      return getJson<ClubBoardCommentsResponse>(url);
     },
     enabled: Boolean(postId),
     refetchOnWindowFocus: false,

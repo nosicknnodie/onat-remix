@@ -35,7 +35,6 @@ export function useAttendanceQuery(matchClubId?: string, options?: UseAttendance
       const searchParams = new URLSearchParams({ clubId });
       return getJson<AttendanceQueryResponse>(
         `/api/matchClubs/${matchClubId}/attendance?${searchParams.toString()}`,
-        { auth: true },
       );
     },
     enabled,
@@ -62,11 +61,10 @@ export function useAttendanceMutation(
       if (!options?.clubId) {
         throw new Error("clubId is required to submit attendance");
       }
-      return postJson<AttendanceMutationResponse>(
-        `/api/matchClubs/${matchClubId}/attendance`,
-        { ...input, clubId: options.clubId },
-        { auth: true },
-      );
+      return postJson<AttendanceMutationResponse>(`/api/matchClubs/${matchClubId}/attendance`, {
+        ...input,
+        clubId: options.clubId,
+      });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey });
@@ -77,7 +75,7 @@ export function useAttendanceMutation(
 export function useAttendanceStateMutation() {
   return useMutation<unknown, unknown, AttendanceStateMutationInput>({
     mutationFn: async (input) => {
-      return putJson("/api/attendances", input, { auth: true });
+      return putJson("/api/attendances", input);
     },
   });
 }

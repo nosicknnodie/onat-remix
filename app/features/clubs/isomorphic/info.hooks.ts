@@ -22,7 +22,7 @@ function useClubInfoQuery<TData>(key: readonly unknown[], url: string, options?:
   const mergedKey = useMemo(() => key, [key]);
   return useQuery<TData>({
     queryKey: mergedKey,
-    queryFn: () => getJson<TData>(url, { auth: true }),
+    queryFn: () => getJson<TData>(url),
     refetchOnWindowFocus: false,
     ...options,
   });

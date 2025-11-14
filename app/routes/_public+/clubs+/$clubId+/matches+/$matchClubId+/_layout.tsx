@@ -58,8 +58,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.detail(matchClubId),
-            queryFn: async () =>
-              getJson(`/api/attendances?matchClubId=${matchClubId}`, { auth: true }),
+            queryFn: async () => getJson(`/api/attendances?matchClubId=${matchClubId}`),
           })
           .catch(() => undefined),
       );
@@ -67,8 +66,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.quarters(matchClubId),
-            queryFn: async () =>
-              getJson(`/api/matchClubs/${matchClubId}/position/quarters`, { auth: true }),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/quarters`),
           })
           .catch(() => undefined),
       );
@@ -76,8 +74,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.settingAttendances(matchClubId),
-            queryFn: async () =>
-              getJson(`/api/matchClubs/${matchClubId}/position/attendances`, { auth: true }),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/attendances`),
           })
           .catch(() => undefined),
       );
@@ -85,8 +82,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.settingMatchClub(matchClubId),
-            queryFn: async () =>
-              getJson(`/api/matchClubs/${matchClubId}/position/setting`, { auth: true }),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/setting`),
           })
           .catch(() => undefined),
       );
@@ -94,7 +90,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: recordQueryKeys.detail(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/record`, { auth: true }),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/record`),
           })
           .catch(() => undefined),
       );
@@ -102,7 +98,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: ratingQueryKeys.detail(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/rating`, { auth: true }),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/rating`),
           })
           .catch(() => undefined),
       );
@@ -113,9 +109,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
             .prefetchQuery({
               queryKey: teamQueryKeys.detail(matchClubId),
               queryFn: async () =>
-                getJson(`/api/matchClubs/${matchClubId}/teams?${searchParams.toString()}`, {
-                  auth: true,
-                }),
+                getJson(`/api/matchClubs/${matchClubId}/teams?${searchParams.toString()}`),
             })
             .catch(() => undefined),
         );

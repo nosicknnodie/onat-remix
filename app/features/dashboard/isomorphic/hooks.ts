@@ -16,7 +16,7 @@ function useDashboardQuery<TData>(key: readonly unknown[], url: string, options?
   const mergedKey = useMemo(() => key, [key]);
   return useQuery<TData>({
     queryKey: mergedKey,
-    queryFn: () => getJson<TData>(url, { auth: true }),
+    queryFn: () => getJson<TData>(url),
     staleTime: Infinity,
     gcTime: Infinity,
     refetchOnWindowFocus: false,

@@ -26,7 +26,7 @@ export function useMatchSummaryQuery(matchClubId?: string, options?: UseMatchSum
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch match summary");
       }
-      return getJson<MatchSummary>(`/api/matchClubs/${matchClubId}/summary`, { auth: true });
+      return getJson<MatchSummary>(`/api/matchClubs/${matchClubId}/summary`);
     },
     enabled,
     initialData: options?.initialData,
@@ -48,7 +48,7 @@ export function useMatchDetailQuery(matchId?: string, options?: UseMatchDetailQu
       if (!matchId) {
         throw new Error("matchId is required to fetch match detail");
       }
-      return getJson<MatchSummary>(`/api/matches/${matchId}`, { auth: true });
+      return getJson<MatchSummary>(`/api/matches/${matchId}`);
     },
     enabled,
     initialData: options?.initialData,

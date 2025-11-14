@@ -19,7 +19,7 @@ import {
   useRatingQuery,
   useRatingScoreMutation,
 } from "~/features/matches/isomorphic";
-import { useToast } from "~/hooks";
+import { useQueryErrorToast, useToast } from "~/hooks";
 import { getToastForError } from "~/libs";
 import {
   isAttackPosition,
@@ -28,6 +28,11 @@ import {
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
 
+export const handle = {
+  breadcrumb: () => {
+    return <>평점</>;
+  },
+};
 interface IRatingPageProps {}
 
 const RatingPage = (_props: IRatingPageProps) => {
@@ -43,9 +48,14 @@ const RatingPage = (_props: IRatingPageProps) => {
     setIsMounted(true);
   }, []);
   const { toast } = useToast();
-  const { data, isLoading: isRatingLoading } = useRatingQuery(matchClubId, {
+  const {
+    data,
+    isLoading: isRatingLoading,
+    error: ratingError,
+  } = useRatingQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
+  useQueryErrorToast(ratingError);
   const attendances = data?.attendances ?? [];
   const { data: matchClubData, isLoading: isMatchClubLoading } = useMatchClubQuery(matchClubId, {
     clubId,

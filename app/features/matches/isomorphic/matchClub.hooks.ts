@@ -26,7 +26,7 @@ export function useMatchClubQuery(matchClubId?: string, options?: UseMatchClubQu
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch match club detail");
       }
-      return getJson<MatchClubQueryResponse>(`/api/matchClubs/${matchClubId}`, { auth: true });
+      return getJson<MatchClubQueryResponse>(`/api/matchClubs/${matchClubId}`);
     },
     enabled,
     initialData,

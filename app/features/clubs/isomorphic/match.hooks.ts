@@ -52,9 +52,7 @@ export function useClubMatchFeedInfiniteQuery(
       if (cursor) {
         searchParams.set("cursor", cursor);
       }
-      return getJson<ClubMatchFeed>(`/api/clubs/${clubId}/matches?${searchParams.toString()}`, {
-        auth: true,
-      });
+      return getJson<ClubMatchFeed>(`/api/clubs/${clubId}/matches?${searchParams.toString()}`);
     },
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasMore ? (lastPage.pageInfo.nextCursor ?? undefined) : undefined,

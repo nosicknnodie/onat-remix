@@ -31,9 +31,7 @@ export function useMatchCommentsQuery(matchClubId?: string, options?: UseMatchCo
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch comments");
       }
-      return getJson<MatchClubCommentsResponse>(`/api/matchClubs/${matchClubId}/comments`, {
-        auth: true,
-      });
+      return getJson<MatchClubCommentsResponse>(`/api/matchClubs/${matchClubId}/comments`);
     },
     enabled,
     initialData: options?.initialData,
@@ -49,7 +47,6 @@ export function useCommentImageUpload() {
     return apiFetch<MatchCommentImageUploadResponse>("/api/upload/comment-image", {
       method: "POST",
       body: formData,
-      auth: true,
     });
   };
 
@@ -70,16 +67,12 @@ export function useCreateMatchCommentMutation(
       if (!matchClubId) {
         throw new Error("matchClubId is required to create comment");
       }
-      return postJson<CreateMatchClubCommentResponse>(
-        `/api/matchClubs/${matchClubId}/comments`,
-        {
-          content,
-          matchClubId,
-          parentId: parentId ?? null,
-          replyToUserId: replyToUserId ?? null,
-        },
-        { auth: true },
-      );
+      return postJson<CreateMatchClubCommentResponse>(`/api/matchClubs/${matchClubId}/comments`, {
+        content,
+        matchClubId,
+        parentId: parentId ?? null,
+        replyToUserId: replyToUserId ?? null,
+      });
     },
     ...(options ?? {}),
     onSuccess: async (data, variables, context) => {

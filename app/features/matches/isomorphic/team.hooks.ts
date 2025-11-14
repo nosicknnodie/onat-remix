@@ -30,7 +30,6 @@ export function useTeamQuery(matchClubId?: string, options?: UseTeamQueryOptions
       const searchParams = new URLSearchParams({ clubId: options.clubId });
       return getJson<TeamQueryResponse>(
         `/api/matchClubs/${matchClubId}/teams?${searchParams.toString()}`,
-        { auth: true },
       );
     },
     enabled,
@@ -56,7 +55,7 @@ export function useTeamAssignmentMutation(matchClubId?: string) {
 
   return useMutation<unknown, unknown, TeamAssignmentInput>({
     mutationFn: async (input) => {
-      return postJson("/api/attendances/team", input, { auth: true });
+      return postJson("/api/attendances/team", input);
     },
     onSuccess: async () => {
       if (teamQueryKey) {
@@ -85,7 +84,7 @@ export function useTeamUpdateMutation(matchClubId?: string) {
 
   return useMutation<unknown, unknown, TeamUpdateInput>({
     mutationFn: async ({ teamId, ...data }) => {
-      return postJson(`/api/teams/${teamId}`, data, { auth: true });
+      return postJson(`/api/teams/${teamId}`, data);
     },
     onSuccess: async () => {
       if (teamQueryKey) {

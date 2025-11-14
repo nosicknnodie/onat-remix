@@ -21,7 +21,7 @@ function useClubMembersQuery<TData>(
   const queryKey = useMemo(() => key, [key]);
   return useQuery<TData, unknown, TData, readonly unknown[]>({
     queryKey,
-    queryFn: () => getJson<TData>(url, { auth: true }),
+    queryFn: () => getJson<TData>(url),
     refetchOnWindowFocus: false,
     ...options,
   });

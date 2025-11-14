@@ -22,9 +22,7 @@ export function useRecordQuery(matchClubId?: string, options?: UseRecordQueryOpt
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch match record");
       }
-      return await getJson<RecordPageResponse>(`/api/matchClubs/${matchClubId}/record`, {
-        auth: true,
-      });
+      return await getJson<RecordPageResponse>(`/api/matchClubs/${matchClubId}/record`);
     },
     enabled,
     initialData: options?.initialData,

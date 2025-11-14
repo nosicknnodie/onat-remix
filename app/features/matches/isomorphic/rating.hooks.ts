@@ -22,9 +22,7 @@ export function useRatingQuery(matchClubId?: string, options?: UseRatingQueryOpt
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch rating data");
       }
-      return getJson<RatingPageResponse>(`/api/matchClubs/${matchClubId}/rating`, {
-        auth: true,
-      });
+      return getJson<RatingPageResponse>(`/api/matchClubs/${matchClubId}/rating`);
     },
     enabled,
     initialData: options?.initialData,

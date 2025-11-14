@@ -37,9 +37,7 @@ export function usePositionQuery(matchClubId?: string, options?: UsePositionQuer
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch positions");
       }
-      return getJson<PositionQueryData>(`/api/attendances?matchClubId=${matchClubId}`, {
-        auth: true,
-      });
+      return getJson<PositionQueryData>(`/api/attendances?matchClubId=${matchClubId}`);
     },
     enabled,
   });
@@ -59,9 +57,7 @@ export function useQuarterQuery(matchClubId?: string, options?: UseQuarterQueryO
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch quarters");
       }
-      return getJson<PositionQuarterData>(`/api/matchClubs/${matchClubId}/position/quarters`, {
-        auth: true,
-      });
+      return getJson<PositionQuarterData>(`/api/matchClubs/${matchClubId}/position/quarters`);
     },
     enabled,
   });
@@ -94,9 +90,6 @@ export function usePositionSettingQuery(
       }
       return getJson<PositionSettingQueryData>(
         `/api/matchClubs/${matchClubId}/position/attendances`,
-        {
-          auth: true,
-        },
       );
     },
     enabled,
@@ -124,7 +117,6 @@ export function usePositionSettingMatchClubQuery(
       }
       return getJson<PositionSettingMatchClubData>(
         `/api/matchClubs/${matchClubId}/position/setting`,
-        { auth: true },
       );
     },
     enabled,
@@ -231,11 +223,10 @@ export function useOptimisticPositionUpdate(matchClubId?: string) {
       assignedId: string;
       toPosition: POSITION_TYPE;
     }) => {
-      return postJson(
-        "/api/assigneds/position",
-        { assignedId: value.assignedId, toPosition: value.toPosition },
-        { auth: true },
-      );
+      return postJson("/api/assigneds/position", {
+        assignedId: value.assignedId,
+        toPosition: value.toPosition,
+      });
     },
     onMutate: async (_value) => {
       if (!queryKey || !matchClubId) return undefined;
@@ -311,7 +302,7 @@ export function usePositionAssignMutation(matchClubId?: string) {
   );
   return useMutation<unknown, unknown, AssignSlotInput>({
     mutationFn: async (input) => {
-      return putJson("/api/assigneds/slot", input, { auth: true });
+      return putJson("/api/assigneds/slot", input);
     },
     onSuccess: async () => {
       if (settingKey) {
@@ -347,7 +338,7 @@ export function usePositionAssignedDeleteMutation(matchClubId?: string) {
   );
   return useMutation<unknown, unknown, DeleteAssignedInput>({
     mutationFn: async (input) => {
-      return del("/api/assigneds", { body: JSON.stringify(input), auth: true });
+      return del("/api/assigneds", { body: JSON.stringify(input) });
     },
     onSuccess: async () => {
       if (settingKey) {
@@ -381,7 +372,7 @@ export function usePositionAttendanceStateMutation(matchClubId?: string) {
 
   return useMutation<unknown, unknown, AttendanceStateUpdateInput>({
     mutationFn: async (input) => {
-      return putJson("/api/attendances", input, { auth: true });
+      return putJson("/api/attendances", input);
     },
     onSuccess: async () => {
       if (settingKey) {

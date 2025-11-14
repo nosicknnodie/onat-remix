@@ -63,10 +63,7 @@ const MainSideMenu = () => {
   const user = useSession();
   const { data: clubsData = [], isLoading: isClubsLoading } = useQuery<ClubWithMembership[]>({
     queryKey: myClubsQueryKey,
-    queryFn: () =>
-      getJson<ClubWithMembership[]>("/api/clubs/my", {
-        auth: true,
-      }),
+    queryFn: () => getJson<ClubWithMembership[]>("/api/clubs/my"),
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
   });

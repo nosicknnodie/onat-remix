@@ -61,7 +61,6 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
           queryKey: clubInfoQueryKeys.myClubs(),
           queryFn: () =>
             getJson<ClubWithMembership[]>("/api/clubs/my", {
-              auth: true,
               signal: controller.signal,
             }),
           staleTime: 1000 * 60 * 5,

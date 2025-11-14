@@ -130,7 +130,7 @@ const Layout = (_props: ILayoutProps) => {
           queryClient
             .prefetchQuery({
               queryKey: key,
-              queryFn: () => getJson(url, { auth: true, signal: controller.signal }),
+              queryFn: () => getJson(url, { signal: controller.signal }),
             })
             .catch(() => undefined),
         );
@@ -142,7 +142,6 @@ const Layout = (_props: ILayoutProps) => {
             queryKey: clubBoardQueryKeys.tabs(selectedClubId),
             queryFn: () =>
               getJson(`/api/clubs/${selectedClubId}/boards/tabs`, {
-                auth: true,
                 signal: controller.signal,
               }),
           })
@@ -155,7 +154,6 @@ const Layout = (_props: ILayoutProps) => {
             queryKey: clubMemberQueryKeys.approved(selectedClubId),
             queryFn: () =>
               getJson(`/api/clubs/${selectedClubId}/members/approved`, {
-                auth: true,
                 signal: controller.signal,
               }),
           })
@@ -168,7 +166,6 @@ const Layout = (_props: ILayoutProps) => {
             queryKey: clubMemberQueryKeys.pendings(selectedClubId),
             queryFn: () =>
               getJson(`/api/clubs/${selectedClubId}/members/pendings`, {
-                auth: true,
                 signal: controller.signal,
               }),
           })
@@ -187,7 +184,6 @@ const Layout = (_props: ILayoutProps) => {
               return getJson<ClubMatchFeed>(
                 `/api/clubs/${selectedClubId}/matches?${searchParams.toString()}`,
                 {
-                  auth: true,
                   signal: controller.signal,
                 },
               );
