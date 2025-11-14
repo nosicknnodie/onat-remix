@@ -16,6 +16,8 @@ import {
 import {
   matchClubQueryKeys,
   positionQueryKeys,
+  ratingQueryKeys,
+  recordQueryKeys,
   teamQueryKeys,
   useMatchClubQuery,
   useMatchCommentsQuery,
@@ -85,6 +87,22 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
             queryKey: positionQueryKeys.settingMatchClub(matchClubId),
             queryFn: async () =>
               getJson(`/api/matchClubs/${matchClubId}/position/setting`, { auth: true }),
+          })
+          .catch(() => undefined),
+      );
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: recordQueryKeys.detail(matchClubId),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/record`, { auth: true }),
+          })
+          .catch(() => undefined),
+      );
+      tasks.push(
+        queryClient
+          .prefetchQuery({
+            queryKey: ratingQueryKeys.detail(matchClubId),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/rating`, { auth: true }),
           })
           .catch(() => undefined),
       );

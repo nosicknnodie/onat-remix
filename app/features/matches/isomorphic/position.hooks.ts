@@ -2,7 +2,7 @@ import type { AttendanceState } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { BrowserStableWebSocket } from "~/libs";
-import { getJson } from "~/libs/api-client";
+import { del, getJson, postJson, putJson } from "~/libs/api-client";
 import type { POSITION_TYPE } from "~/libs/const/position.const";
 import type {
   PositionAttendance,
@@ -231,15 +231,11 @@ export function useOptimisticPositionUpdate(matchClubId?: string) {
       assignedId: string;
       toPosition: POSITION_TYPE;
     }) => {
-      const res = await fetch("/api/assigneds/position", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignedId: value.assignedId, toPosition: value.toPosition }),
-      });
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-      return res.json();
+      return postJson(
+        "/api/assigneds/position",
+        { assignedId: value.assignedId, toPosition: value.toPosition },
+        { auth: true },
+      );
     },
     onMutate: async (_value) => {
       if (!queryKey || !matchClubId) return undefined;
@@ -315,15 +311,7 @@ export function usePositionAssignMutation(matchClubId?: string) {
   );
   return useMutation<unknown, unknown, AssignSlotInput>({
     mutationFn: async (input) => {
-      const res = await fetch("/api/assigneds/slot", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to assign slot");
-      }
-      return res.json();
+      return putJson("/api/assigneds/slot", input, { auth: true });
     },
     onSuccess: async () => {
       if (settingKey) {
@@ -359,15 +347,7 @@ export function usePositionAssignedDeleteMutation(matchClubId?: string) {
   );
   return useMutation<unknown, unknown, DeleteAssignedInput>({
     mutationFn: async (input) => {
-      const res = await fetch("/api/assigneds", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to delete assigned");
-      }
-      return res.json();
+      return del("/api/assigneds", { body: JSON.stringify(input), auth: true });
     },
     onSuccess: async () => {
       if (settingKey) {
@@ -401,15 +381,7 @@ export function usePositionAttendanceStateMutation(matchClubId?: string) {
 
   return useMutation<unknown, unknown, AttendanceStateUpdateInput>({
     mutationFn: async (input) => {
-      const res = await fetch("/api/attendances", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to update attendance state");
-      }
-      return res.json();
+      return putJson("/api/attendances", input, { auth: true });
     },
     onSuccess: async () => {
       if (settingKey) {

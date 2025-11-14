@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { getJson } from "~/libs/api-client";
 import type { MatchSummary } from "./summary.types";
 
 export const matchSummaryQueryKeys = {
@@ -25,11 +26,7 @@ export function useMatchSummaryQuery(matchClubId?: string, options?: UseMatchSum
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch match summary");
       }
-      const res = await fetch(`/api/matchClubs/${matchClubId}/summary`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch match summary");
-      }
-      return (await res.json()) as MatchSummary;
+      return getJson<MatchSummary>(`/api/matchClubs/${matchClubId}/summary`, { auth: true });
     },
     enabled,
     initialData: options?.initialData,
@@ -51,11 +48,7 @@ export function useMatchDetailQuery(matchId?: string, options?: UseMatchDetailQu
       if (!matchId) {
         throw new Error("matchId is required to fetch match detail");
       }
-      const res = await fetch(`/api/matches/${matchId}`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch match detail");
-      }
-      return (await res.json()) as MatchSummary;
+      return getJson<MatchSummary>(`/api/matches/${matchId}`, { auth: true });
     },
     enabled,
     initialData: options?.initialData,

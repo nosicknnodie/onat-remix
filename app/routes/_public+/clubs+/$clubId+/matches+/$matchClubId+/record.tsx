@@ -1,7 +1,6 @@
 //
 import { AvatarFallback } from "@radix-ui/react-avatar";
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
 import { useTransition } from "react";
 import { FaFutbol } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
@@ -9,19 +8,32 @@ import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
 import { GoalItem, QuarterRecord, RecordRightDrawer } from "~/features/matches/client";
-import { recordService } from "~/features/matches/server";
-export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const matchClubId = params.matchClubId!;
-  const data = await recordService.getRecordPageData(matchClubId);
-  return data;
-};
+import { useRecordQuery } from "~/features/matches/isomorphic";
 
 interface IRecordPageProps {}
 
+export const handle = {
+  breadcrumb: () => {
+    return <>기록</>;
+  },
+};
+
 const RecordPage = (_props: IRecordPageProps) => {
-  const loaderData = useLoaderData<typeof loader>();
-  const { revalidate } = useRevalidator();
-  const quarters = loaderData.quarters;
+  const params = useParams();
+  const matchClubId = params.matchClubId;
+  const { data, isLoading, refetch } = useRecordQuery(matchClubId, {
+    enabled: Boolean(matchClubId),
+  });
+  const quarters = data?.quarters ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="py-10 flex justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="pb-12">
@@ -49,6 +61,9 @@ const RecordPage = (_props: IRecordPageProps) => {
                   name={name}
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
+                  onRefetch={async () => {
+                    await refetch();
+                  }}
                 />
               );
             });
@@ -73,6 +88,9 @@ const RecordPage = (_props: IRecordPageProps) => {
                   name={name}
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
+                  onRefetch={async () => {
+                    await refetch();
+                  }}
                 />
               );
             });
@@ -90,7 +108,7 @@ const RecordPage = (_props: IRecordPageProps) => {
                   quarterId={quarterId}
                   quarters={quarters}
                   onRefetch={() => {
-                    revalidate();
+                    return refetch().then(() => undefined);
                   }}
                 >
                   {children}
@@ -104,28 +122,27 @@ const RecordPage = (_props: IRecordPageProps) => {
   );
 };
 
-// UI로 이전됨 (features/matches/ui/Record)
-
 const GoalComponent = ({
   id,
   name,
   imageUrl,
   isOwner,
+  onRefetch,
 }: {
   id: string;
   name: string;
   imageUrl?: string;
   isOwner?: boolean;
+  onRefetch: () => Promise<void>;
 }) => {
   const [_isPending, startTransition] = useTransition();
-  const { revalidate } = useRevalidator();
   const handleDelGoal = (id: string) => {
     startTransition(async () => {
       await fetch("/api/goal", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       });
-      revalidate();
+      await onRefetch();
     });
   };
   return (

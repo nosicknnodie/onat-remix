@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { apiFetch, getJson, postJson } from "~/libs/api-client";
 import type {
   CreateMatchClubCommentInput,
   CreateMatchClubCommentResponse,
@@ -30,11 +31,9 @@ export function useMatchCommentsQuery(matchClubId?: string, options?: UseMatchCo
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch comments");
       }
-      const res = await fetch(`/api/matchClubs/${matchClubId}/comments`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch match comments");
-      }
-      return (await res.json()) as MatchClubCommentsResponse;
+      return getJson<MatchClubCommentsResponse>(`/api/matchClubs/${matchClubId}/comments`, {
+        auth: true,
+      });
     },
     enabled,
     initialData: options?.initialData,
@@ -47,11 +46,11 @@ export function useCommentImageUpload() {
   const handleInsertImage = async (file: File): Promise<MatchCommentImageUploadResponse> => {
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch("/api/upload/comment-image", { method: "POST", body: formData });
-    if (!res.ok) {
-      throw new Error("이미지 업로드에 실패했습니다.");
-    }
-    return (await res.json()) as MatchCommentImageUploadResponse;
+    return apiFetch<MatchCommentImageUploadResponse>("/api/upload/comment-image", {
+      method: "POST",
+      body: formData,
+      auth: true,
+    });
   };
 
   return { handleInsertImage };
@@ -71,21 +70,16 @@ export function useCreateMatchCommentMutation(
       if (!matchClubId) {
         throw new Error("matchClubId is required to create comment");
       }
-      const res = await fetch(`/api/matchClubs/${matchClubId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      return postJson<CreateMatchClubCommentResponse>(
+        `/api/matchClubs/${matchClubId}/comments`,
+        {
           content,
           matchClubId,
           parentId: parentId ?? null,
           replyToUserId: replyToUserId ?? null,
-        }),
-      });
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error || "Failed to create match comment");
-      }
-      return (await res.json()) as CreateMatchClubCommentResponse;
+        },
+        { auth: true },
+      );
     },
     ...(options ?? {}),
     onSuccess: async (data, variables, context) => {

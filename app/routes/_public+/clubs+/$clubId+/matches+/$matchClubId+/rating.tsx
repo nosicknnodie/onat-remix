@@ -1,6 +1,4 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useParams } from "@remix-run/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 import { RiExpandLeftLine } from "react-icons/ri";
@@ -15,22 +13,20 @@ import { Button } from "~/components/ui/button";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts";
 import { RatingCard, RatingRightDrawer } from "~/features/matches/client";
-import { useMatchClubQuery } from "~/features/matches/isomorphic";
-import { ratingService } from "~/features/matches/server";
+import {
+  useMatchClubQuery,
+  useRatingLikeMutation,
+  useRatingQuery,
+  useRatingScoreMutation,
+} from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { getJson, getToastForError, postJson } from "~/libs";
+import { getToastForError } from "~/libs";
 import {
   isAttackPosition,
   isDefensePosition,
   isMiddlePosition,
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
-
-export const loader = async ({ request: _request, params }: LoaderFunctionArgs) => {
-  const matchClubId = params.matchClubId!;
-  const data = await ratingService.getRatingPageData(matchClubId);
-  return data;
-};
 
 interface IRatingPageProps {}
 
@@ -40,7 +36,6 @@ const RatingPage = (_props: IRatingPageProps) => {
   const matchClubId = params.matchClubId;
   const clubId = params.clubId;
 
-  const loaderData = useLoaderData<typeof loader>();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -48,12 +43,10 @@ const RatingPage = (_props: IRatingPageProps) => {
     setIsMounted(true);
   }, []);
   const { toast } = useToast();
-  const { data } = useQuery<Awaited<ReturnType<typeof loader>>>({
-    queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
-    queryFn: async () => await getJson(`/api/attendances/rating?matchClubId=${params.matchClubId}`),
-    initialData: loaderData,
+  const { data, isLoading: isRatingLoading } = useRatingQuery(matchClubId, {
+    enabled: Boolean(matchClubId),
   });
-  const attendances = data.attendances;
+  const attendances = data?.attendances ?? [];
   const { data: matchClubData, isLoading: isMatchClubLoading } = useMatchClubQuery(matchClubId, {
     clubId,
     enabled: Boolean(matchClubId),
@@ -62,106 +55,9 @@ const RatingPage = (_props: IRatingPageProps) => {
   const quarters = matchClubData?.matchClub?.quarters
     ? [...matchClubData.matchClub.quarters].sort((a, b) => a.order - b.order)
     : null;
-  const queryClient = useQueryClient();
-
-  // update score
-  const updateEvaluation = useMutation({
-    mutationFn: async ({ attendanceId, score }: { attendanceId: string; score: number }) => {
-      await postJson("/api/evaluations/score", {
-        matchClubId: params.matchClubId,
-        attendanceId,
-        score,
-      });
-    },
-
-    onMutate: async ({ attendanceId, score }) => {
-      await queryClient.cancelQueries({
-        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
-      });
-
-      const prevData = queryClient.getQueryData<Awaited<ReturnType<typeof loader>>>([
-        "MATCH_RATING_QUERY",
-        params.matchClubId,
-      ]);
-
-      if (prevData) {
-        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], {
-          ...prevData,
-          attendances: prevData.attendances.map((att) =>
-            att.id === attendanceId
-              ? {
-                  ...att,
-                  evaluations: att.evaluations.map((ev) =>
-                    ev.userId === user?.id ? { ...ev, score } : ev,
-                  ),
-                }
-              : att,
-          ),
-        });
-      }
-
-      return { prevData };
-    },
-
-    onError: (e, _vars, context) => {
-      if (context?.prevData) {
-        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], context.prevData);
-      }
-      toast(getToastForError(e));
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
-      });
-    },
-  });
-
-  // update like
-  const toggleLike = useMutation({
-    mutationFn: async ({ attendanceId, liked }: { attendanceId: string; liked: boolean }) => {
-      await postJson("/api/evaluations/like", {
-        matchClubId: params.matchClubId,
-        attendanceId,
-        liked,
-      });
-    },
-    onError: (e) => toast(getToastForError(e)),
-    onMutate: async ({ attendanceId, liked }) => {
-      await queryClient.cancelQueries({
-        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
-      });
-
-      const prevData = queryClient.getQueryData<Awaited<ReturnType<typeof loader>>>([
-        "MATCH_RATING_QUERY",
-        params.matchClubId,
-      ]);
-
-      if (prevData) {
-        queryClient.setQueryData(["MATCH_RATING_QUERY", params.matchClubId], {
-          ...prevData,
-          attendances: prevData.attendances.map((att) =>
-            att.id === attendanceId
-              ? {
-                  ...att,
-                  evaluations: att.evaluations.map((ev) =>
-                    ev.userId === user?.id ? { ...ev, liked } : ev,
-                  ),
-                }
-              : att,
-          ),
-        });
-      }
-
-      return { prevData };
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["MATCH_RATING_QUERY", params.matchClubId],
-      });
-    },
-  });
-  if (!isMounted || isMatchClubLoading || !match || !quarters) {
+  const updateEvaluation = useRatingScoreMutation(matchClubId, user?.id);
+  const toggleLike = useRatingLikeMutation(matchClubId, user?.id);
+  if (!isMounted || isMatchClubLoading || isRatingLoading || !data || !match || !quarters) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />
@@ -264,13 +160,23 @@ const RatingPage = (_props: IRatingPageProps) => {
                       }
                     }
                     onScoreChange={(score: number) =>
-                      updateEvaluation.mutate({ attendanceId: attendance.id, score })
+                      updateEvaluation.mutate(
+                        { attendanceId: attendance.id, score },
+                        {
+                          onError: (e) => toast(getToastForError(e)),
+                        },
+                      )
                     }
                     score={evaluation?.score || 0}
                     StarRating={StarRating}
                     liked={!!evaluation?.liked}
                     onToggleLike={() =>
-                      toggleLike.mutate({ attendanceId: attendance.id, liked: !evaluation?.liked })
+                      toggleLike.mutate(
+                        { attendanceId: attendance.id, liked: !evaluation?.liked },
+                        {
+                          onError: (e) => toast(getToastForError(e)),
+                        },
+                      )
                     }
                     LikeIcon={FaThumbsUp}
                     UnlikeIcon={FaRegThumbsUp}

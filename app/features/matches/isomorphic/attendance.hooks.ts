@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson } from "~/libs/api-client";
+import { getJson, postJson, putJson } from "~/libs/api-client";
 import type {
   AttendanceMutationInput,
   AttendanceMutationResponse,
@@ -62,15 +62,11 @@ export function useAttendanceMutation(
       if (!options?.clubId) {
         throw new Error("clubId is required to submit attendance");
       }
-      const res = await fetch(`/api/matchClubs/${matchClubId}/attendance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...input, clubId: options.clubId }),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to submit attendance");
-      }
-      return (await res.json()) as AttendanceMutationResponse;
+      return postJson<AttendanceMutationResponse>(
+        `/api/matchClubs/${matchClubId}/attendance`,
+        { ...input, clubId: options.clubId },
+        { auth: true },
+      );
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey });
@@ -81,15 +77,7 @@ export function useAttendanceMutation(
 export function useAttendanceStateMutation() {
   return useMutation<unknown, unknown, AttendanceStateMutationInput>({
     mutationFn: async (input) => {
-      const res = await fetch("/api/attendances", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to update attendance state");
-      }
-      return res.json();
+      return putJson("/api/attendances", input, { auth: true });
     },
   });
 }

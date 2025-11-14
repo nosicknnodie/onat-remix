@@ -38,6 +38,11 @@ import {
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
 
+export const handle = {
+  breadcrumb: () => {
+    return <>포지션 설정</>;
+  },
+};
 // removed local context/drawer; using features UI
 // const isTouchDevice = () => {
 //   return typeof window !== "undefined" ? "ontouchstart" in window : false;

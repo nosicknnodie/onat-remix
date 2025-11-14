@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson } from "~/libs/api-client";
+import { getJson, postJson } from "~/libs/api-client";
 import { attendanceQueryKeys } from "./attendance.hooks";
 import type { TeamQueryResponse } from "./team.types";
 
@@ -56,15 +56,7 @@ export function useTeamAssignmentMutation(matchClubId?: string) {
 
   return useMutation<unknown, unknown, TeamAssignmentInput>({
     mutationFn: async (input) => {
-      const res = await fetch("/api/attendances/team", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to assign attendances");
-      }
-      return res.json();
+      return postJson("/api/attendances/team", input, { auth: true });
     },
     onSuccess: async () => {
       if (teamQueryKey) {
@@ -93,15 +85,7 @@ export function useTeamUpdateMutation(matchClubId?: string) {
 
   return useMutation<unknown, unknown, TeamUpdateInput>({
     mutationFn: async ({ teamId, ...data }) => {
-      const res = await fetch(`/api/teams/${teamId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to update team");
-      }
-      return res.json();
+      return postJson(`/api/teams/${teamId}`, data, { auth: true });
     },
     onSuccess: async () => {
       if (teamQueryKey) {
