@@ -204,11 +204,11 @@ model Player {
   userId          String?
   jobTitle        JobTitle? @default(NO)
   role            RoleType  @default(PENDING)
+  permissions     PlayerPermission[]
   clubId          String
 
   isInjury        Boolean  @default(false)
   isRest          Boolean  @default(false)
-  // isExit          Boolean  @default(false)
   status          StatusType @default(PENDING)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
@@ -237,6 +237,52 @@ enum RoleType {
   MANAGER
   NORMAL
   PENDING
+}
+
+// 클럽 내 역할별 세부 권한 키
+enum PlayerPermissionKey {
+  CLUB_VIEW
+  CLUB_MANAGE
+  PLAYER_MANAGE
+  PLAYER_ASSIGN_MANAGER
+  PLAYER_APPROVE_MEMBER
+  PLAYER_VIEW
+  MATCH_CREATE
+  MATCH_MANAGE
+  MERCENARY_MANAGE
+  BOARD_MASTER
+  BOARD_MANAGER
+  BOARD_NORMAL
+  BOARD_PENDING
+  EVALUATION_VIEW
+}
+
+// Player 역할(RoleType)과 기능 권한 매핑 템플릿
+model PlayerRolePermissionTemplate {
+  id          String               @id @default(cuid())
+  role        RoleType
+  permission  PlayerPermissionKey
+  allowed     Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @default(now()) @updatedAt
+
+  @@unique([role, permission])
+}
+
+// 개별 Player에 부여된 세부 권한
+model PlayerPermission {
+  id          String               @id @default(cuid())
+  playerId    String
+  player      Player               @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  permission  PlayerPermissionKey
+  allowed     Boolean              @default(false)
+  // role 기반 일괄 부여인지, 수동 오버라이드인지 추적용
+  sourceRole  RoleType?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @default(now()) @updatedAt
+
+  @@unique([playerId, permission])
+  @@index([playerId])
 }
 
 enum PlayerLogType {
@@ -536,6 +582,12 @@ enum BoardType {
   ARCHIVE   // 자료실
 }
 
+enum BoardPermissionAction {
+  READ
+  WRITE
+  MANAGE
+}
+
 model Board {
   id        String     @id @default(cuid())
   name      String
@@ -547,14 +599,28 @@ model Board {
   clubId    String?
   clubs     Club?      @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  // 권한 필드 추가
-  readRole    UserRoleType?  @default(NORMAL) // 읽기 권한 (NULL은 전체 공개)
-  writeRole   UserRoleType?  @default(NORMAL) // 쓰기 권한 (NULL은 전체 작성 가능)
+  readRole    UserRoleType?  @default(NORMAL)
+  writeRole   UserRoleType?  @default(NORMAL)
 
+  permissions BoardPermission[]
   posts     Post[]
   createdAt DateTime   @default(now())
 
   @@unique([slug, clubId])
+}
+
+model BoardPermission {
+  id         String                @id @default(cuid())
+  boardId    String
+  board      Board                 @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  action     BoardPermissionAction
+  permission PlayerPermissionKey
+  allowed    Boolean               @default(true)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @default(now()) @updatedAt
+
+  @@unique([boardId, action, permission])
+  @@index([boardId])
 }
 
 model Post {
