@@ -1,5 +1,5 @@
 import { prisma } from "~/libs/db/db.server";
-import type { MatchClubSummary } from "../isomorphic/types";
+import type { MatchClubSummary } from "../isomorphic/match.types";
 import * as q from "./club.queries";
 import * as detailService from "./detail.service";
 import { summarizeMatchClubs } from "./summary.service";

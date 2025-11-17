@@ -1,4 +1,5 @@
 export type { AttendanceCheckItem } from "./attendance/CheckManageDrawer";
+export { default as CheckManageDrawer } from "./attendance/CheckManageDrawer";
 export {
   AttendanceGroupCard,
   AttendanceGroupCardContent,
@@ -8,8 +9,9 @@ export {
 } from "./attendance/GroupCard";
 export { default as AttendanceManageAction } from "./attendance/ManageActionMenu";
 export type { AttendanceMercenary } from "./attendance/MercenaryManageDrawer";
+export { default as MercenaryManageDrawer } from "./attendance/MercenaryManageDrawer";
 export type { AttendancePlayer } from "./attendance/PlayerManageDrawer";
-export { ClubAdminMenu } from "./ClubAdminMenu";
+export { default as PlayerManageDrawer } from "./attendance/PlayerManageDrawer";
 export { type ClubSubnavItem, ClubSubnavTabs } from "./ClubSubnavTabs";
 export { DraggableChip, DropSpot } from "./Dnd";
 export { MatchClubInsightCard } from "./MatchClubInsightCard";

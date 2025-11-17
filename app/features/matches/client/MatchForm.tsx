@@ -1,3 +1,6 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -11,83 +14,81 @@ import {
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
 import { Textarea } from "~/components/ui/textarea";
-
-type ClubLite = { id: string; name: string };
+import { createSchema } from "../isomorphic/match.schema";
+import type { MatchFormDefault, MatchFormFields } from "../isomorphic/match.types";
 
 export type MatchFormProps = {
-  clubs?: ClubLite[];
   defaultClubId?: string;
-  defaultTitle?: string;
-  defaultDescription?: string;
-  defaultDate: string; // YYYY-MM-DD
-  defaultHour: string; // "0".."23"
-  defaultMinute: string; // "0" or "30"
-  placeName?: string;
-  address?: string;
-  lat?: string;
-  lng?: string;
+  defaultMatch?: MatchFormDefault;
   showIsSelf?: boolean;
-  onSubmit?: React.FormEventHandler<HTMLFormElement>;
+  onSubmit?: (match: MatchFormFields) => void;
   renderPlaceControls?: () => React.ReactNode;
 };
 
 export function MatchForm(props: MatchFormProps) {
-  const {
-    clubs,
-    defaultClubId,
-    defaultTitle,
-    defaultDescription,
-    defaultDate,
-    defaultHour,
-    defaultMinute,
-    placeName,
-    address,
-    lat,
-    lng,
-    showIsSelf,
-    onSubmit,
-    renderPlaceControls,
-  } = props;
+  const { defaultClubId, defaultMatch, showIsSelf, onSubmit, renderPlaceControls } = props;
+
+  const matchTitle = defaultMatch?.title ?? "";
+  const matchDescription = defaultMatch?.description ?? "";
+  const stDate = defaultMatch?.stDate ? new Date(defaultMatch.stDate) : new Date();
+  const defaultDate = stDate.toISOString().slice(0, 10);
+  const defaultHour = String(stDate.getHours());
+  const defaultMinute = String(stDate.getMinutes() >= 30 ? 30 : 0);
+  const placeName = defaultMatch?.placeName ?? "";
+  const address = defaultMatch?.address ?? "";
+  const lat = defaultMatch?.lat ?? "";
+  const lng = defaultMatch?.lng ?? "";
+  const latValue = lat !== null && lat !== undefined ? String(lat) : "";
+  const lngValue = lng !== null && lng !== undefined ? String(lng) : "";
+
+  const form = useForm<MatchFormFields>({
+    resolver: zodResolver(createSchema),
+    defaultValues: {
+      clubId: defaultClubId ?? "",
+      title: matchTitle,
+      description: matchDescription,
+      date: defaultDate,
+      hour: defaultHour,
+      minute: defaultMinute,
+      placeName,
+      address,
+      lat: latValue,
+      lng: lngValue,
+      isSelf: undefined,
+    },
+  });
+  const { register, setValue, watch, handleSubmit } = form;
+
+  useEffect(() => {
+    setValue("clubId", defaultClubId ?? "");
+  }, [defaultClubId, setValue]);
+
+  useEffect(() => {
+    setValue("placeName", placeName);
+    setValue("address", address);
+    setValue("lat", latValue);
+    setValue("lng", lngValue);
+  }, [address, latValue, lngValue, placeName, setValue]);
+
+  const hourValue = watch("hour");
+  const minuteValue = watch("minute");
 
   return (
-    <Card>
+    <Card className="">
       <CardHeader>
-        <CardTitle>{defaultTitle ? "매치 수정" : "매치 생성"}</CardTitle>
-        <CardDescription>매치를 {defaultTitle ? "수정" : "생성"}합니다.</CardDescription>
+        <CardTitle>{matchTitle ? "매치 수정" : "매치 생성"}</CardTitle>
+        <CardDescription>매치를 {matchTitle ? "수정" : "생성"}합니다.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form method="post" onSubmit={onSubmit}>
+        <form onSubmit={handleSubmit(onSubmit ?? (() => {}))}>
           <div className="space-y-4">
-            {clubs && (
-              <div className="space-y-2">
-                <Label
-                  htmlFor="clubId"
-                  className="after:content-['*'] after:text-red-500 after:ml-1"
-                >
-                  클럽선택
-                </Label>
-                <Select name="clubId" defaultValue={defaultClubId ?? clubs[0]?.id ?? ""}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="클럽 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clubs.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="title" className="after:content-['*'] after:text-red-500 after:ml-1">
                 매치명
               </Label>
-              <Input name="title" type="text" required defaultValue={defaultTitle ?? ""} />
+              <Input {...register("title", { required: true })} name="title" type="text" required />
             </div>
-
+            <input hidden {...register("clubId")} />
             <div className="space-y-2">
               <Label
                 htmlFor="description"
@@ -95,28 +96,21 @@ export function MatchForm(props: MatchFormProps) {
               >
                 설명
               </Label>
-              <Textarea
-                name="description"
-                rows={3}
-                required
-                defaultValue={defaultDescription ?? ""}
-              />
+              <Textarea {...register("description", { required: true })} rows={3} required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="date" className="after:content-['*'] after:text-red-500 after:ml-1">
                 매치 날짜
               </Label>
               <div className="flex gap-2 max-sm:flex-col">
                 <Input
-                  name="date"
+                  {...register("date", { required: true })}
                   type="date"
-                  defaultValue={defaultDate}
                   required
                   className="w-36 max-sm:w-full"
                 />
                 <div className="flex gap-x-2">
-                  <Select name="hour" defaultValue={defaultHour}>
+                  <Select name="hour" value={hourValue} onValueChange={(v) => setValue("hour", v)}>
                     <SelectTrigger className="w-36">
                       <SelectValue />
                     </SelectTrigger>
@@ -128,7 +122,11 @@ export function MatchForm(props: MatchFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select name="minute" defaultValue={defaultMinute}>
+                  <Select
+                    name="minute"
+                    value={minuteValue}
+                    onValueChange={(v) => setValue("minute", v)}
+                  >
                     <SelectTrigger className="w-36">
                       <SelectValue />
                     </SelectTrigger>
@@ -144,18 +142,22 @@ export function MatchForm(props: MatchFormProps) {
             <div className="space-y-2">
               <Label htmlFor="placeName">장소</Label>
               <div className="flex gap-x-2">
-                <Input name="placeName" type="text" value={placeName ?? ""} onChange={() => {}} />
+                <Input {...register("placeName")} type="text" />
                 {renderPlaceControls?.()}
-                <input type="hidden" name="address" value={address ?? ""} />
-                <input type="hidden" name="lat" value={lat ?? ""} />
-                <input type="hidden" name="lng" value={lng ?? ""} />
+                <input type="hidden" {...register("address")} />
+                <input type="hidden" {...register("lat")} />
+                <input type="hidden" {...register("lng")} />
               </div>
             </div>
 
             {showIsSelf && (
               <div className="flex items-center space-x-2">
                 <Label htmlFor="isSelf">자체전 여부</Label>
-                <Switch name="isSelf" />
+                <Switch
+                  name="isSelf"
+                  onCheckedChange={(v) => setValue("isSelf", v ? "on" : undefined)}
+                  defaultChecked={false}
+                />
               </div>
             )}
 

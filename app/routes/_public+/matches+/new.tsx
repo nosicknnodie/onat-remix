@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: off */
-import type { Club } from "@prisma/client";
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -13,7 +12,7 @@ import { createService } from "~/features/matches/server";
 import type { IKakaoLocalType } from "~/libs";
 import { getUser, parseRequestData } from "~/libs/index.server";
 import { jsonFail } from "~/utils/action.server";
-import { placeHistoryAtom } from "./_libs/state";
+import { placeHistoryAtom } from "../../../atoms/placeHistory";
 
 export const handle = { breadcrumb: "매치 생성" };
 
@@ -79,19 +78,19 @@ const MatchesNew = (_props: IMatchesNewProps) => {
         .day(6 + 7)
         .format("YYYY-MM-DD")
     : dayjs().day(6).format("YYYY-MM-DD");
+  const defaultMatch = {
+    stDate: `${defaultDate}T08:00:00`,
+    placeName: place?.place_name ?? "",
+    address: place?.address_name ?? "",
+    lat: place?.y ?? "",
+    lng: place?.x ?? "",
+  };
 
   return (
     <div className="flex flex-col justify-start w-full space-y-2">
       <MatchForm
-        clubs={loaderData.clubs as Club[]}
         defaultClubId={loaderData?.clubs?.[0]?.id}
-        defaultDate={defaultDate}
-        defaultHour="8"
-        defaultMinute="0"
-        placeName={place?.place_name ?? ""}
-        address={place?.address_name ?? ""}
-        lat={place?.y ?? ""}
-        lng={place?.x ?? ""}
+        defaultMatch={defaultMatch}
         showIsSelf
         onSubmit={() => handleSubmit()}
         renderPlaceControls={() => (

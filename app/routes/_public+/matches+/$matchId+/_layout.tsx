@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
 
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import dayjs from "dayjs";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
 import { detailService } from "~/features/matches/server";
@@ -31,8 +31,6 @@ export async function loader({ request: _request, params }: LoaderFunctionArgs) 
 export type IMatchesIdLayoutPageLoaderReturnType = Awaited<ReturnType<typeof loader>>;
 
 const MatchesIdLayoutPage = (_props: IMatchesIdLayoutPageProps) => {
-  const _data = useLoaderData<typeof loader>();
-  void _data;
   return <Outlet />;
 };
 

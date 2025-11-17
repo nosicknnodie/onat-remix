@@ -1,4 +1,4 @@
-import { createSchema, updateSchema } from "./schema";
+import { createSchema, updateSchema } from "./match.schema";
 
 export function parseCreate(data: unknown) {
   const result = createSchema.safeParse(data);

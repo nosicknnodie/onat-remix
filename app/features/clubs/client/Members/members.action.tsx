@@ -16,7 +16,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { useMembershipInfoQuery } from "../../isomorphic";
+import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "../../isomorphic";
 import type { IPlayer } from "../../isomorphic/types";
 import { InfoDrawer } from "../index";
 import { useGetPlayers } from "./member.context";
@@ -30,9 +30,14 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
   const { data: player } = useMembershipInfoQuery(clubId ?? "", {
     enabled: Boolean(clubId),
   });
-  const isMaster = player?.role === "MASTER";
-  const isManager = player?.role === "MANAGER";
-  // const isNormal = player?.role === "NORMAL";
+  const { data: permissions } = usePlayerPermissionsQuery(player?.id ?? "", {
+    enabled: Boolean(player?.id),
+    gcTime: 1000 * 60 * 10,
+  });
+  const hasPlayerView = permissions?.includes("PLAYER_VIEW");
+  const hasAssignManager = permissions?.includes("PLAYER_ASSIGN_MANAGER");
+  const hasPlayerManage = permissions?.includes("PLAYER_MANAGE");
+  const isSelf = player?.id === payload.id;
   const context = useGetPlayers();
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (value: Partial<Player>) => {
@@ -85,31 +90,31 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{`${payload.nick} 님`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <InfoDrawer player={payload}>정보확인</InfoDrawer>
-            </DropdownMenuItem>
+            {hasPlayerView && (
+              <DropdownMenuItem>
+                <InfoDrawer player={payload}>정보확인</InfoDrawer>
+              </DropdownMenuItem>
+            )}
             {/* <DropdownMenuItem disabled>기록(개발중)</DropdownMenuItem>
-            <DropdownMenuItem disabled>출석정보(개발중)</DropdownMenuItem>
-            <DropdownMenuItem disabled>매치(개발중)</DropdownMenuItem> */}
-            {isMaster && (
+        <DropdownMenuItem disabled>출석정보(개발중)</DropdownMenuItem>
+        <DropdownMenuItem disabled>매치(개발중)</DropdownMenuItem> */}
+            {hasAssignManager && !isSelf && (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>권한</DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
-                  {isMaster && (
-                    <DropdownMenuCheckboxItem checked={payload.role === "MASTER"} disabled={true}>
-                      MASTER
-                    </DropdownMenuCheckboxItem>
-                  )}
+                  <DropdownMenuCheckboxItem checked={payload.role === "MASTER"} disabled={true}>
+                    MASTER
+                  </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
                     checked={payload.role === "MANAGER"}
-                    disabled={!isMaster}
+                    disabled={false}
                     onClick={() => handleChangeRole("MANAGER")}
                   >
                     매니저
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
                     checked={payload.role === "NORMAL"}
-                    disabled={!isMaster && !isManager}
+                    disabled={false}
                     onClick={() => handleChangeRole("NORMAL")}
                   >
                     회원
@@ -117,7 +122,7 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
             )}
-            {(isManager || isMaster) && (
+            {hasPlayerManage && (
               <>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>직책</DropdownMenuSubTrigger>

@@ -1,5 +1,5 @@
+import type { MatchClubSummary, MatchClubWithSummaryRelations } from "./match.types";
 import type { MatchSummary } from "./summary.types";
-import type { MatchClubSummary, MatchClubWithSummaryRelations } from "./types";
 
 export type MatchClubQueryResponse = {
   matchClub: MatchClubWithSummaryRelations | null;

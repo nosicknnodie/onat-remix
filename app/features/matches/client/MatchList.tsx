@@ -13,7 +13,7 @@ import {
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import type { MatchWithClub } from "../isomorphic/types";
+import type { MatchWithClub } from "../isomorphic/match.types";
 
 export function MatchList({
   matches,

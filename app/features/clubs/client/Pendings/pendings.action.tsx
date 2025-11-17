@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { useMembershipInfoQuery } from "../../isomorphic";
+import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "../../isomorphic";
 import type { IPlayer } from "../../isomorphic/types";
 import { InfoDrawer } from "../index";
 import { useGetPendingPlayers } from "./pendings.context";
@@ -27,8 +27,12 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
   const { data: player } = useMembershipInfoQuery(clubId ?? "", {
     enabled: Boolean(clubId),
   });
-  const isMaster = player?.role === "MASTER";
-  const isManager = player?.role === "MANAGER";
+  const { data: permissions } = usePlayerPermissionsQuery(player?.id ?? "", {
+    enabled: Boolean(player?.id),
+    gcTime: 1000 * 60 * 10,
+  });
+  const canApprove = permissions?.includes("PLAYER_APPROVE_MEMBER");
+  const canViewPlayer = permissions?.includes("PLAYER_VIEW");
   const context = useGetPendingPlayers();
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (value: Partial<Player>) => {
@@ -65,10 +69,12 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{`${payload.nick} 님`}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <InfoDrawer player={payload}>정보확인</InfoDrawer>
-            </DropdownMenuItem>
-            {(isMaster || isManager) && (
+            {canViewPlayer && (
+              <DropdownMenuItem>
+                <InfoDrawer player={payload}>정보확인</InfoDrawer>
+              </DropdownMenuItem>
+            )}
+            {canApprove && (
               <>
                 <Button
                   variant="ghost"

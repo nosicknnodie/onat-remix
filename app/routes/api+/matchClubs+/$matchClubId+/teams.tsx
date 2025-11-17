@@ -16,7 +16,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     throw new Response("clubId is required", { status: 400 });
   }
   const data = await teamService.getTeamPageData(clubId, matchClubId);
-  return Response.json(data, "redirectTo" in data ? { status: 403 } : {});
+  return Response.json(data);
 };
 
 export type MatchClubTeamApiResponse = Awaited<ReturnType<typeof loader>>;

@@ -1,17 +1,27 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import { Outlet, useLocation, useNavigate, useParams, useRevalidator } from "@remix-run/react";
+import {
+  Link,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useParams,
+  useRevalidator,
+} from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useTransition } from "react";
 import { Loading } from "~/components/Loading";
+import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
 import { useSession } from "~/contexts";
 import { useMembershipInfoQuery } from "~/features/clubs/isomorphic";
 import {
-  ClubAdminMenu,
+  CheckManageDrawer,
   type ClubSubnavItem,
   ClubSubnavTabs,
   CommentSection,
   MatchHeaderCard,
+  MercenaryManageDrawer,
+  PlayerManageDrawer,
 } from "~/features/matches/client";
 import {
   matchClubQueryKeys,
@@ -19,10 +29,13 @@ import {
   ratingQueryKeys,
   recordQueryKeys,
   teamQueryKeys,
+  useAttendanceQuery,
   useMatchClubQuery,
   useMatchCommentsQuery,
 } from "~/features/matches/isomorphic";
-import { getJson } from "~/libs/api-client";
+import { useToast } from "~/hooks";
+import { getJson, postJson } from "~/libs/api-client";
+import { getToastForError } from "~/libs/errors";
 
 interface IMatchClubIdLayoutProps {}
 
@@ -34,6 +47,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const { revalidate } = useRevalidator();
   const queryClient = useQueryClient();
   const [, startTransition] = useTransition();
+  const { toast } = useToast();
   const matchClubId = params.matchClubId;
   const clubId = params.clubId;
   const { data: matchClubQueryData, isLoading: isMatchClubLoading } = useMatchClubQuery(
@@ -48,6 +62,14 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   });
   const { data: commentsData } = useMatchCommentsQuery(matchClubId, {
     enabled: Boolean(matchClubId),
+  });
+  const isAttendancePage = location.pathname.startsWith(
+    `/clubs/${params.clubId}/matches/${params.matchClubId}/attendance`,
+  );
+  const isInfoPage = location.pathname === `/clubs/${params.clubId}/matches/${params.matchClubId}`;
+  const attendanceQuery = useAttendanceQuery(matchClubId, {
+    clubId: clubId ?? "",
+    enabled: Boolean(matchClubId && clubId && isAttendancePage),
   });
 
   useEffect(() => {
@@ -139,6 +161,39 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   } as const;
   const match = matchSummary.match;
   const base = `/clubs/${params.clubId}/matches/${params.matchClubId}`;
+
+  const attendanceData =
+    attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
+  const matchClubAttendances = attendanceData?.matchClub.attendances ?? [];
+  const attendancePlayers = matchClubAttendances
+    .filter((att) => att.playerId && att.isVote)
+    .map((att) => att.playerId!);
+  const attendanceMercenaries = matchClubAttendances
+    .filter((att) => att.mercenaryId && att.isVote)
+    .map((att) => att.mercenaryId!);
+
+  const managePlayers =
+    attendanceData?.matchClub.club.players.map((p) => ({
+      id: p.id,
+      user: p.user,
+      isAttended: attendancePlayers.includes(p.id),
+    })) ?? [];
+  const manageMercenaries =
+    attendanceData?.matchClub.club.mercenarys.map((m) => ({
+      id: m.id,
+      name: m.name,
+      hp: m.hp,
+      user: m.user,
+      isAttended: attendanceMercenaries.includes(m.id),
+    })) ?? [];
+  const manageAttendances = matchClubAttendances
+    .filter((att) => att.isVote)
+    .map((a) => ({
+      id: a.id,
+      name: a.player?.user?.name || a.mercenary?.user?.name || a.mercenary?.name || "",
+      imageUrl: a.player?.user?.userImage?.url || a.mercenary?.user?.userImage?.url || undefined,
+      isCheck: a.isCheck,
+    }));
   const items: ClubSubnavItem[] = [
     { label: "정보", href: base, active: location.pathname === base },
   ];
@@ -199,22 +254,109 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         createdAt={match.createdAt}
         headerTabs={<ClubSubnavTabs items={items} className="px-0" />}
         footerActions={
-          role.isAdmin ? (
-            <ClubAdminMenu
-              isAdmin={role.isAdmin}
-              editHref={matchClub?.matchId ? `/matches/${matchClub.matchId}/edit` : "/"}
-              isSelf={matchClub?.isSelf}
-              onToggleSelf={() => {
-                confirm({
-                  title: "매칭 타입변경 주의",
-                  description:
-                    "타입 변경시 포지션 및 골기록이 초기화됩니다. 타입을 변경하시겠습니까?",
-                  confirmText: "타입 변경",
-                  cancelText: "취소",
-                }).onConfirm(() => handleMatchClubIsSelfChange(!matchClub?.isSelf));
-              }}
-            />
-          ) : null
+          <div className="flex flex-wrap gap-2 justify-end">
+            {role.isAdmin && isInfoPage && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    confirm({
+                      title: "매칭 타입변경 주의",
+                      description: `타입 변경시 포지션 및 골기록이 초기화됩니다. ${!matchClub?.isSelf ? "자체전" : "매치전"}으로 타입을 변경하시겠습니까?`,
+                      confirmText: "타입 변경",
+                      cancelText: "취소",
+                    }).onConfirm(() => handleMatchClubIsSelfChange(!matchClub?.isSelf))
+                  }
+                >
+                  {matchClub?.isSelf ? "자체전" : "매치전"}
+                </Button>
+                <Button size="sm" variant="outline" asChild disabled={!matchClub?.matchId}>
+                  <Link
+                    to={
+                      clubId
+                        ? `/clubs/${matchClub.clubId}/matches/${matchClub.id}/edit`
+                        : `/matches/${matchClub.matchId}/edit`
+                    }
+                  >
+                    매치 수정
+                  </Link>
+                </Button>
+              </>
+            )}
+            {role.isAdmin &&
+              isAttendancePage &&
+              attendanceQuery.data &&
+              !("redirectTo" in attendanceQuery.data) &&
+              attendanceQuery.data.matchClub && (
+                <>
+                  <CheckManageDrawer
+                    attendances={manageAttendances}
+                    onToggle={async (attendanceId, isCheck) => {
+                      try {
+                        await postJson("/api/attendances", { id: attendanceId, isCheck });
+                        await attendanceQuery.refetch();
+                        return true;
+                      } catch (e) {
+                        toast(getToastForError(e));
+                        return false;
+                      }
+                    }}
+                  >
+                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                      출석 관리
+                    </Button>
+                  </CheckManageDrawer>
+                  <PlayerManageDrawer
+                    players={managePlayers}
+                    onToggle={async (playerId, isVote) => {
+                      try {
+                        await postJson("/api/attendances/player", {
+                          matchClubId,
+                          playerId,
+                          isVote,
+                        });
+                        await attendanceQuery.refetch();
+                        return true;
+                      } catch (e) {
+                        toast(getToastForError(e));
+                        return false;
+                      }
+                    }}
+                  >
+                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                      참석 관리
+                    </Button>
+                  </PlayerManageDrawer>
+                  <MercenaryManageDrawer
+                    mercenaries={manageMercenaries}
+                    onToggle={async (mercenaryId, isVote) => {
+                      try {
+                        await postJson("/api/attendances/mercenary", {
+                          matchClubId,
+                          mercenaryId,
+                          isVote,
+                        });
+                        await attendanceQuery.refetch();
+                        return true;
+                      } catch (e) {
+                        toast(getToastForError(e));
+                        return false;
+                      }
+                    }}
+                  >
+                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                      용병 추가
+                    </Button>
+                  </MercenaryManageDrawer>
+                  <Button size="sm" asChild variant="outline">
+                    <Link to={`/clubs/${params.clubId}/matches/${params.matchClubId}/mercenaries`}>
+                      용병 관리
+                    </Link>
+                  </Button>
+                </>
+              )}
+          </div>
         }
         commentCount={commentsData?.comments.length ?? 0}
       >

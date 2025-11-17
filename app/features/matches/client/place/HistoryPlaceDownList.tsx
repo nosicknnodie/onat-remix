@@ -1,6 +1,7 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useAtomValue } from "jotai/react";
 import _ from "lodash";
+import { placeHistoryAtom } from "~/atoms/placeHistory";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import type { IKakaoLocalType } from "~/libs/map";
-import { placeHistoryAtom } from "~/routes/_public+/matches+/_libs/state";
 
 interface IHistoryPlaceDownListProps {
   onSetPlace: (place: IKakaoLocalType) => void;

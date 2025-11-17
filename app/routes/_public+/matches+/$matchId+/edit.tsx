@@ -1,10 +1,10 @@
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: off */
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import dayjs from "dayjs";
 import { useAtomCallback } from "jotai/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import { placeHistoryAtom } from "~/atoms/placeHistory";
 import { Button } from "~/components/ui/button";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
 import { parseUpdate } from "~/features/matches/isomorphic";
@@ -12,7 +12,6 @@ import { detailService } from "~/features/matches/server";
 import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs";
 import { getUser, parseRequestData } from "~/libs/index.server";
 import { jsonFail } from "~/utils/action.server";
-import { placeHistoryAtom } from "../_libs/state";
 
 export const handle = { breadcrumb: "매치 수정" };
 
@@ -62,20 +61,24 @@ interface IMatchEditPageProps {}
 const MatchEditPage = (_props: IMatchEditPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   const match = loaderData.match;
-  const [place, setPlace] = useState<IKakaoLocalType | null>({
-    address_name: match.address || "",
-    place_name: match.placeName || "",
-    y: String(match.lat || INITIAL_CENTER[0]),
-    x: String(match.lng || INITIAL_CENTER[1]),
-    place_url: "",
-    road_address_name: "",
-    category_group_code: "",
-    category_group_name: "",
-    category_name: "",
-    distance: "",
-    phone: "",
-    id: "",
-  });
+  const [place, setPlace] = useState<IKakaoLocalType | null>(null);
+
+  useEffect(() => {
+    setPlace({
+      address_name: match.address || "",
+      place_name: match.placeName || "",
+      y: String(match.lat || INITIAL_CENTER[0]),
+      x: String(match.lng || INITIAL_CENTER[1]),
+      place_url: "",
+      road_address_name: "",
+      category_group_code: "",
+      category_group_name: "",
+      category_name: "",
+      distance: "",
+      phone: "",
+      id: "",
+    });
+  }, [match]);
   const handleSearchPlaceSubmit = (value: IKakaoLocalType) => {
     setPlace(value);
   };
@@ -95,15 +98,15 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
   return (
     <div className="flex flex-col justify-start w-full space-y-2">
       <MatchForm
-        defaultTitle={match.title}
-        defaultDescription={match.description}
-        defaultDate={dayjs(match.stDate).format("YYYY-MM-DD")}
-        defaultHour={dayjs(match.stDate).hour().toString()}
-        defaultMinute={dayjs(match.stDate).minute().toString()}
-        placeName={place?.place_name ?? ""}
-        address={place?.address_name ?? ""}
-        lat={place?.y ?? ""}
-        lng={place?.x ?? ""}
+        defaultMatch={{
+          title: match.title,
+          description: match.description ?? "",
+          stDate: match.stDate,
+          placeName: place?.place_name ?? match.placeName ?? "",
+          address: place?.address_name ?? match.address ?? "",
+          lat: place?.y ?? match.lat ?? "",
+          lng: place?.x ?? match.lng ?? "",
+        }}
         onSubmit={handleSubmit}
         renderPlaceControls={() => (
           <>

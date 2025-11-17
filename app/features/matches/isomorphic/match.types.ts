@@ -1,4 +1,6 @@
 import type { Prisma } from "@prisma/client";
+import type { z } from "zod";
+import type { createSchema } from "./match.schema";
 
 const baseClubInclude = {
   club: {
@@ -135,3 +137,14 @@ export type UpdateMatchDTO = {
   lng?: number | null;
   createUserId: string;
 };
+
+export type MatchFormDefault = {
+  title?: string;
+  description?: string;
+  stDate?: string | Date;
+  placeName?: string;
+  address?: string;
+  lat?: string | number | null;
+  lng?: string | number | null;
+};
+export type MatchFormFields = z.infer<typeof createSchema>;
