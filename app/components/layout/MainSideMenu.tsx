@@ -238,6 +238,15 @@ const MainSideMenu = () => {
                     <span className="text-sm">대시보드</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => handleMenuClick("/settings/edit")}
+                    isActive={location.pathname.startsWith("/settings/edit")}
+                  >
+                    <HiOutlineInformationCircle />
+                    <span className="text-sm">회원정보 수정</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

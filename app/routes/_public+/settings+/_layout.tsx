@@ -62,7 +62,7 @@ const Layout = (_props: ILayoutProps) => {
                 포지션
               </NavLink>
             </li>
-            <li>
+            {/* <li>
               <NavLink
                 to="/settings/security"
                 className={({ isActive }) =>
@@ -78,7 +78,7 @@ const Layout = (_props: ILayoutProps) => {
               >
                 보안 설정
               </NavLink>
-            </li>
+            </li> */}
           </ul>
         </nav>
         <Outlet />
