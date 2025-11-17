@@ -1,49 +1,40 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts";
 import { MatchList } from "~/features/matches/client";
 import { listSerivce } from "~/features/matches/server";
-import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 
-const RightComponent = () => {
-  const session = useSession();
-  if (!session) return null;
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className={cn(
-            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
-          )}
-        >
-          <span className="sr-only">Open menu</span>
-          <DotsHorizontalIcon className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link to="/matches/new">매치 생성</Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+// const RightComponent = () => {
+//   const session = useSession();
+//   if (!session) return null;
+//   return (
+//     <DropdownMenu>
+//       <DropdownMenuTrigger asChild>
+//         <Button
+//           variant="ghost"
+//           className={cn(
+//             "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
+//           )}
+//         >
+//           <span className="sr-only">Open menu</span>
+//           <DotsHorizontalIcon className="h-4 w-4" />
+//         </Button>
+//       </DropdownMenuTrigger>
+//       <DropdownMenuContent align="end">
+//         <DropdownMenuItem asChild>
+//           <Link to="/matches/new">매치 생성</Link>
+//         </DropdownMenuItem>
+//       </DropdownMenuContent>
+//     </DropdownMenu>
+//   );
+// };
 
-export const handle = {
-  right: (match: any) => <RightComponent {...match} />,
-};
+// export const handle = {
+//   right: (match: any) => <RightComponent {...match} />,
+// };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);

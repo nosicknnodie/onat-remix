@@ -1,6 +1,6 @@
 import type { Board } from "@prisma/client";
 import { useLocation, useMatches, useNavigate } from "@remix-run/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { Home } from "lucide-react";
@@ -44,7 +44,7 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { useSession } from "~/contexts";
 import type { ClubWithMembership, IClubLayoutLoaderData } from "~/features/clubs/isomorphic";
-import { clubInfoQueryKeys } from "~/features/clubs/isomorphic";
+import { clubInfoQueryKeys, clubMemberQueryKeys } from "~/features/clubs/isomorphic";
 import { cn, getBoardIcon } from "~/libs";
 import { getJson } from "~/libs/api-client";
 import ItemLink from "../ItemLink";
@@ -88,6 +88,35 @@ const MainSideMenu = () => {
       }),
     [clubs],
   );
+  const membershipIds = useMemo(
+    () => joinedClubs.map((club) => club.membership?.id).filter((id): id is string => Boolean(id)),
+    [joinedClubs],
+  );
+
+  const permissionQueries = useQueries({
+    queries: membershipIds.map((playerId) => ({
+      queryKey: clubMemberQueryKeys.playerPermissions(playerId),
+      queryFn: async () => {
+        const res = await getJson<{ permissions: string[] }>(
+          `/api/players/${playerId}/permissions`,
+        );
+        return Array.isArray(res.permissions) ? res.permissions : [];
+      },
+      enabled: Boolean(playerId),
+      staleTime: 1000 * 60 * 5,
+    })),
+  });
+
+  const clubViewPermissionMap = useMemo(() => {
+    const map = new Map<string, { hasClubView: boolean | undefined; isLoading: boolean }>();
+    membershipIds.forEach((playerId, index) => {
+      const query = permissionQueries[index];
+      const hasClubView = Array.isArray(query.data) ? query.data.includes("CLUB_VIEW") : undefined;
+      const isLoading = query.isLoading || query.isFetching;
+      map.set(playerId, { hasClubView, isLoading });
+    });
+    return map;
+  }, [membershipIds, permissionQueries]);
 
   useEffect(() => {
     if (isClubsLoading) return;
@@ -246,6 +275,12 @@ const MainSideMenu = () => {
                         ? clubLayoutData.player
                         : club.membership;
                     const isJoined = !!membership;
+                    const permissionInfo = membership
+                      ? clubViewPermissionMap.get(membership.id)
+                      : undefined;
+                    if (membership && permissionInfo?.hasClubView === false) {
+                      return null;
+                    }
                     // const isAdmin = membership?.role === "MANAGER" || membership?.role === "MASTER";
                     const subItems = [
                       {

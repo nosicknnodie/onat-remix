@@ -15,7 +15,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import type { ClubWithMembership } from "~/features/clubs/isomorphic";
-import { clubInfoQueryKeys } from "~/features/clubs/isomorphic";
+import { clubInfoQueryKeys, clubMemberQueryKeys } from "~/features/clubs/isomorphic";
 import { getJson } from "~/libs/api-client";
 
 interface IPublicLayoutProps {}
@@ -32,9 +32,18 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
   const breadcrumbs = matches.filter((match) => match.handle?.breadcrumb);
 
   const rights = matches
-    .filter((match) => match.handle?.right)
+    .filter((match) => Boolean(match.handle?.right))
     .map((match) => {
-      return match.handle.right?.(match);
+      const RightComp = match.handle?.right;
+      if (!RightComp) return null;
+
+      // handle.right는 React 컴포넌트 또는 ReactNode를 지원
+      if (typeof RightComp === "function") {
+        // 컴포넌트를 직접 호출하지 않고 JSX로 렌더링해 훅 규칙을 보존
+        const Component = RightComp as React.ComponentType<{ match: typeof match }>;
+        return <Component key={match.id} match={match} />;
+      }
+      return RightComp;
     });
 
   useEffect(() => {
@@ -49,10 +58,31 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
       });
     };
 
+    const prefetchMemberPermissions = async (clubs?: ClubWithMembership[]) => {
+      if (!clubs?.length) return;
+      const membershipIds = clubs
+        .map((club) => club.membership?.id)
+        .filter((id): id is string => Boolean(id));
+
+      await Promise.all(
+        membershipIds.map((playerId) =>
+          queryClient.fetchQuery({
+            queryKey: clubMemberQueryKeys.playerPermissions(playerId),
+            queryFn: () =>
+              getJson<string[]>(`/api/players/${playerId}/permissions`, {
+                signal: controller.signal,
+              }),
+            staleTime: 1000 * 60 * 5,
+          }),
+        ),
+      );
+    };
+
     const prefetchMyClubs = async () => {
       const cached = queryClient.getQueryData<ClubWithMembership[]>(clubInfoQueryKeys.myClubs());
       if (cached) {
         hydrateClubCaches(cached);
+        void prefetchMemberPermissions(cached);
         return;
       }
 
@@ -66,6 +96,7 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
           staleTime: 1000 * 60 * 5,
         });
         hydrateClubCaches(clubs);
+        void prefetchMemberPermissions(clubs);
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error("[PublicLayout] Failed to prefetch my clubs", error);

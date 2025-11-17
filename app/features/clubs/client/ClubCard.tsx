@@ -26,8 +26,10 @@ interface ClubCardPropsWithNavigation extends ClubCardProps {
 
 export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, membership = null }) => {
   const user = useSession();
+  const isLoggedIn = Boolean(user);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const clubLink = isLoggedIn ? `/clubs/${club.id}` : `/auth/login?redirectTo=/clubs/${club.id}`;
   const updatedAt = membership?.updatedAt ? new Date(membership.updatedAt) : null;
   const hoursSinceUpdate =
     updatedAt != null ? (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60) : null;
@@ -69,7 +71,7 @@ export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, membersh
       )}
 
       {/* 클럽 대표 이미지 */}
-      <Link to={`/clubs/${club.id}`}>
+      <Link to={clubLink}>
         <img
           src={club.image?.url || "/images/club-default-image.webp"}
           alt="클럽 대표 이미지"
@@ -87,7 +89,7 @@ export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, membersh
       {/* 클럽 기본 정보 */}
       <div className="flex p-2 gap-2 items-center overflow-hidden w-full">
         {/* 클럽 엠블럼 */}
-        <Link to={`/clubs/${club.id}`} className="flex-shrink-0">
+        <Link to={clubLink} className="flex-shrink-0">
           <img
             src={club.emblem?.url || "/images/club-default-emblem.webp"}
             alt="클럽 엠블럼"
@@ -97,7 +99,7 @@ export const ClubCard: React.FC<ClubCardPropsWithNavigation> = ({ club, membersh
 
         {/* 클럽명 및 설명 */}
         <div className="flex-shrink min-w-0 w-full">
-          <Link to={`/clubs/${club.id}`} className="block">
+          <Link to={clubLink} className="block">
             <h3 className="text-xl font-semibold text-foreground hover:text-primary">
               {club.name}
             </h3>

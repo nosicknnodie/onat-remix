@@ -57,6 +57,7 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
                   ),
                   NORMAL: "",
                   PENDING: "",
+                  NO: "",
                 }[row.original.role ?? "NORMAL"]
               }
             </div>

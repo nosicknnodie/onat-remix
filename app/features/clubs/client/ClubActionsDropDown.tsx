@@ -5,17 +5,9 @@
  * - 접근성을 위한 키보드 네비게이션 지원
  */
 
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Link } from "@remix-run/react";
 import type React from "react";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { cn } from "~/libs";
 
 interface ClubActionsDropdownProps {
   isAuthenticated: boolean;
@@ -28,26 +20,29 @@ export const ClubActionsDropdown: React.FC<ClubActionsDropdownProps> = ({ isAuth
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className={cn(
-            "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
-          )}
-          aria-label="클럽 액션 메뉴 열기"
-        >
-          <span className="sr-only">메뉴 열기</span>
-          <DotsHorizontalIcon className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
+    <Button asChild variant="outline">
+      <Link to="/clubs/new">클럽 생성</Link>
+    </Button>
+    // <DropdownMenu>
+    //   <DropdownMenuTrigger asChild>
+    //     <Button
+    //       variant="ghost"
+    //       className={cn(
+    //         "h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0",
+    //       )}
+    //       aria-label="클럽 액션 메뉴 열기"
+    //     >
+    //       <span className="sr-only">메뉴 열기</span>
+    //       <DotsHorizontalIcon className="h-4 w-4" />
+    //     </Button>
+    //   </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link to="/clubs/new">클럽 생성</Link>
-        </DropdownMenuItem>
-        {/* 추가적인 액션들이 필요한 경우 여기에 추가 */}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    //   <DropdownMenuContent align="end">
+    //     <DropdownMenuItem asChild>
+
+    //     </DropdownMenuItem>
+    //     {/* 추가적인 액션들이 필요한 경우 여기에 추가 */}
+    //   </DropdownMenuContent>
+    // </DropdownMenu>
   );
 };

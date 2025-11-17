@@ -87,7 +87,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
 const RightComponent = () => {
   const user = useSession();
-  if (!user) return null;
+  if (!user || user.role !== "ADMIN") return null;
   return (
     <ItemLink to={`/communities/new`}>
       <Button variant={"outline"} size={"sm"}>

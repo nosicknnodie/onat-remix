@@ -59,10 +59,13 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
     await context?.refetch();
   };
   const handleStatus = async (status: StatusType) => {
+    const payload: Partial<Player> = { status };
     if (status === "BANNED") {
-      await mutateAsync({ status, role: "PENDING", jobTitle: "NO" });
-      await context?.refetch();
+      payload.role = "NO";
+      payload.jobTitle = "NO";
     }
+    await mutateAsync(payload);
+    await context?.refetch();
   };
 
   return (

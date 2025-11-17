@@ -1,11 +1,18 @@
+import type { PlayerPermissionKey } from "@prisma/client";
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getJson } from "~/libs/api-client";
-import type { ClubApprovedMembers, ClubPendingMembers } from "./member.types";
+import type {
+  ClubApprovedMembers,
+  ClubPendingMembers,
+  PlayerEffectivePermissions,
+} from "./member.types";
 
 export const clubMemberQueryKeys = {
   approved: (clubId: string) => ["club", clubId, "members", "approved"] as const,
   pendings: (clubId: string) => ["club", clubId, "members", "pendings"] as const,
+  playerPermissions: (playerId: string) =>
+    ["player", playerId, "permissions", "effective"] as const,
 } as const;
 
 type Options<TData> = Omit<
@@ -44,4 +51,29 @@ export function useClubPendingMembersQuery(clubId: string, options?: Options<Clu
     `/api/clubs/${clubId}/members/pendings`,
     options,
   );
+}
+
+export function usePlayerPermissionsQuery(
+  playerId: string,
+  options?: Options<PlayerEffectivePermissions>,
+) {
+  return useClubMembersQuery<PlayerEffectivePermissions>(
+    clubMemberQueryKeys.playerPermissions(playerId),
+    `/api/players/${playerId}/permissions`,
+    options,
+  );
+}
+
+export function useHasPlayerPermission(
+  playerId: string,
+  permission: PlayerPermissionKey,
+  options?: Options<PlayerEffectivePermissions>,
+) {
+  const query = usePlayerPermissionsQuery(playerId, options);
+  const hasPermission = useMemo(
+    () => query.data?.includes(permission) ?? false,
+    [permission, query.data],
+  );
+
+  return { ...query, hasPermission };
 }

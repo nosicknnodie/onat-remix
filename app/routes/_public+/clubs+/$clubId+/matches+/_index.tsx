@@ -6,11 +6,27 @@ import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { ClubPermissionGate } from "~/features/clubs/client";
 import { type ClubMatchFeed, useClubMatchFeedInfiniteQuery } from "~/features/clubs/isomorphic";
 
 interface IMatchesPageProps {}
 
+const RightComponent = () => {
+  const { clubId } = useParams();
+  return (
+    <>
+      <ClubPermissionGate permission="MATCH_CREATE">
+        <Button asChild variant="outline">
+          <Link to={`/clubs/${clubId}/matches/new`}>매치 추가</Link>
+        </Button>
+      </ClubPermissionGate>
+    </>
+  );
+};
+
+export const handle = { right: RightComponent };
 /**
  * 1. 경기 매치리스트를 보여준다.
  * 2. 매치 카드에는 각 정보들이 들어있다.

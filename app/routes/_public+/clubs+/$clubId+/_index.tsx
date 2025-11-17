@@ -1,9 +1,12 @@
 import { useParams } from "@remix-run/react";
+import { Button } from "~/components/ui/button";
+import { Link } from "~/components/ui/Link";
 import {
   ClubInfoAttendanceCard,
   ClubInfoMatchCard,
   ClubLeaderboardCard,
   ClubNoticeList,
+  ClubPermissionGate,
 } from "~/features/clubs/client";
 import {
   useAttendanceQuery,
@@ -17,7 +20,20 @@ import {
 
 interface IClubPageProps {}
 
-export const handle = { breadcrumb: "정보" };
+const RightComponent = () => {
+  const { clubId } = useParams();
+  return (
+    <>
+      <ClubPermissionGate permission="CLUB_MANAGE">
+        <Button asChild variant="outline">
+          <Link to={`/clubs/${clubId}/edit`}>클럽 수정</Link>
+        </Button>
+      </ClubPermissionGate>
+    </>
+  );
+};
+
+export const handle = { breadcrumb: "정보", right: RightComponent };
 
 const ClubPage = (_props: IClubPageProps) => {
   const { clubId } = useParams();

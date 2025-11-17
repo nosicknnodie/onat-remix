@@ -237,6 +237,7 @@ enum RoleType {
   MANAGER
   NORMAL
   PENDING
+  NO
 }
 
 // 클럽 내 역할별 세부 권한 키

@@ -13,6 +13,7 @@ export * from "./ClubInfoMatchCard";
 export * from "./ClubLeaderboardCard";
 export * from "./ClubList";
 export * from "./ClubNoticeList";
+export * from "./ClubPermissionGate";
 export * from "./ClubTabs";
 export * from "./InfoDrawer";
 export * from "./JoinDialog";

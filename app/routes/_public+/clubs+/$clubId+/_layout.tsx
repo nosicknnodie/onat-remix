@@ -1,19 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Link, Outlet, type ShouldRevalidateFunction, useParams } from "@remix-run/react";
+import { Outlet, type ShouldRevalidateFunction, useParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Loading } from "~/components/Loading";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import {
   CLUB_BOARD_FEED_TAKE,
   CLUB_MATCH_FEED_TAKE,
@@ -34,40 +26,8 @@ const ClubBreadcrumb = ({ clubId }: { clubId?: string }) => {
   return <BreadcrumbLink to={`/clubs/${clubId}`}>{label}</BreadcrumbLink>;
 };
 
-const ClubHeaderActions = ({ clubId }: { clubId?: string }) => {
-  const { data } = useMembershipInfoQuery(clubId ?? "", { enabled: Boolean(clubId) });
-  if (!clubId || !data || (data.role !== "MANAGER" && data.role !== "MASTER")) {
-    return null;
-  }
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 text-primary focus:outline-none focus:ring-0 focus-visible:ring-0"
-        >
-          <span className="sr-only">Open menu</span>
-          <DotsHorizontalIcon className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link to={`/clubs/${clubId}/edit`}>클럽 수정</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={`/clubs/${clubId}/matches/new`}>매치 추가</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={`/clubs/${clubId}/boards/new`}>게시글 추가</Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
 export const handle = {
   breadcrumb: (match: any) => <ClubBreadcrumb clubId={match.params.clubId} />,
-  right: (match: any) => <ClubHeaderActions clubId={match.params.clubId} />,
 };
 
 interface ILayoutProps {}

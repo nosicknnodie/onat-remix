@@ -3,7 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
-import { ClubBoardPostCard } from "~/features/clubs/client";
+import { Button } from "~/components/ui/button";
+import { Link } from "~/components/ui/Link";
+import { ClubBoardPostCard, ClubPermissionGate } from "~/features/clubs/client";
 import {
   type ClubBoardFeedResponse,
   clubBoardQueryKeys,
@@ -11,6 +13,21 @@ import {
   useClubBoardFeedInfiniteQuery,
   useClubBoardsTabsQuery,
 } from "~/features/clubs/isomorphic";
+
+const RightComponent = () => {
+  const { clubId } = useParams();
+  return (
+    <>
+      <ClubPermissionGate clubId={clubId} permission="BOARD_MANAGER">
+        <Button asChild variant="outline">
+          <Link to={`/clubs/${clubId}/boards/new`}>게시글 추가</Link>
+        </Button>
+      </ClubPermissionGate>
+    </>
+  );
+};
+
+export const handle = { right: RightComponent };
 
 const Boards = () => {
   const { clubId } = useParams();

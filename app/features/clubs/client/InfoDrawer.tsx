@@ -85,14 +85,20 @@ export const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
             />
             <InfoRow
               label="권한"
-              value={
-                {
-                  NORMAL: "회원",
-                  PENDING: "대기회원",
-                  MASTER: "마스터",
-                  MANAGER: "관리자",
-                }[player?.role ?? "PENDING"]
-              }
+              value={(() => {
+                switch (player?.role) {
+                  case "MASTER":
+                    return "마스터";
+                  case "MANAGER":
+                    return "관리자";
+                  case "NORMAL":
+                    return "회원";
+                  case "PENDING":
+                    return "대기회원";
+                  default:
+                    return "-";
+                }
+              })()}
               icon={<KeyIcon size={16} />}
             />
           </div>
