@@ -1,12 +1,10 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { useEffect, useMemo } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { SiNaver } from "react-icons/si";
 import { Separator } from "~/components/ui/separator";
-import { LoginForm } from "~/features/auth/client";
 import { loginService } from "~/features/auth/server";
-import { useActionToast } from "~/hooks";
 import { useToast } from "~/hooks/use-toast";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -25,9 +23,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 const Login = () => {
   const loaderData = useLoaderData<typeof loader>();
-  const actions = useActionData<typeof action>();
-  useActionToast(actions);
-  const navigation = useNavigation();
   const { toast } = useToast();
   useEffect(() => {
     if (loaderData?.oauthError) {
@@ -37,7 +32,6 @@ const Login = () => {
       });
     }
   }, [loaderData?.oauthError, toast]);
-  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
   const redirectQuery = useMemo(() => {
     const redirectTo = loaderData?.redirectTo;
     if (!redirectTo) return "";
@@ -47,17 +41,16 @@ const Login = () => {
   }, [loaderData?.redirectTo]);
   return (
     <div className="max-w-md w-full space-y-4 mt-6">
-      <LoginForm
-        values={actions?.values}
-        errors={actions?.errors}
-        success={actions?.success}
-        isSubmitting={isSubmitting}
-        redirectTo={loaderData?.redirectTo ?? undefined}
-      />
+      <div className="space-y-4 rounded-md p-4 text-center">
+        <h2 className="text-lg font-semibold">소셜 로그인만 지원합니다</h2>
+        <p className="text-sm text-muted-foreground">
+          Google 또는 네이버 계정으로 로그인해 주세요.
+        </p>
+      </div>
       <div className="space-y-2">
         <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
           <Separator className="flex-1" />
-          <span className="whitespace-nowrap">다른 방식으로 로그인</span>
+          <span className="whitespace-nowrap">소셜 로그인</span>
           <Separator className="flex-1" />
         </div>
         <div className="flex flex-col gap-2">
@@ -73,11 +66,11 @@ const Login = () => {
           />
         </div>
       </div>
-      <div className="flex justify-end items-center gap-2 text-sm h-4">
+      {/* <div className="flex justify-end items-center gap-2 text-sm h-4">
         <Link to={"/auth/reset-form"}>비밀번호찾기</Link>
         <Separator orientation="vertical" />
         <Link to={"/auth/register"}>회원가입</Link>
-      </div>
+      </div> */}
     </div>
   );
 };

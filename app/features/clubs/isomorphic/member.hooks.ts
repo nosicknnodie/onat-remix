@@ -57,10 +57,17 @@ export function usePlayerPermissionsQuery(
   playerId: string,
   options?: Options<PlayerEffectivePermissions>,
 ) {
+  const mergedOptions: Options<PlayerEffectivePermissions> = {
+    staleTime: 1000 * 60, // 1분 유지 후 갱신 대상
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    ...options,
+  };
+
   return useClubMembersQuery<PlayerEffectivePermissions>(
     clubMemberQueryKeys.playerPermissions(playerId),
     `/api/players/${playerId}/permissions`,
-    options,
+    mergedOptions,
   );
 }
 

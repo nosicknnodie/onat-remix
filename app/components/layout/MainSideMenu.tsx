@@ -3,7 +3,6 @@ import { useLocation, useMatches, useNavigate } from "@remix-run/react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { Home } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight, FaUser } from "react-icons/fa";
@@ -65,6 +64,8 @@ const MainSideMenu = () => {
     queryKey: myClubsQueryKey,
     queryFn: () => getJson<ClubWithMembership[]>("/api/clubs/my"),
     staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 60, // 60분 캐시 유지
+    refetchOnWindowFocus: true,
     refetchOnMount: false,
   });
 
@@ -104,6 +105,8 @@ const MainSideMenu = () => {
       },
       enabled: Boolean(playerId),
       staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: true,
     })),
   });
 
@@ -143,7 +146,7 @@ const MainSideMenu = () => {
 
   const boards = data?.boards as Board[] | undefined;
   const communityMenus = [
-    { title: "전체", url: "/communities", icon: <Home className="text-primary" />, end: true },
+    // { title: "전체", url: "/communities", icon: <Home className="text-primary" />, end: true },
     ...(boards?.map((board) => ({
       title: board.name,
       url: `/communities/${board.slug}`,
