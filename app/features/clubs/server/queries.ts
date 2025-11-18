@@ -198,7 +198,7 @@ export async function findRecentMatchForClub(clubId: string, before: Date) {
   return await prisma.match.findFirst({
     where: {
       stDate: { lt: before },
-      matchClubs: { some: { clubId } },
+      matchClubs: { some: { clubId, isUse: true } },
     },
     orderBy: { stDate: "desc" },
     include: {
@@ -208,6 +208,7 @@ export async function findRecentMatchForClub(clubId: string, before: Date) {
         },
       },
       matchClubs: {
+        where: { isUse: true },
         include: matchSummaryRelations,
       },
     },
@@ -218,7 +219,7 @@ export async function findUpcomingMatchForClub(clubId: string, after: Date) {
   return await prisma.match.findFirst({
     where: {
       stDate: { gt: after },
-      matchClubs: { some: { clubId } },
+      matchClubs: { some: { clubId, isUse: true } },
     },
     orderBy: { stDate: "asc" },
     include: {
@@ -228,6 +229,7 @@ export async function findUpcomingMatchForClub(clubId: string, after: Date) {
         },
       },
       matchClubs: {
+        where: { isUse: true },
         include: matchSummaryRelations,
       },
     },
@@ -238,6 +240,7 @@ export async function countAnnualAttendance(args: { clubId: string; start: Date;
   const where = {
     matchClub: {
       clubId: args.clubId,
+      isUse: true,
       match: {
         stDate: {
           gte: args.start,
@@ -263,6 +266,7 @@ export async function findAnnualGoals(args: { clubId: string; start: Date; end: 
       quarter: {
         matchClub: {
           clubId: args.clubId,
+          isUse: true,
           match: {
             stDate: {
               gte: args.start,
@@ -300,6 +304,7 @@ export async function findAnnualEvaluations(args: { clubId: string; start: Date;
     where: {
       matchClub: {
         clubId: args.clubId,
+        isUse: true,
         match: {
           stDate: {
             gte: args.start,

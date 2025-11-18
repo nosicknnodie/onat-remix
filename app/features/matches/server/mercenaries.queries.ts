@@ -1,7 +1,7 @@
 import { prisma } from "~/libs/index.server";
 
 export async function findMatchClubById(id: string) {
-  return await prisma.matchClub.findUnique({ where: { id } });
+  return await prisma.matchClub.findFirst({ where: { id, isUse: true } });
 }
 
 export async function findApprovedPlayersByClub(clubId: string) {

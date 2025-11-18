@@ -21,14 +21,14 @@ export async function getMatchClubLayoutData(matchClubId: string) {
 export async function setIsSelf(matchClubId: string, isSelf: boolean) {
   try {
     await prisma.$transaction(async (tx) => {
-      const matchClub = await tx.matchClub.findUnique({
-        where: { id: matchClubId },
+      const matchClub = await tx.matchClub.findFirst({
+        where: { id: matchClubId, isUse: true },
         include: { teams: true },
       });
       if (!matchClub) throw new Error("matchClub not found");
       if (isSelf && matchClub.teams.length < 2) {
         const before = await tx.matchClub.findFirst({
-          where: { clubId: matchClub.clubId, isSelf: true },
+          where: { clubId: matchClub.clubId, isSelf: true, isUse: true },
           orderBy: { match: { stDate: "desc" } },
           include: { teams: true },
         });

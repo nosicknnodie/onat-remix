@@ -45,7 +45,7 @@ export async function createMatchClubTx(
 
 export async function findLatestSelfTeamsTx(tx: Prisma.TransactionClient, clubId: string) {
   const before = await tx.matchClub.findFirst({
-    where: { clubId, isSelf: true },
+    where: { clubId, isSelf: true, isUse: true },
     orderBy: { match: { stDate: "desc" } },
     include: { teams: true },
   });

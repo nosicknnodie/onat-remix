@@ -250,6 +250,7 @@ enum PlayerPermissionKey {
   PLAYER_VIEW
   MATCH_CREATE
   MATCH_MANAGE
+  MATCH_MASTER
   MERCENARY_MANAGE
   BOARD_MASTER
   BOARD_MANAGER
@@ -350,8 +351,9 @@ model MatchClub {
   teams         Team[]
   evaluations   Evaluation[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  isUse         Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
 
   @@index([clubId])
   @@index([matchId])

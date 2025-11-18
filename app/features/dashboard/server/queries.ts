@@ -22,6 +22,7 @@ export async function findMatchClubsInRange(args: { clubIds: string[]; start: Da
   return await prisma.matchClub.findMany({
     where: {
       clubId: { in: args.clubIds },
+      isUse: true,
       match: {
         stDate: {
           gte: args.start,
@@ -44,6 +45,7 @@ export async function findUpcomingMatchClubs(args: { clubIds: string[]; start: D
   return await prisma.matchClub.findMany({
     where: {
       clubId: { in: args.clubIds },
+      isUse: true,
       match: {
         stDate: {
           gte: args.start,

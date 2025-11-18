@@ -2,8 +2,8 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
 
 export async function findMatchClubWithQuarters(matchClubId: string) {
-  return await prisma.matchClub.findUnique({
-    where: { id: matchClubId },
+  return await prisma.matchClub.findFirst({
+    where: { id: matchClubId, isUse: true },
     include: { quarters: { include: { team1: true, team2: true } } },
   });
 }

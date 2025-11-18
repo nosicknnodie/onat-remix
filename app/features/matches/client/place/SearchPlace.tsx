@@ -43,6 +43,12 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
   const handleSetQuery = (value: string) => {
     setQuery(value);
   };
+  const handleSearchFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const formData = new FormData(event.currentTarget);
+    await handleSearchPlaceSubmit(formData);
+  };
   const handleSearchPlaceSubmit = async (value: FormData) => {
     const response = await mutateAsync(value);
     const data = await response.json();
@@ -101,7 +107,7 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
               </KMap>
             </div>
             <div className="p-2">
-              <form action={handleSearchPlaceSubmit} className="flex gap-x-2">
+              <form onSubmit={handleSearchFormSubmit} className="flex gap-x-2">
                 <Input
                   type="text"
                   name="query"
@@ -109,7 +115,7 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
                   value={query}
                   onChange={(e) => handleSetQuery(e.target.value)}
                 />
-                <Button>검색</Button>
+                <Button type="submit">검색</Button>
               </form>
             </div>
             <div className="grid grid-cols-1 min-h[250px] grid-rows-5">
@@ -159,6 +165,7 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
                 </PaginationItem>
                 <PaginationItem>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     disabled={meta?.is_end}
@@ -170,7 +177,12 @@ const SearchPlace = ({ onSubmit, children }: IProps) => {
               </PaginationContent>
             </Pagination>
             <DialogFooter>
-              <Button className="w-full" disabled={!selectedPlace} onClick={handleConfirmPlace}>
+              <Button
+                type="button"
+                className="w-full"
+                disabled={!selectedPlace}
+                onClick={handleConfirmPlace}
+              >
                 확인
               </Button>
             </DialogFooter>

@@ -1,7 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import {
+  type UseMutationOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useClubMatchInitialData } from "~/features/clubs/isomorphic";
-import { getJson } from "~/libs/api-client";
+import { del, getJson } from "~/libs/api-client";
 import type { MatchClubQueryResponse } from "./matchClub.types";
 
 export const matchClubQueryKeys = {
@@ -30,5 +35,30 @@ export function useMatchClubQuery(matchClubId?: string, options?: UseMatchClubQu
     },
     enabled,
     initialData,
+  });
+}
+
+type DeleteMatchClubInput = { matchClubId: string };
+type DeleteMatchClubResponse = { ok: boolean; message?: string };
+
+export function useDeleteMatchClubMutation(
+  options?: UseMutationOptions<DeleteMatchClubResponse, unknown, DeleteMatchClubInput>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<DeleteMatchClubResponse, unknown, DeleteMatchClubInput>({
+    mutationFn: async ({ matchClubId }) => {
+      if (!matchClubId) {
+        throw new Error("matchClubId is required to delete match club");
+      }
+      return del<DeleteMatchClubResponse>(`/api/matchClubs/${matchClubId}`);
+    },
+    ...(options ?? {}),
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: matchClubQueryKeys.detail(variables.matchClubId),
+      });
+      await options?.onSuccess?.(data, variables, context);
+    },
   });
 }

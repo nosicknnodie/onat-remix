@@ -1,15 +1,15 @@
 import { prisma } from "~/libs/index.server";
 
 export async function findMatchClubWithQuarters(matchClubId: string) {
-  return await prisma.matchClub.findUnique({
-    where: { id: matchClubId },
+  return await prisma.matchClub.findFirst({
+    where: { id: matchClubId, isUse: true },
     include: { quarters: { include: { team1: true, team2: true } } },
   });
 }
 
 export async function findMatchClubWithQuartersAndTeams(matchClubId: string) {
-  return await prisma.matchClub.findUnique({
-    where: { id: matchClubId },
+  return await prisma.matchClub.findFirst({
+    where: { id: matchClubId, isUse: true },
     include: {
       quarters: { include: { team1: true, team2: true } },
       teams: true,
@@ -18,8 +18,8 @@ export async function findMatchClubWithQuartersAndTeams(matchClubId: string) {
 }
 
 export async function findMatchClubWithQuartersTeamsAttendances(matchClubId: string) {
-  return await prisma.matchClub.findUnique({
-    where: { id: matchClubId },
+  return await prisma.matchClub.findFirst({
+    where: { id: matchClubId, isUse: true },
     include: {
       quarters: { include: { team1: true, team2: true } },
       teams: true,
@@ -68,8 +68,8 @@ export async function findAttendancesForPosition(matchClubId: string) {
 
 export async function createQuarter(matchClubId: string, order: number) {
   return await prisma.$transaction(async (tx) => {
-    const matchClub = await tx.matchClub.findUnique({
-      where: { id: matchClubId },
+    const matchClub = await tx.matchClub.findFirst({
+      where: { id: matchClubId, isUse: true },
       include: { quarters: true, teams: true },
     });
     if (!matchClub) throw new Error("matchClub not found");

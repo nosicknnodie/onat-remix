@@ -3,7 +3,10 @@ import { prisma } from "~/libs/index.server";
 export async function getMatchesWithClubs() {
   return await prisma.match.findMany({
     include: {
-      matchClubs: { include: { club: { include: { image: true, emblem: true } } } },
+      matchClubs: {
+        where: { isUse: true },
+        include: { club: { include: { image: true, emblem: true } } },
+      },
     },
   });
 }

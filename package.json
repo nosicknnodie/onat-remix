@@ -20,7 +20,7 @@
     "build-storybook": "storybook build"
   },
   "prisma": {
-    "seed": "pnpm tsx prisma/seed.ts"
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.802.0",
@@ -172,6 +172,7 @@
     "remix-flat-routes": "^0.8.5",
     "storybook": "^8.6.12",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "^5.8.3",
     "vite": "^5.4.18",

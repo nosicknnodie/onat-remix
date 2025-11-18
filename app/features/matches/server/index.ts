@@ -3,6 +3,7 @@ export * as clubService from "./club.service";
 export * as createService from "./create.service";
 export * as detailService from "./detail.service";
 export * as listSerivce from "./list.service";
+export * as matchService from "./match.service";
 export * as mercenaryService from "./mercenaries.service";
 export * as positionSerivce from "./position.service";
 export * as ratingService from "./rating.service";

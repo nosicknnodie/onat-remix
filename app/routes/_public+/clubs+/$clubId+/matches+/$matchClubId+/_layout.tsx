@@ -1,19 +1,12 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import {
-  Link,
-  Outlet,
-  useLocation,
-  useNavigate,
-  useParams,
-  useRevalidator,
-} from "@remix-run/react";
+import { Link, Outlet, useLocation, useParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useTransition } from "react";
+import dayjs from "dayjs";
+import { useEffect } from "react";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
-import { confirm } from "~/components/ui/confirm";
 import { useSession } from "~/contexts";
-import { useMembershipInfoQuery } from "~/features/clubs/isomorphic";
+import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import {
   CheckManageDrawer,
   type ClubSubnavItem,
@@ -24,7 +17,6 @@ import {
   PlayerManageDrawer,
 } from "~/features/matches/client";
 import {
-  matchClubQueryKeys,
   positionQueryKeys,
   ratingQueryKeys,
   recordQueryKeys,
@@ -43,10 +35,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const params = useParams();
   const session = useSession();
   const location = useLocation();
-  const navigate = useNavigate();
-  const { revalidate } = useRevalidator();
   const queryClient = useQueryClient();
-  const [, startTransition] = useTransition();
   const { toast } = useToast();
   const matchClubId = params.matchClubId;
   const clubId = params.clubId;
@@ -59,6 +48,9 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   );
   const { data: membership } = useMembershipInfoQuery(clubId ?? "", {
     enabled: Boolean(clubId),
+  });
+  const { data: permissions = [] } = usePlayerPermissionsQuery(membership?.id ?? "", {
+    enabled: Boolean(membership?.id),
   });
   const { data: commentsData } = useMatchCommentsQuery(matchClubId, {
     enabled: Boolean(matchClubId),
@@ -161,6 +153,10 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   } as const;
   const match = matchSummary.match;
   const base = `/clubs/${params.clubId}/matches/${params.matchClubId}`;
+  const hasMatchMaster = permissions.includes("MATCH_MASTER");
+  const hasMatchManage = permissions.includes("MATCH_MANAGE");
+  const manageWindowActive = dayjs().diff(dayjs(match.stDate).add(1, "day"), "millisecond") <= 0;
+  const canManageActions = hasMatchMaster || (hasMatchManage && manageWindowActive);
 
   const attendanceData =
     attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
@@ -229,20 +225,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     });
   }
 
-  const handleMatchClubIsSelfChange = (isSelf: boolean) => {
-    startTransition(async () => {
-      await fetch(`/api/matchClubs/${params.matchClubId}/isSelf`, {
-        method: "POST",
-        body: JSON.stringify({ isSelf }),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: matchClubQueryKeys.detail(matchClubId ?? ""),
-      });
-      revalidate();
-      navigate(`/clubs/${params.clubId}/matches/${params.matchClubId}`);
-    });
-  };
-
   return (
     <>
       <MatchHeaderCard
@@ -255,22 +237,8 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         headerTabs={<ClubSubnavTabs items={items} className="px-0" />}
         footerActions={
           <div className="flex flex-wrap gap-2 justify-end">
-            {role.isAdmin && isInfoPage && (
+            {canManageActions && isInfoPage && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    confirm({
-                      title: "매칭 타입변경 주의",
-                      description: `타입 변경시 포지션 및 골기록이 초기화됩니다. ${!matchClub?.isSelf ? "자체전" : "매치전"}으로 타입을 변경하시겠습니까?`,
-                      confirmText: "타입 변경",
-                      cancelText: "취소",
-                    }).onConfirm(() => handleMatchClubIsSelfChange(!matchClub?.isSelf))
-                  }
-                >
-                  {matchClub?.isSelf ? "자체전" : "매치전"}
-                </Button>
                 <Button size="sm" variant="outline" asChild disabled={!matchClub?.matchId}>
                   <Link
                     to={
@@ -284,7 +252,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                 </Button>
               </>
             )}
-            {role.isAdmin &&
+            {canManageActions &&
               isAttendancePage &&
               attendanceQuery.data &&
               !("redirectTo" in attendanceQuery.data) &&

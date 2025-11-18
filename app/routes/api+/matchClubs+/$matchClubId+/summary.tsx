@@ -8,8 +8,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     throw new Response("matchClubId is required", { status: 400 });
   }
 
-  const matchClub = await prisma.matchClub.findUnique({
-    where: { id: matchClubId },
+  const matchClub = await prisma.matchClub.findFirst({
+    where: { id: matchClubId, isUse: true },
     select: { matchId: true },
   });
 

@@ -63,9 +63,13 @@ const MainSideMenu = () => {
   const { data: clubsData = [], isLoading: isClubsLoading } = useQuery<ClubWithMembership[]>({
     queryKey: myClubsQueryKey,
     queryFn: () => getJson<ClubWithMembership[]>("/api/clubs/my"),
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 60, // 60분 캐시 유지
-    refetchOnWindowFocus: true,
+    // 사실상 세션 동안 고정
+    staleTime: Infinity,
+    gcTime: Infinity,
+
+    // 자동 리페치 막기
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     refetchOnMount: false,
   });
 
@@ -104,9 +108,14 @@ const MainSideMenu = () => {
         return Array.isArray(res.permissions) ? res.permissions : [];
       },
       enabled: Boolean(playerId),
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 60,
-      refetchOnWindowFocus: true,
+      // 사실상 세션 동안 고정
+      staleTime: Infinity,
+      gcTime: Infinity,
+
+      // 자동 리페치 막기
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
     })),
   });
 

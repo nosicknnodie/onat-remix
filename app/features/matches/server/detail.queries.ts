@@ -7,6 +7,7 @@ export async function findMatchByIdWithClubs(id: string) {
     include: {
       createUser: { include: { userImage: true } },
       matchClubs: {
+        where: { isUse: true },
         include: matchSummaryRelations,
       },
     },

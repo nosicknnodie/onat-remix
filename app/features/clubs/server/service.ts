@@ -283,12 +283,13 @@ type ClubMatchesFeedParams = {
 
 export async function getClubMatchesFeed({ clubId, take, cursor }: ClubMatchesFeedParams) {
   const matches = await prisma.matchClub.findMany({
-    where: { clubId },
+    where: { clubId, isUse: true },
     include: {
       club: { include: { image: true, emblem: true } },
       match: {
         include: {
           matchClubs: {
+            where: { isUse: true },
             include: {
               club: { include: { image: true, emblem: true } },
             },
