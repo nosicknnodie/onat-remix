@@ -11,9 +11,16 @@ interface IPositionProps {
   value: string[] | undefined;
   isPending?: boolean;
   onValueChange?: (v: PositionType[] | undefined) => void;
+  scale?: "normal" | "compact";
 }
 
-const Position = ({ value, defaultValue, onValueChange, isPending }: IPositionProps) => {
+const Position = ({
+  value,
+  defaultValue,
+  onValueChange,
+  isPending,
+  scale = "normal",
+}: IPositionProps) => {
   const [positionValues, setPositionValues] = useState<string[] | undefined>(defaultValue);
   useEffect(() => {
     setPositionValues(value);
@@ -29,6 +36,16 @@ const Position = ({ value, defaultValue, onValueChange, isPending }: IPositionPr
       setPositionValues(v);
     }
   };
+
+  const circleSizeClass =
+    scale === "compact"
+      ? "md:w-12 md:p-6 max-md:w-8 max-md:p-5"
+      : "md:w-16 md:p-8 max-md:w-8 max-md:p-5";
+  const badgeSizeClass =
+    scale === "compact"
+      ? "left-3 -top-1 rounded-full w-4 h-4 p-2"
+      : "left-4 -top-1 rounded-full w-5 h-5 p-2.5";
+
   return (
     <>
       <div className="py-4">
@@ -45,12 +62,19 @@ const Position = ({ value, defaultValue, onValueChange, isPending }: IPositionPr
             disabled={isPending}
           >
             {Object.entries(PORMATION_POSITION_CLASSNAME).map(([key, { className }]) => (
-              <PositionItem className={className} key={key} value={key} disabled={isPending}>
-                <div className="relative w-16 h-16 flex justify-center items-center">
+              <PositionItem
+                className={className}
+                key={key}
+                value={key}
+                disabled={isPending}
+                sizeClassName={circleSizeClass}
+              >
+                <div className={cn("relative flex justify-center items-center", circleSizeClass)}>
                   {positionValues?.includes(key) && (
                     <div
                       className={cn(
-                        "absolute left-4 -top-1 rounded-full w-5 h-5 p-2.5 bg-primary text-primary-foreground border-2 border-primary flex justify-center items-center",
+                        "absolute bg-primary text-primary-foreground border-2 border-primary flex justify-center items-center",
+                        badgeSizeClass,
                         { "bg-secondary-foreground": isPending },
                       )}
                     >
@@ -76,12 +100,19 @@ const Position = ({ value, defaultValue, onValueChange, isPending }: IPositionPr
             disabled={isPending}
           >
             {Object.entries(PORMATION_POSITION_CLASSNAME).map(([key, { className }]) => (
-              <PositionItem className={className} key={key} value={key} disabled={isPending}>
-                <div className="relative w-16 h-16 flex justify-center items-center">
+              <PositionItem
+                className={className}
+                key={key}
+                value={key}
+                disabled={isPending}
+                sizeClassName={circleSizeClass}
+              >
+                <div className={cn("relative flex justify-center items-center", circleSizeClass)}>
                   {positionValues?.includes(key) && (
                     <div
                       className={cn(
-                        "absolute left-4 -top-1 rounded-full w-5 h-5 p-2.5 bg-primary text-primary-foreground border-2 border-primary flex justify-center items-center",
+                        "absolute bg-primary text-primary-foreground border-2 border-primary flex justify-center items-center",
+                        badgeSizeClass,
                         { "bg-secondary-foreground": isPending },
                       )}
                     >
@@ -99,11 +130,16 @@ const Position = ({ value, defaultValue, onValueChange, isPending }: IPositionPr
   );
 };
 
-const PositionItem = ({ className, ...props }: ToggleGroupItemProps) => {
+const PositionItem = ({
+  className,
+  sizeClassName,
+  ...props
+}: ToggleGroupItemProps & { sizeClassName: string }) => {
   return (
     <ToggleGroupItem
       className={cn(
-        "absolute rounded-full -translate-x-1/2 -translate-y-1/2 md:w-16 md:p-8 max-md:w-8 max-md:p-5 font-bold border-2 bg-white",
+        "absolute rounded-full -translate-x-1/2 -translate-y-1/2 font-bold border-2 bg-white",
+        sizeClassName,
         className,
       )}
       {...props}

@@ -19,12 +19,11 @@ export { MatchForm } from "./MatchForm";
 export { MatchHeaderCard } from "./MatchHeaderCard";
 export { MatchList } from "./MatchList";
 export { MatchSummarySection } from "./MatchSummarySection";
-export { MercenariesTable } from "./MercenariesTable";
 export * from "./match-comment/CommentSection";
 export { mercenaryColumns } from "./mercenaries/columns";
-export * from "./mercenaries/New/AddMercenary";
 export * from "./mercenaries/New/EmailSearch";
-export * from "./mercenaries/New/hook";
+export * from "./mercenaries/New/SetMercenary";
+export { default as SetMercenaryDialog } from "./mercenaries/New/SetMercenaryDialog";
 export { type PositionAssigned, PositionBoard } from "./PositionBoard";
 export { PositionToolbar, QuarterStepper } from "./PositionSetting";
 export {

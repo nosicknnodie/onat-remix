@@ -332,13 +332,13 @@ const MainSideMenu = () => {
                         visible: isJoined,
                         icon: HiOutlineUsers,
                       },
-                      // {
-                      //   label: "승인대기",
-                      //   url: `${baseUrl}/members/pendings`,
-                      //   isActive: location.pathname.startsWith(`${baseUrl}/pendings`),
-                      //   visible: isAdmin,
-                      //   icon: HiOutlineClock,
-                      // },
+                      {
+                        label: "용병",
+                        url: `${baseUrl}/mercenaries`,
+                        isActive: location.pathname.startsWith(`${baseUrl}/mercenaries`),
+                        visible: isJoined,
+                        icon: HiOutlineUsers,
+                      },
                     ].filter((item) => item.visible);
 
                     return (

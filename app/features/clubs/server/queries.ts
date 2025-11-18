@@ -166,7 +166,15 @@ export async function getClubMercenaries(clubId: string) {
       clubId: clubId,
     },
     include: {
-      attendances: true,
+      attendances: {
+        include: {
+          matchClub: {
+            include: {
+              match: true,
+            },
+          },
+        },
+      },
       user: {
         include: {
           userImage: true,

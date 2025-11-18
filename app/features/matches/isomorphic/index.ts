@@ -7,6 +7,8 @@ export * from "./match.schema";
 export * from "./match.types";
 export * from "./matchClub.hooks";
 export * from "./matchClub.types";
+export * from "./mercenary.hooks";
+export * from "./mercenary.types";
 export * from "./position.hooks";
 export * from "./position.types";
 export * from "./rating.hooks";

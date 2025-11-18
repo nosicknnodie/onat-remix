@@ -1,20 +1,34 @@
 import type { PositionType } from "@prisma/client";
 import { AES, prisma } from "~/libs/index.server";
+import type { MercenaryFormValues } from "../isomorphic";
 import * as q from "./mercenaries.queries";
 
-const buildRedirectPath = (clubId: string, matchClubId: string) =>
-  `/clubs/${clubId}/matches/${matchClubId}`;
+// const buildRedirectPath = (clubId: string, matchClubId: string) =>
+//   `/clubs/${clubId}/matches/${matchClubId}`;
 
-export async function getMercenaries(clubId: string, matchClubId: string) {
-  const matchClub = await q.findMatchClubById(matchClubId);
-  if (!matchClub) return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
-  const [players, mercenaries] = await Promise.all([
-    q.findApprovedPlayersByClub(matchClub.clubId),
-    q.findMercenariesByClub(matchClub.clubId),
+export async function getMercenaries(clubId: string) {
+  const now = new Date();
+  const [players, mercenaries, upcomingMatchClubs] = await Promise.all([
+    q.findApprovedPlayersByClub(clubId),
+    q.findMercenariesByClub(clubId),
+    q.findUpcomingMatchClubsByClub(clubId, now),
   ]);
   const filtered = mercenaries
     .filter((mer) => !players.some((p) => p.userId === mer.userId))
-    .map((mer) => ({ ...mer, hp: mer.hp ? AES.decrypt(mer.hp) : null }));
+    .map((mer) => {
+      const attendances = upcomingMatchClubs.map((mc) => {
+        const att = mc.attendances.find((a) => a.mercenaryId === mer.id);
+        return {
+          matchClubId: mc.id,
+          isVote: att?.isVote ?? false,
+          isCheck: att?.isCheck ?? false,
+          matchClub: {
+            match: { title: mc.match.title, stDate: mc.match.stDate },
+          },
+        };
+      });
+      return { ...mer, hp: mer.hp ? AES.decrypt(mer.hp) : null, attendances };
+    });
   return { mercenaries: filtered } as const;
 }
 
@@ -61,4 +75,79 @@ export async function createMercenaryForMatchClub(input: {
       userId: input.userId || null,
     },
   });
+}
+
+type NormalizedMercenaryData = {
+  name: string;
+  description: string | null;
+  hp: string | null;
+  userId: string | null;
+  position1: PositionType | null;
+  position2: PositionType | null;
+  position3: PositionType | null;
+};
+
+const normalizeMercenaryInput = (input: MercenaryFormValues): NormalizedMercenaryData => {
+  const positions = input.positions ?? [];
+  return {
+    name: input.name.trim(),
+    description: input.description?.trim() || null,
+    hp: input.hp ? AES.encrypt(input.hp) : null,
+    userId: input.userId?.trim() || null,
+    position1: (positions[0] as PositionType | undefined) ?? null,
+    position2: (positions[1] as PositionType | undefined) ?? null,
+    position3: (positions[2] as PositionType | undefined) ?? null,
+  };
+};
+
+export async function createMercenary(clubId: string, input: MercenaryFormValues) {
+  const data = normalizeMercenaryInput(input);
+  if (data.userId) {
+    const existingPlayer = await q.findActivePlayerByClubAndUser(clubId, data.userId);
+    if (existingPlayer) {
+      return { ok: false as const, message: "이미 해당 클럽의 회원입니다." };
+    }
+  }
+  try {
+    const mercenary = await prisma.mercenary.create({
+      data: {
+        clubId,
+        ...data,
+      },
+    });
+    return { ok: true as const, mercenary };
+  } catch (e) {
+    console.error(e);
+    return { ok: false as const, message: "용병 생성 중 오류가 발생했습니다." };
+  }
+}
+
+export async function updateMercenary(
+  clubId: string,
+  mercenaryId: string,
+  input: MercenaryFormValues,
+) {
+  const existing = await q.findMercenaryById(mercenaryId);
+  if (!existing || existing.clubId !== clubId) {
+    return { ok: false as const, message: "존재하지 않는 용병입니다." };
+  }
+  const data = normalizeMercenaryInput(input);
+  if (data.userId) {
+    const existingPlayer = await q.findActivePlayerByClubAndUser(clubId, data.userId);
+    if (existingPlayer) {
+      return { ok: false as const, message: "이미 해당 클럽의 회원입니다." };
+    }
+  }
+  try {
+    const mercenary = await prisma.mercenary.update({
+      where: { id: mercenaryId },
+      data: {
+        ...data,
+      },
+    });
+    return { ok: true as const, mercenary };
+  } catch (e) {
+    console.error(e);
+    return { ok: false as const, message: "용병 수정 중 오류가 발생했습니다." };
+  }
 }

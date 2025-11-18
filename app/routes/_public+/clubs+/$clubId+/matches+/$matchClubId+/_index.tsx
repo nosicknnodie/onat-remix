@@ -71,14 +71,14 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
       .filter((item): item is AttendanceSummaryItem => item !== null);
 
     const absent = attendances
-      .filter((attendance) => !attendance.isVote)
+      .filter((attendance) => attendance.player && !attendance.isVote)
       .map((attendance) => {
         const name = getAttendanceDisplayName(attendance);
         if (!name) return null;
         return {
           id: attendance.id,
           name,
-          type: attendance.player ? "PLAYER" : "MERCENARY",
+          type: "PLAYER",
         } as AttendanceSummaryItem;
       })
       .filter((item): item is AttendanceSummaryItem => item !== null);

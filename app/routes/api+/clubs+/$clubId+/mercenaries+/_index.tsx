@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { service } from "~/features/clubs/server";
+import type { MercenaryQueryData } from "~/features/matches/isomorphic";
+import { mercenaryService } from "~/features/matches/server";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const clubId = params.clubId;
@@ -16,8 +17,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
     );
   }
   try {
-    const mercenaries = await service.getClubMercenaries(clubId);
-    return Response.json({ ok: true, data: { mercenaries }, mercenaries });
+    const { mercenaries } = await mercenaryService.getMercenaries(clubId);
+    const data: MercenaryQueryData = { mercenaries };
+    return Response.json({ ok: true, data });
   } catch (e) {
     return Response.json({ ok: false, message: String(e), code: "SERVER" }, { status: 500 });
   }

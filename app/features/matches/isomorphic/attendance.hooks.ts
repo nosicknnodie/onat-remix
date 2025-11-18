@@ -79,3 +79,68 @@ export function useAttendanceStateMutation() {
     },
   });
 }
+
+type ToggleAttendanceStateInput = {
+  id: string;
+  isCheck: boolean;
+};
+
+export function useToggleAttendanceStateMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const queryKey = useMemo(
+    () => (matchClubId ? attendanceQueryKeys.detail(matchClubId) : null),
+    [matchClubId],
+  );
+  return useMutation<unknown, unknown, ToggleAttendanceStateInput>({
+    mutationFn: async (input) => {
+      return postJson("/api/attendances", input);
+    },
+    onSuccess: async () => {
+      if (queryKey) await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+}
+
+type TogglePlayerAttendanceInput = {
+  matchClubId: string;
+  playerId: string;
+  isVote: boolean;
+};
+
+type ToggleMercenaryAttendanceInput = {
+  matchClubId: string;
+  mercenaryId: string;
+  isVote: boolean;
+};
+
+export function useTogglePlayerAttendanceMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const queryKey = useMemo(
+    () => (matchClubId ? attendanceQueryKeys.detail(matchClubId) : null),
+    [matchClubId],
+  );
+  return useMutation<AttendanceMutationResponse, unknown, TogglePlayerAttendanceInput>({
+    mutationFn: async (input) => {
+      return postJson("/api/attendances/player", input);
+    },
+    onSuccess: async () => {
+      if (queryKey) await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+}
+
+export function useToggleMercenaryAttendanceMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const queryKey = useMemo(
+    () => (matchClubId ? attendanceQueryKeys.detail(matchClubId) : null),
+    [matchClubId],
+  );
+  return useMutation<AttendanceMutationResponse, unknown, ToggleMercenaryAttendanceInput>({
+    mutationFn: async (input) => {
+      return postJson("/api/attendances/mercenary", input);
+    },
+    onSuccess: async () => {
+      if (queryKey) await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+}

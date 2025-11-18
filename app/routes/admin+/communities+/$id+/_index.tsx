@@ -78,7 +78,6 @@ interface ICommunityEditPageProps {}
 const CommunityEditPage = (_props: ICommunityEditPageProps) => {
   const loaderData = useLoaderData<typeof loader>();
   // const actionData = useActionData<typeof action>();
-  // console.log("actionData - ", actionData);
   const board = loaderData.board;
   return (
     <>

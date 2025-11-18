@@ -24,9 +24,12 @@ import {
   useAttendanceQuery,
   useMatchClubQuery,
   useMatchCommentsQuery,
+  useToggleAttendanceStateMutation,
+  useToggleMercenaryAttendanceMutation,
+  useTogglePlayerAttendanceMutation,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { getJson, postJson } from "~/libs/api-client";
+import { getJson } from "~/libs/api-client";
 import { getToastForError } from "~/libs/errors";
 
 interface IMatchClubIdLayoutProps {}
@@ -63,6 +66,9 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     clubId: clubId ?? "",
     enabled: Boolean(matchClubId && clubId && isAttendancePage),
   });
+  const toggleAttendanceStateMutation = useToggleAttendanceStateMutation(matchClubId);
+  const togglePlayerAttendance = useTogglePlayerAttendanceMutation(matchClubId);
+  const toggleMercenaryAttendance = useToggleMercenaryAttendanceMutation(matchClubId);
 
   useEffect(() => {
     if (!matchClubId) return;
@@ -157,7 +163,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const hasMatchManage = permissions.includes("MATCH_MANAGE");
   const manageWindowActive = dayjs().diff(dayjs(match.stDate).add(1, "day"), "millisecond") <= 0;
   const canManageActions = hasMatchMaster || (hasMatchManage && manageWindowActive);
-
   const attendanceData =
     attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
   const matchClubAttendances = attendanceData?.matchClub.attendances ?? [];
@@ -262,7 +267,10 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                     attendances={manageAttendances}
                     onToggle={async (attendanceId, isCheck) => {
                       try {
-                        await postJson("/api/attendances", { id: attendanceId, isCheck });
+                        await toggleAttendanceStateMutation.mutateAsync({
+                          id: attendanceId,
+                          isCheck,
+                        });
                         await attendanceQuery.refetch();
                         return true;
                       } catch (e) {
@@ -279,8 +287,8 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                     players={managePlayers}
                     onToggle={async (playerId, isVote) => {
                       try {
-                        await postJson("/api/attendances/player", {
-                          matchClubId,
+                        await togglePlayerAttendance.mutateAsync({
+                          matchClubId: matchClubId ?? "",
                           playerId,
                           isVote,
                         });
@@ -300,8 +308,8 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                     mercenaries={manageMercenaries}
                     onToggle={async (mercenaryId, isVote) => {
                       try {
-                        await postJson("/api/attendances/mercenary", {
-                          matchClubId,
+                        await toggleMercenaryAttendance.mutateAsync({
+                          matchClubId: matchClubId ?? "",
                           mercenaryId,
                           isVote,
                         });
@@ -318,9 +326,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                     </Button>
                   </MercenaryManageDrawer>
                   <Button size="sm" asChild variant="outline">
-                    <Link to={`/clubs/${params.clubId}/matches/${params.matchClubId}/mercenaries`}>
-                      용병 관리
-                    </Link>
+                    <Link to={`/clubs/${params.clubId}/mercenaries`}>용병 관리</Link>
                   </Button>
                 </>
               )}

@@ -4,7 +4,7 @@
  * - 쿼리 결과를 UI에 적합한 형태로 변환
  */
 
-import { prisma } from "~/libs/index.server";
+import { AES, prisma } from "~/libs/index.server";
 import type { CategorizedClubs, Club, ClubsData, ClubWithMembership, Player } from "../isomorphic";
 import {
   findClubsAndPlayers,
@@ -265,7 +265,23 @@ export async function cancelJoinRequest(clubId: string, userId: string) {
  * 클럽 용병 목록을 조회
  */
 export async function getClubMercenaries(clubId: string) {
-  return await getClubMercenariesQuery(clubId);
+  const [mercenaries, members] = await Promise.all([
+    getClubMercenariesQuery(clubId),
+    getClubMembersQuery(clubId),
+  ]);
+  const memberUserIds = new Set(
+    members.map((member) => member.userId).filter((userId): userId is string => Boolean(userId)),
+  );
+
+  return mercenaries
+    .filter((mercenary) => {
+      if (!mercenary.userId) return true;
+      return !memberUserIds.has(mercenary.userId);
+    })
+    .map((mercenary) => ({
+      ...mercenary,
+      hp: mercenary.hp ? AES.decrypt(mercenary.hp) : null,
+    }));
 }
 
 /**
