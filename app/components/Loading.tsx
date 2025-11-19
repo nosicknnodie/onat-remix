@@ -4,9 +4,13 @@ import { cn } from "~/libs";
 export interface ISVGProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
   className?: string;
+  isLoading?: boolean;
 }
 
-export const Loading = ({ size = 24, className, ...props }: ISVGProps) => {
+export const Loading = ({ size = 24, className, isLoading, ...props }: ISVGProps) => {
+  if (!isLoading) {
+    return null;
+  }
   return (
     // biome-ignore lint/a11y/noSvgWithoutTitle: off
     <svg

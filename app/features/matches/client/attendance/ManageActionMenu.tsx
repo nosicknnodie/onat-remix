@@ -17,24 +17,15 @@ import PlayerManageDrawer, { type AttendancePlayer } from "./PlayerManageDrawer"
 
 export interface AttendanceManageActionProps {
   players: AttendancePlayer[];
-  onTogglePlayer: (playerId: string, isVote: boolean) => Promise<boolean> | boolean | undefined;
   mercenaries: AttendanceMercenary[];
-  onToggleMercenary: (
-    mercenaryId: string,
-    isVote: boolean,
-  ) => Promise<boolean> | boolean | undefined;
   attendances: AttendanceCheckItem[];
-  onToggleCheck: (attendanceId: string, isCheck: boolean) => Promise<boolean> | boolean | undefined;
   mercenariesHref: string;
 }
 
 const AttendanceManageAction = ({
   players,
-  onTogglePlayer,
   mercenaries,
-  onToggleMercenary,
   attendances,
-  onToggleCheck,
   mercenariesHref,
 }: AttendanceManageActionProps) => {
   return (
@@ -49,22 +40,19 @@ const AttendanceManageAction = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <CheckManageDrawer attendances={attendances} onToggle={(_, v) => onToggleCheck(_, v)}>
+        <CheckManageDrawer attendances={attendances}>
           <Button variant="ghost" className="w-full flex justify-start pl-2">
             <MdFactCheck className="mr-2" />
             출석 관리
           </Button>
         </CheckManageDrawer>
-        <PlayerManageDrawer players={players} onToggle={(id, v) => onTogglePlayer(id, v)}>
+        <PlayerManageDrawer players={players}>
           <Button variant="ghost" className="w-full flex justify-start pl-2">
             <FaRegCalendarCheck className="mr-2" />
             참석 관리
           </Button>
         </PlayerManageDrawer>
-        <MercenaryManageDrawer
-          mercenaries={mercenaries}
-          onToggle={(id, v) => onToggleMercenary(id, v)}
-        >
+        <MercenaryManageDrawer mercenaries={mercenaries}>
           <Button variant="ghost" className="w-full flex justify-start pl-2">
             <FiUserPlus className="mr-2" />
             용병 추가

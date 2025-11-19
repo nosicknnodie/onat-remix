@@ -7,15 +7,11 @@ import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
 import { useSession } from "~/contexts";
 import {
-  type AttendanceCheckItem,
   AttendanceGroupCard,
   AttendanceGroupCardContent,
   AttendanceGroupCardHeader,
   AttendanceGroupCardItem,
   AttendanceGroupCardTitle,
-  AttendanceManageAction,
-  type AttendanceMercenary,
-  type AttendancePlayer,
 } from "~/features/matches/client";
 import type { AttendanceClubPlayer, AttendanceRecord } from "~/features/matches/isomorphic";
 import {
@@ -23,9 +19,6 @@ import {
   EMPTY_ATTENDANCE_RECORDS,
   useAttendanceMutation,
   useAttendanceQuery,
-  useToggleAttendanceStateMutation,
-  useToggleMercenaryAttendanceMutation,
-  useTogglePlayerAttendanceMutation,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
 import { cn } from "~/libs";
@@ -52,9 +45,6 @@ const AttendancePage = (_props: IAttendancePageProps) => {
     enabled: Boolean(matchClubId && clubId),
   });
   const attendanceMutation = useAttendanceMutation(matchClubId, { clubId: clubId ?? "" });
-  const toggleAttendanceStateMutation = useToggleAttendanceStateMutation(matchClubId);
-  const togglePlayerAttendance = useTogglePlayerAttendanceMutation(matchClubId);
-  const toggleMercenaryAttendance = useToggleMercenaryAttendanceMutation(matchClubId);
 
   useEffect(() => {
     if (attendanceQuery.data && "redirectTo" in attendanceQuery.data) {
@@ -166,81 +156,6 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 </Button>
               </div>
             ) : null}
-            <AttendanceManageAction
-              players={(() => {
-                const attendedIds = matchClubAttendances
-                  .filter((att) => att.playerId && att.isVote)
-                  .map((att) => att.playerId!);
-                const players: AttendancePlayer[] = matchClub.club.players.map((p) => ({
-                  id: p.id,
-                  user: p.user,
-                  isAttended: attendedIds.includes(p.id),
-                }));
-                return players;
-              })()}
-              onTogglePlayer={async (playerId, isVote) => {
-                try {
-                  await togglePlayerAttendance.mutateAsync({
-                    matchClubId: matchClubId!,
-                    playerId,
-                    isVote,
-                  });
-                  return true;
-                } catch (e) {
-                  toast(getToastForError(e));
-                  return false;
-                }
-              }}
-              mercenaries={(() => {
-                const attendedIds = matchClubAttendances
-                  .filter((att) => att.mercenaryId && att.isVote)
-                  .map((att) => att.mercenaryId!);
-                const mercenaries: AttendanceMercenary[] = matchClub.club.mercenarys.map((m) => ({
-                  id: m.id,
-                  name: m.name,
-                  hp: m.hp,
-                  user: m.user,
-                  isAttended: attendedIds.includes(m.id),
-                }));
-                return mercenaries;
-              })()}
-              onToggleMercenary={async (mercenaryId, isVote) => {
-                try {
-                  await toggleMercenaryAttendance.mutateAsync({
-                    matchClubId: matchClubId!,
-                    mercenaryId,
-                    isVote,
-                  });
-                  return true;
-                } catch (e) {
-                  toast(getToastForError(e));
-                  return false;
-                }
-              }}
-              attendances={(() => {
-                const attendeds = matchClubAttendances.filter((att) => att.isVote);
-                const arr: AttendanceCheckItem[] = attendeds.map((a) => ({
-                  id: a.id,
-                  name: a.player?.user?.name || a.mercenary?.user?.name || a.mercenary?.name || "",
-                  imageUrl:
-                    a.player?.user?.userImage?.url ||
-                    a.mercenary?.user?.userImage?.url ||
-                    undefined,
-                  isCheck: a.isCheck,
-                }));
-                return arr;
-              })()}
-              onToggleCheck={async (attendanceId, isCheck) => {
-                try {
-                  await toggleAttendanceStateMutation.mutateAsync({ id: attendanceId, isCheck });
-                  return true;
-                } catch (e) {
-                  toast(getToastForError(e));
-                  return false;
-                }
-              }}
-              mercenariesHref={"../mercenaries"}
-            />
           </div>
         </div>
       </div>

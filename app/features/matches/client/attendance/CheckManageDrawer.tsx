@@ -1,7 +1,8 @@
+import { useParams } from "@remix-run/react";
 import type { ColumnDef, Row, SortingState } from "@tanstack/react-table";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { type PropsWithChildren, useState, useTransition } from "react";
+import { type PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -15,6 +16,9 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
+import { useToggleAttendanceStateMutation } from "~/features/matches/isomorphic";
+import { useToast } from "~/hooks";
+import { getToastForError } from "~/libs/errors";
 
 export type AttendanceCheckItem = {
   id: string;
@@ -23,14 +27,11 @@ export type AttendanceCheckItem = {
   isCheck: boolean;
 };
 
-const EMPTY_CHECK_ITEMS: AttendanceCheckItem[] = [];
-
 interface CheckManageDrawerProps extends PropsWithChildren {
   attendances: AttendanceCheckItem[];
-  onToggle: (attendanceId: string, isCheck: boolean) => Promise<boolean> | boolean | undefined;
 }
 
-const CheckManageDrawer = ({ children, attendances, onToggle }: CheckManageDrawerProps) => {
+const CheckManageDrawer = ({ children, attendances }: CheckManageDrawerProps) => {
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([
@@ -41,7 +42,8 @@ const CheckManageDrawer = ({ children, attendances, onToggle }: CheckManageDrawe
   ]);
 
   const handleSearch = (value: string) => setGlobalFilter(value);
-  const data = attendances.length > 0 ? attendances : EMPTY_CHECK_ITEMS;
+  const data = useMemo(() => attendances ?? [], [attendances]);
+  const columns = useMemo(() => checkColumns(), []);
 
   const globalFilterFn = (
     row: Row<AttendanceCheckItem>,
@@ -71,7 +73,7 @@ const CheckManageDrawer = ({ children, attendances, onToggle }: CheckManageDrawe
             <div className="flex-1 max-h-[calc(100svh-10rem)] overflow-y-auto">
               <DataTable
                 data={data}
-                columns={checkColumns(onToggle)}
+                columns={columns}
                 options={{
                   state: { globalFilter, sorting },
                   onSortingChange: setSorting,
@@ -89,9 +91,7 @@ const CheckManageDrawer = ({ children, attendances, onToggle }: CheckManageDrawe
   );
 };
 
-const checkColumns = (
-  onToggle: (attendanceId: string, isCheck: boolean) => Promise<boolean> | boolean | undefined,
-): ColumnDef<AttendanceCheckItem>[] => [
+const checkColumns = (): ColumnDef<AttendanceCheckItem>[] => [
   {
     id: "name",
     accessorFn: (v) => v.name,
@@ -123,34 +123,57 @@ const checkColumns = (
     header() {
       return <div className="flex justify-center">출석</div>;
     },
-    cell: ({ row }) => (
-      <IsAttendedCellComponent
-        payload={row.original}
-        onToggle={(v) => onToggle(row.original.id, v)}
-      />
-    ),
+    cell: ({ row }) => <IsAttendedCellComponent payload={row.original} />,
   },
 ];
 
-const IsAttendedCellComponent = ({
-  payload,
-  onToggle,
-}: {
-  payload: AttendanceCheckItem;
-  onToggle: (value: boolean) => Promise<boolean> | boolean | undefined;
-}) => {
+const IsAttendedCellComponent = ({ payload }: { payload: AttendanceCheckItem }) => {
+  const { matchClubId } = useParams();
+  const { toast } = useToast();
+  const toggleAttendanceState = useToggleAttendanceStateMutation(matchClubId);
   const [isPending, startTransition] = useTransition();
   const [isCheck, setCheck] = useState<boolean>(payload.isCheck);
+  const [optimistic, dispatch] = useOptimistic(
+    isCheck,
+    (state, action: { type: string; payload: boolean }) => {
+      switch (action.type) {
+        case "changed":
+          return action.payload;
+        case "rollback":
+          return action.payload;
+        default:
+          return state;
+      }
+    },
+  );
+
   const handleOnchange = (value: boolean) => {
-    setCheck(value);
     startTransition(async () => {
-      const res = (await onToggle(value)) ?? true;
-      if (!res) setCheck(!value);
+      dispatch({ type: "changed", payload: value });
+      if (!matchClubId) {
+        toast({
+          title: "매치 정보를 불러오지 못했어요.",
+          description: "새로고침 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
+        dispatch({ type: "rollback", payload: !value });
+        return;
+      }
+      try {
+        await toggleAttendanceState.mutateAsync({
+          id: payload.id,
+          isCheck: value,
+        });
+        setCheck(value);
+      } catch (error) {
+        toast(getToastForError(error));
+        dispatch({ type: "rollback", payload: !value });
+      }
     });
   };
   return (
     <div className="flex justify-center items-center">
-      <Switch checked={isCheck} onCheckedChange={handleOnchange} disabled={isPending} />
+      <Switch checked={optimistic} onCheckedChange={handleOnchange} disabled={isPending} />
     </div>
   );
 };

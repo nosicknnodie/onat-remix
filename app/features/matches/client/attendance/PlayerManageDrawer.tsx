@@ -1,8 +1,9 @@
 import type { File, User } from "@prisma/client";
+import { useParams } from "@remix-run/react";
 import type { ColumnDef, Row, SortingState } from "@tanstack/react-table";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { type PropsWithChildren, useOptimistic, useState, useTransition } from "react";
+import { type PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -16,6 +17,9 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
+import { useTogglePlayerAttendanceMutation } from "~/features/matches/isomorphic";
+import { useToast } from "~/hooks";
+import { getToastForError } from "~/libs/errors";
 
 export type AttendancePlayer = {
   id: string;
@@ -23,14 +27,11 @@ export type AttendancePlayer = {
   isAttended: boolean;
 };
 
-const EMPTY_PLAYERS: AttendancePlayer[] = [];
-
 interface PlayerManageDrawerProps extends PropsWithChildren {
   players: AttendancePlayer[];
-  onToggle: (playerId: string, isVote: boolean) => Promise<boolean> | boolean | undefined;
 }
 
-const PlayerManageDrawer = ({ children, players, onToggle }: PlayerManageDrawerProps) => {
+const PlayerManageDrawer = ({ children, players }: PlayerManageDrawerProps) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([
     {
@@ -41,7 +42,8 @@ const PlayerManageDrawer = ({ children, players, onToggle }: PlayerManageDrawerP
 
   // search filter
   const handleSearch = (value: string) => setGlobalFilter(value);
-  const data = players.length > 0 ? players : EMPTY_PLAYERS;
+  const data = useMemo(() => players ?? [], [players]);
+  const columns = useMemo(() => playerColumns(), []);
 
   // global filter
   const globalFilterFn = (row: Row<AttendancePlayer>, _columnId: string, filterValue: string) => {
@@ -69,7 +71,7 @@ const PlayerManageDrawer = ({ children, players, onToggle }: PlayerManageDrawerP
             <div className="flex-1 max-h-[calc(100svh-10rem)] overflow-y-auto">
               <DataTable
                 data={data}
-                columns={playerColumns(onToggle)}
+                columns={columns}
                 options={{
                   state: {
                     globalFilter,
@@ -89,9 +91,7 @@ const PlayerManageDrawer = ({ children, players, onToggle }: PlayerManageDrawerP
   );
 };
 
-const playerColumns = (
-  onToggle: (playerId: string, isVote: boolean) => Promise<boolean> | boolean | undefined,
-): ColumnDef<AttendancePlayer>[] => [
+const playerColumns = (): ColumnDef<AttendancePlayer>[] => [
   {
     id: "name",
     accessorFn: (v) => v.user?.name,
@@ -122,22 +122,14 @@ const playerColumns = (
     header() {
       return <div className="flex justify-center">참석여부</div>;
     },
-    cell: ({ row }) => (
-      <IsAttendedPlayerCellComponent
-        payload={row.original}
-        onToggle={(value) => onToggle(row.original.id, value)}
-      />
-    ),
+    cell: ({ row }) => <IsAttendedPlayerCellComponent payload={row.original} />,
   },
 ];
 
-const IsAttendedPlayerCellComponent = ({
-  payload,
-  onToggle,
-}: {
-  payload: AttendancePlayer;
-  onToggle: (value: boolean) => Promise<boolean> | boolean | undefined;
-}) => {
+const IsAttendedPlayerCellComponent = ({ payload }: { payload: AttendancePlayer }) => {
+  const { matchClubId } = useParams();
+  const { toast } = useToast();
+  const togglePlayerAttendance = useTogglePlayerAttendanceMutation(matchClubId);
   const [isPending, startTransition] = useTransition();
   const [isVote, setVote] = useState<boolean>(payload.isAttended);
   const [optimistic, dispatch] = useOptimistic(
@@ -157,11 +149,26 @@ const IsAttendedPlayerCellComponent = ({
   const handleOnchange = (value: boolean) => {
     startTransition(async () => {
       dispatch({ type: "changed", payload: value });
-      const res = (await onToggle(value)) ?? true;
-      if (res) {
-        setVote(value);
-      } else {
+      if (!matchClubId) {
+        toast({
+          title: "매치 정보를 불러오지 못했어요.",
+          description: "새로고침 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
         dispatch({ type: "rollback", payload: !value });
+        return;
+      }
+      try {
+        await togglePlayerAttendance.mutateAsync({
+          matchClubId,
+          playerId: payload.id,
+          isVote: value,
+        });
+        setVote(value);
+      } catch (error) {
+        toast(getToastForError(error));
+        dispatch({ type: "rollback", payload: !value });
+        return;
       }
     });
   };

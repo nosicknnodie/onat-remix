@@ -4,14 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef, Row, SortingState } from "@tanstack/react-table";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import {
-  type PropsWithChildren,
-  useMemo,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { type PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
@@ -31,6 +24,7 @@ import {
   attendanceQueryKeys,
   type MercenaryFormValues,
   useCreateMercenaryMutation,
+  useToggleMercenaryAttendanceMutation,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
 import { formatPhoneNumber, removePhoneHyphen } from "~/libs";
@@ -47,10 +41,9 @@ export type AttendanceMercenary = {
 
 interface MercenaryManageDrawerProps extends PropsWithChildren {
   mercenaries: AttendanceMercenary[];
-  onToggle: (mercenaryId: string, isVote: boolean) => Promise<boolean> | boolean | undefined;
 }
 
-const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryManageDrawerProps) => {
+const MercenaryManageDrawer = ({ children, mercenaries }: MercenaryManageDrawerProps) => {
   const { clubId, matchClubId } = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -62,39 +55,8 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
       desc: false,
     },
   ]);
-  const previousDataRef = useRef(new Map<string, AttendanceMercenary>());
-  const previousOrderRef = useRef<string[]>([]);
-  const data = useMemo(() => {
-    const prev = previousDataRef.current;
-    const nextMap = new Map<string, AttendanceMercenary>();
-    const nextOrder = new Set<string>();
-    const prevOrder = previousOrderRef.current ?? [];
-
-    mercenaries.forEach((merc) => {
-      const prevItem = prev.get(merc.id);
-      if (prevItem && isSameMercenary(prevItem, merc)) {
-        nextMap.set(merc.id, prevItem);
-      } else {
-        nextMap.set(merc.id, merc);
-      }
-      nextOrder.add(merc.id);
-      if (!prev.has(merc.id)) {
-        prevOrder.push(merc.id);
-      }
-    });
-
-    const mergedOrder = prevOrder.filter((id) => nextMap.has(id));
-    nextOrder.forEach((id) => {
-      if (!mergedOrder.includes(id)) {
-        mergedOrder.push(id);
-      }
-    });
-
-    previousDataRef.current = nextMap;
-    previousOrderRef.current = mergedOrder;
-    return mergedOrder.map((id) => nextMap.get(id)!);
-  }, [mercenaries]);
-
+  const data = useMemo(() => mercenaries ?? [], [mercenaries]);
+  const columns = useMemo(() => mercenaryColumns(), []);
   const handleSearch = (value: string) => setGlobalFilter(value);
 
   const handleCreateMercenary = async (values: MercenaryFormValues) => {
@@ -168,7 +130,7 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
             <div className="flex-1 max-h-[calc(100svh-10rem)] overflow-y-auto">
               <DataTable
                 data={data}
-                columns={mercenaryColumns(onToggle)}
+                columns={columns}
                 options={{
                   state: { globalFilter, sorting },
                   onSortingChange: setSorting,
@@ -186,9 +148,7 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
   );
 };
 
-const mercenaryColumns = (
-  onToggle: (mercenaryId: string, isVote: boolean) => Promise<boolean> | boolean | undefined,
-): ColumnDef<AttendanceMercenary>[] => [
+const mercenaryColumns = (): ColumnDef<AttendanceMercenary>[] => [
   {
     id: "name",
     accessorFn: (v) => v.user?.name || v.name || "",
@@ -225,23 +185,15 @@ const mercenaryColumns = (
     header() {
       return <div className="flex justify-center">참석여부</div>;
     },
-    cell: ({ row }) => (
-      <IsAttendedCellComponent
-        payload={row.original}
-        onToggle={(value) => onToggle(row.original.id, value)}
-      />
-    ),
+    cell: ({ row }) => <IsAttendedCellComponent payload={row.original} />,
   },
 ];
 
-const IsAttendedCellComponent = ({
-  payload,
-  onToggle,
-}: {
-  payload: AttendanceMercenary;
-  onToggle: (value: boolean) => Promise<boolean> | boolean | undefined;
-}) => {
-  const [isPending, startTransition] = useTransition();
+const IsAttendedCellComponent = ({ payload }: { payload: AttendanceMercenary }) => {
+  const { matchClubId } = useParams();
+  const { toast } = useToast();
+  const toggleMercenaryAttendance = useToggleMercenaryAttendanceMutation(matchClubId);
+  const [, startTransition] = useTransition();
   const [isVote, setVote] = useState<boolean>(payload.isAttended);
   const [optimistic, dispatch] = useOptimistic(
     isVote,
@@ -260,10 +212,24 @@ const IsAttendedCellComponent = ({
   const handleOnchange = (value: boolean) => {
     startTransition(async () => {
       dispatch({ type: "changed", payload: value });
-      const res = (await onToggle(value)) ?? true;
-      if (res) {
+      if (!matchClubId) {
+        toast({
+          title: "매치 정보를 불러오지 못했어요.",
+          description: "새로고침 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
+        dispatch({ type: "rollback", payload: !value });
+        return;
+      }
+      try {
+        await toggleMercenaryAttendance.mutateAsync({
+          matchClubId,
+          mercenaryId: payload.id,
+          isVote: value,
+        });
         setVote(value);
-      } else {
+      } catch (error) {
+        toast(getToastForError(error));
         dispatch({ type: "rollback", payload: !value });
       }
     });
@@ -271,43 +237,9 @@ const IsAttendedCellComponent = ({
 
   return (
     <div className="flex justify-center items-center">
-      <Switch
-        name="isVote"
-        checked={optimistic}
-        onCheckedChange={handleOnchange}
-        disabled={isPending}
-      />
+      <Switch name="isVote" checked={optimistic} onCheckedChange={handleOnchange} />
     </div>
   );
-};
-
-const isSameMercenary = (a: AttendanceMercenary, b: AttendanceMercenary) => {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  return (
-    a.id === b.id &&
-    a.name === b.name &&
-    a.hp === b.hp &&
-    a.isAttended === b.isAttended &&
-    isSameUser(a.user, b.user)
-  );
-};
-
-const isSameUser = (a: AttendanceMercenary["user"], b: AttendanceMercenary["user"]) => {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  return (
-    a.id === b.id &&
-    a.name === b.name &&
-    a.email === b.email &&
-    isSameFile(a.userImage, b.userImage)
-  );
-};
-
-const isSameFile = (a: File | null | undefined, b: File | null | undefined) => {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  return a.id === b.id && a.url === b.url;
 };
 
 export default MercenaryManageDrawer;

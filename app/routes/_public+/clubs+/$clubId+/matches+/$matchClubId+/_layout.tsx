@@ -24,13 +24,8 @@ import {
   useAttendanceQuery,
   useMatchClubQuery,
   useMatchCommentsQuery,
-  useToggleAttendanceStateMutation,
-  useToggleMercenaryAttendanceMutation,
-  useTogglePlayerAttendanceMutation,
 } from "~/features/matches/isomorphic";
-import { useToast } from "~/hooks";
 import { getJson } from "~/libs/api-client";
-import { getToastForError } from "~/libs/errors";
 
 interface IMatchClubIdLayoutProps {}
 
@@ -39,7 +34,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const session = useSession();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const matchClubId = params.matchClubId;
   const clubId = params.clubId;
   const { data: matchClubQueryData, isLoading: isMatchClubLoading } = useMatchClubQuery(
@@ -66,9 +60,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     clubId: clubId ?? "",
     enabled: Boolean(matchClubId && clubId && isAttendancePage),
   });
-  const toggleAttendanceStateMutation = useToggleAttendanceStateMutation(matchClubId);
-  const togglePlayerAttendance = useTogglePlayerAttendanceMutation(matchClubId);
-  const toggleMercenaryAttendance = useToggleMercenaryAttendanceMutation(matchClubId);
 
   useEffect(() => {
     if (!matchClubId) return;
@@ -263,61 +254,17 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
               !("redirectTo" in attendanceQuery.data) &&
               attendanceQuery.data.matchClub && (
                 <>
-                  <CheckManageDrawer
-                    attendances={manageAttendances}
-                    onToggle={async (attendanceId, isCheck) => {
-                      try {
-                        await toggleAttendanceStateMutation.mutateAsync({
-                          id: attendanceId,
-                          isCheck,
-                        });
-                        return true;
-                      } catch (e) {
-                        toast(getToastForError(e));
-                        return false;
-                      }
-                    }}
-                  >
+                  <CheckManageDrawer attendances={manageAttendances}>
                     <Button size="sm" variant="outline" className="flex items-center gap-2">
                       출석 관리
                     </Button>
                   </CheckManageDrawer>
-                  <PlayerManageDrawer
-                    players={managePlayers}
-                    onToggle={async (playerId, isVote) => {
-                      try {
-                        await togglePlayerAttendance.mutateAsync({
-                          matchClubId: matchClubId ?? "",
-                          playerId,
-                          isVote,
-                        });
-                        return true;
-                      } catch (e) {
-                        toast(getToastForError(e));
-                        return false;
-                      }
-                    }}
-                  >
+                  <PlayerManageDrawer players={managePlayers}>
                     <Button size="sm" variant="outline" className="flex items-center gap-2">
                       참석 관리
                     </Button>
                   </PlayerManageDrawer>
-                  <MercenaryManageDrawer
-                    mercenaries={manageMercenaries}
-                    onToggle={async (mercenaryId, isVote) => {
-                      try {
-                        await toggleMercenaryAttendance.mutateAsync({
-                          matchClubId: matchClubId ?? "",
-                          mercenaryId,
-                          isVote,
-                        });
-                        return true;
-                      } catch (e) {
-                        toast(getToastForError(e));
-                        return false;
-                      }
-                    }}
-                  >
+                  <MercenaryManageDrawer mercenaries={manageMercenaries}>
                     <Button size="sm" variant="outline" className="flex items-center gap-2">
                       용병 추가
                     </Button>
