@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type UseMutationOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getJson, postJson, putJson } from "~/libs/api-client";
 import type {
@@ -44,6 +49,16 @@ export function useAttendanceQuery(matchClubId?: string, options?: UseAttendance
 
 type UseAttendanceMutationOptions = {
   clubId?: string;
+  onSuccess?: UseMutationOptions<
+    AttendanceMutationResponse,
+    unknown,
+    AttendanceMutationInput
+  >["onSuccess"];
+  onError?: UseMutationOptions<
+    AttendanceMutationResponse,
+    unknown,
+    AttendanceMutationInput
+  >["onError"];
 };
 
 export function useAttendanceMutation(
@@ -66,8 +81,12 @@ export function useAttendanceMutation(
         clubId: options.clubId,
       });
     },
-    onSuccess: async () => {
+    onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({ queryKey });
+      await options?.onSuccess?.(data, variables, context);
+    },
+    onError: (error, variables, context) => {
+      options?.onError?.(error, variables, context);
     },
   });
 }

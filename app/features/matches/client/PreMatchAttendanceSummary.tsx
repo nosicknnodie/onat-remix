@@ -53,7 +53,7 @@ export const PreMatchAttendanceSummary = ({
   pending,
 }: PreMatchAttendanceSummaryProps) => {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2">
       <Card className="bg-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -90,7 +90,7 @@ export const PreMatchAttendanceSummary = ({
         </CardContent>
       </Card>
 
-      <Card className="bg-muted/30">
+      <Card className="bg-muted/30 md:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <FaQuestionCircle className="text-muted-foreground" />

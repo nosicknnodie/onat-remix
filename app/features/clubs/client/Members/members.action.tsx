@@ -4,6 +4,7 @@ import { useParams } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
+import { confirm } from "~/components/ui/confirm";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -191,7 +192,14 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                 {payload.role === "NORMAL" && (
                   <DropdownMenuItem
                     className="text-destructive"
-                    onClick={() => handleStatus("BANNED")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      confirm({
+                        title: "탈퇴 처리",
+                        description: `${payload.nick} 님을 탈퇴 처리하시겠습니까?`,
+                        confirmText: "탈퇴",
+                      }).onConfirm(() => void handleStatus("BANNED"));
+                    }}
                   >
                     탈퇴
                   </DropdownMenuItem>

@@ -14,6 +14,7 @@ export type { AttendancePlayer } from "./attendance/PlayerManageDrawer";
 export { default as PlayerManageDrawer } from "./attendance/PlayerManageDrawer";
 export { type ClubSubnavItem, ClubSubnavTabs } from "./ClubSubnavTabs";
 export { DraggableChip, DropSpot } from "./Dnd";
+export * from "./MatchClubInfoSections";
 export { MatchClubInsightCard } from "./MatchClubInsightCard";
 export { MatchForm } from "./MatchForm";
 export { MatchHeaderCard } from "./MatchHeaderCard";

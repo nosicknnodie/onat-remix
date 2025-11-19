@@ -31,7 +31,7 @@ export function MatchForm(props: MatchFormProps) {
   const matchTitle = defaultMatch?.title ?? "";
   const matchDescription = defaultMatch?.description ?? "";
   const stDate = defaultMatch?.stDate ? new Date(defaultMatch.stDate) : new Date();
-  const defaultDate = stDate.toISOString().slice(0, 10);
+  const defaultDate = `${stDate.getFullYear()}-${String(stDate.getMonth() + 1).padStart(2, "0")}-${String(stDate.getDate()).padStart(2, "0")}`;
   const defaultHour = String(stDate.getHours());
   const defaultMinute = String(stDate.getMinutes() >= 30 ? 30 : 0);
   const placeName = defaultMatch?.placeName ?? "";
