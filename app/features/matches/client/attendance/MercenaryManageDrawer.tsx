@@ -1,11 +1,22 @@
 import type { File, User } from "@prisma/client";
+import { useParams } from "@remix-run/react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef, Row, SortingState } from "@tanstack/react-table";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { type PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
+import {
+  type PropsWithChildren,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import { FaPlus, FaSearch } from "react-icons/fa";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -16,7 +27,15 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
+import {
+  attendanceQueryKeys,
+  type MercenaryFormValues,
+  useCreateMercenaryMutation,
+} from "~/features/matches/isomorphic";
+import { useToast } from "~/hooks";
 import { formatPhoneNumber, removePhoneHyphen } from "~/libs";
+import { getToastForError } from "~/libs/errors";
+import SetMercenaryDialog from "../mercenaries/New/SetMercenaryDialog";
 
 export type AttendanceMercenary = {
   id: string;
@@ -32,6 +51,10 @@ interface MercenaryManageDrawerProps extends PropsWithChildren {
 }
 
 const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryManageDrawerProps) => {
+  const { clubId, matchClubId } = useParams();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { mutateAsync: createMercenary } = useCreateMercenaryMutation(clubId);
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([
     {
@@ -39,9 +62,67 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
       desc: false,
     },
   ]);
+  const previousDataRef = useRef(new Map<string, AttendanceMercenary>());
+  const previousOrderRef = useRef<string[]>([]);
+  const data = useMemo(() => {
+    const prev = previousDataRef.current;
+    const nextMap = new Map<string, AttendanceMercenary>();
+    const nextOrder = new Set<string>();
+    const prevOrder = previousOrderRef.current ?? [];
+
+    mercenaries.forEach((merc) => {
+      const prevItem = prev.get(merc.id);
+      if (prevItem && isSameMercenary(prevItem, merc)) {
+        nextMap.set(merc.id, prevItem);
+      } else {
+        nextMap.set(merc.id, merc);
+      }
+      nextOrder.add(merc.id);
+      if (!prev.has(merc.id)) {
+        prevOrder.push(merc.id);
+      }
+    });
+
+    const mergedOrder = prevOrder.filter((id) => nextMap.has(id));
+    nextOrder.forEach((id) => {
+      if (!mergedOrder.includes(id)) {
+        mergedOrder.push(id);
+      }
+    });
+
+    previousDataRef.current = nextMap;
+    previousOrderRef.current = mergedOrder;
+    return mergedOrder.map((id) => nextMap.get(id)!);
+  }, [mercenaries]);
 
   const handleSearch = (value: string) => setGlobalFilter(value);
-  const data = useMemo(() => mercenaries ?? [], [mercenaries]);
+
+  const handleCreateMercenary = async (values: MercenaryFormValues) => {
+    try {
+      const result = await createMercenary(values);
+      if (result.ok) {
+        toast({
+          title: "용병을 추가했어요.",
+          description: `${values.name} 용병을 목록에 추가했습니다.`,
+        });
+        if (matchClubId) {
+          await queryClient.invalidateQueries({
+            queryKey: attendanceQueryKeys.detail(matchClubId),
+          });
+        }
+        return true;
+      }
+      toast({
+        title: "용병 추가 실패",
+        description: result.message,
+        variant: "destructive",
+      });
+      return false;
+    } catch (error) {
+      toast(getToastForError(error));
+      return false;
+    }
+  };
 
   const globalFilterFn = (
     row: Row<AttendanceMercenary>,
@@ -58,7 +139,6 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
       hangul.search(name, search) >= 0 || convertHp.includes(searchHp) || email.includes(search)
     );
   };
-
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>{children}</DrawerTrigger>
@@ -69,11 +149,22 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
             <DrawerDescription />
           </DrawerHeader>
           <div className="space-y-2 flex-1 flex flex-col">
-            <Input
-              type="text"
-              placeholder="용병 검색 (이름 or 전화번호)"
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+            <div className="flex w-full space-x-1">
+              <Input
+                type="text"
+                placeholder="검색"
+                onChange={(e) => handleSearch(e.target.value)}
+                className="flex-grow"
+              />
+              <Button size="icon" onClick={() => handleSearch(globalFilter)}>
+                <FaSearch />
+              </Button>
+              <SetMercenaryDialog onSubmit={handleCreateMercenary}>
+                <Button size="icon">
+                  <FaPlus />
+                </Button>
+              </SetMercenaryDialog>
+            </div>
             <div className="flex-1 max-h-[calc(100svh-10rem)] overflow-y-auto">
               <DataTable
                 data={data}
@@ -84,6 +175,7 @@ const MercenaryManageDrawer = ({ children, mercenaries, onToggle }: MercenaryMan
                   getFilteredRowModel: getFilteredRowModel(),
                   getSortedRowModel: getSortedRowModel(),
                   globalFilterFn,
+                  getRowId: (row) => row.id,
                 }}
               />
             </div>
@@ -187,6 +279,35 @@ const IsAttendedCellComponent = ({
       />
     </div>
   );
+};
+
+const isSameMercenary = (a: AttendanceMercenary, b: AttendanceMercenary) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.id === b.id &&
+    a.name === b.name &&
+    a.hp === b.hp &&
+    a.isAttended === b.isAttended &&
+    isSameUser(a.user, b.user)
+  );
+};
+
+const isSameUser = (a: AttendanceMercenary["user"], b: AttendanceMercenary["user"]) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.id === b.id &&
+    a.name === b.name &&
+    a.email === b.email &&
+    isSameFile(a.userImage, b.userImage)
+  );
+};
+
+const isSameFile = (a: File | null | undefined, b: File | null | undefined) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.id === b.id && a.url === b.url;
 };
 
 export default MercenaryManageDrawer;

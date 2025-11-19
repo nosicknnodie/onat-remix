@@ -69,11 +69,11 @@ export function PreMatchSection({
             </Tooltip>
           </TooltipProvider>
         </div>
-        {/* {attendancePageHref ? (
+        {attendancePageHref ? (
           <Button variant="ghost" size="sm" asChild>
             <Link to={attendancePageHref}>참석/출석 페이지</Link>
           </Button>
-        ) : null} */}
+        ) : null}
       </div>
       <PreMatchAttendanceSummary
         attend={summary.attend}

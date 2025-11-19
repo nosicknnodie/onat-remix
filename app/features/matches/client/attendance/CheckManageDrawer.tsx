@@ -1,7 +1,7 @@
 import type { ColumnDef, Row, SortingState } from "@tanstack/react-table";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { type PropsWithChildren, useMemo, useState, useTransition } from "react";
+import { type PropsWithChildren, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -23,6 +23,8 @@ export type AttendanceCheckItem = {
   isCheck: boolean;
 };
 
+const EMPTY_CHECK_ITEMS: AttendanceCheckItem[] = [];
+
 interface CheckManageDrawerProps extends PropsWithChildren {
   attendances: AttendanceCheckItem[];
   onToggle: (attendanceId: string, isCheck: boolean) => Promise<boolean> | boolean | undefined;
@@ -39,7 +41,7 @@ const CheckManageDrawer = ({ children, attendances, onToggle }: CheckManageDrawe
   ]);
 
   const handleSearch = (value: string) => setGlobalFilter(value);
-  const data = useMemo(() => attendances ?? [], [attendances]);
+  const data = attendances.length > 0 ? attendances : EMPTY_CHECK_ITEMS;
 
   const globalFilterFn = (
     row: Row<AttendanceCheckItem>,

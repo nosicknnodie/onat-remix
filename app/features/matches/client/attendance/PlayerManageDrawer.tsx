@@ -2,7 +2,7 @@ import type { File, User } from "@prisma/client";
 import type { ColumnDef, Row, SortingState } from "@tanstack/react-table";
 import { getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table";
 import hangul from "hangul-js";
-import { type PropsWithChildren, useMemo, useOptimistic, useState, useTransition } from "react";
+import { type PropsWithChildren, useOptimistic, useState, useTransition } from "react";
 import DataTable from "~/components/DataTable";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -23,6 +23,8 @@ export type AttendancePlayer = {
   isAttended: boolean;
 };
 
+const EMPTY_PLAYERS: AttendancePlayer[] = [];
+
 interface PlayerManageDrawerProps extends PropsWithChildren {
   players: AttendancePlayer[];
   onToggle: (playerId: string, isVote: boolean) => Promise<boolean> | boolean | undefined;
@@ -39,7 +41,7 @@ const PlayerManageDrawer = ({ children, players, onToggle }: PlayerManageDrawerP
 
   // search filter
   const handleSearch = (value: string) => setGlobalFilter(value);
-  const data = useMemo(() => players ?? [], [players]);
+  const data = players.length > 0 ? players : EMPTY_PLAYERS;
 
   // global filter
   const globalFilterFn = (row: Row<AttendancePlayer>, _columnId: string, filterValue: string) => {

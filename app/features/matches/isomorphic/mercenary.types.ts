@@ -35,5 +35,5 @@ export const mercenaryFormSchema = z.object({
 export type MercenaryFormValues = z.infer<typeof mercenaryFormSchema>;
 
 export type MercenaryMutationResult =
-  | { ok: true; mercenary: Mercenary }
+  | { ok: true; mercenary: MercenaryItem }
   | { ok: false; message: string; fieldErrors?: Record<string, string[]> };

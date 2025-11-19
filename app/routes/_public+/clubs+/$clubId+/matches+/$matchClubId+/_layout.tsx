@@ -271,7 +271,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                           id: attendanceId,
                           isCheck,
                         });
-                        await attendanceQuery.refetch();
                         return true;
                       } catch (e) {
                         toast(getToastForError(e));
@@ -292,7 +291,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                           playerId,
                           isVote,
                         });
-                        await attendanceQuery.refetch();
                         return true;
                       } catch (e) {
                         toast(getToastForError(e));
@@ -313,7 +311,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
                           mercenaryId,
                           isVote,
                         });
-                        await attendanceQuery.refetch();
                         return true;
                       } catch (e) {
                         toast(getToastForError(e));

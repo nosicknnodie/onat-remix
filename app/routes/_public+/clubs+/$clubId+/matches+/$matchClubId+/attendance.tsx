@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { FaCheck, FaInfoCircle, FaQuestionCircle, FaTimesCircle } from "react-icons/fa";
 import { MdEventAvailable } from "react-icons/md";
 import { Loading } from "~/components/Loading";
@@ -18,9 +18,17 @@ import {
   type AttendancePlayer,
 } from "~/features/matches/client";
 import type { AttendanceClubPlayer, AttendanceRecord } from "~/features/matches/isomorphic";
-import { useAttendanceMutation, useAttendanceQuery } from "~/features/matches/isomorphic";
+import {
+  EMPTY_ATTENDANCE_PLAYERS,
+  EMPTY_ATTENDANCE_RECORDS,
+  useAttendanceMutation,
+  useAttendanceQuery,
+  useToggleAttendanceStateMutation,
+  useToggleMercenaryAttendanceMutation,
+  useTogglePlayerAttendanceMutation,
+} from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { cn, postJson } from "~/libs";
+import { cn } from "~/libs";
 import { getToastForError } from "~/libs/errors";
 
 export const handle = {
@@ -44,6 +52,9 @@ const AttendancePage = (_props: IAttendancePageProps) => {
     enabled: Boolean(matchClubId && clubId),
   });
   const attendanceMutation = useAttendanceMutation(matchClubId, { clubId: clubId ?? "" });
+  const toggleAttendanceStateMutation = useToggleAttendanceStateMutation(matchClubId);
+  const togglePlayerAttendance = useTogglePlayerAttendanceMutation(matchClubId);
+  const toggleMercenaryAttendance = useToggleMercenaryAttendanceMutation(matchClubId);
 
   useEffect(() => {
     if (attendanceQuery.data && "redirectTo" in attendanceQuery.data) {
@@ -60,27 +71,28 @@ const AttendancePage = (_props: IAttendancePageProps) => {
   const now = new Date();
   const isBeforeDay = matchDate ? now < dayjs(matchDate).subtract(1, "day").toDate() : false;
   const isCheckTimeOpen = matchDate ? now > dayjs(matchDate).subtract(2, "hour").toDate() : false;
-  const mercenaryAttedances = matchClub
-    ? matchClub.attendances.filter((a) => !!a.mercenary && a.isVote)
-    : [];
-
-  const attend = useMemo<{
+  const matchClubAttendances = matchClub?.attendances ?? EMPTY_ATTENDANCE_RECORDS;
+  const mercenaryAttendances = matchClub
+    ? matchClubAttendances.filter((a) => !!a.mercenary && a.isVote)
+    : EMPTY_ATTENDANCE_RECORDS;
+  const attend: {
     ATTEND: AttendanceRecord[];
     ABSENT: AttendanceRecord[];
     PENDING: AttendanceClubPlayer[];
-  }>(() => {
-    if (!matchClub) {
-      return { ATTEND: [], ABSENT: [], PENDING: [] };
-    }
-    return {
-      ATTEND: matchClub.attendances.filter((a) => !!a.player && a.isVote),
-      ABSENT: matchClub.attendances.filter((a) => !!a.player && !a.isVote),
-      PENDING: matchClub.club.players.filter(
-        (p) =>
-          p.userId && !matchClub.attendances.some((attendance) => attendance.playerId === p.id),
-      ),
-    };
-  }, [matchClub]);
+  } = matchClub
+    ? {
+        ATTEND: matchClubAttendances.filter((a) => !!a.player && a.isVote),
+        ABSENT: matchClubAttendances.filter((a) => !!a.player && !a.isVote),
+        PENDING: matchClub.club.players.filter(
+          (p) =>
+            p.userId && !matchClubAttendances.some((attendance) => attendance.playerId === p.id),
+        ),
+      }
+    : {
+        ATTEND: EMPTY_ATTENDANCE_RECORDS,
+        ABSENT: EMPTY_ATTENDANCE_RECORDS,
+        PENDING: EMPTY_ATTENDANCE_PLAYERS,
+      };
 
   if (attendanceQuery.isLoading || !resolvedData || !matchClub || !matchClubId || !clubId) {
     return (
@@ -99,14 +111,10 @@ const AttendancePage = (_props: IAttendancePageProps) => {
   const handleAttendanceChange = async (input: { isVote: boolean; isCheck: boolean }) => {
     try {
       await attendanceMutation.mutateAsync({ ...input });
-      await attendanceQuery.refetch();
     } catch (error) {
       toast(getToastForError(error));
     }
   };
-
-  const matchClubAttendances = matchClub.attendances ?? [];
-  const refetchAttendance = () => attendanceQuery.refetch();
 
   return (
     <div className="space-y-4">
@@ -172,12 +180,11 @@ const AttendancePage = (_props: IAttendancePageProps) => {
               })()}
               onTogglePlayer={async (playerId, isVote) => {
                 try {
-                  await postJson("/api/attendances/player", {
-                    matchClubId,
+                  await togglePlayerAttendance.mutateAsync({
+                    matchClubId: matchClubId!,
                     playerId,
                     isVote,
                   });
-                  await refetchAttendance();
                   return true;
                 } catch (e) {
                   toast(getToastForError(e));
@@ -199,12 +206,11 @@ const AttendancePage = (_props: IAttendancePageProps) => {
               })()}
               onToggleMercenary={async (mercenaryId, isVote) => {
                 try {
-                  await postJson("/api/attendances/mercenary", {
-                    matchClubId,
+                  await toggleMercenaryAttendance.mutateAsync({
+                    matchClubId: matchClubId!,
                     mercenaryId,
                     isVote,
                   });
-                  await refetchAttendance();
                   return true;
                 } catch (e) {
                   toast(getToastForError(e));
@@ -226,8 +232,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
               })()}
               onToggleCheck={async (attendanceId, isCheck) => {
                 try {
-                  await postJson("/api/attendances", { id: attendanceId, isCheck });
-                  await refetchAttendance();
+                  await toggleAttendanceStateMutation.mutateAsync({ id: attendanceId, isCheck });
                   return true;
                 } catch (e) {
                   toast(getToastForError(e));
@@ -244,9 +249,9 @@ const AttendancePage = (_props: IAttendancePageProps) => {
         <AttendanceGroupCard className="bg-primary/5">
           <AttendanceGroupCardHeader>
             <AttendanceGroupCardTitle>
-              {statusIcons.ATTEND} 참석: {attend.ATTEND.length + mercenaryAttedances.length}
-              {mercenaryAttedances.length > 0 &&
-                `(${attend.ATTEND.length}+${mercenaryAttedances.length})`}
+              {statusIcons.ATTEND} 참석: {attend.ATTEND.length + mercenaryAttendances.length}
+              {mercenaryAttendances.length > 0 &&
+                `(${attend.ATTEND.length}+${mercenaryAttendances.length})`}
               {currentStatus === "ATTEND" && <FaCheck className="text-primary" />}
             </AttendanceGroupCardTitle>
           </AttendanceGroupCardHeader>
@@ -262,7 +267,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 {u.player?.user?.name}
               </AttendanceGroupCardItem>
             ))}
-            {mercenaryAttedances.map((ma) => (
+            {mercenaryAttendances.map((ma) => (
               <AttendanceGroupCardItem
                 key={ma.id}
                 className={cn({

@@ -47,7 +47,6 @@ export function useCreateMercenaryMutation(clubId?: string) {
     onSuccess: async () => {
       if (queryKey) {
         await queryClient.invalidateQueries({ queryKey });
-        await queryClient.refetchQueries({ queryKey });
       }
     },
   });
@@ -72,7 +71,6 @@ export function useUpdateMercenaryMutation(clubId?: string) {
     onSuccess: async () => {
       if (queryKey) {
         await queryClient.invalidateQueries({ queryKey });
-        await queryClient.refetchQueries({ queryKey });
       }
     },
   });

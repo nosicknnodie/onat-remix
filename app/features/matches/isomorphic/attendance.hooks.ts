@@ -7,11 +7,16 @@ import {
 import { useMemo } from "react";
 import { getJson, postJson, putJson } from "~/libs/api-client";
 import type {
+  AttendanceClubPlayer,
   AttendanceMutationInput,
   AttendanceMutationResponse,
   AttendanceQueryResponse,
+  AttendanceRecord,
   AttendanceStateMutationInput,
 } from "./attnedance.types";
+
+export const EMPTY_ATTENDANCE_RECORDS: AttendanceRecord[] = [];
+export const EMPTY_ATTENDANCE_PLAYERS: AttendanceClubPlayer[] = [];
 
 export const attendanceQueryKeys = {
   detail: (matchClubId: string) => ["matchClub", matchClubId, "attendance"] as const,
