@@ -61,9 +61,10 @@ const RatingPage = (_props: IRatingPageProps) => {
     clubId,
     enabled: Boolean(matchClubId),
   });
-  const match = matchClubData?.matchSummary?.match ?? null;
-  const quarters = matchClubData?.matchClub?.quarters
-    ? [...matchClubData.matchClub.quarters].sort((a, b) => a.order - b.order)
+  const matchClub = matchClubData?.matchClub ?? null;
+  const match = matchClub?.match ?? null;
+  const quarters = matchClub?.quarters
+    ? [...matchClub.quarters].sort((a, b) => a.order - b.order)
     : null;
   const updateEvaluation = useRatingScoreMutation(matchClubId, user?.id);
   const toggleLike = useRatingLikeMutation(matchClubId, user?.id);

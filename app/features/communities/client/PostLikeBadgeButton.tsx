@@ -6,8 +6,8 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 
 type PostWithExtras = Post & {
-  author: User & { userImage: File | null };
-  likes: { id: string; userId: string; postId: string; createdAt: Date }[];
+  author: (User & { userImage: File | null }) | null;
+  likes: { id: string; userId: string | null; postId: string; createdAt: Date }[];
   _count: { comments: number; likes: number };
 };
 

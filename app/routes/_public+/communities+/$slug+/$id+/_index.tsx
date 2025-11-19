@@ -143,6 +143,9 @@ const PostView = (_props: IPostViewProps) => {
     refetch();
   };
 
+  const postAuthor = post.author;
+  const postAuthorName = postAuthor?.name ?? "알 수 없는 사용자";
+  const postAuthorImage = postAuthor?.userImage?.url ?? "/images/user_empty.png";
   // post 존재는 상단에서 분기 처리됨
   return (
     <>
@@ -158,14 +161,12 @@ const PostView = (_props: IPostViewProps) => {
                 </Link>
                 {/* 아바타 이미지 */}
                 <Avatar className="size-8">
-                  <AvatarImage
-                    src={post?.author.userImage?.url || "/images/user_empty.png"}
-                  ></AvatarImage>
+                  <AvatarImage src={postAuthorImage}></AvatarImage>
                   <AvatarFallback className="bg-primary-foreground">
                     <Loading />
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs">{post.author.name}</span>
+                <span className="text-xs">{postAuthorName}</span>
                 <span className="text-muted-foreground text-xs">•</span>
                 <span className="text-muted-foreground text-xs">
                   {formatDistance(post.createdAt, new Date(), {

@@ -74,8 +74,6 @@ export function useClubMatchInitialData(clubId?: string, matchClubId?: string) {
       if (matchClub) {
         return {
           matchClub: matchClub as unknown as MatchClubQueryResponse["matchClub"],
-          summary: null,
-          matchSummary: null,
         } satisfies MatchClubQueryResponse;
       }
     }

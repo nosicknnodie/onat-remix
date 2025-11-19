@@ -7,10 +7,10 @@ import { Button } from "~/components/ui/button";
 import { useSession } from "~/contexts";
 
 type PostWithExtras = Post & {
-  author: User & { userImage: File | null };
+  author: (User & { userImage: File | null }) | null;
   sumVote: number;
   currentVote?: PostVote;
-  likes: { id: string; userId: string; postId: string; createdAt: Date }[];
+  likes: { id: string; userId: string | null; postId: string; createdAt: Date }[];
   _count: { comments: number; likes: number };
 };
 

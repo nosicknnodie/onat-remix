@@ -301,15 +301,20 @@ export async function getClubMatchesFeed({ clubId, take, cursor }: ClubMatchesFe
   const matches = await prisma.matchClub.findMany({
     where: { clubId, isUse: true },
     include: {
-      club: { include: { image: true, emblem: true } },
       match: {
         include: {
-          matchClubs: {
-            where: { isUse: true },
+          createUser: {
             include: {
-              club: { include: { image: true, emblem: true } },
+              userImage: true,
             },
           },
+        },
+      },
+      teams: true,
+      quarters: {
+        include: {
+          team1: true,
+          team2: true,
         },
       },
     },

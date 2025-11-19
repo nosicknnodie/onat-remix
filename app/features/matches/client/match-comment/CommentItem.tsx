@@ -18,6 +18,10 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
   const [replyOpen, setReplyOpen] = useState(false);
   const createComment = useCreateMatchComment();
   const { handleInsertImage } = useCommentInput();
+  const commenter = comment.user;
+  const commenterName = commenter?.name ?? "알 수 없는 사용자";
+  const commenterAvatar = commenter?.userImage?.url ?? "/images/user_empty.png";
+
   const handleSubmit = async (root?: SerializedEditorState) => {
     if (!context.matchClubId) {
       return;
@@ -27,7 +31,7 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
         matchClubId: context.matchClubId,
         content: root,
         parentId: comment.parentId || comment.id,
-        replyToUserId: comment.user.id,
+        replyToUserId: commenter?.id ?? undefined,
       });
       setReplyOpen(false);
     } catch (error) {
@@ -38,7 +42,7 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
     <div className="flex gap-2">
       <div className="h-10 flex items-center max-md:max-w-6">
         <Avatar className="size-8">
-          <AvatarImage src={comment.user.userImage?.url || "/images/user_empty.png"} />
+          <AvatarImage src={commenterAvatar} />
           <AvatarFallback className="bg-primary-foreground">
             <Loading />
           </AvatarFallback>
@@ -46,7 +50,7 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
       </div>
       <div className="w-full space-y-0.5">
         <div className="h-10 flex items-center gap-2 ml-2 text-xs">
-          <span>{comment.user.name}</span>
+          <span>{commenterName}</span>
           <span className="text-muted-foreground text-xs">•</span>
           <span className="text-muted-foreground text-xs">
             {formatDistance(comment.createdAt, new Date(), { addSuffix: true, locale: ko })}

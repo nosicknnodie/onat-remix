@@ -139,6 +139,8 @@ const CompactTypeComponent = () => {
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
         <ul className="space-y-2 text-gray-700 text-sm">
           {items?.map((post) => {
+            const authorImage = post.author?.userImage?.url ?? "/images/user_empty.png";
+            const authorName = post.author?.name ?? "알 수 없는 사용자";
             return (
               <Fragment key={post.id}>
                 <Separator />
@@ -163,14 +165,12 @@ const CompactTypeComponent = () => {
                     <div className="flex items-center gap-x-2">
                       {/* 아바타 이미지 */}
                       <Avatar className="size-6">
-                        <AvatarImage
-                          src={post.author.userImage?.url || "/images/user_empty.png"}
-                        ></AvatarImage>
+                        <AvatarImage src={authorImage}></AvatarImage>
                         <AvatarFallback className="bg-primary-foreground">
                           <Loading />
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs">{post.author.name}</span>
+                      <span className="text-xs">{authorName}</span>
                       <span className="text-muted-foreground text-xs">•</span>
                       <span className="text-muted-foreground text-xs">
                         {formatDistance(post.createdAt, new Date(), {
@@ -215,6 +215,8 @@ const CardTypeComponent = () => {
       <div className="w-full md:p-2 2xl:p-3 justify-center items-start gap-8">
         <ul className="space-y-2 text-gray-700 text-sm">
           {items?.map((post) => {
+            const authorImage = post.author?.userImage?.url ?? "/images/user_empty.png";
+            const authorName = post.author?.name ?? "알 수 없는 사용자";
             return (
               <Fragment key={post.id}>
                 <Separator />
@@ -224,14 +226,12 @@ const CardTypeComponent = () => {
                       <div className="flex-1 flex items-center gap-x-2">
                         {/* 아바타 이미지 */}
                         <Avatar className="size-5">
-                          <AvatarImage
-                            src={post.author.userImage?.url || "/images/user_empty.png"}
-                          ></AvatarImage>
+                          <AvatarImage src={authorImage}></AvatarImage>
                           <AvatarFallback className="bg-primary-foreground">
                             <Loading />
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs">{post.author.name}</span>
+                        <span className="text-xs">{authorName}</span>
                         <span className="text-muted-foreground text-xs">•</span>
                         <span className="text-muted-foreground text-xs">
                           {formatDistance(post.createdAt, new Date(), {

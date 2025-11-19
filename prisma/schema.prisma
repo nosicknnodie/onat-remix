@@ -468,8 +468,8 @@ model Comment {
   content       Json
   isDeleted     Boolean   @default(false)
 
-  userId        String
-  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   targetId      String
   targetType    CommentTargetType
@@ -559,8 +559,8 @@ enum GoalType {
 // 평가
 model Evaluation {
   id             String   @id @default(cuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   attendanceId   String
   attendance     Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
@@ -632,8 +632,8 @@ model Post {
   content   Json?
   state     PostState @default(DRAFT)
 
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   boardId   String?
   board     Board?    @relation(fields: [boardId], references: [id], onDelete: Cascade)
@@ -664,8 +664,8 @@ model PostComment {
   postId    String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   parentId  String?        // 대댓글 기능
 
@@ -688,8 +688,8 @@ model CommentVote {
   commentId   String
   comment     PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
-  userId      String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   vote        Int    // 예: +1 (upvote), -1 (downvote)
 
@@ -706,8 +706,8 @@ model PostVote {
   postId   String
   post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   vote      Int
   createdAt DateTime @default(now())
@@ -722,8 +722,8 @@ model PostLike {
   postId   String
   post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 

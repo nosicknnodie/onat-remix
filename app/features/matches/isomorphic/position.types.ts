@@ -60,31 +60,6 @@ export type PositionQuarterWithTeams = Prisma.QuarterGetPayload<{
   };
 }>;
 
-export type PositionAttendanceWithAssigned = Prisma.AttendanceGetPayload<{
-  include: {
-    assigneds: true;
-    team: true;
-    player: {
-      include: {
-        user: {
-          include: {
-            userImage: true;
-          };
-        };
-      };
-    };
-    mercenary: {
-      include: {
-        user: {
-          include: {
-            userImage: true;
-          };
-        };
-      };
-    };
-  };
-}>;
-
 export interface PositionAssignedWithAttendance extends Assigned {
   attendance: Attendance & {
     team: Team | null;
@@ -103,16 +78,12 @@ export type PositionQueryData = {
 };
 
 export type PositionContextValue = {
-  query: UseQueryResult<PositionQueryData>;
   currentQuarterOrder: number;
-} | null;
-
-export type PositionSettingQueryData = {
-  attendances: PositionAttendanceWithAssigned[];
+  currentTeamId: string | null;
 };
 
 export type PositionSettingContextValue = {
-  query: UseQueryResult<PositionSettingQueryData>;
+  query: UseQueryResult<PositionQueryData>;
   currentQuarter: PositionQuarterWithTeams | null;
   currentTeamId: string | null;
   assigneds?: PositionAssignedWithAttendance[];

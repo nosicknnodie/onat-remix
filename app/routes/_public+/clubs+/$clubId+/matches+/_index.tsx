@@ -1,11 +1,9 @@
 import { Link, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useCallback, useMemo } from "react";
-import { Fragment } from "react/jsx-runtime";
 import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { ClubPermissionGate } from "~/features/clubs/client";
@@ -82,7 +80,6 @@ const MatchesPage = (_props: IMatchesPageProps) => {
       <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
         {matchClubs.map((matchClub) => {
           const match = matchClub.match;
-          const relatedClubs = match?.matchClubs?.length ? match.matchClubs : [matchClub];
           return (
             <Link key={matchClub.id} to={`/clubs/${matchClub.clubId}/matches/${matchClub.id}`}>
               <Card className="col-span-1 flex flex-col border border-gray-200 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300">
@@ -93,28 +90,7 @@ const MatchesPage = (_props: IMatchesPageProps) => {
                       {match.description}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
-                    {relatedClubs.map((clubItem, i) => (
-                      <Fragment key={clubItem.id}>
-                        {i !== 0 && (
-                          <div className="flex whitespace-nowrap items-center text-sm font-semibold">
-                            <span className="text-primary">vs</span>
-                          </div>
-                        )}
-                        <div className="flex whitespace-nowrap items-center text-sm font-semibold gap-1">
-                          <Avatar>
-                            <AvatarImage
-                              src={clubItem.club?.emblem?.url ?? "/images/club-default-emblem.webp"}
-                            />
-                            <AvatarFallback className="bg-primary">
-                              <Loading />
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>{clubItem.club?.name}</span>
-                        </div>
-                      </Fragment>
-                    ))}
-                  </div>
+                  <div className="flex gap-2"></div>
                 </CardHeader>
                 <CardContent className="text-sm space-y-2 text-muted-foreground">
                   <p className="flex items-center gap-2">

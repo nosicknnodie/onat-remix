@@ -1,30 +1,19 @@
-import { useParams, useSearchParams } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Preview } from "react-dnd-preview";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  DraggableChip,
-  DropSpot,
-  PositionSettingDrawer,
-  PositionToolbar,
-  QuarterStepper,
-} from "~/features/matches/client";
+import { DraggableChip, DropSpot, PositionSettingDrawer } from "~/features/matches/client";
 import {
   PositionSettingContext,
+  useMatchClubQuery,
   useOptimisticPositionUpdate,
+  usePositionContext,
+  usePositionQuery,
   usePositionSettingMatchClubQuery,
-  usePositionSettingQuery,
 } from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
 import {
@@ -33,14 +22,28 @@ import {
   PORMATION_POSITION_CLASSNAME,
   PORMATION_POSITIONS,
   type PORMATION_TYPE,
-  POSITION_TEMPLATE_LIST,
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
 
+const BreadCrumbComponent = () => {
+  const params = useParams();
+  const matchClubId = params.matchClubId;
+  const teamId = params.teamId;
+  const matchClubQuery = useMatchClubQuery(matchClubId, { enabled: Boolean(matchClubId) });
+  const teamName = teamId
+    ? (matchClubQuery.data?.matchClub?.teams?.find((team) => team.id === teamId)?.name ?? null)
+    : null;
+  return <>{teamName ? `${teamName}` : "설정"}</>;
+};
+
 export const handle = {
   breadcrumb: () => {
-    return <>포지션 설정</>;
+    return (
+      <>
+        <BreadCrumbComponent />
+      </>
+    );
   },
 };
 // removed local context/drawer; using features UI
@@ -55,8 +58,7 @@ const POSITION_TEMPLATE = atomWithStorage<PORMATION_TYPE>("POSITION_TEMPLATE", "
 interface IPositionSettingPageProps {}
 
 const PositionSettingPage = (_props: IPositionSettingPageProps) => {
-  const [positionTemplate, setPositionTemplate] = useAtom(POSITION_TEMPLATE);
-  const [searchParams] = useSearchParams();
+  const [positionTemplate] = useAtom(POSITION_TEMPLATE);
   const params = useParams();
   const matchClubId = params.matchClubId!;
   const matchClubQuery = usePositionSettingMatchClubQuery(matchClubId, {
@@ -67,47 +69,26 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const { mutateAsync } = useOptimisticPositionUpdate(matchClubId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
-  const [currentQuarterOrder, setCurrentQuarterOrder] = useState(
-    Number(searchParams.get("quarter")) || 1,
-  );
+  const positionContext = usePositionContext();
+  const currentQuarterOrder = positionContext?.currentQuarterOrder ?? 1;
   const currentQuarter =
     matchClub?.quarters.find((quarter) => quarter.order === currentQuarterOrder) || null;
-  const [currentTeamId, setCurrentTeamId] = useState<string | null>(searchParams.get("teamId"));
-  const [isLoading, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
-  const query = usePositionSettingQuery(matchClubId);
+  const query = usePositionQuery(matchClubId, {
+    enabled: Boolean(matchClubId),
+  });
   const attendancesData = query.data;
+  const teamParamId = params.teamId ?? null;
 
-  /**
-   * 쿼터가 최대 쿼터보다 많으면 증가시킴
-   * @param quarter
-   */
-  const handleSetQuarter = (order: number) => {
-    startTransition(async () => {
-      const quarterId = matchClub?.quarters.find((quarter) => quarter.order === order)?.id;
-      if (!quarterId) {
-        if (!matchClub) return;
-        const maxOrder = matchClub.quarters.reduce((max, q) => {
-          return q.order > max ? q.order : max;
-        }, 0);
-        const response = await fetch("/api/quarters/new", {
-          method: "POST",
-          body: JSON.stringify({
-            matchClubId: matchClub.id,
-            order: maxOrder + 1,
-          }),
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!response.ok) {
-          return;
-        }
-        await matchClubQuery.refetch();
-      }
-      setCurrentQuarterOrder(order);
-    });
-  };
   const maxPlayers = 11;
   // 배정인원 list
+  const resolvedTeamId =
+    teamParamId ??
+    positionContext?.currentTeamId ??
+    matchClub?.teams?.[0]?.id ??
+    currentQuarter?.team1Id ??
+    null;
   const assigneds = attendancesData?.attendances
     .flatMap((attendance) =>
       attendance.assigneds.map((assigned) => ({
@@ -118,7 +99,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     .filter(
       (assigned) =>
         assigned.quarterId === currentQuarter?.id &&
-        (currentTeamId === null || assigned.teamId === currentTeamId),
+        (resolvedTeamId === null || assigned.teamId === resolvedTeamId),
     );
 
   const positions = typedEntries(PORMATION_POSITION_CLASSNAME).map(([position, { className }]) => {
@@ -186,7 +167,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
         (attendance) =>
           attendance.state === "NORMAL" &&
           !attendance.assigneds.some((assigned) => assigned.quarterId === currentQuarter?.id) &&
-          (currentTeamId === null || attendance.teamId === currentTeamId),
+          (resolvedTeamId === null || attendance.teamId === resolvedTeamId),
         // assigned.quarterId !== currentQuarter?.id && assigned.attendance.teamId === currentTeamId,
       )
       .sort((a, b) => {
@@ -285,7 +266,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               attendanceId: attendance.id,
               quarterId: currentQuarter.id,
               position: attendance.toPosition,
-              teamId: currentTeamId,
+              teamId: resolvedTeamId,
             })),
           ),
         });
@@ -293,25 +274,6 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
       }
     });
   };
-
-  useEffect(() => {
-    const quarterParam = Number(searchParams.get("quarter"));
-    if (!Number.isNaN(quarterParam) && quarterParam > 0) {
-      setCurrentQuarterOrder(quarterParam);
-    }
-    const teamParam = searchParams.get("teamId");
-    if (teamParam) {
-      setCurrentTeamId(teamParam);
-    } else if (!teamParam && !currentTeamId && matchClub?.teams?.length) {
-      setCurrentTeamId(matchClub.teams[0].id);
-    }
-  }, [searchParams, matchClub?.teams, currentTeamId]);
-
-  useEffect(() => {
-    if (!currentTeamId && matchClub?.teams?.length) {
-      setCurrentTeamId(matchClub.teams[0].id);
-    }
-  }, [matchClub?.teams, currentTeamId]);
 
   if (matchClubLoading || !matchClub) {
     return (
@@ -323,51 +285,17 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
 
   return (
     <>
-      <PositionSettingContext value={{ query, currentQuarter, currentTeamId, assigneds }}>
+      <PositionSettingContext
+        value={{ query, currentQuarter, currentTeamId: resolvedTeamId, assigneds }}
+      >
         <div className="space-y-4 flex flex-col gap-2">
-          <PositionToolbar
-            backTo={{ pathname: "../", search: `quarterOrder=${currentQuarter?.order}` }}
-            left={
-              currentTeamId ? (
-                <Select value={currentTeamId} onValueChange={setCurrentTeamId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="팀 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {matchClub.teams.map((team) => (
-                      <SelectItem key={team.id} value={team.id}>
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : null
-            }
-            right={
-              <Select
-                value={positionTemplate}
-                onValueChange={(v: PORMATION_TYPE) => setPositionTemplate(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="포지션 템플릿 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {POSITION_TEMPLATE_LIST.map((template) => (
-                    <SelectItem key={template} value={template}>
-                      {template}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            }
-          />
-          <QuarterStepper
+          {/* <QuarterStepper
             current={currentQuarterOrder}
             onPrev={() => setCurrentQuarterOrder((prev) => prev - 1)}
             onNext={() => handleSetQuarter(currentQuarterOrder + 1)}
             disablePrev={currentQuarterOrder === 1 || isLoading}
             disableNext={isLoading}
-          />
+          /> */}
           <section>
             <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
               <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />

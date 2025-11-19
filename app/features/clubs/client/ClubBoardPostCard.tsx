@@ -26,6 +26,8 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
     board?.clubId && board?.slug
       ? `/clubs/${board.clubId}/boards/${board.slug}/${post.id}`
       : `./${post.id}`;
+  const authorName = post.author?.name ?? "알 수 없는 사용자";
+  const authorImageUrl = post.author?.userImage?.url ?? "/images/user_empty.png";
 
   return (
     <Card className="w-full rounded-2xl shadow-sm border border-muted/40">
@@ -33,12 +35,12 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
         <div className="flex justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <Avatar className="size-7">
-              <AvatarImage src={post.author.userImage?.url || "/images/user_empty.png"} />
+              <AvatarImage src={authorImageUrl} />
               <AvatarFallback className="bg-primary-foreground">
                 <Loading />
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium text-foreground">{post.author.name}</span>
+            <span className="text-sm font-medium text-foreground">{authorName}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             {boardLink ? (

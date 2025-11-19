@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useAtomCallback } from "jotai/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { placeHistoryAtom } from "~/atoms";
 import { Button } from "~/components/ui/button";
@@ -35,8 +35,9 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
     enabled: Boolean(matchClubId),
   });
   const { toast } = useToast();
-  const match = useMemo(() => matchClubData?.matchSummary?.match ?? null, [matchClubData]);
+
   const matchClub = matchClubData?.matchClub ?? null;
+  const match = matchClub?.match ?? null;
   const [place, setPlace] = useState<IKakaoLocalType | null>(null);
   const [isTogglingSelf, setIsTogglingSelf] = useState(false);
   const { mutateAsync: saveMatch } = useSaveMatchMutation({ matchClubId });

@@ -13,12 +13,10 @@ export type PositionAssigned = {
 export function PositionBoard({
   headerLeft,
   headerRight,
-  settingButton,
   assigned,
 }: {
   headerLeft?: React.ReactNode;
   headerRight?: React.ReactNode;
-  settingButton?: React.ReactNode;
   assigned: PositionAssigned[];
 }) {
   return (
@@ -27,7 +25,6 @@ export function PositionBoard({
         <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
         {headerLeft}
         {headerRight}
-        {settingButton}
         {assigned.map((item) => (
           <MotionButton
             layoutId={item.id}

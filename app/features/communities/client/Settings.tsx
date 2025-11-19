@@ -19,7 +19,7 @@ export const Settings = ({
   editTo,
 }: {
   editTo: string;
-  post?: (Post & { author?: User & { userImage?: File | null } }) | null;
+  post?: (Post & { author?: (User & { userImage?: File | null }) | null }) | null;
 }) => {
   const user = useSession();
   const { revalidate } = useRevalidator();

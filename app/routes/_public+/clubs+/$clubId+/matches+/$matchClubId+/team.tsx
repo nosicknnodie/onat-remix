@@ -78,7 +78,9 @@ const TeamPage = (_props: ITeamPageProps) => {
     () =>
       teams.map((team) => ({
         ...team,
-        attendances: attendances.filter((attendance) => attendance.teamId === team.id),
+        attendances: attendances.filter(
+          (attendance) => attendance.teamId === team.id && attendance.isVote,
+        ),
       })),
     [attendances, teams],
   );
@@ -266,7 +268,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                       attendance?.mercenary?.user?.userImage?.url ||
                       "/images/user_empty.png"
                     }
-                    isChecked={!!attendance?.isCheck}
+                    isChecked={!!attendance?.isVote}
                     teams={teams.map((t) => ({ id: t.id, name: t.name }))}
                     currentTeamId={attendance?.teamId || null}
                     payload={{

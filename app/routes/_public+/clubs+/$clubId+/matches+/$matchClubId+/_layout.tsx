@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import { useEffect } from "react";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
-import { useSession } from "~/contexts";
 import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import {
   CheckManageDrawer,
@@ -31,7 +30,6 @@ interface IMatchClubIdLayoutProps {}
 
 const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const params = useParams();
-  const session = useSession();
   const location = useLocation();
   const queryClient = useQueryClient();
   const matchClubId = params.matchClubId;
@@ -69,7 +67,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.detail(matchClubId),
-            queryFn: async () => getJson(`/api/attendances?matchClubId=${matchClubId}`),
+            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/attendances`),
           })
           .catch(() => undefined),
       );
@@ -78,22 +76,6 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
           .prefetchQuery({
             queryKey: positionQueryKeys.quarters(matchClubId),
             queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/quarters`),
-          })
-          .catch(() => undefined),
-      );
-      tasks.push(
-        queryClient
-          .prefetchQuery({
-            queryKey: positionQueryKeys.settingAttendances(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/attendances`),
-          })
-          .catch(() => undefined),
-      );
-      tasks.push(
-        queryClient
-          .prefetchQuery({
-            queryKey: positionQueryKeys.settingMatchClub(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/setting`),
           })
           .catch(() => undefined),
       );
@@ -130,9 +112,8 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     void prefetchQueries();
   }, [matchClubId, clubId, queryClient]);
 
-  const matchSummary = matchClubQueryData?.matchSummary ?? null;
   const matchClub = matchClubQueryData?.matchClub;
-  const isLoading = isMatchClubLoading || !matchClub || !matchSummary;
+  const isLoading = isMatchClubLoading || !matchClub;
   if (isLoading) {
     return (
       <div className="py-10 flex justify-center">
@@ -140,15 +121,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
       </div>
     );
   }
-  const role = {
-    isPlayer: Boolean(membership),
-    isAdmin: Boolean(membership && (membership.role === "MANAGER" || membership.role === "MASTER")),
-    isMercenary: Boolean(
-      session?.id &&
-        matchClub.attendances?.some((attendance) => attendance.mercenary?.userId === session.id),
-    ),
-  } as const;
-  const match = matchSummary.match;
+  const match = matchClub.match;
   const base = `/clubs/${params.clubId}/matches/${params.matchClubId}`;
   const hasMatchMaster = permissions.includes("MATCH_MASTER");
   const hasMatchManage = permissions.includes("MATCH_MANAGE");
@@ -189,37 +162,33 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const items: ClubSubnavItem[] = [
     { label: "정보", href: base, active: location.pathname === base },
   ];
-  if (role.isPlayer || role.isMercenary) {
+  items.push({
+    label: "참석",
+    href: `${base}/attendance`,
+    active: location.pathname.startsWith(`${base}/attendance`),
+  });
+  if (matchClub?.isSelf) {
     items.push({
-      label: "참석",
-      href: `${base}/attendance`,
-      active: location.pathname.startsWith(`${base}/attendance`),
-    });
-    if (matchClub?.isSelf) {
-      items.push({
-        label: "팀",
-        href: `${base}/team`,
-        active: location.pathname.startsWith(`${base}/team`),
-      });
-    }
-    items.push({
-      label: "포지션",
-      href: `${base}/position`,
-      active: location.pathname.startsWith(`${base}/position`),
+      label: "팀",
+      href: `${base}/team`,
+      active: location.pathname.startsWith(`${base}/team`),
     });
   }
-  if (role.isPlayer) {
-    items.push({
-      label: "기록",
-      href: `${base}/record`,
-      active: location.pathname.startsWith(`${base}/record`),
-    });
-    items.push({
-      label: "평점",
-      href: `${base}/rating`,
-      active: location.pathname.startsWith(`${base}/rating`),
-    });
-  }
+  items.push({
+    label: "포지션",
+    href: `${base}/position`,
+    active: location.pathname.startsWith(`${base}/position`),
+  });
+  items.push({
+    label: "기록",
+    href: `${base}/record`,
+    active: location.pathname.startsWith(`${base}/record`),
+  });
+  items.push({
+    label: "평점",
+    href: `${base}/rating`,
+    active: location.pathname.startsWith(`${base}/rating`),
+  });
 
   return (
     <>

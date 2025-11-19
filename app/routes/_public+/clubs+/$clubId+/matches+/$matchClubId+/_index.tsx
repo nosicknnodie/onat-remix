@@ -14,6 +14,8 @@ import {
   useAttendanceMutation,
   useAttendanceQuery,
   useMatchClubQuery,
+  useRatingQuery,
+  useRecordQuery,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
 import { getToastForError } from "~/libs/errors";
@@ -72,9 +74,9 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
       enabled: Boolean(matchClubId),
     },
   );
-  const matchClubFromQuery = matchClubQueryData?.matchClub ?? null;
-  const matchSummary = matchClubQueryData?.matchSummary ?? null;
-  const matchStartDate = matchSummary?.match.stDate;
+  const matchClub = matchClubQueryData?.matchClub ?? null;
+  const match = matchClub?.match ?? null;
+  const matchStartDate = match?.stDate;
   const matchStart = matchStartDate ? dayjs(matchStartDate) : null;
   const now = dayjs();
   const attendanceVoteCloseTime = matchStart ? matchStart.subtract(1, "day") : null;
@@ -92,11 +94,13 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
     !now.isBefore(checkWindowOpen) &&
     !now.isAfter(checkWindowClose);
   const canShowRecordAndRating = recordVisibleTime !== null && !now.isBefore(recordVisibleTime);
-  const needsAttendanceInteraction =
+  const shouldLoadAttendanceData =
+    Boolean(matchClubId && clubId) && (showAttendanceList || isCheckWindow);
+  const canSubmitAttendance =
     Boolean(matchClubId && clubId) && (canVoteAttendance || isCheckWindow);
   const attendanceQuery = useAttendanceQuery(matchClubId, {
     clubId: clubId ?? "",
-    enabled: needsAttendanceInteraction,
+    enabled: shouldLoadAttendanceData,
   });
   const attendanceMutation = useAttendanceMutation(matchClubId, {
     clubId: clubId ?? "",
@@ -107,39 +111,40 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   const attendanceData =
     attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
   const attendanceMatchClub = attendanceData?.matchClub ?? null;
-  const matchClub = matchClubFromQuery;
+  const shouldLoadPostMatchData = canShowRecordAndRating && Boolean(matchClubId);
+  const { data: ratingData, isLoading: isRatingLoading } = useRatingQuery(matchClubId, {
+    enabled: shouldLoadPostMatchData,
+  });
+  const { data: recordData, isLoading: isRecordLoading } = useRecordQuery(matchClubId, {
+    enabled: shouldLoadPostMatchData,
+  });
   const currentStatus = attendanceData?.currentStatus ?? null;
   const currentChecked = attendanceData?.currentChecked ?? null;
-  const attendanceStats = useMemo(() => {
-    if (!matchSummary) return [];
-    return (matchSummary.match.matchClubs ?? [])
-      .flatMap((mc) => mc.attendances ?? [])
+  const ratingHighlights = useMemo(() => {
+    if (!ratingData) return [];
+    return ratingData.attendances
       .filter((attendance) => attendance.isVote)
       .map((attendance) => {
         const name = getAttendanceDisplayName(attendance) || "이름 미등록";
-        const scoreAverage =
-          attendance.evaluations && attendance.evaluations.length > 0
-            ? attendance.evaluations.reduce((sum, eva) => sum + (eva.score ?? 0), 0) /
-              attendance.evaluations.length
-            : null;
-        const likeCount = attendance.evaluations?.filter((eva) => eva.liked).length ?? 0;
-        const goalCount =
-          attendance.assigneds?.reduce((sum, assigned) => sum + (assigned.goals?.length ?? 0), 0) ??
-          0;
         const imageUrl =
           attendance.player?.user?.userImage?.url ??
           attendance.mercenary?.user?.userImage?.url ??
           null;
+        const scoreAverage =
+          attendance.evaluations.length > 0
+            ? attendance.evaluations.reduce((sum, eva) => sum + (eva.score ?? 0), 0) /
+              attendance.evaluations.length
+            : null;
+        const likeCount = attendance.evaluations.filter((eva) => eva.liked).length;
         return {
           id: attendance.id,
           name,
           imageUrl,
           scoreAverage,
           likeCount,
-          goalCount,
         };
       });
-  }, [matchSummary]);
+  }, [ratingData]);
   const attendanceList = useMemo(() => {
     if (!attendanceMatchClub) return [];
     return attendanceMatchClub.attendances
@@ -163,27 +168,48 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   }, [attendanceMatchClub]);
   const momHighlights = useMemo(() => {
     if (!canShowRecordAndRating) return [];
-    const target = attendanceStats.filter(
+    const target = ratingHighlights.filter(
       (att) => typeof att.scoreAverage === "number" && att.scoreAverage !== null,
     );
-    const limit = Math.max(0, Math.ceil(attendanceStats.length / 2));
+    const limit = Math.max(0, Math.ceil(ratingHighlights.length / 2));
     return target.sort((a, b) => (b.scoreAverage ?? 0) - (a.scoreAverage ?? 0)).slice(0, limit);
-  }, [attendanceStats, canShowRecordAndRating]);
+  }, [ratingHighlights, canShowRecordAndRating]);
   const likeHighlights = useMemo(() => {
     if (!canShowRecordAndRating) return [];
-    return attendanceStats
+    return ratingHighlights
       .filter((att) => (att.likeCount ?? 0) > 0)
       .sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0));
-  }, [attendanceStats, canShowRecordAndRating]);
+  }, [ratingHighlights, canShowRecordAndRating]);
   const goalHighlights = useMemo(() => {
-    if (!canShowRecordAndRating) return [];
-    return attendanceStats
-      .filter((att) => (att.goalCount ?? 0) > 0)
-      .sort((a, b) => (b.goalCount ?? 0) - (a.goalCount ?? 0));
-  }, [attendanceStats, canShowRecordAndRating]);
+    if (!canShowRecordAndRating || !recordData) return [];
+    const stats = new Map<
+      string,
+      { id: string; name: string; imageUrl?: string | null; goalCount: number }
+    >();
+    for (const quarter of recordData.quarters ?? []) {
+      for (const goal of quarter.goals ?? []) {
+        if (goal.isOwnGoal) continue;
+        const attendance = goal.assigned.attendance;
+        const name = getAttendanceDisplayName(attendance);
+        if (!name) continue;
+        const id = attendance.id;
+        const imageUrl =
+          attendance.player?.user?.userImage?.url ??
+          attendance.mercenary?.user?.userImage?.url ??
+          null;
+        const current = stats.get(id);
+        if (current) {
+          current.goalCount += 1;
+        } else {
+          stats.set(id, { id, name, imageUrl, goalCount: 1 });
+        }
+      }
+    }
+    return Array.from(stats.values()).sort((a, b) => b.goalCount - a.goalCount);
+  }, [recordData, canShowRecordAndRating]);
 
   const preMatchSummary = useMemo(() => {
-    const source = (attendanceMatchClub ?? matchClub) as {
+    const source = attendanceMatchClub as {
       attendances?: PreMatchAttendance[];
       club?: { players?: PreMatchPlayer[] };
     } | null;
@@ -238,9 +264,9 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
       });
 
     return { attend, absent, pending };
-  }, [attendanceMatchClub, matchClub]);
+  }, [attendanceMatchClub]);
 
-  if (isMatchClubLoading || !matchClub || !matchSummary) {
+  if (isMatchClubLoading || !matchClub || !match) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />
@@ -251,21 +277,19 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   const baseMatchHref = clubId && matchClubId ? `/clubs/${clubId}/matches/${matchClubId}` : "";
   const attendancePageHref = baseMatchHref ? `${baseMatchHref}/attendance` : "";
   const handleAttendanceVote = async (isVote: boolean) => {
-    if (!needsAttendanceInteraction || !canVoteAttendance) return;
+    if (!canSubmitAttendance || !canVoteAttendance) return;
     await attendanceMutation.mutateAsync({ isVote, isCheck: false });
   };
 
   const handleCheckIn = async () => {
-    if (!isCheckWindow || !needsAttendanceInteraction) return;
+    if (!isCheckWindow || !canSubmitAttendance) return;
     await attendanceMutation.mutateAsync({ isVote: true, isCheck: true });
   };
 
   return (
     <div className="space-y-6">
-      {matchSummary.match.description ? (
-        <p className="text-sm text-muted-foreground whitespace-pre-line">
-          {matchSummary.match.description}
-        </p>
+      {match?.description ? (
+        <p className="text-sm text-muted-foreground whitespace-pre-line">{match.description}</p>
       ) : null}
       <Separator orientation="horizontal" className="h-[1px]" />
       {showAttendanceList ? (
@@ -293,9 +317,14 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
         />
       ) : null}
 
-      {canShowRecordAndRating && (
-        <PostMatchSection moms={momHighlights} likes={likeHighlights} goals={goalHighlights} />
-      )}
+      {canShowRecordAndRating &&
+        (isRatingLoading || isRecordLoading ? (
+          <div className="py-6 flex justify-center">
+            <Loading />
+          </div>
+        ) : (
+          <PostMatchSection moms={momHighlights} likes={likeHighlights} goals={goalHighlights} />
+        ))}
     </div>
   );
 };

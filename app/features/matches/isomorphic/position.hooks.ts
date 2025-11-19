@@ -11,14 +11,11 @@ import type {
   PositionQueryData,
   PositionSettingContextValue,
   PositionSettingMatchClubData,
-  PositionSettingQueryData,
 } from "./position.types";
 
 export const positionQueryKeys = {
   detail: (matchClubId: string) => ["matchClub", matchClubId, "position", "attendances"] as const,
   quarters: (matchClubId: string) => ["matchClub", matchClubId, "position", "quarters"] as const,
-  settingAttendances: (matchClubId: string) =>
-    ["matchClub", matchClubId, "position", "setting", "attendances"] as const,
   settingMatchClub: (matchClubId: string) =>
     ["matchClub", matchClubId, "position", "setting", "matchClub"] as const,
 } as const;
@@ -37,7 +34,7 @@ export function usePositionQuery(matchClubId?: string, options?: UsePositionQuer
       if (!matchClubId) {
         throw new Error("matchClubId is required to fetch positions");
       }
-      return getJson<PositionQueryData>(`/api/attendances?matchClubId=${matchClubId}`);
+      return getJson<PositionQueryData>(`/api/matchClubs/${matchClubId}/position/attendances`);
     },
     enabled,
   });
@@ -62,38 +59,13 @@ export function useQuarterQuery(matchClubId?: string, options?: UseQuarterQueryO
     enabled,
   });
 }
-
-export const PositionContext = createContext<PositionContextValue>(null);
+export const PositionContext = createContext<PositionContextValue>({
+  currentQuarterOrder: 1,
+  currentTeamId: null,
+});
 
 export function usePositionContext() {
   return useContext(PositionContext);
-}
-
-type UsePositionSettingQueryOptions = {
-  enabled?: boolean;
-};
-
-export function usePositionSettingQuery(
-  matchClubId?: string,
-  options?: UsePositionSettingQueryOptions,
-) {
-  const enabled = options?.enabled ?? Boolean(matchClubId);
-  const queryKey = useMemo(
-    () => positionQueryKeys.settingAttendances(matchClubId ?? ""),
-    [matchClubId],
-  );
-  return useQuery<PositionSettingQueryData>({
-    queryKey,
-    queryFn: async () => {
-      if (!matchClubId) {
-        throw new Error("matchClubId is required to fetch attendances");
-      }
-      return getJson<PositionSettingQueryData>(
-        `/api/matchClubs/${matchClubId}/position/attendances`,
-      );
-    },
-    enabled,
-  });
 }
 
 type UsePositionSettingMatchClubQueryOptions = {
@@ -215,7 +187,7 @@ export function usePositionUpdate({ url, matchClubId }: PositionUpdateOptions) {
 
 export function useOptimisticPositionUpdate(matchClubId?: string) {
   const queryClient = useQueryClient();
-  const queryKey = matchClubId ? positionQueryKeys.settingAttendances(matchClubId) : null;
+  const positionKey = matchClubId ? positionQueryKeys.detail(matchClubId) : null;
 
   return useMutation({
     mutationFn: async (value: {
@@ -229,9 +201,9 @@ export function useOptimisticPositionUpdate(matchClubId?: string) {
       });
     },
     onMutate: async (_value) => {
-      if (!queryKey || !matchClubId) return undefined;
-      const oldData = queryClient.getQueryData<PositionSettingQueryData>(queryKey);
-      await queryClient.cancelQueries({ queryKey });
+      if (!positionKey || !matchClubId) return undefined;
+      const oldData = queryClient.getQueryData<PositionQueryData>(positionKey);
+      await queryClient.cancelQueries({ queryKey: positionKey });
       const currentData = oldData?.attendances.find((item) => item.id === _value.attendanceId);
       if (!currentData) return { oldData };
       const currentAssigned = currentData.assigneds.find((item) => item.id === _value.assignedId);
@@ -241,7 +213,7 @@ export function useOptimisticPositionUpdate(matchClubId?: string) {
       const toPosition = _value.toPosition;
       const quarterId = currentAssigned.quarterId;
 
-      queryClient.setQueryData<PositionSettingQueryData>(queryKey, {
+      queryClient.setQueryData<PositionQueryData>(positionKey, {
         attendances: (oldData?.attendances ?? []).map((item) => {
           const findOne = item.assigneds.find(
             (assigned) =>
@@ -273,12 +245,12 @@ export function useOptimisticPositionUpdate(matchClubId?: string) {
       return { oldData };
     },
     onError: (_err, _value, context) => {
-      if (!queryKey) return;
-      queryClient.setQueryData(queryKey, context?.oldData);
+      if (!positionKey) return;
+      queryClient.setQueryData(positionKey, context?.oldData);
     },
     onSettled: () => {
-      if (!queryKey) return;
-      queryClient.invalidateQueries({ queryKey });
+      if (!positionKey) return;
+      queryClient.invalidateQueries({ queryKey: positionKey });
     },
   });
 }
@@ -292,8 +264,8 @@ type AssignSlotInput = {
 
 export function usePositionAssignMutation(matchClubId?: string) {
   const queryClient = useQueryClient();
-  const settingKey = useMemo(
-    () => (matchClubId ? positionQueryKeys.settingAttendances(matchClubId) : null),
+  const positionKey = useMemo(
+    () => (matchClubId ? positionQueryKeys.detail(matchClubId) : null),
     [matchClubId],
   );
   const matchClubKey = useMemo(
@@ -305,8 +277,8 @@ export function usePositionAssignMutation(matchClubId?: string) {
       return putJson("/api/assigneds/slot", input);
     },
     onSuccess: async () => {
-      if (settingKey) {
-        await queryClient.invalidateQueries({ queryKey: settingKey });
+      if (positionKey) {
+        await queryClient.invalidateQueries({ queryKey: positionKey });
       }
       if (matchClubKey) {
         await queryClient.invalidateQueries({ queryKey: matchClubKey });
@@ -324,16 +296,12 @@ type DeleteAssignedInput = {
 
 export function usePositionAssignedDeleteMutation(matchClubId?: string) {
   const queryClient = useQueryClient();
-  const settingKey = useMemo(
-    () => (matchClubId ? positionQueryKeys.settingAttendances(matchClubId) : null),
+  const positionKey = useMemo(
+    () => (matchClubId ? positionQueryKeys.detail(matchClubId) : null),
     [matchClubId],
   );
   const matchClubKey = useMemo(
     () => (matchClubId ? positionQueryKeys.quarters(matchClubId) : null),
-    [matchClubId],
-  );
-  const boardKey = useMemo(
-    () => (matchClubId ? positionQueryKeys.detail(matchClubId) : null),
     [matchClubId],
   );
   return useMutation<unknown, unknown, DeleteAssignedInput>({
@@ -341,14 +309,11 @@ export function usePositionAssignedDeleteMutation(matchClubId?: string) {
       return del("/api/assigneds", { body: JSON.stringify(input) });
     },
     onSuccess: async () => {
-      if (settingKey) {
-        await queryClient.invalidateQueries({ queryKey: settingKey });
+      if (positionKey) {
+        await queryClient.invalidateQueries({ queryKey: positionKey });
       }
       if (matchClubKey) {
         await queryClient.invalidateQueries({ queryKey: matchClubKey });
-      }
-      if (boardKey) {
-        await queryClient.invalidateQueries({ queryKey: boardKey });
       }
     },
   });
@@ -361,11 +326,7 @@ type AttendanceStateUpdateInput = {
 
 export function usePositionAttendanceStateMutation(matchClubId?: string) {
   const queryClient = useQueryClient();
-  const settingKey = useMemo(
-    () => (matchClubId ? positionQueryKeys.settingAttendances(matchClubId) : null),
-    [matchClubId],
-  );
-  const boardKey = useMemo(
+  const positionKey = useMemo(
     () => (matchClubId ? positionQueryKeys.detail(matchClubId) : null),
     [matchClubId],
   );
@@ -375,11 +336,8 @@ export function usePositionAttendanceStateMutation(matchClubId?: string) {
       return putJson("/api/attendances", input);
     },
     onSuccess: async () => {
-      if (settingKey) {
-        await queryClient.invalidateQueries({ queryKey: settingKey });
-      }
-      if (boardKey) {
-        await queryClient.invalidateQueries({ queryKey: boardKey });
+      if (positionKey) {
+        await queryClient.invalidateQueries({ queryKey: positionKey });
       }
     },
   });
