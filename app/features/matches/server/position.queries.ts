@@ -87,6 +87,16 @@ export async function createQuarter(matchClubId: string, order: number) {
   });
 }
 
+export async function deleteQuarter(quarterId: string) {
+  return await prisma.$transaction(async (tx) => {
+    const quarter = await tx.quarter.findUnique({ where: { id: quarterId } });
+    if (!quarter) throw new Error("quarter not found");
+    await tx.assigned.deleteMany({ where: { quarterId } });
+    await tx.quarter.delete({ where: { id: quarterId } });
+    return quarter;
+  });
+}
+
 export async function createAssigned(data: {
   attendanceId: string;
   quarterId: string;

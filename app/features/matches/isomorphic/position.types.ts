@@ -1,6 +1,4 @@
 import type { Assigned, Attendance, File, Mercenary, Prisma, Team, User } from "@prisma/client";
-import type { UseQueryResult } from "@tanstack/react-query";
-
 export type PositionAttendance = Prisma.AttendanceGetPayload<{
   include: {
     assigneds: true;
@@ -79,12 +77,6 @@ export type PositionQueryData = {
 
 export type PositionContextValue = {
   currentQuarterOrder: number;
+  currentQuarter: PositionQuarterWithTeams | undefined;
   currentTeamId: string | null;
 };
-
-export type PositionSettingContextValue = {
-  query: UseQueryResult<PositionQueryData>;
-  currentQuarter: PositionQuarterWithTeams | null;
-  currentTeamId: string | null;
-  assigneds?: PositionAssignedWithAttendance[];
-} | null;

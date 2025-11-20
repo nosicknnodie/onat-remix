@@ -73,6 +73,15 @@ export async function createQuarter(matchClubId: string, order: number) {
   }
 }
 
+export async function deleteQuarter(quarterId: string) {
+  try {
+    await q.deleteQuarter(quarterId);
+    return { ok: true as const };
+  } catch (e) {
+    return { ok: false as const, message: (e as Error).message };
+  }
+}
+
 export async function createAssigneds(
   items: Array<{
     attendanceId: string;

@@ -2,18 +2,23 @@ import { useParams } from "@remix-run/react";
 import { useAtom } from "jotai/react";
 import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Preview } from "react-dnd-preview";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { DraggableChip, DropSpot, PositionSettingDrawer } from "~/features/matches/client";
 import {
-  PositionSettingContext,
   useMatchClubQuery,
   useOptimisticPositionUpdate,
   usePositionContext,
   usePositionQuery,
-  usePositionSettingMatchClubQuery,
 } from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
 import {
@@ -22,6 +27,7 @@ import {
   PORMATION_POSITION_CLASSNAME,
   PORMATION_POSITIONS,
   type PORMATION_TYPE,
+  POSITION_TEMPLATE_LIST,
   type POSITION_TYPE,
 } from "~/libs/const/position.const";
 import { typedEntries } from "~/libs/convert";
@@ -58,28 +64,40 @@ const POSITION_TEMPLATE = atomWithStorage<PORMATION_TYPE>("POSITION_TEMPLATE", "
 interface IPositionSettingPageProps {}
 
 const PositionSettingPage = (_props: IPositionSettingPageProps) => {
-  const [positionTemplate] = useAtom(POSITION_TEMPLATE);
+  const [positionTemplate, setPositionTemplate] = useAtom(POSITION_TEMPLATE);
   const params = useParams();
   const matchClubId = params.matchClubId!;
-  const matchClubQuery = usePositionSettingMatchClubQuery(matchClubId, {
-    enabled: Boolean(matchClubId),
-  });
+  const matchClubQuery = useMatchClubQuery(matchClubId, { enabled: Boolean(matchClubId) });
   const matchClub = matchClubQuery.data?.matchClub;
   const matchClubLoading = matchClubQuery.isLoading;
   const { mutateAsync } = useOptimisticPositionUpdate(matchClubId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
+  const [shouldShowDragPreview, setShouldShowDragPreview] = useState(false);
   const positionContext = usePositionContext();
   const currentQuarterOrder = positionContext?.currentQuarterOrder ?? 1;
   const currentQuarter =
     matchClub?.quarters.find((quarter) => quarter.order === currentQuarterOrder) || null;
+  const currentQuarterSummary = currentQuarter
+    ? { id: currentQuarter.id, order: currentQuarter.order }
+    : null;
   const [, startTransition] = useTransition();
 
   const query = usePositionQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
-  const attendancesData = query.data;
+  const attendances = query.data?.attendances ?? [];
   const teamParamId = params.teamId ?? null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isTouchDevice = "ontouchstart" in window;
+    const isSafari =
+      typeof navigator !== "undefined" &&
+      /safari/i.test(navigator.userAgent) &&
+      !/chrome/i.test(navigator.userAgent);
+    setShouldShowDragPreview(isTouchDevice || isSafari);
+  }, []);
 
   const maxPlayers = 11;
   // 배정인원 list
@@ -89,7 +107,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     matchClub?.teams?.[0]?.id ??
     currentQuarter?.team1Id ??
     null;
-  const assigneds = attendancesData?.attendances
+  const assigneds = attendances
     .flatMap((attendance) =>
       attendance.assigneds.map((assigned) => ({
         ...assigned,
@@ -162,7 +180,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     });
 
     // 동일팀에 이번쿼터에 없는 인원
-    const notAttendance = attendancesData?.attendances
+    const notAttendance = attendances
       .filter(
         (attendance) =>
           attendance.state === "NORMAL" &&
@@ -189,6 +207,13 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
       .slice(0, needed);
 
     const mutableEmptyPositions = [...emptyPositions];
+    const popNonGkPosition = () => {
+      const nonGkIndex = mutableEmptyPositions.findIndex((pos) => pos !== "GK");
+      if (nonGkIndex >= 0) {
+        return mutableEmptyPositions.splice(nonGkIndex, 1)[0];
+      }
+      return mutableEmptyPositions.shift();
+    };
     /**
      *  각 인원별로 포지션 배정 (선호포지션이 맞으면 먼저 선호 포지션으로 넣어준다.)
      *  1. 선호포지션이 정확히 맞으면 선호포지션으로 넣어준다.
@@ -252,8 +277,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
           }
         }
         // rest postion에서 첫번째 포지션으로 지정
-        const lastToPosition = mutableEmptyPositions.at(0);
-        mutableEmptyPositions.splice(0, 1);
+        const lastToPosition = popNonGkPosition();
         return { ...attendance, toPosition: lastToPosition };
       })
       .filter((attendance) => attendance.toPosition);
@@ -285,119 +309,127 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
 
   return (
     <>
-      <PositionSettingContext
-        value={{ query, currentQuarter, currentTeamId: resolvedTeamId, assigneds }}
-      >
-        <div className="space-y-4 flex flex-col gap-2">
-          {/* <QuarterStepper
-            current={currentQuarterOrder}
-            onPrev={() => setCurrentQuarterOrder((prev) => prev - 1)}
-            onNext={() => handleSetQuarter(currentQuarterOrder + 1)}
-            disablePrev={currentQuarterOrder === 1 || isLoading}
-            disableNext={isLoading}
-          /> */}
-          <section>
-            <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
-              <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
-              <div className="absolute top-0 right-0 z-20 p-2">
-                <Button variant="outline" onClick={handleAutoFormation}>
-                  자동배치
-                </Button>
-              </div>
-
-              {typeof window !== "undefined" && "ontouchstart" in window && (
-                <Preview
-                  generator={({ ref, style, item }) => {
-                    const assigned = item as {
-                      attendance: {
-                        player: {
-                          user: { name: string };
-                        };
-                        mercenary: { user: { name: string }; name: string };
-                      };
-                    };
-                    return (
-                      <div
-                        ref={ref as unknown as React.Ref<HTMLDivElement>}
-                        // className={cn(customClassName)}
-                        className="z-30 rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white overflow-hidden"
-                        style={style}
-                      >
-                        {assigned.attendance.player?.user?.name ||
-                          assigned.attendance.mercenary?.user?.name ||
-                          assigned.attendance.mercenary?.name ||
-                          ""}
-                      </div>
-                    );
-                  }}
-                />
-              )}
-              {positions.map((position) => {
-                return (
-                  <DropSpot
-                    layoutId={position.assigned?.id}
-                    key={[position.key, position.assigned?.id].join("-")}
-                    canDrop={({ item }: { item: typeof position.assigned }) => {
-                      return position.key !== item?.position;
-                    }}
-                    onDrop={handlePositionChange(position.key)}
-                    className={cn(
-                      "absolute z-20 md:-ml-8 md:-mt-8 max-md:-ml-6 max-md:-mt-6",
-                      position.className,
-                      {
-                        invisible: !(position.assigned || position.isFormation),
-                      },
-                    )}
-                  >
-                    {position.assigned ? (
-                      <>
-                        <DraggableChip
-                          item={position.assigned}
-                          variant={"ghost"}
-                          onClick={handlePositionClick(position.key)}
-                          className={({ isDragging }) => {
-                            return cn(
-                              "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
-                              {
-                                // ["outline outline-primary"]: position.assigned,
-                                "opacity-30": isDragging,
-                              },
-                            );
-                          }}
-                        >
-                          {position.assigned
-                            ? position.assigned.attendance.player?.user?.name ||
-                              position.assigned.attendance.mercenary?.user?.name ||
-                              position.assigned.attendance.mercenary?.name
-                            : position.key}
-                        </DraggableChip>
-                      </>
-                    ) : (
-                      <Button
-                        onClick={handlePositionClick(position.key)}
-                        variant={"ghost"}
-                        className={cn(
-                          "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs w-full h-full flex justify-center items-center bg-white shadow-md",
-                        )}
-                      >
-                        {position.key}
-                      </Button>
-                    )}
-                    {/* </PositionSettingDrawer> */}
-                  </DropSpot>
-                );
-              })}
-
-              <PositionSettingDrawer
-                matchClubId={matchClub.id}
-                positionType={selectedPositionType}
-                open={drawerOpen}
-                onOpenChange={setDrawerOpen}
-              />
+      <div className="space-y-4 flex flex-col gap-2">
+        <section>
+          <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
+            <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
+            <div className="absolute top-0 right-0 z-20 p-2 flex justify-end items-center gap-2">
+              <Select
+                value={positionTemplate}
+                onValueChange={(value) => setPositionTemplate(value as PORMATION_TYPE)}
+              >
+                <SelectTrigger className="w-32 bg-white">
+                  <SelectValue placeholder="포메이션" />
+                </SelectTrigger>
+                <SelectContent>
+                  {POSITION_TEMPLATE_LIST.map((template) => (
+                    <SelectItem key={template} value={template}>
+                      {template}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={handleAutoFormation}>
+                자동배치
+              </Button>
             </div>
-          </section>
-        </div>
-      </PositionSettingContext>
+
+            {shouldShowDragPreview && (
+              <Preview
+                generator={({ ref, style, item }) => {
+                  const assigned = item as {
+                    attendance: {
+                      player: {
+                        user: { name: string };
+                      };
+                      mercenary: { user: { name: string }; name: string };
+                    };
+                  };
+                  return (
+                    <div
+                      ref={ref as unknown as React.Ref<HTMLDivElement>}
+                      // className={cn(customClassName)}
+                      className="z-30 rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white overflow-hidden"
+                      style={style}
+                    >
+                      {assigned.attendance.player?.user?.name ||
+                        assigned.attendance.mercenary?.user?.name ||
+                        assigned.attendance.mercenary?.name ||
+                        ""}
+                    </div>
+                  );
+                }}
+              />
+            )}
+            {positions.map((position) => {
+              return (
+                <DropSpot
+                  layoutId={position.assigned?.id}
+                  key={[position.key, position.assigned?.id].join("-")}
+                  canDrop={({ item }: { item: typeof position.assigned }) => {
+                    return position.key !== item?.position;
+                  }}
+                  onDrop={handlePositionChange(position.key)}
+                  className={cn(
+                    "absolute z-20 md:-ml-8 md:-mt-8 max-md:-ml-6 max-md:-mt-6",
+                    position.className,
+                    {
+                      invisible: !(position.assigned || position.isFormation),
+                    },
+                  )}
+                >
+                  {position.assigned ? (
+                    <>
+                      <DraggableChip
+                        item={position.assigned}
+                        variant={"ghost"}
+                        onClick={handlePositionClick(position.key)}
+                        className={({ isDragging }) => {
+                          return cn(
+                            "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
+                            {
+                              // ["outline outline-primary"]: position.assigned,
+                              "opacity-30": isDragging,
+                            },
+                          );
+                        }}
+                      >
+                        {position.assigned
+                          ? position.assigned.attendance.player?.user?.name ||
+                            position.assigned.attendance.mercenary?.user?.name ||
+                            position.assigned.attendance.mercenary?.name
+                          : position.key}
+                      </DraggableChip>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={handlePositionClick(position.key)}
+                      variant={"ghost"}
+                      className={cn(
+                        "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs w-full h-full flex justify-center items-center bg-white shadow-md",
+                      )}
+                    >
+                      {position.key}
+                    </Button>
+                  )}
+                  {/* </PositionSettingDrawer> */}
+                </DropSpot>
+              );
+            })}
+
+            <PositionSettingDrawer
+              matchClubId={matchClub.id}
+              positionType={selectedPositionType}
+              assigneds={assigneds}
+              attendances={attendances}
+              currentTeamId={resolvedTeamId}
+              currentQuarter={currentQuarterSummary}
+              open={drawerOpen}
+              onOpenChange={setDrawerOpen}
+            />
+          </div>
+        </section>
+      </div>
     </>
   );
 };

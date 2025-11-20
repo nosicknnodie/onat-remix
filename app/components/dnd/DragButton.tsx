@@ -33,7 +33,8 @@ const DragButton = <TItem,>({ className, item, ...props }: IDragButtonProps<TIte
           // (previewRef as unknown as React.Ref<HTMLButtonElement>) ||
           dragRef as unknown as React.Ref<HTMLButtonElement>
         }
-        className={cn(customClassName)}
+        className={cn("cursor-pointer", customClassName)}
+        // style={{ cursor: isDragging ? "pointer" : undefined }}
         {...props}
       />
     </>

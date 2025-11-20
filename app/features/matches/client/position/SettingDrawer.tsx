@@ -15,7 +15,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -29,18 +28,29 @@ import {
 } from "~/components/ui/select";
 import {
   type PositionAssignedWithAttendance,
+  type PositionAttendance,
+  type PositionContextValue,
+  useMatchClubQuery,
   usePositionAssignedDeleteMutation,
   usePositionAssignMutation,
   usePositionAttendanceStateMutation,
-  usePositionSettingContext,
-  usePositionSettingMatchClubQuery,
 } from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
-import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
+import type { POSITION_TYPE } from "~/libs/const/position.const";
+import {
+  isAttackPosition,
+  isDefensePosition,
+  isMiddlePosition,
+  PORMATION_POSITION_CLASSNAME,
+} from "~/libs/const/position.const";
 
 interface IPositionSettingDrawerProps {
   matchClubId: string;
   positionType: PositionType;
+  assigneds?: PositionAssignedWithAttendance[];
+  attendances: PositionAttendance[];
+  currentTeamId: string | null;
+  currentQuarter: Pick<NonNullable<PositionContextValue["currentQuarter"]>, "id" | "order"> | null;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -48,30 +58,28 @@ interface IPositionSettingDrawerProps {
 export const PositionSettingDrawer = ({
   matchClubId,
   positionType,
+  assigneds,
+  attendances,
+  currentTeamId,
+  currentQuarter,
   open,
   onOpenChange,
 }: IPositionSettingDrawerProps) => {
-  const context = usePositionSettingContext();
-  if (!context) {
-    throw new Error("PositionSettingDrawer must be used within PositionSettingContext");
-  }
-  const { currentQuarter, currentTeamId, assigneds, query } = context;
-  const matchClubQuery = usePositionSettingMatchClubQuery(matchClubId, {
+  const matchClubQuery = useMatchClubQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
   const assignMutation = usePositionAssignMutation(matchClubId);
   const deleteMutation = usePositionAssignedDeleteMutation(matchClubId);
   const attendanceStateMutation = usePositionAttendanceStateMutation(matchClubId);
-  const teams = matchClubQuery.data?.matchClub.teams ?? [];
-  const quarters = matchClubQuery.data?.matchClub.quarters ?? [];
+  const teams = matchClubQuery.data?.matchClub?.teams ?? [];
+  const quarters = matchClubQuery.data?.matchClub?.quarters ?? [];
   const assigned = assigneds?.find(
     (a) =>
       a.quarterId === currentQuarter?.id &&
       a.teamId === currentTeamId &&
       a.position === positionType,
   );
-  const attendances = query.data?.attendances ?? [];
-  const [teamId, setTeamId] = useState(currentTeamId);
+  const [teamId, setTeamId] = useState<string | null>(currentTeamId);
 
   const attendancesData = attendances
     ?.filter(
@@ -134,6 +142,7 @@ export const PositionSettingDrawer = ({
   const isMutating = assignMutation.isPending || deleteMutation.isPending;
   const isCancelPending = deleteMutation.isPending;
   const isStatePending = attendanceStateMutation.isPending;
+  const previewCoords = getPositionPreviewCoordinates(positionType);
 
   return (
     <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
@@ -148,14 +157,28 @@ export const PositionSettingDrawer = ({
           </DrawerDescription>
         </DrawerHeader>
         <div className="p-4 space-y-2">
+          <div className="w-full max-w-sm mx-auto">
+            <div className="relative w-full aspect-[3/2] rounded-xl border bg-muted">
+              <div className="absolute inset-0 bg-[url('/images/test.svg')] bg-cover bg-center opacity-70 rounded-xl" />
+              <div
+                className="absolute flex flex-col items-center gap-1 -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${previewCoords.left}%`, top: `${previewCoords.top}%` }}
+              >
+                <span className="text-xs font-medium text-muted-foreground">현재 포지션</span>
+                <div className="rounded-full px-3 py-2 text-xs font-semibold bg-white shadow">
+                  {positionType}
+                </div>
+              </div>
+            </div>
+          </div>
           {metaLoading && (
             <div className="flex justify-center py-6">
               <Loading />
             </div>
           )}
-          {assigned && (
-            <>
-              <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
+          <div className="space-y-2">
+            <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
+            {assigned ? (
               <ul className="divide-y divide-gray-200">
                 <PositionSettingRowItem
                   attendance={assigned.attendance}
@@ -170,8 +193,12 @@ export const PositionSettingDrawer = ({
                   isCancelPending={isCancelPending}
                 />
               </ul>
-            </>
-          )}
+            ) : (
+              <div className="border rounded-md p-4 text-sm text-muted-foreground text-center">
+                현재 위치에 배정된 선수가 없습니다.
+              </div>
+            )}
+          </div>
           <div className="flex justify-between items-center">
             <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
             {currentTeamId && (
@@ -241,6 +268,10 @@ const PositionSettingRowItem = ({
     "";
   const assigneds = attendance.assigneds;
   const state = { NORMAL: "기용가능", EXCUSED: "불참", RETIRED: "리타이어" }[attendance.state];
+  const handleCancelAssigned = () => {
+    if (!isAssigned || !onCancelAssigned) return;
+    void onCancelAssigned();
+  };
   return (
     <li className={cn("flex flex-col gap-1 p-2 rounded-md", { "bg-green-50": isAssigned })}>
       <div className={cn("flex items-center gap-2")}>
@@ -259,7 +290,7 @@ const PositionSettingRowItem = ({
             {name}
           </span>
         </div>
-        {isAssigned && (
+        {/* {isAssigned && (
           <span
             className={cn(
               "text-xs px-2 py-1 rounded min-w-12 text-center flex justify-center bg-green-500 text-white",
@@ -268,7 +299,7 @@ const PositionSettingRowItem = ({
           >
             {isLoading ? <Loading size={12} className="text-white text-center" /> : "배정됨"}
           </span>
-        )}
+        )} */}
         {!isAssigned && attendance.state === "NORMAL" && (
           <Button
             size="sm"
@@ -278,6 +309,17 @@ const PositionSettingRowItem = ({
             className="text-xs px-2 py-0.5 h-6 rounded min-w-12 text-center flex justify-center"
           >
             배정하기
+          </Button>
+        )}
+        {isAssigned && onCancelAssigned && (
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleCancelAssigned}
+            disabled={isCancelPending}
+            className="text-xs px-2 py-0.5 h-6 rounded min-w-12 text-center flex justify-center"
+          >
+            {isCancelPending ? <Loading size={12} className="text-white" /> : "배정취소"}
           </Button>
         )}
         {!isAssigned && attendance.state !== "NORMAL" && (
@@ -290,10 +332,8 @@ const PositionSettingRowItem = ({
           </span>
         )}
         <Action
-          isAssigned={isAssigned}
           attendance={attendance}
           onChangeState={onChangeState}
-          onCancelAssigned={onCancelAssigned}
           isStateMutating={isStateMutating}
           isCancelPending={isCancelPending}
         />
@@ -325,19 +365,15 @@ const PositionSettingRowItem = ({
 };
 
 interface IActionProps {
-  isAssigned: boolean;
   attendance: PositionAssignedWithAttendance["attendance"];
   onChangeState?: (state: AttendanceState) => void;
-  onCancelAssigned?: () => void;
   isStateMutating?: boolean;
   isCancelPending?: boolean;
 }
 
 const Action = ({
-  isAssigned,
   attendance,
   onChangeState,
-  onCancelAssigned,
   isStateMutating = false,
   isCancelPending = false,
 }: IActionProps) => {
@@ -352,11 +388,6 @@ const Action = ({
     onChangeState(state);
   };
 
-  const handleCancelAssigned = () => {
-    if (!isAssigned || !onCancelAssigned) return;
-    void onCancelAssigned();
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -366,11 +397,7 @@ const Action = ({
           disabled={isStateMutating || isCancelPending}
         >
           <span className="sr-only">Open menu</span>
-          {isStateMutating || isCancelPending ? (
-            <Loading />
-          ) : (
-            <DotsHorizontalIcon className="h-4 w-4" />
-          )}
+          {isStateMutating ? <Loading /> : <DotsHorizontalIcon className="h-4 w-4" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -397,15 +424,16 @@ const Action = ({
         >
           리타이어
         </DropdownMenuCheckboxItem>
-        {isAssigned && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleCancelAssigned} className="text-red-500">
-              배정취소
-            </DropdownMenuItem>
-          </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
+
+function getPositionPreviewCoordinates(position: POSITION_TYPE) {
+  const targetClass = PORMATION_POSITION_CLASSNAME[position]?.className ?? "";
+  const leftMatch = targetClass.match(/left-\[(\d+(?:\.\d+)?)%]/);
+  const topMatch = targetClass.match(/top-\[(\d+(?:\.\d+)?)%]/);
+  const left = leftMatch ? Number(leftMatch[1]) : 50;
+  const top = topMatch ? Number(topMatch[1]) : 50;
+  return { left, top };
+}

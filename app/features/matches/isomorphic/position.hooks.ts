@@ -9,7 +9,6 @@ import type {
   PositionContextValue,
   PositionQuarterData,
   PositionQueryData,
-  PositionSettingContextValue,
   PositionSettingMatchClubData,
 } from "./position.types";
 
@@ -61,6 +60,7 @@ export function useQuarterQuery(matchClubId?: string, options?: UseQuarterQueryO
 }
 export const PositionContext = createContext<PositionContextValue>({
   currentQuarterOrder: 1,
+  currentQuarter: undefined,
   currentTeamId: null,
 });
 
@@ -341,10 +341,4 @@ export function usePositionAttendanceStateMutation(matchClubId?: string) {
       }
     },
   });
-}
-
-export const PositionSettingContext = createContext<PositionSettingContextValue>(null);
-
-export function usePositionSettingContext() {
-  return useContext(PositionSettingContext);
 }

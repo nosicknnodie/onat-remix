@@ -1,16 +1,14 @@
-import { useNavigate, useParams, useRouteLoaderData } from "@remix-run/react";
+import { useNavigate, useParams } from "@remix-run/react";
 import { useEffect } from "react";
 import { Loading } from "~/components/Loading";
 import { type PositionAssigned, PositionBoard } from "~/features/matches/client";
 import {
   usePositionContext,
   usePositionQuery,
-  usePositionUpdate,
   useQuarterQuery,
   useTeamQuery,
 } from "~/features/matches/isomorphic";
 import { PORMATION_POSITION_CLASSNAME } from "~/libs";
-import type { loader as rootLoader } from "~/root";
 
 export const handle = {
   breadcrumb: () => {
@@ -20,7 +18,6 @@ export const handle = {
 interface IPositionPageProps {}
 
 const PositionPage = (_props: IPositionPageProps) => {
-  const rootData = useRouteLoaderData<typeof rootLoader>("root");
   const params = useParams();
   const navigate = useNavigate();
 
@@ -52,12 +49,6 @@ const PositionPage = (_props: IPositionPageProps) => {
       navigate(teamResponse.redirectTo);
     }
   }, [navigate, teamResponse]);
-  const wsUrl =
-    rootData?.env.WS_SERVER_URL && currentQuarter?.id
-      ? `${rootData?.env.WS_SERVER_URL}/position?id=${currentQuarter.id}`
-      : null;
-  usePositionUpdate({ url: wsUrl, matchClubId: matchClub?.id });
-
   const isLoadingQuarters = quarterQuery.isLoading || !matchClub;
   if (isLoadingQuarters) {
     return (

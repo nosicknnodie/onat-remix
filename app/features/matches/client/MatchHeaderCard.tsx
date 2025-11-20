@@ -122,7 +122,7 @@ export const MatchHeaderCard = ({
         </div>
         {headerTabs ? <div className="-mb-2 pt-1">{headerTabs}</div> : null}
       </CardHeader>
-      <CardContent className="space-y-6 p-2 pt-6">{children}</CardContent>
+      <CardContent className="space-y-2 p-2 pt-2">{children}</CardContent>
       <CardFooter className="flex items-center gap-4 p-2">
         <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-sm">
           <FaRegComment className="text-muted-foreground" />
