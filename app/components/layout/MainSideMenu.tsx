@@ -66,6 +66,7 @@ const MainSideMenu = () => {
     // 사실상 세션 동안 고정
     staleTime: Infinity,
     gcTime: Infinity,
+    enabled: Boolean(user),
 
     // 자동 리페치 막기
     refetchOnWindowFocus: false,
@@ -234,165 +235,169 @@ const MainSideMenu = () => {
         </SidebarHeader>
         <SidebarSeparator className="mt-4" />
         <SidebarContent className="pt-3">
-          <SidebarGroup>
-            <SidebarGroupLabel>내 정보</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => handleMenuClick("/dashboard")}
-                    isActive={location.pathname.startsWith("/dashboard")}
-                  >
-                    <HiOutlineSquares2X2 />
-                    <span className="text-sm">대시보드</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => handleMenuClick("/settings/edit")}
-                    isActive={location.pathname.startsWith("/settings/edit")}
-                  >
-                    <HiOutlineInformationCircle />
-                    <span className="text-sm">회원정보 수정</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup>
-            <SidebarGroupLabel>나의 클럽</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {isClubsLoading && (
-                  <Fragment>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton>
-                        <Skeleton className="h-full w-full" />
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton>
-                        <Skeleton className="h-full w-full" />
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </Fragment>
-                )}
-                {!isClubsLoading && clubs.length === 0 && (
+          {!!user && (
+            <SidebarGroup>
+              <SidebarGroupLabel>내 정보</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton disabled className="justify-start">
-                      <MdGroups2 />
-                      가입한 클럽이 없습니다.
+                    <SidebarMenuButton
+                      onClick={() => handleMenuClick("/dashboard")}
+                      isActive={location.pathname.startsWith("/dashboard")}
+                    >
+                      <HiOutlineSquares2X2 />
+                      <span className="text-sm">대시보드</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )}
-                {!isClubsLoading &&
-                  clubs.map((club) => {
-                    const baseUrl = `/clubs/${club.id}`;
-                    const isActive =
-                      selectedClub?.id === club.id || location.pathname.startsWith(baseUrl);
-                    const membership =
-                      clubLayoutData?.club?.id === club.id
-                        ? clubLayoutData.player
-                        : club.membership;
-                    const isJoined = !!membership;
-                    const permissionInfo = membership
-                      ? clubViewPermissionMap.get(membership.id)
-                      : undefined;
-                    if (membership && permissionInfo?.hasClubView === false) {
-                      return null;
-                    }
-                    // const isAdmin = membership?.role === "MANAGER" || membership?.role === "MASTER";
-                    const subItems = [
-                      {
-                        label: "정보",
-                        url: baseUrl,
-                        isActive: location.pathname === baseUrl,
-                        visible: true,
-                        icon: HiOutlineInformationCircle,
-                      },
-                      {
-                        label: "게시판",
-                        url: `${baseUrl}/boards`,
-                        isActive: location.pathname.startsWith(`${baseUrl}/boards`),
-                        visible: isJoined,
-                        icon: HiOutlineNewspaper,
-                      },
-                      {
-                        label: "매치",
-                        url: `${baseUrl}/matches`,
-                        isActive: location.pathname.startsWith(`${baseUrl}/matches`),
-                        visible: isJoined,
-                        icon: TbSoccerField,
-                      },
-                      {
-                        label: "멤버",
-                        url: `${baseUrl}/members/approved`,
-                        isActive: location.pathname.startsWith(`${baseUrl}/members`),
-                        visible: isJoined,
-                        icon: HiOutlineUsers,
-                      },
-                      {
-                        label: "용병",
-                        url: `${baseUrl}/mercenaries`,
-                        isActive: location.pathname.startsWith(`${baseUrl}/mercenaries`),
-                        visible: isJoined,
-                        icon: HiOutlineUsers,
-                      },
-                    ].filter((item) => item.visible);
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => handleMenuClick("/settings/edit")}
+                      isActive={location.pathname.startsWith("/settings/edit")}
+                    >
+                      <HiOutlineInformationCircle />
+                      <span className="text-sm">회원정보 수정</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
 
-                    return (
-                      <Fragment key={club.id}>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            onClick={() => handleClubClick(club.id)}
-                            isActive={isActive}
-                            className="justify-start"
-                          >
-                            <MdGroups2 />
-                            <span className="flex-1 truncate">{club.name}</span>
-                          </SidebarMenuButton>
-                          {club.id === selectedClub?.id && joinedClubs.length > 0 && (
-                            <DialogTrigger asChild>
-                              <SidebarMenuAction asChild>
-                                <button
-                                  type="button"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                  }}
-                                  className="flex size-6 items-center justify-center rounded-md text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                >
-                                  <HiOutlineArrowsUpDown className="h-4 w-4" />
-                                </button>
-                              </SidebarMenuAction>
-                            </DialogTrigger>
-                          )}
-                        </SidebarMenuItem>
-                        {isActive &&
-                          subItems.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                              <SidebarMenuItem key={item.url}>
-                                <SidebarMenuButton
-                                  onClick={() => handleMenuClick(item.url)}
-                                  isActive={item.isActive}
-                                  className="justify-start pl-8"
-                                  size="sm"
-                                >
-                                  <Icon
-                                    className={`h-4 w-4 ${item.isActive ? "" : "text-muted-foreground"}`}
-                                  />
-                                  <span>{item.label}</span>
-                                </SidebarMenuButton>
-                              </SidebarMenuItem>
-                            );
-                          })}
-                      </Fragment>
-                    );
-                  })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {!!user && (
+            <SidebarGroup>
+              <SidebarGroupLabel>나의 클럽</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {isClubsLoading && (
+                    <Fragment>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <Skeleton className="h-full w-full" />
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <Skeleton className="h-full w-full" />
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </Fragment>
+                  )}
+                  {!isClubsLoading && clubs.length === 0 && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton disabled className="justify-start">
+                        <MdGroups2 />
+                        가입한 클럽이 없습니다.
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                  {!isClubsLoading &&
+                    clubs.map((club) => {
+                      const baseUrl = `/clubs/${club.id}`;
+                      const isActive =
+                        selectedClub?.id === club.id || location.pathname.startsWith(baseUrl);
+                      const membership =
+                        clubLayoutData?.club?.id === club.id
+                          ? clubLayoutData.player
+                          : club.membership;
+                      const isJoined = !!membership;
+                      const permissionInfo = membership
+                        ? clubViewPermissionMap.get(membership.id)
+                        : undefined;
+                      if (membership && permissionInfo?.hasClubView === false) {
+                        return null;
+                      }
+                      // const isAdmin = membership?.role === "MANAGER" || membership?.role === "MASTER";
+                      const subItems = [
+                        {
+                          label: "정보",
+                          url: baseUrl,
+                          isActive: location.pathname === baseUrl,
+                          visible: true,
+                          icon: HiOutlineInformationCircle,
+                        },
+                        {
+                          label: "게시판",
+                          url: `${baseUrl}/boards`,
+                          isActive: location.pathname.startsWith(`${baseUrl}/boards`),
+                          visible: isJoined,
+                          icon: HiOutlineNewspaper,
+                        },
+                        {
+                          label: "매치",
+                          url: `${baseUrl}/matches`,
+                          isActive: location.pathname.startsWith(`${baseUrl}/matches`),
+                          visible: isJoined,
+                          icon: TbSoccerField,
+                        },
+                        {
+                          label: "멤버",
+                          url: `${baseUrl}/members/approved`,
+                          isActive: location.pathname.startsWith(`${baseUrl}/members`),
+                          visible: isJoined,
+                          icon: HiOutlineUsers,
+                        },
+                        {
+                          label: "용병",
+                          url: `${baseUrl}/mercenaries`,
+                          isActive: location.pathname.startsWith(`${baseUrl}/mercenaries`),
+                          visible: isJoined,
+                          icon: HiOutlineUsers,
+                        },
+                      ].filter((item) => item.visible);
+
+                      return (
+                        <Fragment key={club.id}>
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              onClick={() => handleClubClick(club.id)}
+                              isActive={isActive}
+                              className="justify-start"
+                            >
+                              <MdGroups2 />
+                              <span className="flex-1 truncate">{club.name}</span>
+                            </SidebarMenuButton>
+                            {club.id === selectedClub?.id && joinedClubs.length > 0 && (
+                              <DialogTrigger asChild>
+                                <SidebarMenuAction asChild>
+                                  <button
+                                    type="button"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                    }}
+                                    className="flex size-6 items-center justify-center rounded-md text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                  >
+                                    <HiOutlineArrowsUpDown className="h-4 w-4" />
+                                  </button>
+                                </SidebarMenuAction>
+                              </DialogTrigger>
+                            )}
+                          </SidebarMenuItem>
+                          {isActive &&
+                            subItems.map((item) => {
+                              const Icon = item.icon;
+                              return (
+                                <SidebarMenuItem key={item.url}>
+                                  <SidebarMenuButton
+                                    onClick={() => handleMenuClick(item.url)}
+                                    isActive={item.isActive}
+                                    className="justify-start pl-8"
+                                    size="sm"
+                                  >
+                                    <Icon
+                                      className={`h-4 w-4 ${item.isActive ? "" : "text-muted-foreground"}`}
+                                    />
+                                    <span>{item.label}</span>
+                                  </SidebarMenuButton>
+                                </SidebarMenuItem>
+                              );
+                            })}
+                        </Fragment>
+                      );
+                    })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
 
           <SidebarGroup>
             <SidebarGroupLabel>전체</SidebarGroupLabel>

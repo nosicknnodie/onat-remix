@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "@remix-run/react";
+import { useEffect } from "react";
 import { cn } from "~/libs";
 
 export const handle = { breadcrumb: "회원정보 수정" };
@@ -6,6 +7,9 @@ export const handle = { breadcrumb: "회원정보 수정" };
 interface ILayoutProps {}
 
 const Layout = (_props: ILayoutProps) => {
+  useEffect(() => {
+    document.title = `ONSOA | 회원정보 수정`;
+  }, []);
   return (
     <>
       <div className="flex flex-col w-full ">

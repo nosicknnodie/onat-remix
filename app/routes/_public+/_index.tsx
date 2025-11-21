@@ -1,19 +1,28 @@
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
+import DashBoardPage from "./dashboard";
 
+export const handle = {
+  breadcrumb: "홈",
+};
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
 
-  if (user) {
-    return redirect("/dashboard"); // 로그인 됐으면 대시보드로 리디렉트
-  }
-  return null;
+  // if (user) {
+  //   return redirect("/dashboard"); // 로그인 됐으면 대시보드로 리디렉트
+  // }
+  return { user };
 };
 
 export default function Index() {
+  const loaderData = useLoaderData<typeof loader>();
+  const user = loaderData.user;
+  if (user) {
+    return <DashBoardPage />;
+  }
   return (
     <>
       <main

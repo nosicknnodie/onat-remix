@@ -163,7 +163,7 @@ const Layout = (_props: ILayoutProps) => {
 
       await Promise.all(tasks);
     };
-
+    document.title = `ONSOA | ${club.name}`;
     void prefetch();
     return () => controller.abort();
   }, [club, player, queryClient]);

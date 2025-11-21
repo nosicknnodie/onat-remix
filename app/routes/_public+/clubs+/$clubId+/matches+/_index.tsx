@@ -1,9 +1,10 @@
 import { Link, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useCallback, useMemo } from "react";
-import { HiClock, HiHome, HiLocationMarker } from "react-icons/hi";
+import { HiClock, HiLocationMarker } from "react-icons/hi";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { ClubPermissionGate } from "~/features/clubs/client";
@@ -90,16 +91,14 @@ const MatchesPage = (_props: IMatchesPageProps) => {
                       {match.description}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2"></div>
+                  <Badge variant={matchClub.isSelf ? "secondary" : "default"} className="min-w-14">
+                    {matchClub.isSelf ? "자체전" : "매치전"}
+                  </Badge>
                 </CardHeader>
                 <CardContent className="text-sm space-y-2 text-muted-foreground">
                   <p className="flex items-center gap-2">
                     <HiLocationMarker className="text-base text-primary" />
                     <span className="text-foreground">{match.placeName}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiHome className="text-base text-primary" />
-                    <span className="text-foreground">{match.address}</span>
                   </p>
                   <p className="flex items-center gap-2">
                     <HiClock className="text-base text-primary" />
