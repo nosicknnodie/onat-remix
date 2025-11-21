@@ -407,21 +407,12 @@ const MainSideMenu = () => {
                     공개 클럽
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => handleMenuClick("/matches")}
-                    isActive={location.pathname.startsWith("/matches")}
-                  >
-                    <TbSoccerField />
-                    공개 매치
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel>커뮤니티</SidebarGroupLabel>
+            <SidebarGroupLabel>Notification</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {!isLoading &&
@@ -463,7 +454,7 @@ const MainSideMenu = () => {
           <SidebarContent>
             <div className={cn("text-xs text-muted-foreground leading-relaxed", { hidden: !open })}>
               <p className="font-semibold">© {new Date().getFullYear()} ONSOA</p>
-              <p className="truncate text-xs">함께 만드는 축구 커뮤니티</p>
+              <p className="truncate text-xs">함께 만드는 축구 매니저</p>
             </div>
           </SidebarContent>
         </SidebarFooter>
