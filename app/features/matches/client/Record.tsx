@@ -9,26 +9,61 @@ export function QuarterRecord({
   isSameTeam2,
   team1Content,
   team2Content,
-  RightDrawer,
+  Dialog,
 }: {
   end?: boolean;
   isSameTeam1?: boolean;
   isSameTeam2?: boolean;
   team1Content?: React.ReactNode;
   team2Content?: React.ReactNode;
-  quarter: { id: string; order: number; team1?: Team | null; team2?: Team | null };
-  RightDrawer: (props: { quarterId: string; children: React.ReactNode }) => React.ReactElement;
+  quarter: {
+    id: string;
+    order: number;
+    matchClubId: string;
+    team1?: Team | null;
+    team2?: Team | null;
+  };
+  Dialog: (props: {
+    quarter: {
+      id: string;
+      order: number;
+      matchClubId: string;
+      team1?: Team | null;
+      team2?: Team | null;
+    };
+    team?: Team | null;
+    children: React.ReactNode;
+  }) => React.ReactElement;
 }) {
   return (
     <div className="flex justify-between relative w-full">
-      <RightDrawer quarterId={quarter.id}>
-        <Button
-          variant="ghost"
-          className="absolute z-20 top-4 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-primary text-white font-semibold drop-shadow-md rounded-full w-8 h-8 text-xs flex items-center justify-center"
-        >
-          {quarter.order}
-        </Button>
-      </RightDrawer>
+      <div className="absolute z-20 top-4 left-1/2 -translate-y-1/2 -translate-x-1/2 text-white font-semibold h-8 text-xs flex items-center justify-center gap-2">
+        <Dialog quarter={quarter} team={quarter.team1}>
+          <Button
+            variant="ghost"
+            className="bg-primary rounded-l-full w-12 translate-x-4"
+            size="sm"
+            disabled={!quarter.team1}
+          >
+            +
+          </Button>
+        </Dialog>
+        <div className="rounded-full z-20 bg-white w-10 h-10 flex justify-center items-center">
+          <div className="bg-primary w-8 h-8 flex items-center justify-center rounded-full">
+            {quarter.order}
+          </div>
+        </div>
+        <Dialog quarter={quarter} team={quarter.team2}>
+          <Button
+            variant="ghost"
+            className="bg-primary rounded-r-full w-12 -translate-x-4"
+            size="sm"
+            disabled={!quarter.team2}
+          >
+            +
+          </Button>
+        </Dialog>
+      </div>
       {!isSameTeam1 && (
         <div className="absolute top-4 left-1/2 -translate-x-full -translate-y-1/2 flex items-center justify-center pr-16 font-semibold drop-shadow-sm">
           {quarter.team1?.name}

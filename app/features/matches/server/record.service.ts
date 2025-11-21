@@ -1,7 +1,7 @@
 import * as q from "./record.queries";
 
 export async function getRecordPageData(matchClubId: string) {
-  const quarters = await q.getQuartersWithGoals(matchClubId);
+  const quarters = await q.getQuartersWithRecords(matchClubId);
   return { quarters } as const;
 }
 
@@ -11,18 +11,18 @@ export async function getQuarterDetail(quarterId: string) {
 }
 
 export async function createGoal(input: {
-  assignedId: string;
-  assistAssignedId?: string;
+  attendanceId: string;
+  assistAttendanceId?: string;
   teamId?: string;
   quarterId: string;
   isOwnGoal?: boolean;
   goalType?: import("@prisma/client").GoalType;
 }) {
-  await q.createGoal(input);
+  await q.createRecord(input);
   return { ok: true as const };
 }
 
 export async function deleteGoal(id: string) {
-  await q.deleteGoal(id);
+  await q.deleteRecord(id);
   return { ok: true as const };
 }

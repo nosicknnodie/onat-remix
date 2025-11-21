@@ -26,7 +26,18 @@ export type AttendanceRecord = {
   createdAt?: string | Date;
   updatedAt?: string | Date;
   evaluations?: Array<{ score?: number | null; liked?: boolean | null }>;
-  assigneds?: Array<{ goals?: Array<unknown> | null }>;
+  assigneds?: Array<{
+    id: string;
+    quarterId: string;
+    teamId?: string | null;
+    goals?: Array<unknown> | null;
+  }>;
+  records?: Array<{
+    id: string;
+    quarterId: string;
+    teamId?: string | null;
+    isOwnGoal: boolean;
+  }>;
   playerId: string | null;
   mercenaryId: string | null;
   teamId?: string | null;

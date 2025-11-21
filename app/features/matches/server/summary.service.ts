@@ -49,9 +49,7 @@ function buildMomCandidate(
     (sum, evaluation) => sum + (evaluation.liked ? 1 : 0),
     0,
   );
-  const goalCount = attendance.assigneds.reduce((sum, assigned) => {
-    return sum + assigned.goals.filter((goal) => !goal.isOwnGoal).length;
-  }, 0);
+  const goalCount = attendance.records.filter((goal) => !goal.isOwnGoal).length;
 
   if (scoreAverage === null && likeCount === 0 && goalCount === 0) {
     return null;
@@ -69,9 +67,7 @@ function buildMomCandidate(
 }
 
 function buildBaseSummary(matchClub: MatchClubWithSummaryRelations): BaseSummary {
-  const goals = matchClub.attendances.flatMap((attendance) =>
-    attendance.assigneds.flatMap((assigned) => assigned.goals),
-  );
+  const goals = matchClub.attendances.flatMap((attendance) => attendance.records);
 
   const scoredBase = goals.filter((goal) => !goal.isOwnGoal).length;
   const ownCommitted = goals.filter((goal) => goal.isOwnGoal).length;

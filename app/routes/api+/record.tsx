@@ -1,23 +1,13 @@
-import { GoalType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { z } from "zod";
+import { recordSchema } from "~/features/matches/isomorphic";
 import { recordService } from "~/features/matches/server";
 import { parseRequestData } from "~/libs/index.server";
-
-const goalSchema = z.object({
-  assignedId: z.string().min(1, "goalId is required"),
-  assistAssignedId: z.string().optional(),
-  teamId: z.string().optional(),
-  quarterId: z.string().min(1, "quarterId is required"),
-  isOwnGoal: z.boolean().optional(),
-  goalType: z.nativeEnum(GoalType).optional(),
-});
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await parseRequestData(request);
   const method = request.method.toUpperCase();
   if (method === "POST") {
-    const parsed = goalSchema.safeParse(data);
+    const parsed = recordSchema.safeParse(data);
     if (!parsed.success) {
       const flat = parsed.error.flatten();
       return Response.json(
@@ -27,8 +17,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     const res = await recordService.createGoal({
-      assignedId: data.assignedId,
-      assistAssignedId: data.assistAssignedId,
+      attendanceId: data.attendanceId,
+      assistAttendanceId: data.assistAttendanceId,
       teamId: data.teamId,
       quarterId: data.quarterId,
       isOwnGoal: data.isOwnGoal,

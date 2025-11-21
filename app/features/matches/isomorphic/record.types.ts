@@ -1,25 +1,18 @@
 import type { Prisma } from "@prisma/client";
+import type { RecordSchema } from "./record.schema";
 
-export type RecordGoalRelations = Prisma.GoalGetPayload<{
+export type RecordGoalRelations = Prisma.RecordGetPayload<{
   include: {
-    assigned: {
+    attendance: {
       include: {
-        attendance: {
-          include: {
-            player: { include: { user: { include: { userImage: true } } } };
-            mercenary: { include: { user: { include: { userImage: true } } } };
-          };
-        };
+        player: { include: { user: { include: { userImage: true } } } };
+        mercenary: { include: { user: { include: { userImage: true } } } };
       };
     };
-    assistAssigned: {
+    assistAttendance: {
       include: {
-        attendance: {
-          include: {
-            player: { include: { user: { include: { userImage: true } } } };
-            mercenary: { include: { user: { include: { userImage: true } } } };
-          };
-        };
+        player: { include: { user: { include: { userImage: true } } } };
+        mercenary: { include: { user: { include: { userImage: true } } } };
       };
     };
     team: true;
@@ -30,26 +23,18 @@ export type RecordQuarter = Prisma.QuarterGetPayload<{
   include: {
     team1: true;
     team2: true;
-    goals: {
+    records: {
       include: {
-        assigned: {
+        attendance: {
           include: {
-            attendance: {
-              include: {
-                player: { include: { user: { include: { userImage: true } } } };
-                mercenary: { include: { user: { include: { userImage: true } } } };
-              };
-            };
+            player: { include: { user: { include: { userImage: true } } } };
+            mercenary: { include: { user: { include: { userImage: true } } } };
           };
         };
-        assistAssigned: {
+        assistAttendance: {
           include: {
-            attendance: {
-              include: {
-                player: { include: { user: { include: { userImage: true } } } };
-                mercenary: { include: { user: { include: { userImage: true } } } };
-              };
-            };
+            player: { include: { user: { include: { userImage: true } } } };
+            mercenary: { include: { user: { include: { userImage: true } } } };
           };
         };
         team: true;
@@ -61,3 +46,5 @@ export type RecordQuarter = Prisma.QuarterGetPayload<{
 export type RecordPageResponse = {
   quarters: RecordQuarter[];
 };
+
+export type RecordGoalRequest = RecordSchema;

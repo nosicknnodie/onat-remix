@@ -140,7 +140,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                     imageUrl={imageUrl}
                     isPlayer={isPlayer}
                     isPerception={isPerception}
-                    hasGoal={attendance.assigneds.some((a) => a.goals.length > 0)}
+                    hasGoal={attendance.records.some((record) => !record.isOwnGoal)}
                     isActive={isActived}
                     quartersCount={quarters?.length ?? 0}
                     playedCount={attendance.assigneds.length}
@@ -168,6 +168,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                       attendance as unknown as {
                         id: string;
                         assigneds: { quarterId: string; position?: string; goals?: unknown[] }[];
+                        records: { quarterId: string; isOwnGoal: boolean }[];
                       }
                     }
                     onScoreChange={(score: number) =>

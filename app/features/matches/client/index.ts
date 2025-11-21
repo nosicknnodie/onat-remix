@@ -38,7 +38,7 @@ export * from "./position";
 export { RatingCard } from "./RatingCard";
 export * from "./RatingRightDrawer";
 export { GoalItem, QuarterRecord } from "./Record";
-export * from "./RecordRightDrawer";
+export * from "./RecordRegister";
 export { AttendanceLabel, TeamCard, type TeamWithAttendances, type UIAttendance } from "./TeamCard";
 export { default as TeamAttendanceActions } from "./team/AttendanceActions";
 export { default as TeamEditDialog } from "./team/EditDialog";

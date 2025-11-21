@@ -373,7 +373,7 @@ model Team {
   matchClubId         String
   matchClub           MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigned        Assigned[]
-  goals           Goal[]
+  records         Record[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
   @@index([matchClubId])
@@ -407,6 +407,8 @@ model Attendance {
 
   assigneds   Assigned[]
   evaluations Evaluation[]
+  records     Record[]
+  assistRecords Record[] @relation("AssistAttendance")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
 
@@ -433,7 +435,7 @@ model Quarter {
   matchClubId       String
   matchClub         MatchClub     @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
   assigneds      Assigned[]
-  goals       Goal[]
+  records       Record[]
   
   @@index([matchClubId])
 }
@@ -450,9 +452,6 @@ model Assigned {
   attendance    Attendance  @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @default(now()) @updatedAt
-
-  goals         Goal[]     
-  asists        Goal[]  @relation("AssistAssigned")
 
   @@index([attendanceId])
   @@index([quarterId])
@@ -525,14 +524,14 @@ enum PositionType {
 }
 
 
-model Goal {
+model Record {
   id            String   @id @default(cuid())
 
-  assignedId    String
-  assigned      Assigned @relation(fields: [assignedId], references: [id], onDelete: Cascade)
+  attendanceId    String
+  attendance      Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
-  assistAssignedId String?  // 어시스트도 Assigned 기반으로 추적
-  assistAssigned   Assigned? @relation("AssistAssigned", fields: [assistAssignedId], references: [id], onDelete: SetNull)
+  assistAttendanceId String?  // 어시스트도 Attendance 기반으로 추적
+  assistAttendance   Attendance? @relation("AssistAttendance", fields: [assistAttendanceId], references: [id], onDelete: SetNull)
   
   teamId        String?
   team          Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
@@ -545,8 +544,8 @@ model Goal {
 
   createdAt     DateTime  @default(now())
 
-  @@index([assignedId])
-  @@index([assistAssignedId])
+  @@index([attendanceId])
+  @@index([assistAttendanceId])
 }
 
 enum GoalType {

@@ -187,9 +187,9 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
       { id: string; name: string; imageUrl?: string | null; goalCount: number }
     >();
     for (const quarter of recordData.quarters ?? []) {
-      for (const goal of quarter.goals ?? []) {
+      for (const goal of quarter.records ?? []) {
         if (goal.isOwnGoal) continue;
-        const attendance = goal.assigned.attendance;
+        const attendance = goal.attendance;
         const name = getAttendanceDisplayName(attendance);
         if (!name) continue;
         const id = attendance.id;

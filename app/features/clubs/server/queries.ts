@@ -268,7 +268,7 @@ export async function countAnnualAttendance(args: { clubId: string; start: Date;
 }
 
 export async function findAnnualGoals(args: { clubId: string; start: Date; end: Date }) {
-  return await prisma.goal.findMany({
+  return await prisma.record.findMany({
     where: {
       isOwnGoal: false,
       quarter: {
@@ -285,20 +285,16 @@ export async function findAnnualGoals(args: { clubId: string; start: Date; end: 
       },
     },
     include: {
-      assigned: {
+      attendance: {
         include: {
-          attendance: {
+          player: {
             include: {
-              player: {
-                include: {
-                  user: { include: { userImage: true } },
-                },
-              },
-              mercenary: {
-                include: {
-                  user: { include: { userImage: true } },
-                },
-              },
+              user: { include: { userImage: true } },
+            },
+          },
+          mercenary: {
+            include: {
+              user: { include: { userImage: true } },
             },
           },
         },

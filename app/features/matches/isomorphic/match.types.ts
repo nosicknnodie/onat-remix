@@ -38,11 +38,7 @@ export const matchSummaryRelations = {
   attendances: {
     include: {
       evaluations: true,
-      assigneds: {
-        include: {
-          goals: true,
-        },
-      },
+      records: true,
       player: {
         include: {
           user: {

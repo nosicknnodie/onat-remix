@@ -13,9 +13,7 @@ import {
   findUpcomingMatchForClub,
 } from "./queries";
 
-type AttendanceWithMember = Awaited<
-  ReturnType<typeof findAnnualGoals>
->[number]["assigned"]["attendance"];
+type AttendanceWithMember = Awaited<ReturnType<typeof findAnnualGoals>>[number]["attendance"];
 
 function extractMember(attendance: AttendanceWithMember | null | undefined) {
   if (!attendance) return null;
@@ -43,7 +41,7 @@ function mapGoalsToLeaders(
 ): ClubLeaderboardItem[] {
   const map = new Map<string, ClubLeaderboardItem & { count: number }>();
   goals.forEach((goal) => {
-    const member = extractMember(goal.assigned?.attendance);
+    const member = extractMember(goal.attendance);
     if (!member || !member.name) return;
     const key = `${member.memberType}-${member.id}`;
     const existing = map.get(key) ?? {

@@ -1,32 +1,24 @@
 import { prisma } from "~/libs/index.server";
 
-export async function getQuartersWithGoals(matchClubId: string) {
+export async function getQuartersWithRecords(matchClubId: string) {
   return await prisma.quarter.findMany({
     where: { matchClubId },
     orderBy: { order: "asc" },
     include: {
       team1: true,
       team2: true,
-      goals: {
+      records: {
         include: {
-          assigned: {
+          attendance: {
             include: {
-              attendance: {
-                include: {
-                  player: { include: { user: { include: { userImage: true } } } },
-                  mercenary: { include: { user: { include: { userImage: true } } } },
-                },
-              },
+              player: { include: { user: { include: { userImage: true } } } },
+              mercenary: { include: { user: { include: { userImage: true } } } },
             },
           },
-          assistAssigned: {
+          assistAttendance: {
             include: {
-              attendance: {
-                include: {
-                  player: { include: { user: { include: { userImage: true } } } },
-                  mercenary: { include: { user: { include: { userImage: true } } } },
-                },
-              },
+              player: { include: { user: { include: { userImage: true } } } },
+              mercenary: { include: { user: { include: { userImage: true } } } },
             },
           },
           team: true,
@@ -51,21 +43,37 @@ export async function getQuarterDetail(quarterId: string) {
           },
         },
       },
+      records: {
+        include: {
+          attendance: {
+            include: {
+              mercenary: { include: { user: { include: { userImage: true } } } },
+              player: { include: { user: { include: { userImage: true } } } },
+            },
+          },
+          assistAttendance: {
+            include: {
+              mercenary: { include: { user: { include: { userImage: true } } } },
+              player: { include: { user: { include: { userImage: true } } } },
+            },
+          },
+        },
+      },
     },
   });
 }
 
-export async function createGoal(data: {
-  assignedId: string;
-  assistAssignedId?: string;
+export async function createRecord(data: {
+  attendanceId: string;
+  assistAttendanceId?: string;
   teamId?: string;
   quarterId: string;
   isOwnGoal?: boolean;
   goalType?: import("@prisma/client").GoalType;
 }) {
-  return await prisma.goal.create({ data });
+  return await prisma.record.create({ data });
 }
 
-export async function deleteGoal(id: string) {
-  return await prisma.goal.delete({ where: { id } });
+export async function deleteRecord(id: string) {
+  return await prisma.record.delete({ where: { id } });
 }

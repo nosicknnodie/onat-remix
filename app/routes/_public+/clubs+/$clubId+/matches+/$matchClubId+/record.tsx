@@ -7,7 +7,7 @@ import { Loading } from "~/components/Loading";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
-import { GoalItem, QuarterRecord, RecordRightDrawer } from "~/features/matches/client";
+import { GoalItem, QuarterRecord, RecordRegister } from "~/features/matches/client";
 import { useRecordQuery } from "~/features/matches/isomorphic";
 
 interface IRecordPageProps {}
@@ -21,6 +21,7 @@ export const handle = {
 const RecordPage = (_props: IRecordPageProps) => {
   const params = useParams();
   const matchClubId = params.matchClubId;
+  const clubId = params.clubId ?? "";
   const { data, isLoading, refetch } = useRecordQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
@@ -40,19 +41,19 @@ const RecordPage = (_props: IRecordPageProps) => {
         {quarters.map((quarter, index) => {
           const isSameTeam1 = index > 0 ? quarter.team1Id === quarters[index - 1].team1Id : false;
           const isSameTeam2 = index > 0 ? quarter.team2Id === quarters[index - 1].team2Id : false;
-          const team1Goals = quarter.goals
+          const team1Goals = quarter.records
             .filter((goal) => {
               return goal.teamId === quarter.team1Id || !quarter.team1Id;
             })
             .map((goal) => {
               const name =
-                goal.assigned.attendance.player?.user?.name ||
-                goal.assigned.attendance.mercenary?.user?.name ||
-                goal.assigned.attendance.mercenary?.name ||
+                goal.attendance.player?.user?.name ||
+                goal.attendance.mercenary?.user?.name ||
+                goal.attendance.mercenary?.name ||
                 "";
               const imageUrl =
-                goal.assigned.attendance.player?.user?.userImage?.url ||
-                goal.assigned.attendance.mercenary?.user?.userImage?.url ||
+                goal.attendance.player?.user?.userImage?.url ||
+                goal.attendance.mercenary?.user?.userImage?.url ||
                 "";
               return (
                 <GoalComponent
@@ -67,19 +68,19 @@ const RecordPage = (_props: IRecordPageProps) => {
                 />
               );
             });
-          const team2Goals = quarter.goals
+          const team2Goals = quarter.records
             .filter((goal) => {
               return goal.teamId === quarter.team2Id;
             })
             .map((goal) => {
               const name =
-                goal.assigned.attendance.player?.user?.name ||
-                goal.assigned.attendance.mercenary?.user?.name ||
-                goal.assigned.attendance.mercenary?.name ||
+                goal.attendance.player?.user?.name ||
+                goal.attendance.mercenary?.user?.name ||
+                goal.attendance.mercenary?.name ||
                 "";
               const imageUrl =
-                goal.assigned.attendance.player?.user?.userImage?.url ||
-                goal.assigned.attendance.mercenary?.user?.userImage?.url ||
+                goal.attendance.player?.user?.userImage?.url ||
+                goal.attendance.mercenary?.user?.userImage?.url ||
                 "";
               return (
                 <GoalComponent
@@ -103,16 +104,10 @@ const RecordPage = (_props: IRecordPageProps) => {
               isSameTeam2={isSameTeam2}
               team1Content={team1Goals}
               team2Content={team2Goals}
-              RightDrawer={({ quarterId, children }) => (
-                <RecordRightDrawer
-                  quarterId={quarterId}
-                  quarters={quarters}
-                  onRefetch={() => {
-                    return refetch().then(() => undefined);
-                  }}
-                >
+              Dialog={({ quarter: dialogQuarter, team, children }) => (
+                <RecordRegister quarter={dialogQuarter} clubId={clubId} team={team ?? undefined}>
                   {children}
-                </RecordRightDrawer>
+                </RecordRegister>
               )}
             />
           );
@@ -138,7 +133,7 @@ const GoalComponent = ({
   const [_isPending, startTransition] = useTransition();
   const handleDelGoal = (id: string) => {
     startTransition(async () => {
-      await fetch("/api/goal", {
+      await fetch("/api/record", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       });

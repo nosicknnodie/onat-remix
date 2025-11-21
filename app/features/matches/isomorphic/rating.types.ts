@@ -3,7 +3,8 @@ import type { Prisma } from "@prisma/client";
 export type RatingAttendance = Prisma.AttendanceGetPayload<{
   include: {
     evaluations: true;
-    assigneds: { include: { goals: { where: { isOwnGoal: false } } } };
+    records: { where: { isOwnGoal: false } };
+    assigneds: true;
     player: { include: { user: { include: { userImage: true } } } };
     mercenary: { include: { user: { include: { userImage: true } } } };
   };

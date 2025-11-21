@@ -14,6 +14,7 @@ export * from "./position.types";
 export * from "./rating.hooks";
 export * from "./rating.types";
 export * from "./record.hooks";
+export * from "./record.schema";
 export * from "./record.types";
 export * from "./summary.hooks";
 export * from "./summary.types";

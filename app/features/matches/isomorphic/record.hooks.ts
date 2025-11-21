@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson } from "~/libs/api-client";
-import type { RecordPageResponse } from "./record.types";
+import { getJson, postJson } from "~/libs/api-client";
+import type { RecordGoalRequest, RecordPageResponse } from "./record.types";
 
 export const recordQueryKeys = {
   detail: (matchClubId: string) => ["matchClub", matchClubId, "record"] as const,
@@ -26,5 +26,23 @@ export function useRecordQuery(matchClubId?: string, options?: UseRecordQueryOpt
     },
     enabled,
     initialData: options?.initialData,
+  });
+}
+
+export function useRecordGoalMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const queryKey = useMemo(() => recordQueryKeys.detail(matchClubId ?? ""), [matchClubId]);
+
+  return useMutation<void, unknown, RecordGoalRequest>({
+    mutationFn: async (variables) => {
+      if (!matchClubId) {
+        throw new Error("matchClubId is required to register goal");
+      }
+      await postJson("/api/record", variables);
+    },
+    onSuccess: () => {
+      if (!matchClubId) return;
+      queryClient.invalidateQueries({ queryKey });
+    },
   });
 }

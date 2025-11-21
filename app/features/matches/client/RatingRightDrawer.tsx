@@ -27,7 +27,8 @@ interface AttendanceItem {
   id: string;
   checkTime?: string | Date | null;
   state: "NORMAL" | "EXCUSED" | "RETIRED";
-  assigneds: { quarterId: string; goals: unknown[]; position?: string | null }[];
+  assigneds: { quarterId: string; goals?: unknown[]; position?: string | null }[];
+  records: { quarterId: string; isOwnGoal: boolean }[];
   player?: {
     user?: { name?: string | null; userImage?: { url?: string | null } | null } | null;
   } | null;
@@ -127,6 +128,9 @@ export const RatingRightDrawer = ({
                         (as) => as.quarterId === quarter.id,
                       );
                       const position = assigned?.position || undefined;
+                      const goalCount = attendance.records.filter(
+                        (record) => record.quarterId === quarter.id && !record.isOwnGoal,
+                      ).length;
                       return (
                         <Fragment key={quarter.id}>
                           <div className="flex justify-between items-center border px-2 py-1 rounded bg-gray-50">
@@ -158,9 +162,9 @@ export const RatingRightDrawer = ({
                               >
                                 {position || "-"}
                               </Badge>
-                              {(assigned?.goals?.length || 0) > 0 && (
+                              {goalCount > 0 && (
                                 <Badge variant="secondary" className="text-xs">
-                                  득점 {assigned?.goals.length}
+                                  득점 {goalCount}
                                 </Badge>
                               )}
                             </div>

@@ -11,7 +11,8 @@ export async function findMatchClubWithQuarters(matchClubId: string) {
 type RatingAttendance = Prisma.AttendanceGetPayload<{
   include: {
     evaluations: true;
-    assigneds: { include: { goals: { where: { isOwnGoal: false } } } };
+    records: { where: { isOwnGoal: false } };
+    assigneds: true;
     player: { include: { user: { include: { userImage: true } } } };
     mercenary: { include: { user: { include: { userImage: true } } } };
   };
@@ -22,7 +23,8 @@ export async function getRatingAttendances({ matchClubId }: { matchClubId: strin
     where: { matchClubId, isVote: true },
     include: {
       evaluations: true,
-      assigneds: { include: { goals: { where: { isOwnGoal: false } } } },
+      records: { where: { isOwnGoal: false } },
+      assigneds: true,
       player: { include: { user: { include: { userImage: true } } } },
       mercenary: { include: { user: { include: { userImage: true } } } },
     },

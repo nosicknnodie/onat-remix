@@ -20,6 +20,7 @@ export async function findMatchClubWithRelations(id: string) {
         include: {
           player: { include: { user: { include: { userImage: true } } } },
           mercenary: { include: { user: { include: { userImage: true } } } },
+          assigneds: { select: { id: true, quarterId: true, teamId: true } },
         },
       },
       teams: true,
