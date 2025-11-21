@@ -45,6 +45,7 @@ export type RecordQuarter = Prisma.QuarterGetPayload<{
 
 export type RecordPageResponse = {
   quarters: RecordQuarter[];
+  memberId?: string | null;
 };
 
 export type RecordGoalRequest = RecordSchema;

@@ -7,6 +7,7 @@ import { Loading } from "~/components/Loading";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
+import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import { GoalItem, QuarterRecord, RecordRegister } from "~/features/matches/client";
 import { useRecordQuery } from "~/features/matches/isomorphic";
 
@@ -25,6 +26,13 @@ const RecordPage = (_props: IRecordPageProps) => {
   const { data, isLoading, refetch } = useRecordQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
+  const { data: membership } = useMembershipInfoQuery(params.clubId ?? "", {
+    enabled: Boolean(params.clubId),
+  });
+  const { data: permissions = [] } = usePlayerPermissionsQuery(membership?.id ?? "", {
+    enabled: Boolean(membership?.id),
+  });
+  const canManage = permissions.includes("MATCH_MANAGE");
   const quarters = data?.quarters ?? [];
 
   if (isLoading) {
@@ -62,6 +70,12 @@ const RecordPage = (_props: IRecordPageProps) => {
                   name={name}
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
+                  assistName={
+                    goal.assistAttendance?.player?.user?.name ||
+                    goal.assistAttendance?.mercenary?.user?.name ||
+                    goal.assistAttendance?.mercenary?.name ||
+                    undefined
+                  }
                   onRefetch={async () => {
                     await refetch();
                   }}
@@ -89,6 +103,12 @@ const RecordPage = (_props: IRecordPageProps) => {
                   name={name}
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
+                  assistName={
+                    goal.assistAttendance?.player?.user?.name ||
+                    goal.assistAttendance?.mercenary?.user?.name ||
+                    goal.assistAttendance?.mercenary?.name ||
+                    undefined
+                  }
                   onRefetch={async () => {
                     await refetch();
                   }}
@@ -98,14 +118,21 @@ const RecordPage = (_props: IRecordPageProps) => {
           return (
             <QuarterRecord
               key={quarter.id}
+              isSelf={quarter.isSelf}
               quarter={quarter}
               end={index === quarters.length - 1}
               isSameTeam1={isSameTeam1}
               isSameTeam2={isSameTeam2}
               team1Content={team1Goals}
               team2Content={team2Goals}
+              canEdit={canManage}
               Dialog={({ quarter: dialogQuarter, team, children }) => (
-                <RecordRegister quarter={dialogQuarter} clubId={clubId} team={team ?? undefined}>
+                <RecordRegister
+                  quarter={dialogQuarter}
+                  clubId={clubId}
+                  team={team ?? undefined}
+                  canEdit={canManage}
+                >
                   {children}
                 </RecordRegister>
               )}
@@ -122,12 +149,14 @@ const GoalComponent = ({
   name,
   imageUrl,
   isOwner,
+  assistName,
   onRefetch,
 }: {
   id: string;
   name: string;
   imageUrl?: string;
   isOwner?: boolean;
+  assistName?: string;
   onRefetch: () => Promise<void>;
 }) => {
   const [_isPending, startTransition] = useTransition();
@@ -146,6 +175,7 @@ const GoalComponent = ({
       name={name}
       imageUrl={imageUrl}
       isOwner={isOwner}
+      assistName={assistName}
       onDelete={(goalId) =>
         confirm({
           title: "골기록 삭제",
