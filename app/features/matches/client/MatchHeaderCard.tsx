@@ -19,6 +19,10 @@ export interface MatchHeaderCardProps {
   address?: string | null;
   stDate: string | Date;
   createUser?: (User & { userImage?: File | null }) | null;
+  createPlayer?: {
+    nick?: string | null;
+    user?: { nick?: string | null; name?: string | null; userImage?: File | null } | null;
+  } | null;
   createdAt?: Date | string;
   headerTabs?: ReactNode;
   footerActions?: ReactNode;
@@ -32,6 +36,7 @@ export const MatchHeaderCard = ({
   address,
   stDate,
   createUser,
+  createPlayer,
   createdAt,
   headerTabs,
   footerActions,
@@ -41,6 +46,10 @@ export const MatchHeaderCard = ({
   const { toast } = useToast();
   const formattedDate = dayjs(stDate).format("YYYY-MM-DD (ddd) HH:mm");
   const displayCommentCount = commentCount ?? 0;
+  const authorName =
+    createPlayer?.nick ?? createPlayer?.user?.nick ?? createUser?.nick ?? createUser?.name ?? "";
+  const authorImage =
+    createPlayer?.user?.userImage?.url ?? createUser?.userImage?.url ?? "/images/user_empty.png";
 
   const handleCopyAddress = async () => {
     if (!address) return;
@@ -78,12 +87,12 @@ export const MatchHeaderCard = ({
               </Button>
             </Link>
             <Avatar className="size-8">
-              <AvatarImage src={createUser?.userImage?.url || "/images/user_empty.png"} />
+              <AvatarImage src={authorImage} />
               <AvatarFallback className="bg-primary-foreground">
                 <Loading />
               </AvatarFallback>
             </Avatar>
-            {createUser?.name ? <span className="text-foreground">{createUser.name}</span> : null}
+            {authorName ? <span className="text-foreground">{authorName}</span> : null}
             {createdAtDate ? <span>•</span> : null}
             {createdAtDate ? (
               <span>

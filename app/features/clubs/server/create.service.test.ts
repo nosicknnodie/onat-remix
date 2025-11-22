@@ -13,6 +13,7 @@ describe("createClub service", () => {
   // schema.prisma에 맞게 모든 필수 필드를 포함하도록 mockUser를 수정합니다.
   const mockUser: User = {
     id: "user-1",
+    nick: null,
     name: "Test User",
     email: "test@example.com",
     emailVerified: new Date(),

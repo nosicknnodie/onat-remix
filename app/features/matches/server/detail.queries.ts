@@ -6,6 +6,7 @@ export async function findMatchByIdWithClubs(id: string) {
     where: { id },
     include: {
       createUser: { include: { userImage: true } },
+      createPlayer: { include: { user: { include: { userImage: true } } } },
       matchClubs: {
         where: { isUse: true },
         include: matchSummaryRelations,
@@ -25,7 +26,22 @@ export async function updateMatch(
     lat?: number | null;
     lng?: number | null;
     createUserId?: string;
+    createPlayerId?: string | null;
   }>,
 ) {
   return await prisma.match.update({ where: { id }, data });
+}
+
+export async function findMatchClubIds(matchId: string) {
+  return await prisma.matchClub.findMany({
+    where: { matchId },
+    select: { clubId: true },
+  });
+}
+
+export async function findPlayerByUserAndClubIds(userId: string, clubIds: string[]) {
+  if (clubIds.length === 0) return null;
+  return await prisma.player.findFirst({
+    where: { userId, clubId: { in: clubIds } },
+  });
 }

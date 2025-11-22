@@ -4,6 +4,7 @@
  * - 쿼리 결과를 UI에 적합한 형태로 변환
  */
 
+import type { Prisma } from "@prisma/client";
 import { AES, prisma } from "~/libs/index.server";
 import type { CategorizedClubs, Club, ClubsData, ClubWithMembership, Player } from "../isomorphic";
 import {
@@ -198,16 +199,16 @@ export async function joinClub(clubId: string, userId: string, nick: string) {
           clubId,
         },
       });
-      await prisma.playerLog.create({
-        data: {
-          playerId: player.id,
-          type: "STATUS",
-          value: "START",
-          from: existingPlayer?.status.toString() ?? null,
-          to: "PENDING",
-          createUserId: userId,
-        },
-      });
+      const logData = {
+        playerId: player.id,
+        type: "STATUS",
+        value: "START",
+        from: existingPlayer?.status.toString() ?? null,
+        to: "PENDING",
+        createUserId: userId,
+        createPlayerId: player.id,
+      } as unknown as Prisma.PlayerLogUncheckedCreateInput;
+      await prisma.playerLog.create({ data: logData });
     }
     return { ok: true, message: "가입신청 완료 했습니다." };
   } catch (e) {
@@ -250,7 +251,8 @@ export async function cancelJoinRequest(clubId: string, userId: string) {
           from: player.status,
           to: "CANCELLED",
           createUserId: userId,
-        },
+          createPlayerId: player.id,
+        } as unknown as Prisma.PlayerLogUncheckedCreateInput,
       }),
     ]);
 

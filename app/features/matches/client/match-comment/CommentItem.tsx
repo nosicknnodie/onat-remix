@@ -18,9 +18,18 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
   const [replyOpen, setReplyOpen] = useState(false);
   const createComment = useCreateMatchComment();
   const { handleInsertImage } = useCommentInput();
-  const commenter = comment.user;
-  const commenterName = commenter?.name ?? "알 수 없는 사용자";
-  const commenterAvatar = commenter?.userImage?.url ?? "/images/user_empty.png";
+  const commenterUser = comment.user;
+  const commenterPlayer = comment.player;
+  const commenterName =
+    commenterPlayer?.nick ??
+    commenterPlayer?.user?.nick ??
+    commenterUser?.nick ??
+    commenterUser?.name ??
+    "알 수 없는 사용자";
+  const commenterAvatar =
+    commenterPlayer?.user?.userImage?.url ??
+    commenterUser?.userImage?.url ??
+    "/images/user_empty.png";
 
   const handleSubmit = async (root?: SerializedEditorState) => {
     if (!context.matchClubId) {
@@ -31,7 +40,7 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
         matchClubId: context.matchClubId,
         content: root,
         parentId: comment.parentId || comment.id,
-        replyToUserId: commenter?.id ?? undefined,
+        replyToUserId: commenterUser?.id ?? undefined,
       });
       setReplyOpen(false);
     } catch (error) {
@@ -56,9 +65,14 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
             {formatDistance(comment.createdAt, new Date(), { addSuffix: true, locale: ko })}
           </span>
         </div>
-        {comment.replyToUser && (
+        {(comment.replyToPlayer || comment.replyToUser) && (
           <Badge variant={"secondary"} className="text-xs">
-            @{comment.replyToUser.name}
+            @
+            {comment.replyToPlayer?.nick ??
+              comment.replyToPlayer?.user?.nick ??
+              comment.replyToUser?.nick ??
+              comment.replyToUser?.name ??
+              ""}
           </Badge>
         )}
         <div className="w-full rounded-lg ml-2">

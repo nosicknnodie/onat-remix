@@ -10,7 +10,11 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { mercenaryColumns, SetMercenaryDialog } from "~/features/matches/client";
 import type { MercenaryFormValues } from "~/features/matches/isomorphic";
-import { useCreateMercenaryMutation, useMercenariesQuery } from "~/features/matches/isomorphic";
+import {
+  getMercenaryDisplayName,
+  useCreateMercenaryMutation,
+  useMercenariesQuery,
+} from "~/features/matches/isomorphic";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { removePhoneHyphen } from "~/libs/convert";
 export const handle = { breadcrumb: "용병" };
@@ -30,7 +34,7 @@ const MercenaryPage = () => {
   const tableData = useMemo(() => {
     return mercenaries.map((mer) => ({
       id: mer.id,
-      name: mer.user?.name ?? mer.name ?? undefined,
+      name: getMercenaryDisplayName(mer) || undefined,
       hp: mer.hp ?? undefined,
       description: mer.description ?? undefined,
       position1: mer.position1 ?? undefined,

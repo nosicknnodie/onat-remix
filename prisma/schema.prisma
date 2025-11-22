@@ -42,6 +42,7 @@ enum UserRoleType {
 
 model User {
   id            String    @id @default(cuid())
+  nick          String?
   name          String?
   email         String   @unique
   emailVerified DateTime? @map("email_verified")
@@ -213,10 +214,14 @@ model Player {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
   
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  attendances     Attendance[]
-  playerLogs      PlayerLog[]
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  club              Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  attendances       Attendance[]
+  playerLogs        PlayerLog[]
+  createdPlayerLogs PlayerLog[] @relation("PlayerLogCreatePlayer")
+  createdMatches    Match[] @relation("MatchCreatePlayer")
+  comments          Comment[]
+  toReplies         Comment[] @relation("CommentReplyToPlayer")
 
   @@index([clubId])
   @@index([userId])
@@ -310,11 +315,14 @@ model PlayerLog {
   to              String?
   createUserId    String?
   createUser      User?   @relation(fields: [createUserId], references: [id], onDelete: SetNull)
+  createPlayerId  String?
+  createPlayer    Player? @relation("PlayerLogCreatePlayer", fields: [createPlayerId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
   @@index([playerId])
   @@index([createUserId])
+  @@index([createPlayerId])
 }
 
 
@@ -334,6 +342,8 @@ model Match {
   matchClubs      MatchClub[]
   createUserId    String?
   createUser      User?    @relation(fields: [createUserId], references: [id], onDelete: SetNull)
+  createPlayerId  String?
+  createPlayer    Player?  @relation("MatchCreatePlayer", fields: [createPlayerId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
@@ -469,6 +479,8 @@ model Comment {
 
   userId        String?
   user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  playerId      String?
+  player        Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
 
   targetId      String
   targetType    CommentTargetType
@@ -479,12 +491,15 @@ model Comment {
   // 👇 자동 멘션 대상(대댓글 이상에서 사용)
   replyToUserId String?
   replyToUser   User?    @relation("CommentReplyToUser", fields: [replyToUserId], references: [id], onDelete: SetNull)
+  replyToPlayerId String?
+  replyToPlayer   Player?    @relation("CommentReplyToPlayer", fields: [replyToPlayerId], references: [id], onDelete: SetNull)
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @default(now()) @updatedAt
 
   @@index([targetId, targetType])
   @@index([userId])
+  @@index([playerId])
   @@index([parentId])
 
 }

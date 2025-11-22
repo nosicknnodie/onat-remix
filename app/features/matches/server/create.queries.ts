@@ -31,6 +31,7 @@ export async function createMatchTx(
     lat?: number | null;
     lng?: number | null;
     createUserId: string;
+    createPlayerId?: string | null;
   },
 ) {
   return await tx.match.create({ data });

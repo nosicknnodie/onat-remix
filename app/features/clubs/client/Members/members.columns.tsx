@@ -4,17 +4,19 @@ import _ from "lodash";
 import { FaStar } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { getPlayerDisplayName } from "~/features/matches/isomorphic";
 import type { IPlayer } from "../../isomorphic/types";
 import { MembersAction } from "./members.action";
 
 export const memberColumns: ColumnDef<IPlayer>[] = [
   {
     id: "name",
-    accessorFn: (v) => v.user?.name || "",
+    accessorFn: (v) => getPlayerDisplayName(v),
     header({ table }) {
       return <div className="flex justify-center">이름</div>;
     },
     cell: ({ row }) => {
+      const nickLabel = row.original.nick ?? row.original.user?.nick ?? "";
       return (
         <div className="flex justify-center items-center truncate space-x-2">
           <Avatar>
@@ -27,7 +29,7 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
           <div>
             <div className="flex space-x-2 items-center h-5">
               <span className="text-base font-semibold">{row.getValue("name")}</span>
-              <span className="text-xs text-gray-500">({row.original.nick})</span>
+              {nickLabel ? <span className="text-xs text-gray-500">({nickLabel})</span> : null}
             </div>
             <div className="flex space-x-2">
               <span className="text-xs text-gray-500 place-items-center">

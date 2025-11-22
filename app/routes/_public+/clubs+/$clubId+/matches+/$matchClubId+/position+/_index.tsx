@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Loading } from "~/components/Loading";
 import { type PositionAssigned, PositionBoard } from "~/features/matches/client";
 import {
+  getAttendanceDisplayName,
   usePositionContext,
   usePositionQuery,
   useQuarterQuery,
@@ -89,11 +90,7 @@ const PositionPage = (_props: IPositionPageProps) => {
     });
   const assignedList: PositionAssigned[] =
     assigneds?.map((assigned) => {
-      const name =
-        assigned.attendance.player?.user?.name ||
-        assigned.attendance.mercenary?.user?.name ||
-        assigned.attendance.mercenary?.name ||
-        "";
+      const name = getAttendanceDisplayName(assigned.attendance);
       return { id: assigned.id, name, className: assigned.className, color: assigned.color };
     }) ?? [];
 

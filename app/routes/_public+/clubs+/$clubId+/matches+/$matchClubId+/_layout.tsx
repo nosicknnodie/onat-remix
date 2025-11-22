@@ -16,6 +16,7 @@ import {
   PlayerManageDrawer,
 } from "~/features/matches/client";
 import {
+  getAttendanceDisplayName,
   positionQueryKeys,
   ratingQueryKeys,
   recordQueryKeys,
@@ -155,7 +156,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     .filter((att) => att.isVote)
     .map((a) => ({
       id: a.id,
-      name: a.player?.user?.name || a.mercenary?.user?.name || a.mercenary?.name || "",
+      name: getAttendanceDisplayName(a),
       imageUrl: a.player?.user?.userImage?.url || a.mercenary?.user?.userImage?.url || undefined,
       isCheck: a.isCheck,
     }));
@@ -198,6 +199,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         address={match.address}
         stDate={match.stDate}
         createUser={match.createUser}
+        createPlayer={match.createPlayer}
         createdAt={match.createdAt}
         headerTabs={<ClubSubnavTabs items={items} className="px-0" />}
         footerActions={

@@ -24,6 +24,9 @@ export async function createMatch(dto: {
 }) {
   try {
     const res = await q.withTransaction(async (tx) => {
+      const createPlayer = await tx.player.findFirst({
+        where: { userId: dto.createUserId, clubId: dto.clubId },
+      });
       const match = await q.createMatchTx(tx, {
         title: dto.title,
         description: dto.description,
@@ -33,6 +36,7 @@ export async function createMatch(dto: {
         lat: dto.lat ?? null,
         lng: dto.lng ?? null,
         createUserId: dto.createUserId,
+        createPlayerId: createPlayer?.id ?? null,
       });
 
       const matchClub = await q.createMatchClubTx(tx, {

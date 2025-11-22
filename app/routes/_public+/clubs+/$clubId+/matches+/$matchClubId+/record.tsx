@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
 import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import { GoalItem, QuarterRecord, RecordRegister } from "~/features/matches/client";
-import { useRecordQuery } from "~/features/matches/isomorphic";
+import { getAttendanceDisplayName, useRecordQuery } from "~/features/matches/isomorphic";
 
 interface IRecordPageProps {}
 
@@ -54,11 +54,7 @@ const RecordPage = (_props: IRecordPageProps) => {
               return goal.teamId === quarter.team1Id || !quarter.team1Id;
             })
             .map((goal) => {
-              const name =
-                goal.attendance.player?.user?.name ||
-                goal.attendance.mercenary?.user?.name ||
-                goal.attendance.mercenary?.name ||
-                "";
+              const name = getAttendanceDisplayName(goal.attendance);
               const imageUrl =
                 goal.attendance.player?.user?.userImage?.url ||
                 goal.attendance.mercenary?.user?.userImage?.url ||
@@ -71,10 +67,7 @@ const RecordPage = (_props: IRecordPageProps) => {
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
                   assistName={
-                    goal.assistAttendance?.player?.user?.name ||
-                    goal.assistAttendance?.mercenary?.user?.name ||
-                    goal.assistAttendance?.mercenary?.name ||
-                    undefined
+                    getAttendanceDisplayName(goal.assistAttendance ?? undefined) || undefined
                   }
                   onRefetch={async () => {
                     await refetch();
@@ -87,11 +80,7 @@ const RecordPage = (_props: IRecordPageProps) => {
               return goal.teamId === quarter.team2Id;
             })
             .map((goal) => {
-              const name =
-                goal.attendance.player?.user?.name ||
-                goal.attendance.mercenary?.user?.name ||
-                goal.attendance.mercenary?.name ||
-                "";
+              const name = getAttendanceDisplayName(goal.attendance);
               const imageUrl =
                 goal.attendance.player?.user?.userImage?.url ||
                 goal.attendance.mercenary?.user?.userImage?.url ||
@@ -104,10 +93,7 @@ const RecordPage = (_props: IRecordPageProps) => {
                   imageUrl={imageUrl}
                   isOwner={goal.isOwnGoal}
                   assistName={
-                    goal.assistAttendance?.player?.user?.name ||
-                    goal.assistAttendance?.mercenary?.user?.name ||
-                    goal.assistAttendance?.mercenary?.name ||
-                    undefined
+                    getAttendanceDisplayName(goal.assistAttendance ?? undefined) || undefined
                   }
                   onRefetch={async () => {
                     await refetch();

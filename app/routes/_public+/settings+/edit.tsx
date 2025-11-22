@@ -25,6 +25,7 @@ import { cn, SIGUNGU } from "~/libs";
 export const action = async ({ request }: ActionFunctionArgs) => {
   const form = await request.formData();
   const id = String(form.get("id"));
+  const nick = String(form.get("nick") ?? "");
   const name = String(form.get("name") ?? "");
   const gender = form.get("gender") as "MALE" | "FEMALE" | undefined;
   const birthYear = Number(form.get("birthYear"));
@@ -36,6 +37,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   await settingsService.updateProfile({
     id,
+    nick,
     name,
     gender,
     birthYear: Number.isNaN(birthYear) ? null : birthYear,
@@ -105,6 +107,11 @@ const EditPage = (_props: IEditPageProps) => {
           <div className="space-y-1">
             <Label htmlFor="email">이메일</Label>
             <Input type="email" name="email" defaultValue={user.email} disabled readOnly />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="nick">닉네임</Label>
+            <Input name="nick" defaultValue={user.nick ?? undefined} />
           </div>
 
           <div className="space-y-1">

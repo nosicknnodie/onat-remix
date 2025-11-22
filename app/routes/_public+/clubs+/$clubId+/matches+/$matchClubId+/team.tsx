@@ -23,6 +23,7 @@ import {
   type UIAttendance,
 } from "~/features/matches/client";
 import {
+  getAttendanceDisplayName,
   useAttendanceQuery,
   useTeamAssignmentMutation,
   useTeamQuery,
@@ -183,11 +184,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                             <Loading />
                           </AvatarFallback>
                         </Avatar>
-                        <span>
-                          {attendance.player?.user?.name ||
-                            attendance.mercenary?.user?.name ||
-                            attendance.mercenary?.name}
-                        </span>
+                        <span>{getAttendanceDisplayName(attendance)}</span>
                       </Label>
                     </div>
                   </Fragment>
@@ -257,12 +254,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                 }
                 renderAttendance={(attendance: UIAttendance | null) => (
                   <TeamAttendanceActions
-                    name={
-                      attendance?.player?.user?.name ||
-                      attendance?.mercenary?.user?.name ||
-                      attendance?.mercenary?.name ||
-                      ""
-                    }
+                    name={getAttendanceDisplayName(attendance)}
                     imageUrl={
                       attendance?.player?.user?.userImage?.url ||
                       attendance?.mercenary?.user?.userImage?.url ||
@@ -283,9 +275,7 @@ const TeamPage = (_props: ITeamPageProps) => {
                       });
                     }}
                   >
-                    {attendance?.player?.user?.name ||
-                      attendance?.mercenary?.user?.name ||
-                      attendance?.mercenary?.name}
+                    {getAttendanceDisplayName(attendance)}
                   </TeamAttendanceActions>
                 )}
               />

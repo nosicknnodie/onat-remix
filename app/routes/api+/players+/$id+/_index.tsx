@@ -85,7 +85,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
 
   const parsed = result.data;
-  const logs: (Partial<Omit<PlayerLog, "playerId">> & Pick<PlayerLog, "playerId">)[] = [];
+  const logs: Array<
+    Partial<Omit<PlayerLog, "playerId">> &
+      Pick<PlayerLog, "playerId"> & { createPlayerId?: string | null }
+  > = [];
 
   const cleaned = _.omitBy(parsed, _.isUndefined);
   _.forEach(cleaned, (value, key) => {
@@ -96,6 +99,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           value: value === true ? "START" : "END",
           playerId: playerId,
           createUserId: user.id,
+          createPlayerId: requestPlayer.id,
         });
         break;
       case "isRest":
@@ -104,6 +108,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           value: value === true ? "START" : "END",
           playerId: playerId,
           createUserId: user.id,
+          createPlayerId: requestPlayer.id,
         });
         break;
       case "role":
@@ -114,6 +119,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           to: value?.toString(),
           playerId: playerId,
           createUserId: user.id,
+          createPlayerId: requestPlayer.id,
         });
         break;
       case "jobTitle":
@@ -124,6 +130,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           to: value?.toString(),
           playerId: playerId,
           createUserId: user.id,
+          createPlayerId: requestPlayer.id,
         });
         break;
       case "status":
@@ -134,6 +141,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           to: value?.toString(),
           playerId: playerId,
           createUserId: user.id,
+          createPlayerId: requestPlayer.id,
         });
         break;
     }
@@ -159,7 +167,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       });
       if (logs.length > 0) {
         await tx.playerLog.createMany({
-          data: logs,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma 타입 임시 우회
+          data: logs as any,
         });
       }
       return txPlayer;

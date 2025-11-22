@@ -64,7 +64,7 @@ export const JoinDialog = ({ children, player, clubId }: IJoinDialogProps) => {
               type="text"
               required
               placeholder="입력해주세요"
-              defaultValue={player?.nick ?? user?.name ?? ""}
+              defaultValue={player?.nick ?? user?.nick ?? user?.name ?? ""}
             />
           </div>
           <Button type="submit" className="btn btn-primary w-full">

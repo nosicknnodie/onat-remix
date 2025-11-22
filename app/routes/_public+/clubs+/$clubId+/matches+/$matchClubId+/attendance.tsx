@@ -17,6 +17,8 @@ import type { AttendanceClubPlayer, AttendanceRecord } from "~/features/matches/
 import {
   EMPTY_ATTENDANCE_PLAYERS,
   EMPTY_ATTENDANCE_RECORDS,
+  getAttendanceDisplayName,
+  getPlayerDisplayName,
   useAttendanceMutation,
   useAttendanceQuery,
 } from "~/features/matches/isomorphic";
@@ -179,7 +181,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 })}
                 isChecked={u.isCheck}
               >
-                {u.player?.user?.name}
+                {getAttendanceDisplayName(u)}
               </AttendanceGroupCardItem>
             ))}
             {mercenaryAttendances.map((ma) => (
@@ -190,7 +192,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 })}
                 isChecked={ma.isCheck}
               >
-                {ma.mercenary?.user?.name ?? ma.mercenary?.name}
+                {getAttendanceDisplayName(ma)}
               </AttendanceGroupCardItem>
             ))}
           </AttendanceGroupCardContent>
@@ -211,7 +213,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   "border-primary font-semibold text-primary": user?.id === u.player?.user?.id,
                 })}
               >
-                {u.player?.user?.name}
+                {getAttendanceDisplayName(u)}
               </AttendanceGroupCardItem>
             ))}
           </AttendanceGroupCardContent>
@@ -232,7 +234,7 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                   "border-primary font-semibold text-primary": user?.id === u.user?.id,
                 })}
               >
-                {u.user?.name}
+                {getPlayerDisplayName({ nick: u.user?.nick, user: u.user })}
               </AttendanceGroupCardItem>
             ))}
           </AttendanceGroupCardContent>

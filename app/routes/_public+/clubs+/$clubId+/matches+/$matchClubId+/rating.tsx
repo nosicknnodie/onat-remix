@@ -14,6 +14,7 @@ import { TooltipProvider } from "~/components/ui/tooltip";
 import { useSession } from "~/contexts";
 import { RatingCard, RatingRightDrawer } from "~/features/matches/client";
 import {
+  getAttendanceDisplayName,
   useMatchClubQuery,
   useRatingLikeMutation,
   useRatingQuery,
@@ -111,12 +112,7 @@ const RatingPage = (_props: IRatingPageProps) => {
             className="md:h-[26rem] max-md:h-[24rem] w-full p-8 relative"
           >
             {attendances.map((attendance, i) => {
-              const name =
-                attendance.player?.user?.name ||
-                attendance.player?.nick ||
-                attendance.mercenary?.user?.name ||
-                attendance.mercenary?.name ||
-                "";
+              const name = getAttendanceDisplayName(attendance);
               const imageUrl =
                 attendance.player?.user?.userImage?.url ||
                 attendance.mercenary?.user?.userImage?.url ||

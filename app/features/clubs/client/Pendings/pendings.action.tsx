@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { getPlayerDisplayName } from "~/features/matches/isomorphic";
 import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "../../isomorphic";
 import type { IPlayer } from "../../isomorphic/types";
 import { InfoDrawer } from "../index";
@@ -82,7 +83,7 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
                     e.stopPropagation();
                     confirm({
                       title: "승인",
-                      description: `${payload?.user?.name} 님을 승인하시겠습니까?`,
+                      description: `${getPlayerDisplayName(payload)} 님을 승인하시겠습니까?`,
                     }).onConfirm(handleResolve);
                   }}
                   className="w-full justify-start flex py-2 px-2 h-8"
@@ -95,7 +96,7 @@ export const PendingsAction = ({ payload }: IPendingsActionProps) => {
                     e.stopPropagation();
                     confirm({
                       title: "승인 거절 확인",
-                      description: `${payload?.user?.name} 님을 승인 거절하시겠습니까?`,
+                      description: `${getPlayerDisplayName(payload)} 님을 승인 거절하시겠습니까?`,
                     }).onConfirm(handleReject);
                   }}
                   className="w-full justify-start flex py-1 px-2 h-8"

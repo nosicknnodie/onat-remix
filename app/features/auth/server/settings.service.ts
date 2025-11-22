@@ -5,6 +5,7 @@ import { service } from ".";
 
 export async function updateProfile(input: {
   id: string;
+  nick?: string;
   name?: string;
   gender?: "MALE" | "FEMALE" | undefined;
   birthYear?: number | null;
@@ -14,7 +15,7 @@ export async function updateProfile(input: {
   gun?: string | null;
   userImageId?: string | null;
 }) {
-  const { id, name, gender, birthYear, birthMonth, birthDay, si, gun, userImageId } = input;
+  const { id, nick, name, gender, birthYear, birthMonth, birthDay, si, gun, userImageId } = input;
   const MM = birthMonth ? String(birthMonth).padStart(2, "0") : undefined;
   const dd = birthDay ? String(birthDay).padStart(2, "0") : undefined;
   const birthValid = birthYear && MM && dd;
@@ -23,6 +24,7 @@ export async function updateProfile(input: {
   await prisma.user.update({
     where: { id },
     data: {
+      nick,
       name,
       gender,
       birth,

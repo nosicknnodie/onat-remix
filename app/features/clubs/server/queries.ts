@@ -210,11 +210,8 @@ export async function findRecentMatchForClub(clubId: string, before: Date) {
     },
     orderBy: { stDate: "desc" },
     include: {
-      createUser: {
-        include: {
-          userImage: true,
-        },
-      },
+      createUser: { include: { userImage: true } },
+      createPlayer: { include: { user: { include: { userImage: true } } } },
       matchClubs: {
         where: { isUse: true },
         include: matchSummaryRelations,
@@ -231,11 +228,8 @@ export async function findUpcomingMatchForClub(clubId: string, after: Date) {
     },
     orderBy: { stDate: "asc" },
     include: {
-      createUser: {
-        include: {
-          userImage: true,
-        },
-      },
+      createUser: { include: { userImage: true } },
+      createPlayer: { include: { user: { include: { userImage: true } } } },
       matchClubs: {
         where: { isUse: true },
         include: matchSummaryRelations,

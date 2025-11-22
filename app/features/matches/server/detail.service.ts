@@ -19,8 +19,15 @@ export async function updateMatch(
     lat?: number | null;
     lng?: number | null;
     createUserId: string;
+    createPlayerId?: string | null;
   },
 ) {
+  const matchClubs = await q.findMatchClubIds(matchId);
+  const clubIds = matchClubs.map((mc) => mc.clubId);
+  const createPlayer =
+    dto.createPlayerId ||
+    (await q.findPlayerByUserAndClubIds(dto.createUserId, clubIds))?.id ||
+    null;
   await q.updateMatch(matchId, {
     title: dto.title,
     description: dto.description,
@@ -30,6 +37,7 @@ export async function updateMatch(
     lat: dto.lat ?? null,
     lng: dto.lng ?? null,
     createUserId: dto.createUserId,
+    createPlayerId: createPlayer,
   });
   return { ok: true as const };
 }

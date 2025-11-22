@@ -5,12 +5,25 @@ import type { InputJsonValue } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { getUser, parseRequestData, prisma } from "~/libs/index.server";
 
+const playerInclude = {
+  include: {
+    user: {
+      include: {
+        userImage: true,
+      },
+    },
+  },
+} as const;
+
 export type IMatchClubComment = Prisma.CommentGetPayload<{
   include: {
     replyToUser: true;
+    replyToPlayer: typeof playerInclude;
     replys: {
       include: {
         replyToUser: true;
+        replyToPlayer: typeof playerInclude;
+        player: typeof playerInclude;
         user: {
           include: {
             userImage: true;
@@ -23,6 +36,7 @@ export type IMatchClubComment = Prisma.CommentGetPayload<{
         userImage: true;
       };
     };
+    player: typeof playerInclude;
   };
 }>;
 
@@ -37,12 +51,15 @@ export const loader = async ({ request: _request, params }: LoaderFunctionArgs) 
     },
     include: {
       replyToUser: true,
+      replyToPlayer: playerInclude,
       replys: {
         where: {
           isDeleted: false,
         },
         include: {
           replyToUser: true,
+          replyToPlayer: playerInclude,
+          player: playerInclude,
           user: {
             include: {
               userImage: true,
@@ -55,6 +72,7 @@ export const loader = async ({ request: _request, params }: LoaderFunctionArgs) 
           userImage: true,
         },
       },
+      player: playerInclude,
     },
   });
   return Response.json({ comments });
@@ -83,14 +101,41 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   // TODO: Replace with real authentication
 
   try {
+    const matchClub = await prisma.matchClub.findUnique({
+      where: { id: matchClubId },
+      select: { clubId: true },
+    });
+    if (!matchClub) {
+      return new Response(JSON.stringify({ error: "Match club not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const [currentPlayer, replyPlayer] = await Promise.all([
+      prisma.player.findFirst({
+        where: { clubId: matchClub.clubId, userId: user.id },
+        select: { id: true },
+      }),
+      replyToUserId && replyToUserId !== user.id
+        ? prisma.player.findFirst({
+            where: { clubId: matchClub.clubId, userId: replyToUserId },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+    ]);
+
     const createdComment = await prisma.comment.create({
       data: {
         content,
         userId: user?.id || "",
+        playerId: currentPlayer?.id ?? null,
         targetId: matchClubId,
         targetType: "MATCH_CLUB",
         parentId: parentId,
         replyToUserId: replyToUserId === user?.id ? null : replyToUserId,
+        replyToPlayerId:
+          replyToUserId && replyToUserId !== user?.id ? (replyPlayer?.id ?? null) : null,
       },
       include: {
         user: {
@@ -103,6 +148,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             userImage: true,
           },
         },
+        replyToPlayer: playerInclude,
+        player: playerInclude,
       },
     });
     return Response.json({ comment: createdComment });

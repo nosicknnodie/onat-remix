@@ -67,7 +67,14 @@ export type MatchClubWithSummaryRelations = Prisma.MatchClubGetPayload<{
 
 export type MatchClubDetail = Prisma.MatchClubGetPayload<{
   include: {
-    match: { include: { createUser: { include: { userImage: true } } } };
+    match: {
+      include: {
+        createUser: { include: { userImage: true } };
+        createPlayer: {
+          include: { user: { include: { userImage: true } } };
+        };
+      };
+    };
     teams: true;
     quarters: {
       include: {
@@ -81,6 +88,9 @@ export type MatchClubDetail = Prisma.MatchClubGetPayload<{
 export type MatchWithSummary = Prisma.MatchGetPayload<{
   include: {
     createUser: { include: { userImage?: true } };
+    createPlayer: {
+      include: { user: { include: { userImage: true } } };
+    };
     matchClubs: {
       include: typeof matchSummaryRelations;
     };
@@ -134,6 +144,7 @@ export type CreateMatchDTO = {
   lng?: number | null;
   isSelf: boolean;
   createUserId: string;
+  createPlayerId?: string | null;
 };
 
 export type UpdateMatchDTO = {
@@ -145,6 +156,7 @@ export type UpdateMatchDTO = {
   lat?: number | null;
   lng?: number | null;
   createUserId: string;
+  createPlayerId?: string | null;
 };
 
 export type MatchFormDefault = {

@@ -15,6 +15,7 @@ import {
 } from "~/components/ui/select";
 import { DraggableChip, DropSpot, PositionSettingDrawer } from "~/features/matches/client";
 import {
+  getAttendanceDisplayName,
   useMatchClubQuery,
   useOptimisticPositionUpdate,
   usePositionContext,
@@ -352,10 +353,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                       className="z-30 rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white overflow-hidden"
                       style={style}
                     >
-                      {assigned.attendance.player?.user?.name ||
-                        assigned.attendance.mercenary?.user?.name ||
-                        assigned.attendance.mercenary?.name ||
-                        ""}
+                      {getAttendanceDisplayName(assigned.attendance)}
                     </div>
                   );
                 }}
@@ -395,9 +393,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                         }}
                       >
                         {position.assigned
-                          ? position.assigned.attendance.player?.user?.name ||
-                            position.assigned.attendance.mercenary?.user?.name ||
-                            position.assigned.attendance.mercenary?.name
+                          ? getAttendanceDisplayName(position.assigned.attendance)
                           : position.key}
                       </DraggableChip>
                     </>

@@ -11,6 +11,8 @@ import {
   PreMatchSection,
 } from "~/features/matches/client";
 import {
+  getAttendanceDisplayName,
+  getPlayerDisplayName,
   useAttendanceMutation,
   useAttendanceQuery,
   useMatchClubQuery,
@@ -32,7 +34,11 @@ type NameSource = {
   player?: {
     id?: string;
     userId?: string | null;
-    user?: { name?: string | null; userImage?: { url?: string | null } | null } | null;
+    user?: {
+      name?: string | null;
+      nick?: string | null;
+      userImage?: { url?: string | null } | null;
+    } | null;
     nick?: string | null;
   } | null;
   mercenary?: {
@@ -53,14 +59,7 @@ type PreMatchPlayer = NameSource["player"] & {
   id: string;
 };
 
-const getAttendanceDisplayName = (attendance: NameSource) =>
-  attendance.player?.user?.name ??
-  attendance.player?.nick ??
-  attendance.mercenary?.user?.name ??
-  attendance.mercenary?.name ??
-  "";
-
-const getPendingPlayerName = (player: PreMatchPlayer) => player.user?.name ?? player.nick ?? "";
+const getPendingPlayerName = (player: PreMatchPlayer) => getPlayerDisplayName(player);
 
 const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   const params = useParams();
