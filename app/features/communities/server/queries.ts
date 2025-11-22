@@ -90,6 +90,15 @@ export async function findPostDetail(postId: string, userId?: string) {
     include: {
       board: true,
       author: { include: { userImage: true } },
+      authorPlayer: {
+        include: {
+          user: {
+            include: {
+              userImage: true,
+            },
+          },
+        },
+      },
       likes: userId ? { where: { userId } } : true,
       votes: true,
       _count: {

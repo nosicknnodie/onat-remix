@@ -97,6 +97,11 @@ export type ClubBoardPostComment = PostComment & {
   author: User & {
     userImage: File | null;
   };
+  authorPlayer:
+    | (Player & {
+        user: (User & { userImage: File | null }) | null;
+      })
+    | null;
   sumVote: number;
   currentVote: CommentVote | null;
 };

@@ -12,13 +12,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/componen
 import { Separator } from "~/components/ui/separator";
 import type { ClubBoardFeedPost } from "~/features/clubs/isomorphic";
 import { PostVoteBadgeButton, Settings } from "~/features/communities/client";
+import { getPlayerDisplayName } from "~/features/matches/isomorphic";
 
 interface ClubBoardPostCardProps {
   post: ClubBoardFeedPost;
   fallbackBoard?: Partial<ClubBoardFeedPost["board"]> | null;
+  onDeleted?: (postId: string) => void;
 }
 
-export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProps) {
+export function ClubBoardPostCard({ post, fallbackBoard, onDeleted }: ClubBoardPostCardProps) {
   const board = post.board ?? fallbackBoard ?? null;
   const boardLink =
     board?.clubId && board?.slug ? `/clubs/${board.clubId}/boards/${board.slug}` : undefined;
@@ -26,8 +28,14 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
     board?.clubId && board?.slug
       ? `/clubs/${board.clubId}/boards/${board.slug}/${post.id}`
       : `./${post.id}`;
-  const authorName = post.author?.name ?? "알 수 없는 사용자";
-  const authorImageUrl = post.author?.userImage?.url ?? "/images/user_empty.png";
+  const authorPlayer = post.authorPlayer;
+  const authorName =
+    getPlayerDisplayName(authorPlayer ?? undefined) ??
+    post.author?.nick ??
+    post.author?.name ??
+    "알 수 없는 사용자";
+  const authorImageUrl =
+    authorPlayer?.user?.userImage?.url ?? post.author?.userImage?.url ?? "/images/user_empty.png";
 
   return (
     <Card className="w-full rounded-2xl shadow-sm border border-muted/40">
@@ -82,6 +90,7 @@ export function ClubBoardPostCard({ post, fallbackBoard }: ClubBoardPostCardProp
           <Settings
             post={post}
             editTo={`/clubs/${board.clubId}/boards/${board.slug}/${post.id}/edit`}
+            onDeleted={onDeleted}
           />
         ) : null}
       </CardFooter>

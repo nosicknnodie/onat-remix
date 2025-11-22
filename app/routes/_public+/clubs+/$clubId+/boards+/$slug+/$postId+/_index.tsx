@@ -1,9 +1,9 @@
-import { Link, useParams } from "@remix-run/react";
+import { Link, useNavigate, useParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDistance } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { LexicalEditor, SerializedEditorState } from "lexical";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaArrowAltCircleLeft, FaRegComment } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
@@ -28,12 +28,37 @@ import {
   PostVoteBadgeButton,
   Settings,
 } from "~/features/communities/client";
+import { getPlayerDisplayName } from "~/features/matches/isomorphic";
 import { cn } from "~/libs";
+
+type UserLike = {
+  nick?: string | null;
+  name?: string | null;
+  userImage?: { url?: string | null } | null;
+};
+
+const getAuthorDisplayInfo = (
+  player:
+    | (Parameters<typeof getPlayerDisplayName>[0] & { user?: UserLike | null })
+    | null
+    | undefined,
+  user: UserLike | null | undefined,
+) => {
+  const name =
+    (player ? getPlayerDisplayName(player) : undefined) ??
+    user?.nick ??
+    user?.name ??
+    "알 수 없는 사용자";
+  const image = player?.user?.userImage?.url ?? user?.userImage?.url ?? "/images/user_empty.png";
+  return { name, image };
+};
 
 interface IPostViewProps {}
 
 const PostView = (_props: IPostViewProps) => {
-  const { postId } = useParams();
+  const { postId, clubId, slug } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const session = useSession();
   const [isTextMode, setIsTextMode] = useState(false);
   const [path, setPath] = useState<string | undefined>(undefined);
@@ -106,6 +131,25 @@ const PostView = (_props: IPostViewProps) => {
     refetch();
   };
 
+  const handlePostDeleted = useCallback(
+    (deletedPostId: string) => {
+      const targetClubId = clubId ?? post?.board?.clubId;
+      const targetSlug = slug ?? post?.board?.slug;
+      if (!targetClubId || !targetSlug) {
+        navigate("/clubs");
+        return;
+      }
+      queryClient.invalidateQueries({
+        queryKey: clubBoardQueryKeys.feed(targetClubId, targetSlug),
+      });
+      queryClient.removeQueries({
+        queryKey: clubBoardQueryKeys.postDetail(deletedPostId),
+      });
+      navigate(`/clubs/${targetClubId}/boards/${targetSlug}`, { replace: true });
+    },
+    [clubId, slug, navigate, post?.board?.clubId, post?.board?.slug, queryClient],
+  );
+
   if (!postId) {
     return <div>잘못된 게시글 접근입니다.</div>;
   }
@@ -133,9 +177,10 @@ const PostView = (_props: IPostViewProps) => {
       </div>
     );
   }
-  const postAuthor = post.author;
-  const postAuthorName = postAuthor?.name ?? "알 수 없는 사용자";
-  const postAuthorImage = postAuthor?.userImage?.url ?? "/images/user_empty.png";
+  const { name: postAuthorName, image: postAuthorImage } = getAuthorDisplayInfo(
+    post.authorPlayer,
+    post.author,
+  );
   return (
     <>
       <div>
@@ -182,6 +227,7 @@ const PostView = (_props: IPostViewProps) => {
             <Settings
               post={post}
               editTo={`/clubs/${post.board?.clubId}/boards/${post.board?.slug}/${post?.id}/edit`}
+              onDeleted={handlePostDeleted}
             />
           </CardFooter>
           <CardContent className="max-md:p-1">
@@ -313,6 +359,11 @@ function CommentItem({
   };
   if (!post) return null;
 
+  const { name: commentAuthorName, image: commentAuthorImage } = getAuthorDisplayInfo(
+    comment.authorPlayer,
+    comment.author,
+  );
+
   if (comment.isDeleted && comment.children.length === 0 && comment.authorId !== session?.id)
     return null;
 
@@ -324,9 +375,7 @@ function CommentItem({
     >
       <div className="h-10 flex items-center max-md:max-w-6">
         <Avatar className="size-8">
-          <AvatarImage
-            src={comment.author.userImage?.url || "/images/user_empty.png"}
-          ></AvatarImage>
+          <AvatarImage src={commentAuthorImage}></AvatarImage>
           <AvatarFallback className="bg-primary-foreground">
             <Loading />
           </AvatarFallback>
@@ -348,7 +397,7 @@ function CommentItem({
         {!comment.isDeleted && (
           <>
             <div className="h-10 flex items-center gap-2 ml-2 text-sm">
-              <span>{comment.author.name}</span>
+              <span>{commentAuthorName}</span>
               <span className="text-muted-foreground text-xs">•</span>
               <span className="text-muted-foreground text-xs">
                 {formatDistance(comment.createdAt, new Date(), {
@@ -392,7 +441,7 @@ function CommentItem({
               <CommentInput
                 onCancel={() => setIsReplying(false)}
                 onSubmit={handleInputComment}
-                placeholder={`@${comment.author.name} Reply...`}
+                placeholder={`@${commentAuthorName} Reply...`}
               />
             )}
           </>

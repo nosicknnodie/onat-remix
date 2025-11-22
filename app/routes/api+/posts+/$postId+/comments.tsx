@@ -65,6 +65,15 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     include: {
       votes: true,
       author: { include: { userImage: true } },
+      authorPlayer: {
+        include: {
+          user: {
+            include: {
+              userImage: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -130,10 +139,29 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     const usedImageIds = extractImageIds(contentJSON);
 
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        board: { select: { clubId: true } },
+      },
+    });
+    if (!post) {
+      return Response.json({ success: false, errors: "Post not found" }, { status: 404 });
+    }
+
+    const clubId = post.board?.clubId;
+    const authorPlayer = clubId
+      ? await prisma.player.findFirst({
+          where: { clubId, userId: user.id },
+          select: { id: true },
+        })
+      : null;
+
     const comment = await prisma.postComment.create({
       data: {
         postId,
         authorId: user.id,
+        authorPlayerId: authorPlayer?.id ?? null,
         parentId,
         indexId,
         path,
@@ -155,7 +183,22 @@ export async function action({ params, request }: ActionFunctionArgs) {
       });
     }
 
-    return Response.json({ success: true, comment });
+    const created = await prisma.postComment.findUnique({
+      where: { id: comment.id },
+      include: {
+        votes: true,
+        author: { include: { userImage: true } },
+        authorPlayer: {
+          include: {
+            user: {
+              include: { userImage: true },
+            },
+          },
+        },
+      },
+    });
+
+    return Response.json({ success: true, comment: created ?? comment });
   } catch (error) {
     console.error(error);
     return Response.json({ success: false, errors: "Internal Server Error" }, { status: 500 });

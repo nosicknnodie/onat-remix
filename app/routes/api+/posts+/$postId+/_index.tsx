@@ -27,8 +27,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   if (!user) return redirect("/auth/login");
   const method = request.method.toUpperCase();
   if (method === "DELETE") {
-    if (!params.id) return Response.json({ success: false }, { status: 400 });
-    const result = await service.deletePost(params.id, user.id);
+    const postId = params.postId ?? params.id;
+    if (!postId) return Response.json({ success: false }, { status: 400 });
+    const result = await service.deletePost(postId, user.id);
     if (result.ok) return Response.json({ success: true });
     return Response.json({ success: false, errors: result.message }, { status: 500 });
   }

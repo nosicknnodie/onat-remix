@@ -222,6 +222,8 @@ model Player {
   createdMatches    Match[] @relation("MatchCreatePlayer")
   comments          Comment[]
   toReplies         Comment[] @relation("CommentReplyToPlayer")
+  posts             Post[]
+  postComments      PostComment[]
 
   @@index([clubId])
   @@index([userId])
@@ -648,6 +650,8 @@ model Post {
 
   authorId  String?
   author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorPlayerId  String?
+  authorPlayer    Player?     @relation(fields: [authorPlayerId], references: [id], onDelete: SetNull)
 
   boardId   String?
   board     Board?    @relation(fields: [boardId], references: [id], onDelete: Cascade)
@@ -662,6 +666,7 @@ model Post {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([authorId])
+  @@index([authorPlayerId])
   @@index([boardId])
 }
 
@@ -680,6 +685,10 @@ model PostComment {
 
   authorId  String?
   author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  
+  authorPlayerId  String?
+  authorPlayer    Player?     @relation(fields: [authorPlayerId], references: [id], onDelete: SetNull)
+
 
   parentId  String?        // 대댓글 기능
 
@@ -693,6 +702,7 @@ model PostComment {
   @@index([path])
   @@index([postId])
   @@index([authorId])
+  @@index([authorPlayerId])
   @@index([parentId])
 }
 

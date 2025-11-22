@@ -36,6 +36,20 @@ export async function findBoardsOverview(clubId: string) {
         orderBy: { createdAt: "desc" },
         where: { state: "PUBLISHED" },
         include: {
+          author: {
+            include: {
+              userImage: true,
+            },
+          },
+          authorPlayer: {
+            include: {
+              user: {
+                include: {
+                  userImage: true,
+                },
+              },
+            },
+          },
           _count: {
             select: {
               comments: { where: { parentId: null, isDeleted: false } },
@@ -79,6 +93,15 @@ export async function findBoardWithPosts(args: BoardFeedArgs) {
           author: {
             include: {
               userImage: true,
+            },
+          },
+          authorPlayer: {
+            include: {
+              user: {
+                include: {
+                  userImage: true,
+                },
+              },
             },
           },
           votes: true,
@@ -131,6 +154,15 @@ export async function findClubPosts(args: ClubFeedArgs) {
       author: {
         include: {
           userImage: true,
+        },
+      },
+      authorPlayer: {
+        include: {
+          user: {
+            include: {
+              userImage: true,
+            },
+          },
         },
       },
       votes: true,
@@ -195,12 +227,14 @@ export async function updatePostToPublished({
   title,
   content,
   resetCreatedAt,
+  authorPlayerId,
 }: {
   postId: string;
   boardId: string;
   title: string;
   content: Prisma.InputJsonValue;
   resetCreatedAt?: boolean;
+  authorPlayerId?: string | null;
 }) {
   return await prisma.post.update({
     where: { id: postId },
@@ -209,6 +243,7 @@ export async function updatePostToPublished({
       state: "PUBLISHED",
       title,
       content,
+      authorPlayerId: authorPlayerId ?? null,
       ...(resetCreatedAt ? { createdAt: new Date() } : {}),
     },
     include: {

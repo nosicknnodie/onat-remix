@@ -17,18 +17,31 @@ import { cn } from "~/libs";
 export const Settings = ({
   post,
   editTo,
+  onDeleted,
 }: {
   editTo: string;
   post?: (Post & { author?: (User & { userImage?: File | null }) | null }) | null;
+  onDeleted?: (postId: string) => void;
 }) => {
   const user = useSession();
   const { revalidate } = useRevalidator();
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: async () => fetch(`/api/posts/${post?.id}`, { method: "DELETE" }),
+    mutationFn: async () => {
+      if (!post?.id) throw new Error("삭제할 게시글 정보가 없습니다.");
+      const response = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result?.errors ?? "게시글 삭제에 실패했습니다.");
+      }
+      return response.json();
+    },
   });
   const handleDelete = async () => {
     try {
+      const postId = post?.id;
+      if (!postId) return;
       await mutateAsync();
+      onDeleted?.(postId);
       revalidate();
     } catch (error) {
       console.error(error);

@@ -1,16 +1,19 @@
 import { useParams } from "@remix-run/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { ClubBoardPostCard } from "~/features/clubs/client";
 import {
   type ClubBoardFeedResponse,
+  clubBoardQueryKeys,
   useClubBoardFeedInfiniteQuery,
   useClubBoardsTabsQuery,
 } from "~/features/clubs/isomorphic";
 
 const SlugPage = () => {
   const { clubId, slug } = useParams();
+  const queryClient = useQueryClient();
 
   if (!clubId || !slug) {
     throw new Error("clubId or slug is missing from route params");
@@ -35,6 +38,15 @@ const SlugPage = () => {
   const handleLoadMore = useCallback(async () => {
     await fetchNextPage();
   }, [fetchNextPage]);
+
+  const handlePostDeleted = useCallback(
+    (postId: string) => {
+      queryClient.invalidateQueries({ queryKey: clubBoardQueryKeys.feed(clubId, slug) });
+      queryClient.removeQueries({ queryKey: clubBoardQueryKeys.postDetail(postId) });
+      void refetch();
+    },
+    [clubId, slug, queryClient, refetch],
+  );
 
   const boardType = board?.type === "NOTICE" ? "compact" : "card";
   const fallbackBoard = board ?? {
@@ -66,7 +78,12 @@ const SlugPage = () => {
   return (
     <div className="flex flex-col gap-4" data-board-type={boardType}>
       {posts.map((post) => (
-        <ClubBoardPostCard key={post.id} post={post} fallbackBoard={fallbackBoard} />
+        <ClubBoardPostCard
+          key={post.id}
+          post={post}
+          fallbackBoard={fallbackBoard}
+          onDeleted={handlePostDeleted}
+        />
       ))}
       <InfiniteSentinel
         hasMore={hasMore}

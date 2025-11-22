@@ -85,6 +85,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { post, board } = await boardService.publishPost({
       postId: result.data.id,
       boardId: result.data.boardId,
+      clubId,
       title: result.data.title,
       content: result.data.content,
       authorId: user.id,

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import _ from "lodash";
 import { deletePublicImage } from "~/libs/db/s3.server";
+import { prisma } from "~/libs/index.server";
 import {
   countBoards,
   createDefaultBoards,
@@ -118,6 +119,7 @@ function extractImageIds(node: unknown): string[] {
 export async function publishPost({
   postId,
   boardId,
+  clubId,
   title,
   content,
   authorId,
@@ -125,6 +127,7 @@ export async function publishPost({
 }: {
   postId: string;
   boardId: string;
+  clubId: string;
   title: string;
   content: string;
   authorId: string;
@@ -153,12 +156,18 @@ export async function publishPost({
     await deleteFilesByIds(deletedIds);
   }
 
+  const authorPlayer = await prisma.player.findFirst({
+    where: { userId: authorId, clubId },
+    select: { id: true },
+  });
+
   const updated = await updatePostToPublished({
     postId,
     boardId,
     title,
     content: contentJSON,
     resetCreatedAt,
+    authorPlayerId: authorPlayer?.id ?? null,
   });
 
   return {
