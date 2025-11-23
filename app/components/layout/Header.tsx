@@ -78,12 +78,14 @@ const Header = () => {
             </Avatar>
           ) : (
             <div className="flex space-x-3">
-              <Link
-                to="/auth/login"
-                className={cn("px-1 py-0.5 text-inherit rounded-md flex items-center gap-1")}
-              >
-                Sign in
-              </Link>
+              <Button asChild variant="secondary">
+                <Link
+                  to="/auth/login"
+                  className={cn("px-1 py-0.5 text-inherit rounded-md flex items-center gap-1")}
+                >
+                  로그인
+                </Link>
+              </Button>
             </div>
           )}
         </div>
