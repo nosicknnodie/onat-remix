@@ -1,11 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getJson, postJson } from "~/libs/api-client";
-import type { RatingPageResponse, RatingStatsResponse } from "./rating.types";
+import type {
+  RatingPageResponse,
+  RatingRegisterResponse,
+  RatingStatsResponse,
+} from "./rating.types";
 
 export const ratingQueryKeys = {
   detail: (matchClubId: string) => ["MATCH_RATING_QUERY", matchClubId] as const,
   stats: (matchClubId: string) => ["MATCH_RATING_STATS_QUERY", matchClubId] as const,
+  register: (matchClubId: string) => ["MATCH_RATING_REGISTER_QUERY", matchClubId] as const,
 } as const;
 
 export type UseRatingQueryOptions = {
@@ -30,6 +35,29 @@ export function useRatingQuery(matchClubId?: string, options?: UseRatingQueryOpt
   });
 }
 
+type UseRatingRegisterQueryOptions = {
+  enabled?: boolean;
+};
+
+export function useRatingRegisterQuery(
+  matchClubId?: string,
+  options?: UseRatingRegisterQueryOptions,
+) {
+  const enabled = options?.enabled ?? Boolean(matchClubId);
+  const queryKey = useMemo(() => ratingQueryKeys.register(matchClubId ?? ""), [matchClubId]);
+
+  return useQuery<RatingRegisterResponse>({
+    queryKey,
+    queryFn: async () => {
+      if (!matchClubId) {
+        throw new Error("matchClubId is required to fetch rating register data");
+      }
+      return getJson<RatingRegisterResponse>(`/api/matchClubs/${matchClubId}/rating/register`);
+    },
+    enabled,
+  });
+}
+
 type UseRatingStatsQueryOptions = {
   enabled?: boolean;
 };
@@ -51,7 +79,7 @@ export function useRatingStatsQuery(matchClubId?: string, options?: UseRatingSta
 }
 
 type RatingMutationContext = {
-  previous?: RatingPageResponse;
+  previous?: RatingPageResponse | RatingRegisterResponse;
 };
 
 export type RatingScoreMutationVariables = {
@@ -59,9 +87,18 @@ export type RatingScoreMutationVariables = {
   score: number;
 };
 
-export function useRatingScoreMutation(matchClubId?: string, userId?: string) {
+type RatingMutationTarget = "detail" | "register";
+
+type RatingMutationOptions = {
+  userId?: string;
+  target?: RatingMutationTarget;
+};
+
+export function useRatingScoreMutation(matchClubId?: string, options?: RatingMutationOptions) {
   const queryClient = useQueryClient();
-  const queryKey = useMemo(() => ratingQueryKeys.detail(matchClubId ?? ""), [matchClubId]);
+  const target: RatingMutationTarget = options?.target ?? "detail";
+  const userId = options?.userId;
+  const queryKey = useMemo(() => ratingQueryKeys[target](matchClubId ?? ""), [matchClubId, target]);
 
   return useMutation<void, unknown, RatingScoreMutationVariables, RatingMutationContext>({
     mutationFn: async ({ attendanceId, score }) => {
@@ -76,22 +113,43 @@ export function useRatingScoreMutation(matchClubId?: string, userId?: string) {
     },
     onMutate: async ({ attendanceId, score }) => {
       await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData<RatingPageResponse>(queryKey);
+      const previous = queryClient.getQueryData<
+        RatingPageResponse | RatingRegisterResponse | undefined
+      >(queryKey);
       if (previous && userId) {
-        const next: RatingPageResponse = {
-          ...previous,
-          attendances: previous.attendances.map((att) =>
-            att.id === attendanceId
-              ? {
-                  ...att,
-                  evaluations: att.evaluations.map((ev) =>
-                    ev.userId === userId ? { ...ev, score } : ev,
-                  ),
-                }
-              : att,
-          ),
-        };
-        queryClient.setQueryData(queryKey, next);
+        if (target === "register") {
+          const next: RatingRegisterResponse = {
+            ...(previous as RatingRegisterResponse),
+            attendances: (previous as RatingRegisterResponse).attendances.map((att) =>
+              att.id === attendanceId
+                ? {
+                    ...att,
+                    myEvaluation: {
+                      id: att.myEvaluation?.id ?? `${attendanceId}-${userId ?? "me"}-local`,
+                      liked: att.myEvaluation?.liked ?? false,
+                      score,
+                    },
+                  }
+                : att,
+            ),
+          };
+          queryClient.setQueryData(queryKey, next);
+        } else {
+          const next: RatingPageResponse = {
+            ...(previous as RatingPageResponse),
+            attendances: (previous as RatingPageResponse).attendances.map((att) =>
+              att.id === attendanceId
+                ? {
+                    ...att,
+                    evaluations: att.evaluations.map((ev) =>
+                      ev.userId === userId ? { ...ev, score } : ev,
+                    ),
+                  }
+                : att,
+            ),
+          };
+          queryClient.setQueryData(queryKey, next);
+        }
       }
       return { previous };
     },
@@ -102,6 +160,9 @@ export function useRatingScoreMutation(matchClubId?: string, userId?: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
+      if (matchClubId) {
+        queryClient.invalidateQueries({ queryKey: ratingQueryKeys.stats(matchClubId) });
+      }
     },
   });
 }
@@ -111,9 +172,11 @@ export type RatingLikeMutationVariables = {
   liked: boolean;
 };
 
-export function useRatingLikeMutation(matchClubId?: string, userId?: string) {
+export function useRatingLikeMutation(matchClubId?: string, options?: RatingMutationOptions) {
   const queryClient = useQueryClient();
-  const queryKey = useMemo(() => ratingQueryKeys.detail(matchClubId ?? ""), [matchClubId]);
+  const target: RatingMutationTarget = options?.target ?? "detail";
+  const userId = options?.userId;
+  const queryKey = useMemo(() => ratingQueryKeys[target](matchClubId ?? ""), [matchClubId, target]);
 
   return useMutation<void, unknown, RatingLikeMutationVariables, RatingMutationContext>({
     mutationFn: async ({ attendanceId, liked }) => {
@@ -128,22 +191,43 @@ export function useRatingLikeMutation(matchClubId?: string, userId?: string) {
     },
     onMutate: async ({ attendanceId, liked }) => {
       await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData<RatingPageResponse>(queryKey);
+      const previous = queryClient.getQueryData<
+        RatingPageResponse | RatingRegisterResponse | undefined
+      >(queryKey);
       if (previous && userId) {
-        const next: RatingPageResponse = {
-          ...previous,
-          attendances: previous.attendances.map((att) =>
-            att.id === attendanceId
-              ? {
-                  ...att,
-                  evaluations: att.evaluations.map((ev) =>
-                    ev.userId === userId ? { ...ev, liked } : ev,
-                  ),
-                }
-              : att,
-          ),
-        };
-        queryClient.setQueryData(queryKey, next);
+        if (target === "register") {
+          const next: RatingRegisterResponse = {
+            ...(previous as RatingRegisterResponse),
+            attendances: (previous as RatingRegisterResponse).attendances.map((att) =>
+              att.id === attendanceId
+                ? {
+                    ...att,
+                    myEvaluation: {
+                      id: att.myEvaluation?.id ?? `${attendanceId}-${userId ?? "me"}-local`,
+                      score: att.myEvaluation?.score ?? 0,
+                      liked,
+                    },
+                  }
+                : att,
+            ),
+          };
+          queryClient.setQueryData(queryKey, next);
+        } else {
+          const next: RatingPageResponse = {
+            ...(previous as RatingPageResponse),
+            attendances: (previous as RatingPageResponse).attendances.map((att) =>
+              att.id === attendanceId
+                ? {
+                    ...att,
+                    evaluations: att.evaluations.map((ev) =>
+                      ev.userId === userId ? { ...ev, liked } : ev,
+                    ),
+                  }
+                : att,
+            ),
+          };
+          queryClient.setQueryData(queryKey, next);
+        }
       }
       return { previous };
     },
@@ -154,6 +238,9 @@ export function useRatingLikeMutation(matchClubId?: string, userId?: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
+      if (matchClubId) {
+        queryClient.invalidateQueries({ queryKey: ratingQueryKeys.stats(matchClubId) });
+      }
     },
   });
 }

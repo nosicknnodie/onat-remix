@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import {
+  getAttendanceDisplayName,
   type RecordGoalRequest,
   recordSchema,
   useAttendanceQuery,
@@ -133,11 +134,7 @@ export const RecordRegister = ({
         attendance.assigneds?.find((item) => item.quarterId === quarter.id) ??
         assignedByAttendanceId.get(attendance.id);
       const assignedTeamId = assigned?.teamId ?? attendance.teamId ?? undefined;
-      const name =
-        attendance.player?.user?.name ||
-        attendance.mercenary?.user?.name ||
-        attendance.mercenary?.name ||
-        "";
+      const name = getAttendanceDisplayName(attendance);
       const imageUrl =
         attendance.player?.user?.userImage?.url ||
         attendance.mercenary?.user?.userImage?.url ||

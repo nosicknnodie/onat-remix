@@ -5,6 +5,8 @@ export type ClubSubnavItem = {
   label: string;
   href: string;
   active?: boolean;
+  disabled?: boolean;
+  disabledMessage?: string;
 };
 
 interface ClubSubnavTabsProps {
@@ -21,17 +23,12 @@ export const ClubSubnavTabs = ({ items, className }: ClubSubnavTabsProps) => {
       >
         {items.map((item) => {
           const isActive = !!item.active;
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "group relative flex shrink-0 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all",
-                isActive
-                  ? "bg-background text-primary shadow-sm"
-                  : "text-muted-foreground hover:bg-background/80 hover:text-foreground",
-              )}
-            >
+          const isDisabled = !!item.disabled;
+          const title = isDisabled
+            ? (item.disabledMessage ?? "현재 사용할 수 없습니다.")
+            : undefined;
+          const content = (
+            <>
               <span>{item.label}</span>
               <span
                 className={cn(
@@ -39,7 +36,34 @@ export const ClubSubnavTabs = ({ items, className }: ClubSubnavTabsProps) => {
                   isActive ? "opacity-100" : "opacity-0 group-hover:opacity-60",
                 )}
               />
-            </Link>
+            </>
+          );
+          return (
+            <div key={item.href} title={title} className="flex">
+              {isDisabled ? (
+                <span
+                  aria-disabled="true"
+                  className={cn(
+                    "group relative flex shrink-0 cursor-not-allowed items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all text-muted-foreground/70",
+                    "bg-transparent",
+                  )}
+                >
+                  {content}
+                </span>
+              ) : (
+                <Link
+                  to={item.href}
+                  className={cn(
+                    "group relative flex shrink-0 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all",
+                    isActive
+                      ? "bg-background text-primary shadow-sm"
+                      : "text-muted-foreground hover:bg-background/80 hover:text-foreground",
+                  )}
+                >
+                  {content}
+                </Link>
+              )}
+            </div>
           );
         })}
       </nav>

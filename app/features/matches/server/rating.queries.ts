@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
+import type { RatingRegisterAttendanceRaw } from "../isomorphic/rating.types";
 
 export async function findMatchClubWithQuarters(matchClubId: string) {
   return await prisma.matchClub.findFirst({
@@ -30,6 +31,51 @@ export async function getRatingAttendances({ matchClubId }: { matchClubId: strin
     },
   });
   return attendances as RatingAttendance[];
+}
+
+export async function getRatingRegisterAttendances({
+  matchClubId,
+  userId,
+}: {
+  matchClubId: string;
+  userId: string;
+}) {
+  const attendances = await prisma.attendance.findMany({
+    where: { matchClubId },
+    include: {
+      records: {
+        where: { isOwnGoal: false },
+        include: {
+          quarter: true,
+          team: true,
+          assistAttendance: {
+            include: {
+              player: { include: { user: { include: { userImage: true } } } },
+              mercenary: { include: { user: { include: { userImage: true } } } },
+            },
+          },
+        },
+      },
+      assigneds: {
+        include: {
+          quarter: true,
+          team: true,
+        },
+      },
+      player: { include: { user: { include: { userImage: true } } } },
+      mercenary: { include: { user: { include: { userImage: true } } } },
+      evaluations: {
+        where: { userId },
+        select: {
+          id: true,
+          score: true,
+          liked: true,
+        },
+      },
+    },
+    orderBy: [{ createdAt: "asc" }],
+  });
+  return attendances as RatingRegisterAttendanceRaw[];
 }
 
 export async function getRatingStats(matchClubId: string) {

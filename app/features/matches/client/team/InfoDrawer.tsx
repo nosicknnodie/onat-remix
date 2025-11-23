@@ -13,6 +13,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
+import { getAttendanceDisplayName } from "../../isomorphic";
 
 type UserLike = {
   name?: string | null;
@@ -53,7 +54,7 @@ export const InfoDrawer = ({
             ]
           : [],
     ).join(",") || "-";
-  const name = user?.name || payload?.mercenary?.name || "";
+  const name = getAttendanceDisplayName(payload);
   const imageUrl = user?.userImage?.url;
   return (
     <Drawer direction="right">

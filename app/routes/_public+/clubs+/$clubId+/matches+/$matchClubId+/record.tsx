@@ -1,6 +1,7 @@
 //
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { useParams } from "@remix-run/react";
+import dayjs from "dayjs";
 import { useTransition } from "react";
 import { FaFutbol } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
@@ -9,7 +10,11 @@ import { Button } from "~/components/ui/button";
 import { confirm } from "~/components/ui/confirm";
 import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import { GoalItem, QuarterRecord, RecordRegister } from "~/features/matches/client";
-import { getAttendanceDisplayName, useRecordQuery } from "~/features/matches/isomorphic";
+import {
+  getAttendanceDisplayName,
+  useMatchClubQuery,
+  useRecordQuery,
+} from "~/features/matches/isomorphic";
 
 interface IRecordPageProps {}
 
@@ -26,6 +31,11 @@ const RecordPage = (_props: IRecordPageProps) => {
   const { data, isLoading, refetch } = useRecordQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
+  const { data: matchClubQueryData } = useMatchClubQuery(matchClubId, {
+    clubId,
+    enabled: Boolean(matchClubId && clubId),
+  });
+  const match = matchClubQueryData?.matchClub?.match;
   const { data: membership } = useMembershipInfoQuery(params.clubId ?? "", {
     enabled: Boolean(params.clubId),
   });
@@ -34,6 +44,8 @@ const RecordPage = (_props: IRecordPageProps) => {
   });
   const canManage = permissions.includes("MATCH_MANAGE");
   const quarters = data?.quarters ?? [];
+  const isRecordLocked = match ? dayjs().isAfter(dayjs(match.stDate).add(5, "day")) : false;
+  const canEdit = canManage && !isRecordLocked;
 
   if (isLoading) {
     return (
@@ -72,6 +84,7 @@ const RecordPage = (_props: IRecordPageProps) => {
                   onRefetch={async () => {
                     await refetch();
                   }}
+                  canEdit={canEdit}
                 />
               );
             });
@@ -98,6 +111,7 @@ const RecordPage = (_props: IRecordPageProps) => {
                   onRefetch={async () => {
                     await refetch();
                   }}
+                  canEdit={canEdit}
                 />
               );
             });
@@ -111,13 +125,13 @@ const RecordPage = (_props: IRecordPageProps) => {
               isSameTeam2={isSameTeam2}
               team1Content={team1Goals}
               team2Content={team2Goals}
-              canEdit={canManage}
+              canEdit={canEdit}
               Dialog={({ quarter: dialogQuarter, team, children }) => (
                 <RecordRegister
                   quarter={dialogQuarter}
                   clubId={clubId}
                   team={team ?? undefined}
-                  canEdit={canManage}
+                  canEdit={canEdit}
                 >
                   {children}
                 </RecordRegister>
@@ -137,6 +151,7 @@ const GoalComponent = ({
   isOwner,
   assistName,
   onRefetch,
+  canEdit,
 }: {
   id: string;
   name: string;
@@ -144,6 +159,7 @@ const GoalComponent = ({
   isOwner?: boolean;
   assistName?: string;
   onRefetch: () => Promise<void>;
+  canEdit: boolean;
 }) => {
   const [_isPending, startTransition] = useTransition();
   const handleDelGoal = (id: string) => {
@@ -181,6 +197,7 @@ const GoalComponent = ({
       Loading={Loading}
       FaFutbol={FaFutbol}
       Button={Button}
+      canDelete={canEdit}
     />
   );
 };

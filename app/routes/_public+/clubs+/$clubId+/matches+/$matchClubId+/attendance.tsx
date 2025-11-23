@@ -140,7 +140,8 @@ const AttendancePage = (_props: IAttendancePageProps) => {
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
-                  className="flex items-center gap-x-1 w-32"
+                  size="sm"
+                  className="flex items-center gap-x-1 max-sm:w-20 sm:w-32 max-sm:text-xs sm:text-sm"
                   disabled={attendanceMutation.isPending}
                   onClick={() => handleAttendanceChange({ isVote: true, isCheck: false })}
                 >
@@ -149,7 +150,8 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-x-1 w-32"
+                  size="sm"
+                  className="flex items-center gap-x-1 max-sm:w-20 sm:w-32 max-sm:text-xs sm:text-sm"
                   disabled={attendanceMutation.isPending}
                   onClick={() => handleAttendanceChange({ isVote: false, isCheck: false })}
                 >

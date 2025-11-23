@@ -1,3 +1,4 @@
+import type { RatingRegisterAttendance } from "../isomorphic/rating.types";
 import * as q from "./rating.queries";
 
 export async function getRatingPageData(matchClubId: string) {
@@ -6,6 +7,20 @@ export async function getRatingPageData(matchClubId: string) {
     q.getRatingAttendances({ matchClubId }),
   ]);
   return { attendances, matchClub } as const;
+}
+
+export async function getRatingRegisterData(matchClubId: string, userId: string) {
+  const [matchClub, attendances] = await Promise.all([
+    q.findMatchClubWithQuarters(matchClubId),
+    q.getRatingRegisterAttendances({ matchClubId, userId }),
+  ]);
+  const normalized: RatingRegisterAttendance[] = attendances.map(
+    ({ evaluations, ...attendance }) => ({
+      ...attendance,
+      myEvaluation: evaluations[0] ?? null,
+    }),
+  );
+  return { attendances: normalized, matchClub } as const;
 }
 
 export async function upsertScore(

@@ -21,6 +21,48 @@ export type RatingPageResponse = {
   matchClub: RatingMatchClub | null;
 };
 
+export type RatingRegisterAttendanceRaw = Prisma.AttendanceGetPayload<{
+  include: {
+    records: {
+      where: { isOwnGoal: false };
+      include: {
+        quarter: true;
+        team: true;
+        assistAttendance: {
+          include: {
+            player: { include: { user: { include: { userImage: true } } } };
+            mercenary: { include: { user: { include: { userImage: true } } } };
+          };
+        };
+      };
+    };
+    assigneds: {
+      include: {
+        quarter: true;
+        team: true;
+      };
+    };
+    player: { include: { user: { include: { userImage: true } } } };
+    mercenary: { include: { user: { include: { userImage: true } } } };
+    evaluations: {
+      select: {
+        id: true;
+        score: true;
+        liked: true;
+      };
+    };
+  };
+}>;
+
+export type RatingRegisterAttendance = Omit<RatingRegisterAttendanceRaw, "evaluations"> & {
+  myEvaluation: RatingRegisterAttendanceRaw["evaluations"][number] | null;
+};
+
+export type RatingRegisterResponse = {
+  attendances: RatingRegisterAttendance[];
+  matchClub: RatingMatchClub | null;
+};
+
 export type RatingStatsItem = Prisma.AttendanceRatingStatsGetPayload<{
   include: {
     attendance: {

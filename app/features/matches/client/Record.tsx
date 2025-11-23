@@ -146,6 +146,7 @@ export function GoalItem({
   Loading,
   FaFutbol,
   Button,
+  canDelete = true,
 }: {
   id: string;
   name: string;
@@ -160,6 +161,7 @@ export function GoalItem({
   Loading: React.ComponentType<{ className?: string }>;
   FaFutbol: React.ComponentType<{ className?: string }>;
   Button: React.ComponentType<Record<string, unknown>>;
+  canDelete?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -175,14 +177,16 @@ export function GoalItem({
         <FaFutbol className={`text-primary ${isOwner ? "text-destructive" : ""}`} />
         {isOwner && <span className="text-xs text-destructive">자책</span>}
       </span>
-      <Button
-        variant="ghost"
-        size={"icon"}
-        className="w-3 h-3 text-destructive"
-        onClick={() => onDelete(id)}
-      >
-        x
-      </Button>
+      {canDelete && (
+        <Button
+          variant="ghost"
+          size={"icon"}
+          className="w-3 h-3 text-destructive"
+          onClick={() => onDelete(id)}
+        >
+          x
+        </Button>
+      )}
     </div>
   );
 }

@@ -126,8 +126,11 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const base = `/clubs/${params.clubId}/matches/${params.matchClubId}`;
   const hasMatchMaster = permissions.includes("MATCH_MASTER");
   const hasMatchManage = permissions.includes("MATCH_MANAGE");
-  const manageWindowActive = dayjs().diff(dayjs(match.stDate).add(1, "day"), "millisecond") <= 0;
+  const manageWindowActive = dayjs().diff(dayjs(match.stDate).add(3, "day"), "millisecond") <= 0;
   const canManageActions = hasMatchMaster || (hasMatchManage && manageWindowActive);
+  const now = dayjs();
+  const isRecordLocked = now.isBefore(dayjs(match.stDate));
+  const isRatingLocked = now.isBefore(dayjs(match.stDate).add(1, "hour"));
   const attendanceData =
     attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
   const matchClubAttendances = attendanceData?.matchClub.attendances ?? [];
@@ -184,11 +187,15 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     label: "기록",
     href: `${base}/record`,
     active: location.pathname.startsWith(`${base}/record`),
+    disabled: isRecordLocked,
+    disabledMessage: "경기 시작 후 기록 입력이 가능합니다.",
   });
   items.push({
     label: "평점",
     href: `${base}/rating`,
     active: location.pathname.startsWith(`${base}/rating`),
+    disabled: isRatingLocked,
+    disabledMessage: "경기 시작 1시간 이후부터 평점 입력이 가능합니다.",
   });
 
   return (

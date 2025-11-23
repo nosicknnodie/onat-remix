@@ -136,7 +136,7 @@ export function RatingCard({
             onClick={(_e, s) => onScoreChange(s)}
           />
           <div>
-            <Button variant={"ghost"} disabled={!isActive} onClick={onToggleLike}>
+            <Button size="icon" variant={"ghost"} disabled={!isActive} onClick={onToggleLike}>
               {liked ? (
                 <LikeIcon size={30} className="text-primary" />
               ) : (

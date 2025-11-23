@@ -1,5 +1,6 @@
 import { Outlet, useLocation, useNavigate, useParams, useRouteLoaderData } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import { useEffect, useState, useTransition } from "react";
 import { FaCircleArrowLeft, FaCircleArrowRight, FaRotateRight } from "react-icons/fa6";
 import { Loading } from "~/components/Loading";
@@ -40,6 +41,7 @@ const PositionLayout = () => {
     enabled: Boolean(membership?.id),
   });
   const canManage = permissions.includes("MATCH_MANAGE");
+  const isMatchMaster = permissions.includes("MATCH_MASTER");
   const matchClub = matchClubQuery.data?.matchClub;
   const quarters = matchClub?.quarters;
   const currentQuarter = matchClub?.quarters.find(
@@ -98,11 +100,15 @@ const PositionLayout = () => {
     }
   };
 
+  const matchManageWindowActive =
+    isMatchMaster || dayjs().diff(dayjs(matchClub?.match.stDate).add(3, "day"), "millisecond") <= 0;
+
   const handleSetQuarter = (order: number) => {
     startTransition(() => {
       if (!quarters) return;
       const quarterId = quarters.find((quarter) => quarter.order === order)?.id;
       if (!quarterId) {
+        if (!matchManageWindowActive) return;
         const maxOrder = quarters.reduce((max, q) => (q.order > max ? q.order : max), 0);
         const nextOrder = maxOrder + 1;
         confirm({
@@ -147,6 +153,7 @@ const PositionLayout = () => {
   };
 
   const handleDeleteQuarter = () => {
+    if (!matchManageWindowActive) return;
     if (!quarters || currentQuarterOrder < 5) return;
     const targetQuarter = quarters.find((quarter) => quarter.order === currentQuarterOrder);
     if (!targetQuarter) return;
@@ -229,7 +236,7 @@ const PositionLayout = () => {
         <Button
           size="sm"
           variant={isTeamRoute && teamIdParam === team1?.id ? "default" : "ghost"}
-          disabled={!team1}
+          disabled={!team1 || !matchManageWindowActive}
           onClick={() => handleTeamSelect(team1?.id ?? null)}
           className="min-w-20"
         >
@@ -246,7 +253,7 @@ const PositionLayout = () => {
         <Button
           size="sm"
           variant={isTeamRoute && teamIdParam === team2?.id ? "default" : "ghost"}
-          disabled={!team2}
+          disabled={!team2 || !matchManageWindowActive}
           onClick={() => handleTeamSelect(team2?.id ?? null)}
           className="min-w-20"
         >

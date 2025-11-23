@@ -140,7 +140,7 @@ const CompactTypeComponent = () => {
         <ul className="space-y-2 text-gray-700 text-sm">
           {items?.map((post) => {
             const authorImage = post.author?.userImage?.url ?? "/images/user_empty.png";
-            const authorName = post.author?.name ?? "알 수 없는 사용자";
+            const authorName = post.author?.nick ?? post.author?.name ?? "알 수 없는 사용자";
             return (
               <Fragment key={post.id}>
                 <Separator />

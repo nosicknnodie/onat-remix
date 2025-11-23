@@ -144,7 +144,7 @@ const PostView = (_props: IPostViewProps) => {
   };
 
   const postAuthor = post.author;
-  const postAuthorName = postAuthor?.name ?? "알 수 없는 사용자";
+  const postAuthorName = postAuthor?.nick ?? postAuthor?.name ?? "탈퇴 한 회원 입니다.";
   const postAuthorImage = postAuthor?.userImage?.url ?? "/images/user_empty.png";
   // post 존재는 상단에서 분기 처리됨
   return (
@@ -377,7 +377,7 @@ function CommentItem({
         {!comment.isDeleted && (
           <>
             <div className="h-10 flex items-center gap-2 ml-2 text-sm">
-              <span>{comment.author.name}</span>
+              <span>{comment.author.nick || comment.author.name}</span>
               <span className="text-muted-foreground text-xs">•</span>
               <span className="text-muted-foreground text-xs">
                 {formatDistance(comment.createdAt, new Date(), {
@@ -421,7 +421,7 @@ function CommentItem({
               <CommentInput
                 onCancel={() => setIsReplying(false)}
                 onSubmit={handleInputComment}
-                placeholder={`@${comment.author.name} Reply...`}
+                placeholder={`@${comment.author.nick || comment.author.name} Reply...`}
               />
             )}
           </>
