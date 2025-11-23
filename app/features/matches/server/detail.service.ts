@@ -1,6 +1,7 @@
 import type { MatchSummary } from "../isomorphic/summary.types";
 import * as q from "./detail.queries";
 import { summarizeMatch } from "./summary.service";
+import { sendMatchWebhook } from "./webhook";
 
 export async function getMatchDetail(matchId: string): Promise<MatchSummary | null> {
   const match = await q.findMatchByIdWithClubs(matchId);
@@ -39,5 +40,8 @@ export async function updateMatch(
     createUserId: dto.createUserId,
     createPlayerId: createPlayer,
   });
+  await Promise.all(
+    matchClubs.map((mc) => sendMatchWebhook({ matchClubId: mc.id, action: "updated" })),
+  );
   return { ok: true as const };
 }

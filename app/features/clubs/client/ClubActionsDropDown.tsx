@@ -7,6 +7,7 @@
 
 import { Link } from "@remix-run/react";
 import type React from "react";
+import { FaPlus } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 
 interface ClubActionsDropdownProps {
@@ -20,8 +21,11 @@ export const ClubActionsDropdown: React.FC<ClubActionsDropdownProps> = ({ isAuth
   }
 
   return (
-    <Button asChild variant="outline">
-      <Link to="/clubs/new">클럽 생성</Link>
+    <Button asChild variant="secondary" className="h-6 gap-1">
+      <Link to="/clubs/new">
+        <FaPlus />
+        클럽
+      </Link>
     </Button>
     // <DropdownMenu>
     //   <DropdownMenuTrigger asChild>

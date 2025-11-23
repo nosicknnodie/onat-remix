@@ -147,7 +147,7 @@ model Club {
   emblemId      String?   // 엠블럼 URL
   image         File?      @relation("ClubImage",fields: [imageId], references: [id], onDelete: SetNull)
   emblem        File?      @relation("ClubEmblem",fields: [emblemId], references: [id], onDelete: SetNull)
-
+  discordWebhook  String? // discord webhook 
 
   isPublic      Boolean?  @default(false)
   ownerUserId  String?
@@ -332,7 +332,6 @@ model PlayerLog {
 
 model Match {
   id              String        @id @default(cuid())
-  
   title           String
   description     String     @db.Text
   placeName       String?
@@ -340,6 +339,7 @@ model Match {
   lng             Float?      
   lat             Float?     
   stDate          DateTime
+  
   
   matchClubs      MatchClub[]
   createUserId    String?
@@ -359,6 +359,7 @@ model MatchClub {
   clubId        String
   club          Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
   isSelf        Boolean       @default(false)   // 자체전 여부
+  discordWebhookMessageId String? // 디스코드 웹훅 메세지 아이디
   attendances   Attendance[]
   quarters      Quarter[]
   teams         Team[]

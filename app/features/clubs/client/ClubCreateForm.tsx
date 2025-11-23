@@ -1,9 +1,11 @@
 import type { File } from "@prisma/client";
 import { CameraIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ImageCropperDialog from "~/components/cropper/ImageCropperDialog";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
+import { Loading } from "~/components/Loading";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -16,6 +18,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { useToast } from "~/hooks";
 import { SIGUNGU } from "~/libs";
 import type { ActionData } from "~/types/action";
 
@@ -28,11 +31,13 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
   const [sis, setSis] = useState("");
   const [image, setImage] = useState<null | File>(null);
   const [emblem, setEmblem] = useState<null | File>(null);
+  const webhookRef = useRef<HTMLInputElement | null>(null);
+  const { toast } = useToast();
 
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Card>
+        <Card className="border-none shadow-none">
           <CardHeader>
             <p className="text-2xl font-semibold text-center">🪽 클럽 생성</p>
             <CardDescription className="w-full text-center">
@@ -65,13 +70,14 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
               </div>
               <div className="space-x-4 w-full flex justify-center min-h-[120px]">
                 <div className="w-[120px] h-[120px] relative">
-                  <img
-                    alt="emblem"
-                    src={emblem?.url || "/images/onat-emblem.png"}
-                    width={120}
-                    height={120}
-                    className="border-none outline-none rounded-lg"
-                  ></img>
+                  <Avatar className="w-full h-full">
+                    <AvatarImage
+                      src={emblem?.url || "/images/club-default-emblem.webp"}
+                    ></AvatarImage>
+                    <AvatarFallback className="bg-primary">
+                      <Loading />
+                    </AvatarFallback>
+                  </Avatar>
                   <ImageCropperDialog
                     title="클럽 엠블럼 업로드"
                     descirption="클럽 엠블럼을 업로드해주세요."
@@ -81,7 +87,7 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
                       setEmblem(image);
                     }}
                   >
-                    <div className="p-1 cursor-pointer absolute bottom-1 right-1 shadow-md">
+                    <div className="p-1 cursor-pointer absolute bottom-1 right-1 shadow-md bg-white rounded-full">
                       <CameraIcon className="" />
                     </div>
                   </ImageCropperDialog>
@@ -92,6 +98,52 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
                   <Label htmlFor="name">클럽 이름</Label>
                   <Input name="name" disabled={isPending} />
                   <FormError>{actionData?.fieldErrors?.name}</FormError>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="discordWebhook">Discord Webhook (선택)</Label>
+                  <Input
+                    type="url"
+                    name="discordWebhook"
+                    ref={webhookRef}
+                    disabled={isPending}
+                    placeholder="https://discord.com/api/webhooks/..."
+                  />
+                  <FormError>{actionData?.fieldErrors?.discordWebhook}</FormError>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={async () => {
+                      const webhookUrl = webhookRef.current?.value.trim();
+                      if (!webhookUrl) {
+                        toast({ title: "Webhook URL을 입력해주세요." });
+                        return;
+                      }
+                      try {
+                        const res = await fetch("/api/clubs/preview/webhook/discord/test", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ webhookUrl }),
+                        });
+                        const result = (await res.json().catch(() => ({}))) as {
+                          ok?: boolean;
+                          error?: string;
+                        };
+                        if (res.ok && result.ok) {
+                          toast({ title: "테스트 메시지를 전송했어요." });
+                        } else {
+                          toast({
+                            title: "전송 실패",
+                            description: result.error || "잠시 후 다시 시도해주세요.",
+                          });
+                        }
+                      } catch (_error) {
+                        toast({ title: "전송 실패", description: "네트워크 오류가 발생했습니다." });
+                      }
+                    }}
+                  >
+                    Webhook 테스트
+                  </Button>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">클럽 소개</Label>

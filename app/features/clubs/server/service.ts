@@ -16,6 +16,7 @@ import {
   getClubOwner as getClubOwnerQuery,
   getPendingClubMembers as getPendingClubMembersQuery,
 } from "./queries";
+import { sanitizeDiscordWebhook } from "./utils";
 
 export {
   getAttendanceSummary,
@@ -123,6 +124,12 @@ export async function updateClub(formData: FormData, userId: string) {
   const isPublic = formData.get("isPublic") === "true";
   const si = formData.get("si")?.toString();
   const gun = formData.get("gun")?.toString();
+  const discordWebhook = formData.get("discordWebhook")?.toString().trim();
+
+  const sanitizedWebhook = sanitizeDiscordWebhook(discordWebhook);
+  if (discordWebhook && !sanitizedWebhook) {
+    return { ok: false, message: "유효한 Discord Webhook URL을 입력해주세요." };
+  }
 
   try {
     const club = await prisma.club.update({
@@ -135,6 +142,7 @@ export async function updateClub(formData: FormData, userId: string) {
         emblemId: emblemId || undefined,
         si: si !== "null" ? si || null : null,
         gun: gun !== "null" ? gun || null : null,
+        discordWebhook: sanitizedWebhook,
       },
     });
     return { ok: true, club };

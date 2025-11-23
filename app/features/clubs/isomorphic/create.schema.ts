@@ -8,6 +8,7 @@ export const CreateClubSchema = z.object({
   gun: z.string().optional().nullable(),
   imageId: z.string().optional().nullable(),
   emblemId: z.string().optional().nullable(),
+  discordWebhook: z.string().url().optional().or(z.literal("")),
 });
 
 export type CreateClubInput = z.infer<typeof CreateClubSchema>;

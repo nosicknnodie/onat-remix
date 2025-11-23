@@ -1,4 +1,5 @@
 import { useParams } from "@remix-run/react";
+import dayjs from "dayjs";
 import { type PropsWithChildren, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
 import { FaCrown, FaInfo, FaPlus, FaRegThumbsUp, FaThumbsUp, FaUser } from "react-icons/fa";
@@ -75,6 +76,11 @@ const RatingPage = (_props: IRatingPageProps) => {
   const totalInputPoints =
     (ratingRegisterData?.attendances.filter((attendance) => attendance.player && attendance.isVote)
       .length ?? 0) * 2;
+  const now = dayjs();
+  const ratingStart = stDate ? dayjs(stDate).add(1, "hour") : null;
+  const ratingEnd = stDate ? dayjs(stDate).add(1, "day") : null;
+  const isRatingWindowOpen =
+    Boolean(ratingStart && ratingEnd) && now.isAfter(ratingStart) && now.isBefore(ratingEnd);
 
   const isLoading = isMatchClubLoading || isRatingStatsLoading || !match || !stDate;
   if (isLoading) {
@@ -115,7 +121,12 @@ const RatingPage = (_props: IRatingPageProps) => {
         <div className="flex gap-2 justify-center w-full">
           {stats?.length === 0 ? (
             <div className="text-sm flex justify-center flex-col items-center w-full">
-              <p>평점 정보가 없습니다. </p>평점 입력 부탁드립니다.
+              <p>평점 정보가 없습니다.</p>
+              {isRatingWindowOpen ? (
+                <p>평점 입력 부탁드립니다.</p>
+              ) : (
+                <p>평가 입력 시간이 지났습니다.</p>
+              )}
             </div>
           ) : (
             <>
@@ -140,26 +151,46 @@ const RatingPage = (_props: IRatingPageProps) => {
             </div>
           </div>
         )}
-        <div className="fixed bottom-6 right-6 z-20">
-          {canSubmitRating && (
-            <RatingRightInputDrawer
-              attendances={playerAttendances}
-              isLoading={isRatingRegisterLoading}
-              matchClubId={matchClubId}
-              userId={session?.id}
-              inputPointLimit={totalInputPoints}
-              stDate={stDate}
-            >
-              <Button
-                type="button"
-                className="rounded-full h-14 w-14 bg-primary text-white hover:bg-primary/90 shadow-xl"
-                aria-label="평점 입력"
+        {isRatingWindowOpen && (
+          <div className="fixed bottom-6 right-6 z-20">
+            {canSubmitRating ? (
+              <RatingRightInputDrawer
+                attendances={playerAttendances}
+                isLoading={isRatingRegisterLoading}
+                matchClubId={matchClubId}
+                userId={session?.id}
+                inputPointLimit={totalInputPoints}
+                stDate={stDate}
               >
-                <FaPlus className="size-6" />
-              </Button>
-            </RatingRightInputDrawer>
-          )}
-        </div>
+                <Button
+                  type="button"
+                  className="rounded-full h-14 w-14 bg-primary text-white hover:bg-primary/90 shadow-xl"
+                  aria-label="평점 입력"
+                >
+                  <FaPlus className="size-6" />
+                </Button>
+              </RatingRightInputDrawer>
+            ) : (
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      className="rounded-full h-14 w-14 bg-muted text-muted-foreground"
+                      aria-label="평점 입력 불가"
+                      disabled
+                    >
+                      <FaPlus className="size-6" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs">
+                    이 경기에 참여한 선수만 평점을 입력할 수 있습니다.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

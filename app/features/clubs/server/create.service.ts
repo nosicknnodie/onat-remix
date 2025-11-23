@@ -3,6 +3,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { getUser, prisma } from "~/libs/index.server";
 import { type CreateClubInput, CreateClubSchema } from "../isomorphic";
+import { sanitizeDiscordWebhook } from "./utils";
 
 export async function handleCreateClubAction({ request }: ActionFunctionArgs): Promise<Response> {
   const user = await getUser(request);
@@ -42,7 +43,12 @@ export async function createClub({
   input: CreateClubInput;
   ownerUser: Omit<User, "password">;
 }) {
-  const { name, description, isPublic, imageId, emblemId, si, gun } = input;
+  const { name, description, isPublic, imageId, emblemId, si, gun, discordWebhook } = input;
+
+  const sanitizedWebhook = sanitizeDiscordWebhook(discordWebhook);
+  if (discordWebhook && !sanitizedWebhook) {
+    throw new Error("유효한 Discord Webhook URL이 아닙니다.");
+  }
 
   const club = await prisma.$transaction(async (tx) => {
     const txClub = await tx.club.create({
@@ -54,6 +60,7 @@ export async function createClub({
         emblemId: emblemId || undefined,
         si: si || null,
         gun: gun || null,
+        discordWebhook: sanitizedWebhook,
         ownerUserId: ownerUser.id,
         createUserId: ownerUser.id,
         boards: {

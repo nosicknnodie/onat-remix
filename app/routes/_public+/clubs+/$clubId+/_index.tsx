@@ -1,4 +1,5 @@
 import { useParams } from "@remix-run/react";
+import { FiEdit2 } from "react-icons/fi";
 import { Button } from "~/components/ui/button";
 import { Link } from "~/components/ui/Link";
 import {
@@ -25,8 +26,11 @@ const RightComponent = () => {
   return (
     <>
       <ClubPermissionGate permission="CLUB_MANAGE">
-        <Button asChild variant="outline">
-          <Link to={`/clubs/${clubId}/edit`}>클럽 수정</Link>
+        <Button asChild variant="secondary" className="h-6 gap-1">
+          <Link to={`/clubs/${clubId}/edit`}>
+            <FiEdit2 className="size-3.5" />
+            클럽 수정
+          </Link>
         </Button>
       </ClubPermissionGate>
     </>

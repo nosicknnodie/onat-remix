@@ -1,4 +1,5 @@
 import * as q from "./create.queries";
+import { sendMatchWebhook } from "./webhook";
 
 export async function getMatchData(userId: string, clubId: string) {
   const club = await q.getManagerClub(userId, clubId);
@@ -79,6 +80,7 @@ export async function createMatch(dto: {
 
       return { match, matchClub };
     });
+    void sendMatchWebhook({ matchClubId: res.matchClub.id, action: "created" });
     return { ok: true as const, id: res.match.id, matchClubId: res.matchClub.id };
   } catch (e) {
     console.error("[matches:createMatch] error - ", e);

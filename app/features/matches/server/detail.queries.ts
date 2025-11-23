@@ -35,7 +35,7 @@ export async function updateMatch(
 export async function findMatchClubIds(matchId: string) {
   return await prisma.matchClub.findMany({
     where: { matchId },
-    select: { clubId: true },
+    select: { clubId: true, id: true },
   });
 }
 

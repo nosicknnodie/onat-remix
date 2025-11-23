@@ -183,8 +183,11 @@ const MainSideMenu = () => {
     handleMenuClick(`/clubs/${clubId}`);
   };
 
+  const displayName = user?.nick || user?.name || "";
+
   const userInitial = useMemo(() => {
     if (!user) return "";
+    if (user.nick) return user.nick[0]?.toUpperCase() ?? "";
     if (user.name) return user.name[0]?.toUpperCase() ?? "";
     if (user.email) return user.email[0]?.toUpperCase() ?? "";
     return "";
@@ -198,15 +201,18 @@ const MainSideMenu = () => {
             <div className={cn("flex items-center justify-between gap-2")}>
               <div className={cn("flex items-center gap-3", { hidden: !open })}>
                 <Avatar className="size-10">
-                  <AvatarImage src={user?.userImage?.url ?? undefined} alt={user?.name ?? "user"} />
+                  <AvatarImage
+                    src={user?.userImage?.url ?? undefined}
+                    alt={displayName || "user"}
+                  />
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {userInitial || <FaUser className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold">
-                    {user?.name ? (
-                      user.name
+                    {displayName ? (
+                      displayName
                     ) : (
                       <>
                         {typeof user === "undefined" ? (

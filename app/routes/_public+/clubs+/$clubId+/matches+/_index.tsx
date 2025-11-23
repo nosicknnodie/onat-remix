@@ -1,6 +1,7 @@
 import { Link, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useCallback, useMemo } from "react";
+import { FaPlus } from "react-icons/fa";
 import { HiClock, HiLocationMarker } from "react-icons/hi";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
@@ -17,8 +18,11 @@ const RightComponent = () => {
   return (
     <>
       <ClubPermissionGate permission="MATCH_CREATE">
-        <Button asChild variant="outline">
-          <Link to={`/clubs/${clubId}/matches/new`}>매치 추가</Link>
+        <Button asChild variant="secondary" className="h-6 gap-1">
+          <Link to={`/clubs/${clubId}/matches/new`}>
+            <FaPlus />
+            매치
+          </Link>
         </Button>
       </ClubPermissionGate>
     </>

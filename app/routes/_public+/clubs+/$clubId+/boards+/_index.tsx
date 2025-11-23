@@ -1,6 +1,7 @@
 import { useParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
+import { FaPlus } from "react-icons/fa";
 import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
@@ -19,8 +20,11 @@ const RightComponent = () => {
   return (
     <>
       <ClubPermissionGate clubId={clubId} permission="BOARD_MANAGER">
-        <Button asChild variant="outline">
-          <Link to={`/clubs/${clubId}/boards/new`}>게시글 추가</Link>
+        <Button asChild variant="secondary" className="h-6 gap-1">
+          <Link to={`/clubs/${clubId}/boards/new`}>
+            <FaPlus />
+            게시글
+          </Link>
         </Button>
       </ClubPermissionGate>
     </>

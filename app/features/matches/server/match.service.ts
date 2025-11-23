@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { memberService } from "~/features/clubs/server";
 import { prisma } from "~/libs/db/db.server";
 import * as q from "./match.queries";
+import { sendMatchWebhook } from "./webhook";
 
 export async function deleteMatchClub(matchClubId: string, userId?: string | null) {
   if (!userId) {
@@ -39,6 +40,7 @@ export async function deleteMatchClub(matchClubId: string, userId?: string | nul
     }
 
     await q.deactivateMatchClub(matchClubId);
+    void sendMatchWebhook({ matchClubId, action: "deleted" });
     return { ok: true as const };
   } catch (error) {
     console.error(error);

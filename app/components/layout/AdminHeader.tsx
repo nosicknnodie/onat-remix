@@ -15,6 +15,7 @@ import { cn } from "~/libs";
 
 const Header = () => {
   const user = useSession();
+  const displayName = user?.nick || user?.name || "";
   return (
     <div
       className={cn(
@@ -43,7 +44,7 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel className="flex space-x-2">
-                  <span className="text-sm">{user?.name}</span>
+                  <span className="text-sm">{displayName}</span>
                   <span className="truncate text-sm font-medium">{user?.email}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

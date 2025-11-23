@@ -43,6 +43,7 @@ describe("createClub service", () => {
     gun: "강남구",
     imageId: null,
     emblemId: null,
+    discordWebhook: "",
   };
 
   it("should create a club and a player as master in a transaction", async () => {
@@ -60,6 +61,7 @@ describe("createClub service", () => {
       imageId: mockInput.imageId ?? null,
       emblemId: mockInput.emblemId ?? null,
       isPublic: mockInput.isPublic ?? false,
+      discordWebhook: null,
       ownerUserId: mockUser.id,
       createUserId: mockUser.id,
       createdAt: new Date(),
