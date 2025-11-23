@@ -1,6 +1,7 @@
 import { AttendanceState } from "@prisma/client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import * as z from "zod";
+import { recalcMatchClubStatistics } from "~/features/matches/server";
 import { getUser, prisma } from "~/libs/index.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -43,12 +44,16 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
   const { id, ...data } = result.data;
   const checkTime = data.isCheck ? new Date() : null;
   try {
-    await prisma.attendance.update({
+    const attendance = await prisma.attendance.update({
       data: { ...data, checkTime },
       where: {
         id,
       },
+      select: {
+        matchClubId: true,
+      },
     });
+    await recalcMatchClubStatistics(attendance.matchClubId);
     return Response.json({ success: "success" });
   } catch {
     return Response.json({ error: "Internal Server Error" });

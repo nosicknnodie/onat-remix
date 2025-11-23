@@ -77,5 +77,6 @@ export async function submitAttendance(
     isVote: args.isVote,
     isCheck: args.isCheck,
   });
+  await q.recalcMatchClubStatistics(matchClubId);
   return { ok: true as const };
 }

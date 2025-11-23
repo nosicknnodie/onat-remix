@@ -1,3 +1,4 @@
+export { recalcMatchClubStatistics } from "./attendance.queries";
 export * as attendanceService from "./attendance.service";
 export * as clubService from "./club.service";
 export * as createService from "./create.service";

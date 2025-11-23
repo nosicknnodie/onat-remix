@@ -13,6 +13,10 @@ export async function upsertScore(
   input: { attendanceId: string; matchClubId: string; score: number },
 ) {
   await q.upsertScoreEvaluation(userId, input);
+  await Promise.all([
+    q.recalcAttendanceRatingStats(input.attendanceId),
+    q.recalcAttendanceRatingVote(userId, input.matchClubId),
+  ]);
   return { ok: true as const };
 }
 
@@ -21,6 +25,10 @@ export async function upsertLike(
   input: { attendanceId: string; matchClubId: string; liked: boolean },
 ) {
   await q.upsertLikeEvaluation(userId, input);
+  await Promise.all([
+    q.recalcAttendanceRatingStats(input.attendanceId),
+    q.recalcAttendanceRatingVote(userId, input.matchClubId),
+  ]);
   return { ok: true as const };
 }
 

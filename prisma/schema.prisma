@@ -351,6 +351,7 @@ model Match {
 
 }
 
+
 model MatchClub {
   id            String        @id @default(cuid())
   matchId       String        
@@ -362,6 +363,8 @@ model MatchClub {
   quarters      Quarter[]
   teams         Team[]
   evaluations   Evaluation[]
+  total         MatchClubStatsTotal?
+  totalHistory  MatchClubStatsHistory?
 
   isUse         Boolean     @default(true)
   createdAt     DateTime    @default(now())
@@ -371,6 +374,46 @@ model MatchClub {
   @@index([matchId])
   @@unique([matchId, clubId])
 }
+
+
+model MatchClubStatsTotal {
+  matchClubId String   @id
+  matchClub   MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
+
+  playerCount Int @default(0)   // 회원수
+  voteCount   Int @default(0)   // 참석수
+  voteRate    Int @default(0)   // 참석률
+  checkCount  Int @default(0)   // 출석수
+  checkRate   Int @default(0)   // 출석률
+  mercenaryVoteCount  Int @default(0)   // 용병 참석수
+  mercenaryCheckCount  Int @default(0)  // 용병 출석수
+}
+
+model MatchClubStatsHistory {
+  matchClubId String   @id
+  matchClub   MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
+
+  monthlyVoteCount   Int @default(0)   // 월별 평균 참석수
+  monthlyVoteRate    Int @default(0)   // 월별 평균 참석률
+  monthlyCheckCount  Int @default(0)   // 월별 평균 출석수
+  monthlyCheckRate   Int @default(0)   // 월별 평균 출석률
+
+  quarterlyVoteCount   Int @default(0)   // 분기별 평균 참석수
+  quarterlyVoteRate    Int @default(0)   // 분기별 평균 참석률
+  quarterlyCheckCount  Int @default(0)   // 분기별 평균 출석수
+  quarterlyCheckRate   Int @default(0)   // 분기별 평균 출석률
+
+  halfYearVoteCount   Int @default(0)   // 반기별 평균 참석수
+  halfYearVoteRate    Int @default(0)   // 반기별 평균 참석률
+  halfYearCheckCount  Int @default(0)   // 반기별 평균 출석수
+  halfYearCheckRate   Int @default(0)   // 반기별 평균 출석률
+
+  yearVoteCount   Int @default(0)   // 연도별 평균 참석수
+  yearVoteRate    Int @default(0)   // 연도별 평균 참석률
+  yearCheckCount  Int @default(0)   // 연도별 평균 출석수
+  yearCheckRate   Int @default(0)   // 연도별 평균 출석률
+}
+
 
 model Team {
   id              String  @id @default(cuid())
@@ -417,6 +460,9 @@ model Attendance {
   team        Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
   matchClub   MatchClub       @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
 
+  ratingStats   AttendanceRatingStats?
+  ratingVote    AttendanceRatingVote?
+  ratingHistory AttendanceRatingHistory?
   assigneds   Assigned[]
   evaluations Evaluation[]
   records     Record[]
@@ -430,6 +476,40 @@ model Attendance {
   @@index([mercenaryId])
   @@unique([matchClubId, mercenaryId])
   @@unique([matchClubId, playerId])
+}
+
+model AttendanceRatingStats {
+  attendanceId String @id
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  averageRating Int  @default(0) // 해당 선수의 평균 평점(정수로 저장, 필요 시 100배 등 스케일 사용)
+  totalRating   Int  @default(0) // 해당 선수의 평점 합계
+  voterCount    Int  @default(0) // 몇 명이 평점을 남겼는지
+  likeCount     Int  @default(0) // 받은 좋아요 누적
+}
+
+model AttendanceRatingVote {
+  attendanceId String @id
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  totalUsedRating  Int     @default(0) // 본인을 제외하고 사용한 평점 합계
+  hasVoted         Boolean @default(false) // 평점을 등록했는지 여부
+  votedMemberCount Int     @default(0) // 본인을 제외한 몇 명에게 평점을 넣었는지
+  usedLikeCount    Int     @default(0) // 사용한 좋아요 개수
+}
+
+model AttendanceRatingHistory {
+  attendanceId String @id
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  monthlyAverageRating Int @default(0)    // 최근 월별 평균 평점
+  monthlyTotalRating   Int @default(0)    // 최근 월별 합계 평점
+  quarterlyAverageRating Int @default(0)  // 최근 분기별 평균 평점
+  quarterlyTotalRating   Int @default(0)  // 최근 분기별 합계 평점
+  halfYearAverageRating  Int @default(0)  // 최근 상/하반기별 평균 평점
+  halfYearTotalRating    Int @default(0)  // 최근 상/하반기별 합계 평점
+  yearlyAverageRating    Int @default(0)  // 최근 연도별 평균 평점
+  yearlyTotalRating      Int @default(0)  // 최근 연도별 합계 평점
 }
 
 // 쿼터정보

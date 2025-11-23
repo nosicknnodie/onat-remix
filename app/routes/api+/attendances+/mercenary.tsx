@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import * as z from "zod";
+import { recalcMatchClubStatistics } from "~/features/matches/server";
 import { prisma } from "~/libs/db/db.server";
 import { getUser } from "~/libs/db/lucia.server";
 
@@ -30,6 +31,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
         },
       },
     });
+    await recalcMatchClubStatistics(matchClubId);
     return Response.json({ success: "success" });
   } catch {
     return Response.json({ error: "Internal Server Error" });
