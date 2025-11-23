@@ -20,3 +20,18 @@ export type RatingPageResponse = {
   attendances: RatingAttendance[];
   matchClub: RatingMatchClub | null;
 };
+
+export type RatingStatsItem = Prisma.AttendanceRatingStatsGetPayload<{
+  include: {
+    attendance: {
+      include: {
+        player: { include: { user: { include: { userImage: true } } } };
+        mercenary: { include: { user: { include: { userImage: true } } } };
+      };
+    };
+  };
+}>;
+
+export type RatingStatsResponse = {
+  stats: RatingStatsItem[];
+};

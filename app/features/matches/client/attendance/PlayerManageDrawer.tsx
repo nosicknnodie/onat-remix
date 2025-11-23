@@ -17,12 +17,16 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
-import { useTogglePlayerAttendanceMutation } from "~/features/matches/isomorphic";
+import {
+  getPlayerDisplayName,
+  useTogglePlayerAttendanceMutation,
+} from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
 import { getToastForError } from "~/libs/errors";
 
 export type AttendancePlayer = {
   id: string;
+  playerNick?: string | null;
   user?: (User & { userImage?: File | null }) | null;
   isAttended: boolean;
 };
@@ -30,6 +34,10 @@ export type AttendancePlayer = {
 interface PlayerManageDrawerProps extends PropsWithChildren {
   players: AttendancePlayer[];
 }
+
+const resolveAttendancePlayerName = (player: AttendancePlayer) => {
+  return getPlayerDisplayName({ nick: player.playerNick, user: player.user ?? undefined });
+};
 
 const PlayerManageDrawer = ({ children, players }: PlayerManageDrawerProps) => {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -47,7 +55,7 @@ const PlayerManageDrawer = ({ children, players }: PlayerManageDrawerProps) => {
 
   // global filter
   const globalFilterFn = (row: Row<AttendancePlayer>, _columnId: string, filterValue: string) => {
-    const name = row.original.user?.name?.toLowerCase() ?? "";
+    const name = resolveAttendancePlayerName(row.original).toLowerCase();
     const search = filterValue.toLowerCase();
     const email = row.original.user?.email?.toLowerCase() ?? "";
     return hangul.search(name, search) >= 0 || email.includes(search);
@@ -94,7 +102,7 @@ const PlayerManageDrawer = ({ children, players }: PlayerManageDrawerProps) => {
 const playerColumns = (): ColumnDef<AttendancePlayer>[] => [
   {
     id: "name",
-    accessorFn: (v) => v.user?.name,
+    accessorFn: (v) => resolveAttendancePlayerName(v),
     header() {
       return <div className="flex justify-center">이름</div>;
     },

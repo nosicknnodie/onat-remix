@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getJson, postJson } from "~/libs/api-client";
-import type { RatingPageResponse } from "./rating.types";
+import type { RatingPageResponse, RatingStatsResponse } from "./rating.types";
 
 export const ratingQueryKeys = {
   detail: (matchClubId: string) => ["MATCH_RATING_QUERY", matchClubId] as const,
+  stats: (matchClubId: string) => ["MATCH_RATING_STATS_QUERY", matchClubId] as const,
 } as const;
 
 export type UseRatingQueryOptions = {
@@ -26,6 +27,26 @@ export function useRatingQuery(matchClubId?: string, options?: UseRatingQueryOpt
     },
     enabled,
     initialData: options?.initialData,
+  });
+}
+
+type UseRatingStatsQueryOptions = {
+  enabled?: boolean;
+};
+
+export function useRatingStatsQuery(matchClubId?: string, options?: UseRatingStatsQueryOptions) {
+  const enabled = options?.enabled ?? Boolean(matchClubId);
+  const queryKey = useMemo(() => ratingQueryKeys.stats(matchClubId ?? ""), [matchClubId]);
+
+  return useQuery<RatingStatsResponse>({
+    queryKey,
+    queryFn: async () => {
+      if (!matchClubId) {
+        throw new Error("matchClubId is required to fetch rating stats");
+      }
+      return getJson<RatingStatsResponse>(`/api/matchClubs/${matchClubId}/rating/stats`);
+    },
+    enabled,
   });
 }
 

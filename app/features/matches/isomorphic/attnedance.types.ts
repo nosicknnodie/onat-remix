@@ -6,6 +6,7 @@ export type AttendanceClubPlayer = {
   id: string;
   userId: string | null;
   status: string;
+  nick?: string | null;
   user: AttendanceUser;
 };
 

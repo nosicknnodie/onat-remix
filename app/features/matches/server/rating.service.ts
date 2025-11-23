@@ -33,3 +33,4 @@ export async function upsertLike(
 }
 
 export const getRatingAttendances = q.getRatingAttendances;
+export const getRatingStats = q.getRatingStats;
