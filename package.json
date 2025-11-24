@@ -20,7 +20,7 @@
     "build-storybook": "storybook build"
   },
   "prisma": {
-    "seed": "node --loader ts-node/esm prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.802.0",

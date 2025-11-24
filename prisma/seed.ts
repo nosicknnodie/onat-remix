@@ -46,6 +46,10 @@ const permissionMatrix: Array<{
     roles: atLeast(RoleType.MASTER),
   },
   {
+    permission: PlayerPermissionKey.MATCH_VIEW,
+    roles: atLeast(RoleType.NORMAL),
+  },
+  {
     permission: PlayerPermissionKey.MERCENARY_MANAGE,
     roles: atLeast(RoleType.MANAGER),
   },
