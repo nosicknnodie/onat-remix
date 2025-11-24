@@ -8,7 +8,6 @@ import { mercenaryMigration } from "./mercenary.migration";
 import { playerMigration } from "./player.migration";
 import { ratingMigration } from "./rating.migration";
 import { recordMigration } from "./record.migration";
-import { statsMigration } from "./stats.migration";
 import { userMigration } from "./user.migration";
 
 config();

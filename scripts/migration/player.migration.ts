@@ -167,10 +167,9 @@ export const playerMigration = async () => {
       continue;
     }
 
-    const baseData = {
+    const baseData: Prisma.PlayerCreateInput = {
       legacyId: playerUid,
       nick: player.name,
-      userId,
       role:
         player.user_uid === "0ffe3256-097f-48b0-ad2b-46badd39367b"
           ? RoleType.MASTER
@@ -185,12 +184,18 @@ export const playerMigration = async () => {
       isRest: false,
       status: player.title === "탈퇴" || !player.is_used ? StatusType.LEFT : StatusType.APPROVED,
       updatedAt: player.updated_at ? new Date(player.updated_at) : undefined,
+      ...(userId ? { user: { connect: { id: userId } } } : {}),
     };
 
     const existingId = existingPlayerIdMap.get(playerUid);
 
     if (existingId) {
-      toUpdate.push({ ...baseData, club: undefined, id: existingId });
+      toUpdate.push({
+        ...baseData,
+        club: undefined,
+        user: userId ? { connect: { id: userId } } : { disconnect: true },
+        id: existingId,
+      });
       continue;
     }
 
@@ -198,6 +203,7 @@ export const playerMigration = async () => {
       toCreate.push({
         ...baseData,
         club: { connect: { id: sugarClub.id } },
+        ...(userId ? { user: { connect: { id: userId } } } : {}),
         createdAt: player.created_at ? new Date(player.created_at) : undefined,
       });
     }

@@ -290,7 +290,15 @@ export const assignedMigration = async () => {
     return;
   }
 
-  await prisma.assigned.createMany({ data: toCreate, skipDuplicates: true });
+  const batchSize = 500;
+  for (let i = 0; i < toCreate.length; i += batchSize) {
+    const slice = toCreate.slice(i, i + batchSize);
+    await prisma.assigned.createMany({ data: slice, skipDuplicates: true });
+    console.log("⏳ [assignedMigration] inserted batch", {
+      processed: Math.min(i + batchSize, toCreate.length),
+      total: toCreate.length,
+    });
+  }
 
   console.log("✅ [assignedMigration] completed", { created: toCreate.length });
 };

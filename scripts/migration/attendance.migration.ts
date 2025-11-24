@@ -240,20 +240,13 @@ export const attendanceMigration = async () => {
     if (!matchClubEntry?.isSelf) return undefined;
     const teamsForMatch = teamMap.get(matchClubId) ?? [];
     if (!teamsForMatch.length) return undefined;
-    const teamName = (teamNameRaw ?? "").toLowerCase();
-    if (teamName === "a") {
-      return (
-        teamsForMatch.find((team) => team.name.toLowerCase().includes("a"))?.id ??
-        teamsForMatch[0]?.id
-      );
-    }
-    if (teamName === "b") {
-      return (
-        teamsForMatch.find((team) => team.name.toLowerCase().includes("b"))?.id ??
-        teamsForMatch[1]?.id ??
-        teamsForMatch[0]?.id
-      );
-    }
+    const normalized = (teamNameRaw ?? "").trim().toLowerCase();
+    const team1 = teamsForMatch[0]?.id;
+    const team2 = teamsForMatch[1]?.id ?? team1;
+
+    if (normalized.startsWith("a")) return team1;
+    if (normalized.startsWith("b")) return team2;
+
     return undefined;
   };
 
@@ -400,10 +393,18 @@ export const attendanceMigration = async () => {
     return;
   }
 
-  await prisma.attendance.createMany({
-    data: toCreate,
-    skipDuplicates: true,
-  });
+  const batchSize = 500;
+  for (let i = 0; i < toCreate.length; i += batchSize) {
+    const slice = toCreate.slice(i, i + batchSize);
+    await prisma.attendance.createMany({
+      data: slice,
+      skipDuplicates: true,
+    });
+    console.log("⏳ [attendanceMigration] inserted batch", {
+      processed: Math.min(i + batchSize, toCreate.length),
+      total: toCreate.length,
+    });
+  }
 
   console.log("✅ [attendanceMigration] completed", {
     created: toCreate.length,
