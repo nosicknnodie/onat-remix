@@ -42,6 +42,8 @@ enum UserRoleType {
 
 model User {
   id            String    @id @default(cuid())
+  legacyId      String?   @db.Uuid
+  legacyEmail   String?
   nick          String?
   name          String?
   email         String   @unique
@@ -173,6 +175,8 @@ enum JobTitle {
   COACH         // 코치
   OPERATOR      // 운영
   ADVISER       // 고문
+  GENERAL_AFFAIRS // 총무
+  ASSISTANT_GENERAL_AFFAIRS   // 부총무
   NO            // 없음
 }
 
@@ -201,6 +205,7 @@ model Mercenary {
 
 model Player {
   id              String    @id @default(cuid())
+  legacyId        String?    @db.Uuid
   nick            String
   userId          String?
   jobTitle        JobTitle? @default(NO)
@@ -355,6 +360,7 @@ model Match {
 
 model MatchClub {
   id            String        @id @default(cuid())
+  legacyId      String?       @db.Uuid
   matchId       String        
   match         Match         @relation(fields: [matchId], references: [id], onDelete: Cascade)
   clubId        String

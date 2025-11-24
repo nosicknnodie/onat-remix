@@ -49,6 +49,8 @@ export function RatingStatsListItem({
                 {
                   CHAIRMAN: "회장",
                   VICE_CHAIRMAN: "부회장",
+                  GENERAL_AFFAIRS: "총무",
+                  ASSISTANT_GENERAL_AFFAIRS: "부총무",
                   DIRECTOR: "감독",
                   COACH: "코치",
                   OPERATOR: "운영",

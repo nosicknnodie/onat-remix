@@ -141,6 +141,18 @@ export const MembersAction = ({ payload }: IMembersActionProps) => {
                       부회장
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem
+                      checked={payload.jobTitle === "GENERAL_AFFAIRS"}
+                      onClick={() => handleChangeJobTitle("GENERAL_AFFAIRS")}
+                    >
+                      총무
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={payload.jobTitle === "ASSISTANT_GENERAL_AFFAIRS"}
+                      onClick={() => handleChangeJobTitle("ASSISTANT_GENERAL_AFFAIRS")}
+                    >
+                      부총무
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
                       checked={payload.jobTitle === "DIRECTOR"}
                       onClick={() => handleChangeJobTitle("DIRECTOR")}
                     >

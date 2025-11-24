@@ -19,7 +19,6 @@ import {
 import {
   getAttendanceDisplayName,
   positionQueryKeys,
-  ratingQueryKeys,
   recordQueryKeys,
   teamQueryKeys,
   useAttendanceQuery,

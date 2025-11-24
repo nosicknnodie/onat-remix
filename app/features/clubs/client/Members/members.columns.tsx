@@ -37,6 +37,8 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
                   {
                     CHAIRMAN: "회장", // 회장
                     VICE_CHAIRMAN: "부회장", // 부회장
+                    GENERAL_AFFAIRS: "총무", // 총무
+                    ASSISTANT_GENERAL_AFFAIRS: "부총무", // 부총무
                     DIRECTOR: "감독", // 감독
                     COACH: "코치", // 코치
                     OPERATOR: "운영", // 운영
