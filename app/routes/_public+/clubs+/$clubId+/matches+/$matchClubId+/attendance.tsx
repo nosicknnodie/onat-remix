@@ -65,8 +65,10 @@ const AttendancePage = (_props: IAttendancePageProps) => {
   const isCheckTimeOpen = matchDate ? now > dayjs(matchDate).subtract(2, "hour").toDate() : false;
   const matchClubAttendances = matchClub?.attendances ?? EMPTY_ATTENDANCE_RECORDS;
   const mercenaryAttendances = matchClub
-    ? matchClubAttendances.filter((a) => !!a.mercenary && a.isVote)
+    ? matchClubAttendances.filter((a) => !!a.mercenary)
     : EMPTY_ATTENDANCE_RECORDS;
+  const mercenaryAttend = mercenaryAttendances.filter((a) => a.isVote);
+  const mercenaryAbsent = mercenaryAttendances.filter((a) => !a.isVote);
   const attend: {
     ATTEND: AttendanceRecord[];
     ABSENT: AttendanceRecord[];
@@ -168,13 +170,13 @@ const AttendancePage = (_props: IAttendancePageProps) => {
         <AttendanceGroupCard className="bg-primary/5">
           <AttendanceGroupCardHeader>
             <AttendanceGroupCardTitle>
-              {statusIcons.ATTEND} 참석: {attend.ATTEND.length + mercenaryAttendances.length}
-              {mercenaryAttendances.length > 0 &&
-                `(${attend.ATTEND.length}+${mercenaryAttendances.length})`}
+              {statusIcons.ATTEND} 참석: 회원 {attend.ATTEND.length}
+              {mercenaryAttend.length > 0 && ` · 용병 ${mercenaryAttend.length}`}
               {currentStatus === "ATTEND" && <FaCheck className="text-primary" />}
             </AttendanceGroupCardTitle>
           </AttendanceGroupCardHeader>
           <AttendanceGroupCardContent>
+            {attend.ATTEND.length > 0 && <p className="text-xs text-muted-foreground mb-1">회원</p>}
             {attend.ATTEND.map((u) => (
               <AttendanceGroupCardItem
                 key={u.id}
@@ -186,7 +188,10 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 {getAttendanceDisplayName(u)}
               </AttendanceGroupCardItem>
             ))}
-            {mercenaryAttendances.map((ma) => (
+            {mercenaryAttend.length > 0 && (
+              <p className="text-xs text-muted-foreground mb-1 mt-2">용병</p>
+            )}
+            {mercenaryAttend.map((ma) => (
               <AttendanceGroupCardItem
                 key={ma.id}
                 className={cn({
@@ -203,11 +208,13 @@ const AttendancePage = (_props: IAttendancePageProps) => {
         <AttendanceGroupCard className="bg-destructive/5">
           <AttendanceGroupCardHeader>
             <AttendanceGroupCardTitle>
-              {statusIcons.ABSENT} 불참: {attend.ABSENT.length}
+              {statusIcons.ABSENT} 불참: 회원 {attend.ABSENT.length}
+              {mercenaryAbsent.length > 0 && ` · 용병 ${mercenaryAbsent.length}`}
               {currentStatus === "ABSENT" && <FaCheck className="text-primary" />}
             </AttendanceGroupCardTitle>
           </AttendanceGroupCardHeader>
           <AttendanceGroupCardContent>
+            {attend.ABSENT.length > 0 && <p className="text-xs text-muted-foreground mb-1">회원</p>}
             {attend.ABSENT.map((u) => (
               <AttendanceGroupCardItem
                 key={u.id}
@@ -216,6 +223,20 @@ const AttendancePage = (_props: IAttendancePageProps) => {
                 })}
               >
                 {getAttendanceDisplayName(u)}
+              </AttendanceGroupCardItem>
+            ))}
+            {mercenaryAbsent.length > 0 && (
+              <p className="text-xs text-muted-foreground mb-1 mt-2">용병</p>
+            )}
+            {mercenaryAbsent.map((ma) => (
+              <AttendanceGroupCardItem
+                key={ma.id}
+                className={cn({
+                  "border-primary font-semibold text-primary": user?.id === ma.mercenary?.userId,
+                })}
+                isChecked={ma.isCheck}
+              >
+                {getAttendanceDisplayName(ma)}
               </AttendanceGroupCardItem>
             ))}
           </AttendanceGroupCardContent>

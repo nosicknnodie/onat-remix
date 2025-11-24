@@ -1,4 +1,6 @@
-import type { PositionType } from "@prisma/client";
+import type { FilePurposeType, PositionType } from "@prisma/client";
+import sharp from "sharp";
+import { sendBufferToPublicImage } from "~/libs/db/s3.server";
 import { supabase } from ".";
 import { prisma } from "./prisma.db";
 
@@ -89,6 +91,83 @@ export const userMigration = async () => {
   console.log("✅ [userMigration] completed", {
     created: toCreate.length,
     updated: toUpdate.length,
+  });
+
+  console.log("⏳ [userMigration] migrate profile images");
+  const userMap = new Map(
+    (await prisma.user.findMany({ select: { id: true, legacyId: true, userImageId: true } })).map(
+      (u) => [u.legacyId, u],
+    ),
+  );
+  const imageRows =
+    merged?.filter((item) => typeof item.image_url === "string" && item.image_url.trim() !== "") ??
+    [];
+
+  const buildUrl = (raw: string) => {
+    if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+    return `https://slaogtcglmeoiekvacyi.supabase.co/storage/v1/object/public/profiles/${raw}`;
+  };
+
+  let success = 0;
+  let skipped = 0;
+  let skippedHasImage = 0;
+  for (const row of imageRows) {
+    const legacyId = row.user_uid;
+    if (!legacyId) {
+      skipped += 1;
+      continue;
+    }
+    const user = userMap.get(legacyId);
+    if (!user) {
+      skipped += 1;
+      continue;
+    }
+    if (user.userImageId) {
+      skippedHasImage += 1;
+      continue;
+    }
+    const url = buildUrl(row.image_url as string);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        skipped += 1;
+        continue;
+      }
+      const arrayBuffer = await res.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const webpBuffer = await sharp(buffer).webp({ quality: 80 }).toBuffer();
+      const contentType = "image/webp";
+      const key = `user/${user.id}/${Date.now()}_legacy.webp`;
+      const publicUrl = await sendBufferToPublicImage({
+        key,
+        body: webpBuffer,
+        contentType,
+      });
+      const file = await prisma.file.create({
+        data: {
+          url: publicUrl,
+          key,
+          mimeType: contentType,
+          purpose: "PROFILE" satisfies FilePurposeType,
+          size: webpBuffer.length,
+          uploaderId: user.id,
+        },
+      });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { userImageId: file.id },
+      });
+      success += 1;
+    } catch (error) {
+      console.error("⚠️ [userMigration] image migrate failed", { legacyId, url, error });
+      skipped += 1;
+    }
+  }
+  console.log("✅ [userMigration] profile images migrated", {
+    success,
+    skipped,
+    skippedHasImage,
+    total: imageRows.length,
   });
 };
 

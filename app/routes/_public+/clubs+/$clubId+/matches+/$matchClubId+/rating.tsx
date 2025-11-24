@@ -49,15 +49,21 @@ const RatingPage = (_props: IRatingPageProps) => {
   const match = matchClubQueryData?.matchClub?.match;
   const stDate = match?.stDate;
 
-  const { data: ratingStats, isLoading: isRatingStatsLoading } = useRatingStatsQuery(matchClubId);
-  const stats = ratingStats?.stats
-    .filter((stat) => stat.averageRating > 0)
-    .sort((a, b) => b.averageRating - a.averageRating);
-
   const { data: ratingRegisterData, isLoading: isRatingRegisterLoading } = useRatingRegisterQuery(
     matchClubId,
     { enabled: Boolean(matchClubId) },
   );
+  const { data: ratingStats, isLoading: isRatingStatsLoading } = useRatingStatsQuery(matchClubId);
+  const stats = (() => {
+    const filtered =
+      ratingStats?.stats
+        .filter((stat) => stat.averageRating > 0)
+        .sort((a, b) => b.averageRating - a.averageRating) ?? [];
+    const voteCount =
+      ratingRegisterData?.attendances?.filter((attendance) => attendance.isVote).length ?? 0;
+    const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
+    return filtered.slice(0, limit);
+  })();
   const playerAttendances =
     ratingRegisterData?.attendances.filter(
       (attendance) =>

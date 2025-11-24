@@ -121,10 +121,15 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   const currentChecked = attendanceData?.currentChecked ?? null;
   const ratingStats = useMemo(() => {
     if (!ratingStatsData) return [];
-    return ratingStatsData.stats
+    const filtered = ratingStatsData.stats
       .filter((stat) => (stat.averageRating ?? 0) > 0)
       .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
-  }, [ratingStatsData]);
+    const voteCountFromAttendance =
+      attendanceMatchClub?.attendances?.filter((a) => a.isVote).length ?? null;
+    const voteCount = voteCountFromAttendance ?? ratingStatsData.stats.length ?? 0;
+    const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
+    return filtered.slice(0, Math.min(filtered.length, limit));
+  }, [attendanceMatchClub, ratingStatsData]);
   const attendanceList = useMemo(() => {
     if (!attendanceMatchClub) return [];
     return attendanceMatchClub.attendances

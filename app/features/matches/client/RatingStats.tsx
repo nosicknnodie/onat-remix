@@ -71,9 +71,7 @@ export function RatingStatsListItem({
             width={20}
             isHighLight
           />
-          <span className="text-xs ">
-            {Math.round(stats?.averageRating ? stats.averageRating / 20 : 0).toFixed(2)}
-          </span>
+          <span className="text-xs ">{((stats?.averageRating ?? 0) / 20).toFixed(2)}</span>
           <span className="text-xs max-sm:hidden sm:block">{stats.voterCount} voters</span>
         </div>
         <div className="flex items-end gap-2 text-xs text-muted-foreground">
@@ -146,9 +144,7 @@ export function RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; rank
           width={20}
           isHighLight
         />
-        <span className="text-xs ">
-          {Math.round(stats?.averageRating ? stats.averageRating / 20 : 0).toFixed(2)}
-        </span>
+        <span className="text-xs ">{((stats?.averageRating ?? 0) / 20).toFixed(2)}</span>
       </div>
       <div className="flex items-end">
         <p className="text-xs italic text-gray-600">{stats.voterCount} voters</p>

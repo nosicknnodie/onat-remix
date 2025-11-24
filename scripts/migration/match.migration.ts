@@ -77,8 +77,86 @@ matche -  {
 }
  */
 
+import type { Team } from "@prisma/client";
 import { supabase } from ".";
 import { prisma } from "./prisma.db";
+
+const DEFAULT_SELF_TEAMS = [
+  { name: "Team A", color: "#000000" },
+  { name: "Team B", color: "#ffffff" },
+] as const;
+
+async function ensureTeamsForSelfMatch(matchClubId: string, clubId: string) {
+  const existing = await prisma.team.findMany({ where: { matchClubId } });
+  if (existing.length) return existing;
+
+  const lastSelfMatch = await prisma.matchClub.findFirst({
+    where: { clubId, isSelf: true, isUse: true, id: { not: matchClubId } },
+    orderBy: { match: { stDate: "desc" } },
+    include: { teams: true },
+  });
+
+  const baseTeams =
+    lastSelfMatch && lastSelfMatch.teams.length > 2 ? lastSelfMatch.teams : DEFAULT_SELF_TEAMS;
+
+  const created = await Promise.all(
+    baseTeams.map((team) =>
+      prisma.team.create({
+        data: {
+          name: team.name,
+          color: team.color,
+          matchClubId,
+        },
+      }),
+    ),
+  );
+
+  return created;
+}
+
+async function ensureQuarters(matchClubId: string, isSelf: boolean, teams: Pick<Team, "id">[]) {
+  const existing = await prisma.quarter.findMany({
+    where: { matchClubId },
+    select: { id: true, order: true },
+    orderBy: { order: "asc" },
+  });
+
+  const missingOrders = [1, 2, 3, 4].filter(
+    (order) => !existing.some((quarter) => quarter.order === order),
+  );
+
+  if (!missingOrders.length) return;
+
+  const team1Id = isSelf ? teams[0]?.id : undefined;
+  const team2Id = isSelf ? teams[1]?.id : undefined;
+
+  if (isSelf && (!team1Id || !team2Id)) {
+    console.error("❌ [matchMigration] 팀 정보가 없어 쿼터를 생성하지 않습니다.", {
+      matchClubId,
+    });
+    return;
+  }
+
+  await prisma.$transaction(
+    missingOrders.map((order) =>
+      prisma.quarter.create({
+        data: {
+          order,
+          matchClubId,
+          isSelf,
+          ...(isSelf ? { team1Id, team2Id } : {}),
+        },
+      }),
+    ),
+  );
+}
+
+async function ensureTeamsAndQuarters(matchClub: { id: string; clubId: string; isSelf: boolean }) {
+  const teams = matchClub.isSelf
+    ? await ensureTeamsForSelfMatch(matchClub.id, matchClub.clubId)
+    : [];
+  await ensureQuarters(matchClub.id, matchClub.isSelf, teams);
+}
 
 export const matchMigration = async () => {
   console.log("⏳ [matchMigration] start");
@@ -138,12 +216,31 @@ export const matchMigration = async () => {
         title: match.title,
         description: {
           root: {
-            children: [],
-            direction: null,
+            type: "root",
             format: "",
             indent: 0,
-            type: "root",
             version: 1,
+            direction: null,
+            children: [
+              {
+                type: "paragraph",
+                format: "",
+                indent: 0,
+                version: 1,
+                direction: null,
+                children: [
+                  {
+                    type: "text",
+                    text: "",
+                    format: 0,
+                    style: "",
+                    mode: "normal",
+                    detail: 0,
+                    version: 1,
+                  },
+                ],
+              },
+            ],
           },
         },
         placeName: match.place?.name,
@@ -167,22 +264,32 @@ export const matchMigration = async () => {
       },
     },
     select: {
+      id: true,
       legacyId: true,
+      isSelf: true,
+      clubId: true,
     },
   });
 
-  const existingLegacyIdSet = new Set(
+  const existingMatchClubMap = new Map(
     existingMatchClubs
-      .map((matchClub) => matchClub.legacyId)
-      .filter((legacyId): legacyId is string => Boolean(legacyId)),
+      .filter(
+        (
+          matchClub,
+        ): matchClub is { id: string; legacyId: string; isSelf: boolean; clubId: string } =>
+          Boolean(matchClub.legacyId),
+      )
+      .map((matchClub) => [matchClub.legacyId, matchClub]),
   );
 
   let createdCount = 0;
   let skippedCount = 0;
 
   for (const match of migrationMatches) {
-    if (existingLegacyIdSet.has(match.legacyId)) {
+    const existingMatchClub = existingMatchClubMap.get(match.legacyId);
+    if (existingMatchClub) {
       skippedCount += 1;
+      await ensureTeamsAndQuarters(existingMatchClub);
       continue;
     }
 
@@ -200,7 +307,7 @@ export const matchMigration = async () => {
       },
     });
 
-    await prisma.matchClub.create({
+    const matchClub = await prisma.matchClub.create({
       data: {
         legacyId: match.legacyId,
         matchId: createdMatch.id,
@@ -211,6 +318,8 @@ export const matchMigration = async () => {
         updatedAt: match.updatedAt ? new Date(match.updatedAt) : undefined,
       },
     });
+
+    await ensureTeamsAndQuarters(matchClub);
 
     createdCount += 1;
   }
