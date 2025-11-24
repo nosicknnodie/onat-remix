@@ -1,10 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
-import { Link, Outlet, useLocation, useParams } from "@remix-run/react";
+import { Link, Outlet, useLocation, useNavigate, useParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
+import { useSession } from "~/contexts";
 import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import {
   CheckManageDrawer,
@@ -33,6 +34,8 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const params = useParams();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const session = useSession();
+  const navgation = useNavigate();
   const matchClubId = params.matchClubId;
   const clubId = params.clubId;
   const { data: matchClubQueryData, isLoading: isMatchClubLoading } = useMatchClubQuery(
@@ -43,13 +46,16 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
     },
   );
   const { data: membership } = useMembershipInfoQuery(clubId ?? "", {
-    enabled: Boolean(clubId),
+    enabled: Boolean(clubId && session),
   });
-  const { data: permissions = [] } = usePlayerPermissionsQuery(membership?.id ?? "", {
-    enabled: Boolean(membership?.id),
-  });
+  const { data: permissions = [], isLoading: isLoadingPermissions } = usePlayerPermissionsQuery(
+    membership?.id ?? "",
+    {
+      enabled: Boolean(membership?.id && session),
+    },
+  );
   const { data: commentsData } = useMatchCommentsQuery(matchClubId, {
-    enabled: Boolean(matchClubId),
+    enabled: Boolean(matchClubId && session),
   });
   const isAttendancePage = location.pathname.startsWith(
     `/clubs/${params.clubId}/matches/${params.matchClubId}/attendance`,
@@ -57,8 +63,13 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const isInfoPage = location.pathname === `/clubs/${params.clubId}/matches/${params.matchClubId}`;
   const attendanceQuery = useAttendanceQuery(matchClubId, {
     clubId: clubId ?? "",
-    enabled: Boolean(matchClubId && clubId && isAttendancePage),
+    enabled: Boolean(matchClubId && clubId && isAttendancePage && session),
   });
+  useEffect(() => {
+    if (session === null) {
+      navgation(`/auth/login?redirectTo=${location.pathname}${location.search}`);
+    }
+  }, [session, location.pathname, location.search, navgation]);
 
   useEffect(() => {
     if (!matchClubId) return;
@@ -88,14 +99,14 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
           })
           .catch(() => undefined),
       );
-      tasks.push(
-        queryClient
-          .prefetchQuery({
-            queryKey: ratingQueryKeys.detail(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/rating`),
-          })
-          .catch(() => undefined),
-      );
+      // tasks.push(
+      //   queryClient
+      //     .prefetchQuery({
+      //       queryKey: ratingQueryKeys.detail(matchClubId),
+      //       queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/rating`),
+      //     })
+      //     .catch(() => undefined),
+      // );
       if (clubId) {
         const searchParams = new URLSearchParams({ clubId });
         tasks.push(
@@ -114,11 +125,20 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   }, [matchClubId, clubId, queryClient]);
 
   const matchClub = matchClubQueryData?.matchClub;
-  const isLoading = isMatchClubLoading || !matchClub;
+  const isLoading = isMatchClubLoading || !matchClub || isLoadingPermissions;
   if (isLoading) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />
+      </div>
+    );
+  }
+  const hasMatchView = permissions.includes("MATCH_VIEW");
+
+  if (!hasMatchView) {
+    return (
+      <div className="py-10 flex justify-center">
+        <p>Match view permission is required.</p>
       </div>
     );
   }
