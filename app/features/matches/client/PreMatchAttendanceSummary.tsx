@@ -52,23 +52,33 @@ export const PreMatchAttendanceSummary = ({
   absent,
   pending,
 }: PreMatchAttendanceSummaryProps) => {
+  const attendPlayers = attend.filter((item) => item.type === "PLAYER");
+  const attendMercenaries = attend.filter((item) => item.type === "MERCENARY");
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card className="bg-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <MdEventAvailable className="text-primary" />
-            참석: {attend.length}
+            {`참석: 총 ${attend.length}명 (멤버 ${attendPlayers.length}명, 용병 ${attendMercenaries.length}명)`}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {renderItems(attend, "아직 참석 인원이 없습니다.", (item) =>
-            item.type === "MERCENARY" ? (
-              <Badge variant="outline" className="rounded-full">
-                용병
-              </Badge>
-            ) : null,
-          )}
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                멤버 참석 ({attendPlayers.length})
+              </p>
+              {renderItems(attendPlayers, "아직 참석 인원이 없습니다.")}
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                용병 참석 ({attendMercenaries.length})
+              </p>
+              {renderItems(attendMercenaries, "참석 용병이 없습니다.")}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

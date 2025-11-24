@@ -67,11 +67,20 @@ export async function upsertAttendance(args: {
   });
 }
 
-const ZERO_HISTORY = {
+type HistoryAverage = {
+  voteCount: number;
+  voteRate: number;
+  checkCount: number;
+  checkRate: number;
+  matchCount: number;
+};
+
+const ZERO_HISTORY: HistoryAverage = {
   voteCount: 0,
   voteRate: 0,
   checkCount: 0,
   checkRate: 0,
+  matchCount: 0,
 };
 
 const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
@@ -81,7 +90,11 @@ const startOfHalfYear = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth() < 6 ? 0 : 6, 1);
 const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
 
-async function calculateHistoryAverage(clubId: string, start: Date, end: Date) {
+async function calculateHistoryAverage(
+  clubId: string,
+  start: Date,
+  end: Date,
+): Promise<HistoryAverage> {
   const totals = await prisma.matchClubStatsTotal.findMany({
     where: {
       matchClub: {
@@ -99,13 +112,15 @@ async function calculateHistoryAverage(clubId: string, start: Date, end: Date) {
 
   if (!totals.length) return { ...ZERO_HISTORY };
 
-  const sums = totals.reduce(
-    (acc, cur) => ({
-      voteCount: acc.voteCount + cur.voteCount,
-      voteRate: acc.voteRate + cur.voteRate,
-      checkCount: acc.checkCount + cur.checkCount,
-      checkRate: acc.checkRate + cur.checkRate,
-    }),
+  const sums = totals.reduce<HistoryAverage>(
+    (acc, cur) => {
+      const voteCount = acc.voteCount + cur.voteCount;
+      const voteRate = acc.voteRate + cur.voteRate;
+      const checkCount = acc.checkCount + cur.checkCount;
+      const checkRate = acc.checkRate + cur.checkRate;
+      const matchCount = acc.matchCount + 1;
+      return { voteCount, voteRate, checkCount, checkRate, matchCount };
+    },
     { ...ZERO_HISTORY },
   );
 
@@ -116,6 +131,7 @@ async function calculateHistoryAverage(clubId: string, start: Date, end: Date) {
     voteRate: Math.round(sums.voteRate / length),
     checkCount: Math.round(sums.checkCount / length),
     checkRate: Math.round(sums.checkRate / length),
+    matchCount: sums.matchCount,
   };
 }
 
@@ -134,18 +150,22 @@ async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, 
       monthlyVoteRate: monthly.voteRate,
       monthlyCheckCount: monthly.checkCount,
       monthlyCheckRate: monthly.checkRate,
+      monthlyMatchCount: monthly.matchCount,
       quarterlyVoteCount: quarterly.voteCount,
       quarterlyVoteRate: quarterly.voteRate,
       quarterlyCheckCount: quarterly.checkCount,
       quarterlyCheckRate: quarterly.checkRate,
+      quarterlyMatchCount: quarterly.matchCount,
       halfYearVoteCount: halfYear.voteCount,
       halfYearVoteRate: halfYear.voteRate,
       halfYearCheckCount: halfYear.checkCount,
       halfYearCheckRate: halfYear.checkRate,
+      halfYearMatchCount: halfYear.matchCount,
       yearVoteCount: yearly.voteCount,
       yearVoteRate: yearly.voteRate,
       yearCheckCount: yearly.checkCount,
       yearCheckRate: yearly.checkRate,
+      yearMatchCount: yearly.matchCount,
     },
     create: {
       matchClubId,
@@ -153,18 +173,22 @@ async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, 
       monthlyVoteRate: monthly.voteRate,
       monthlyCheckCount: monthly.checkCount,
       monthlyCheckRate: monthly.checkRate,
+      monthlyMatchCount: monthly.matchCount,
       quarterlyVoteCount: quarterly.voteCount,
       quarterlyVoteRate: quarterly.voteRate,
       quarterlyCheckCount: quarterly.checkCount,
       quarterlyCheckRate: quarterly.checkRate,
+      quarterlyMatchCount: quarterly.matchCount,
       halfYearVoteCount: halfYear.voteCount,
       halfYearVoteRate: halfYear.voteRate,
       halfYearCheckCount: halfYear.checkCount,
       halfYearCheckRate: halfYear.checkRate,
+      halfYearMatchCount: halfYear.matchCount,
       yearVoteCount: yearly.voteCount,
       yearVoteRate: yearly.voteRate,
       yearCheckCount: yearly.checkCount,
       yearCheckRate: yearly.checkRate,
+      yearMatchCount: yearly.matchCount,
     },
   });
 }

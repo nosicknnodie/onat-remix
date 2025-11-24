@@ -398,21 +398,25 @@ model MatchClubStatsHistory {
   monthlyVoteRate    Int @default(0)   // 월별 평균 참석률
   monthlyCheckCount  Int @default(0)   // 월별 평균 출석수
   monthlyCheckRate   Int @default(0)   // 월별 평균 출석률
+  monthlyMatchCount  Int @default(0)   // 월별 총 경기 수
 
   quarterlyVoteCount   Int @default(0)   // 분기별 평균 참석수
   quarterlyVoteRate    Int @default(0)   // 분기별 평균 참석률
   quarterlyCheckCount  Int @default(0)   // 분기별 평균 출석수
   quarterlyCheckRate   Int @default(0)   // 분기별 평균 출석률
+  quarterlyMatchCount Int @default(0)   // 분기별 총 경기 수
 
   halfYearVoteCount   Int @default(0)   // 반기별 평균 참석수
   halfYearVoteRate    Int @default(0)   // 반기별 평균 참석률
   halfYearCheckCount  Int @default(0)   // 반기별 평균 출석수
   halfYearCheckRate   Int @default(0)   // 반기별 평균 출석률
+  halfYearMatchCount  Int @default(0)   // 반기별 총 경기 수
 
   yearVoteCount   Int @default(0)   // 연도별 평균 참석수
   yearVoteRate    Int @default(0)   // 연도별 평균 참석률
   yearCheckCount  Int @default(0)   // 연도별 평균 출석수
   yearCheckRate   Int @default(0)   // 연도별 평균 출석률
+  yearMatchCount  Int @default(0)   // 연도별 총 경기 수
 }
 
 
@@ -503,14 +507,21 @@ model AttendanceRatingHistory {
   attendanceId String @id
   attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
-  monthlyAverageRating Int @default(0)    // 최근 월별 평균 평점
-  monthlyTotalRating   Int @default(0)    // 최근 월별 합계 평점
-  quarterlyAverageRating Int @default(0)  // 최근 분기별 평균 평점
-  quarterlyTotalRating   Int @default(0)  // 최근 분기별 합계 평점
+  monthlyAverageRating    Int @default(0)  // 최근 월별 평균 평점
+  monthlyTotalRating      Int @default(0)  // 최근 월별 합계 평점
+  monthlyMatchCount       Int @default(0)  // 최근 월별 총 경기 수
+
+  quarterlyAverageRating  Int @default(0)  // 최근 분기별 평균 평점
+  quarterlyTotalRating    Int @default(0)  // 최근 분기별 합계 평점
+  quarterlyMatchCount     Int @default(0)  // 최근 분기별 총 경기 수
+
   halfYearAverageRating  Int @default(0)  // 최근 상/하반기별 평균 평점
   halfYearTotalRating    Int @default(0)  // 최근 상/하반기별 합계 평점
+  halfYearMatchCount     Int @default(0)  // 최근 상/하반기별 총 경기 수
+
   yearlyAverageRating    Int @default(0)  // 최근 연도별 평균 평점
   yearlyTotalRating      Int @default(0)  // 최근 연도별 합계 평점
+  yearlyMatchCount       Int @default(0)  // 최근 연도별 총 경기 수
 }
 
 // 쿼터정보

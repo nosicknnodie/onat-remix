@@ -2,13 +2,6 @@ import { useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useSession } from "~/contexts";
-import { MatchInsightList, MomHighlightList, PostHighlightList } from "~/features/dashboard/client";
-import {
-  useHighlightPostsQuery,
-  useTodayMatchesQuery,
-  useUpcomingAttendancesQuery,
-  useWeeklyMomsQuery,
-} from "~/features/dashboard/isomorphic";
 
 export const handle = {
   breadcrumb: "Dashboard",
@@ -23,10 +16,10 @@ const DashBoardPage = (_props: IDashBoardPageProps) => {
 const DashboardContent = () => {
   const navigate = useNavigate();
   const user = useSession();
-  const { data: todayMatches } = useTodayMatchesQuery();
-  const { data: upcomingAttendances } = useUpcomingAttendancesQuery();
-  const { data: highlightPosts } = useHighlightPostsQuery();
-  const { data: weeklyMoms } = useWeeklyMomsQuery();
+  // const { data: todayMatches } = useTodayMatchesQuery();
+  // const { data: upcomingAttendances } = useUpcomingAttendancesQuery();
+  // const { data: highlightPosts } = useHighlightPostsQuery();
+  // const { data: weeklyMoms } = useWeeklyMomsQuery();
   useEffect(() => {
     if (user === null) {
       navigate("/auth/login", { replace: true });
@@ -36,7 +29,7 @@ const DashboardContent = () => {
 
   return (
     <div className="space-y-4">
-      <Card className="mx-auto w-full">
+      <Card className="mx-auto w-full border-none">
         <CardHeader className="flex flex-row items-center gap-4">
           <img
             src={user.userImage?.url ?? "/images/user_empty.png"}
@@ -44,7 +37,7 @@ const DashboardContent = () => {
             className="w-20 h-20 rounded-full object-cover"
           />
           <div>
-            <CardTitle>{user.name ?? "이름 없음"}</CardTitle>
+            <CardTitle>{user.nick ?? user.name ?? "이름 없음"}</CardTitle>
             <CardDescription>{user.email}</CardDescription>
           </div>
         </CardHeader>
@@ -77,7 +70,7 @@ const DashboardContent = () => {
           </div>
         </CardContent>
       </Card>
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* <div className="grid gap-4 lg:grid-cols-2">
         <MatchInsightList
           title="오늘의 경기"
           description="오늘 예정된 매치를 확인하세요"
@@ -104,7 +97,7 @@ const DashboardContent = () => {
           emptyMessage="이번 주 MOM 정보가 없습니다."
           items={weeklyMoms ?? []}
         />
-      </div>
+      </div> */}
     </div>
   );
 };

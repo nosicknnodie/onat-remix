@@ -168,11 +168,11 @@ async function calculateRangeRating(start: Date, end: Date, filter: Prisma.Atten
   });
   const validStats = stats.filter((stat) => stat.averageRating > 0);
   if (!validStats.length) {
-    return { average: 0, total: 0 };
+    return { average: 0, total: 0, matchCount: 0 };
   }
   const total = validStats.reduce((acc: number, current) => acc + current.averageRating, 0);
   const average = Math.round(total / validStats.length);
-  return { average, total };
+  return { average, total, matchCount: validStats.length };
 }
 
 async function upsertAttendanceRatingHistory(attendanceId: string) {
@@ -201,23 +201,31 @@ async function upsertAttendanceRatingHistory(attendanceId: string) {
     update: {
       monthlyAverageRating: monthly.average,
       monthlyTotalRating: monthly.total,
+      monthlyMatchCount: monthly.matchCount,
       quarterlyAverageRating: quarterly.average,
       quarterlyTotalRating: quarterly.total,
+      quarterlyMatchCount: quarterly.matchCount,
       halfYearAverageRating: halfYear.average,
       halfYearTotalRating: halfYear.total,
+      halfYearMatchCount: halfYear.matchCount,
       yearlyAverageRating: yearly.average,
       yearlyTotalRating: yearly.total,
+      yearlyMatchCount: yearly.matchCount,
     },
     create: {
       attendanceId,
       monthlyAverageRating: monthly.average,
       monthlyTotalRating: monthly.total,
+      monthlyMatchCount: monthly.matchCount,
       quarterlyAverageRating: quarterly.average,
       quarterlyTotalRating: quarterly.total,
+      quarterlyMatchCount: quarterly.matchCount,
       halfYearAverageRating: halfYear.average,
       halfYearTotalRating: halfYear.total,
+      halfYearMatchCount: halfYear.matchCount,
       yearlyAverageRating: yearly.average,
       yearlyTotalRating: yearly.total,
+      yearlyMatchCount: yearly.matchCount,
     },
   });
 }
