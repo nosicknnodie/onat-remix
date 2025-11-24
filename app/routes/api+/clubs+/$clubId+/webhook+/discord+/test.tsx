@@ -12,7 +12,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
 
   let webhookUrl: string | null = null;
-  let message: string = "ONAT 디스코드 웹훅 테스트 메시지입니다.";
+  let message: string = "ONSOA 디스코드 웹훅 테스트 메시지입니다.";
 
   if (request.headers.get("content-type")?.includes("application/json")) {
     const body = (await request.json().catch(() => ({}))) as {

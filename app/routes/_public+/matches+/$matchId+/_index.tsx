@@ -1,7 +1,8 @@
 import { useParams, useRouteLoaderData } from "@remix-run/react";
 import { Loading } from "~/components/Loading";
+import { View } from "~/components/lexical/View";
 import { MatchHeaderCard, MatchSummarySection } from "~/features/matches/client";
-import { useMatchDetailQuery } from "~/features/matches/isomorphic";
+import { parseMatchDescription, useMatchDetailQuery } from "~/features/matches/isomorphic";
 import type { IMatchesIdLayoutPageLoaderReturnType } from "./_layout";
 
 /**
@@ -69,7 +70,10 @@ const MatchesIdPage = (_props: IMatchesIdPageProps) => {
     >
       <div className="space-y-6">
         {match.description ? (
-          <p className="text-sm text-muted-foreground whitespace-pre-line">{match.description}</p>
+          <View
+            editorState={parseMatchDescription(match.description)}
+            className="text-sm text-muted-foreground"
+          />
         ) : null}
         <MatchSummarySection summaries={data.summaries} />
       </div>

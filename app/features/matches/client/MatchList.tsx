@@ -12,7 +12,7 @@ import {
 } from "react-icons/hi";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import type { MatchWithClub } from "../isomorphic/match.types";
 
 export function MatchList({
@@ -49,9 +49,6 @@ export function MatchList({
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 min-w-0 flex-1">
                   <div className="space-y-1 w-full min-w-0">
                     <CardTitle className="text-lg font-semibold truncate">{match.title}</CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground line-clamp-2 overflow-hidden break-words w-full">
-                      {match.description}
-                    </CardDescription>
                   </div>
                   <div className="flex gap-2">
                     {match.matchClubs.map((matchClub, i) => (

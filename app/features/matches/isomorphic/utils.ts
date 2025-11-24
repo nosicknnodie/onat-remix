@@ -1,3 +1,6 @@
+import type { SerializedEditorState } from "lexical";
+import { EMPTY_MATCH_DESCRIPTION } from "./match.types";
+
 type Nullable<T> = T | null | undefined;
 
 export type UserNameSource = {
@@ -47,4 +50,53 @@ export const getAttendanceDisplayName = (attendance?: Nullable<AttendanceNameSou
     getPlayerDisplayName(attendance?.player),
     getMercenaryDisplayName(attendance?.mercenary),
   );
+};
+
+const createParagraphEditorState = (text: string): SerializedEditorState =>
+  ({
+    root: {
+      children: [
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text,
+              type: "text",
+              version: 1,
+            },
+          ],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+        },
+      ],
+      direction: "ltr",
+      format: "",
+      indent: 0,
+      type: "root",
+      version: 1,
+    },
+  }) as unknown as SerializedEditorState;
+
+export const parseMatchDescription = (description: unknown): SerializedEditorState => {
+  if (!description) return EMPTY_MATCH_DESCRIPTION as unknown as SerializedEditorState;
+  if (typeof description === "string") {
+    try {
+      const parsed = JSON.parse(description);
+      if (parsed && typeof parsed === "object") {
+        return parsed as unknown as SerializedEditorState;
+      }
+    } catch {
+      return createParagraphEditorState(description);
+    }
+  }
+  if (typeof description === "object") {
+    return description as unknown as SerializedEditorState;
+  }
+  return EMPTY_MATCH_DESCRIPTION as unknown as SerializedEditorState;
 };

@@ -7,7 +7,7 @@ import { InfiniteSentinel } from "~/components/InfiniteSentinel";
 import { Loading } from "~/components/Loading";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { ClubPermissionGate } from "~/features/clubs/client";
 import { type ClubMatchFeed, useClubMatchFeedInfiniteQuery } from "~/features/clubs/isomorphic";
 
@@ -91,9 +91,6 @@ const MatchesPage = (_props: IMatchesPageProps) => {
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 min-w-0 flex-1">
                   <div className="space-y-1 w-full min-w-0">
                     <CardTitle className="text-lg font-semibold truncate">{match.title}</CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground line-clamp-2 overflow-hidden break-words w-full">
-                      {match.description}
-                    </CardDescription>
                   </div>
                   <Badge variant={matchClub.isSelf ? "secondary" : "default"} className="min-w-14">
                     {matchClub.isSelf ? "자체전" : "매치전"}

@@ -10,6 +10,7 @@ import { confirm } from "~/components/ui/confirm";
 import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
 import {
+  EMPTY_MATCH_DESCRIPTION,
   type MatchFormFields,
   matchClubQueryKeys,
   useDeleteMatchClubMutation,
@@ -159,9 +160,13 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
   const handleSearchPlaceSubmit = (value: IKakaoLocalType) => {
     setPlace(value);
   };
+  const description =
+    typeof match.description === "string"
+      ? match.description
+      : JSON.stringify(match.description ?? EMPTY_MATCH_DESCRIPTION);
   const defaultMatch = {
     title: match.title,
-    description: match.description ?? "",
+    description,
     stDate: match.stDate,
     placeName: place?.place_name ?? match.placeName ?? "",
     address: place?.address_name ?? match.address ?? "",

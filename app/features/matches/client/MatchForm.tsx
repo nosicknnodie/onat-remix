@@ -1,6 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import type { SerializedEditorState } from "lexical";
+import { useEffect, useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { PostEditor } from "~/components/lexical/PostEditor";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -13,7 +15,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
-import { Textarea } from "~/components/ui/textarea";
+import { EMPTY_MATCH_DESCRIPTION, parseMatchDescription } from "../isomorphic";
 import { createSchema } from "../isomorphic/match.schema";
 import type { MatchFormDefault, MatchFormFields } from "../isomorphic/match.types";
 
@@ -30,6 +32,10 @@ export function MatchForm(props: MatchFormProps) {
 
   const matchTitle = defaultMatch?.title ?? "";
   const matchDescription = defaultMatch?.description ?? "";
+  const initialEditorState = useMemo<SerializedEditorState>(
+    () => parseMatchDescription(matchDescription),
+    [matchDescription],
+  );
   const stDate = defaultMatch?.stDate ? new Date(defaultMatch.stDate) : new Date();
   const defaultDate = `${stDate.getFullYear()}-${String(stDate.getMonth() + 1).padStart(2, "0")}-${String(stDate.getDate()).padStart(2, "0")}`;
   const defaultHour = String(stDate.getHours());
@@ -70,8 +76,22 @@ export function MatchForm(props: MatchFormProps) {
     setValue("lng", lngValue);
   }, [address, latValue, lngValue, placeName, setValue]);
 
+  useEffect(() => {
+    setValue("description", matchDescription || JSON.stringify(EMPTY_MATCH_DESCRIPTION));
+  }, [matchDescription, setValue]);
+
   const hourValue = watch("hour");
   const minuteValue = watch("minute");
+
+  const handleOnUploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload/match-image", {
+      method: "POST",
+      body: formData,
+    });
+    return await res.json();
+  };
 
   return (
     <Card className="">
@@ -96,7 +116,20 @@ export function MatchForm(props: MatchFormProps) {
               >
                 설명
               </Label>
-              <Textarea {...register("description", { required: true })} rows={3} required />
+              <Controller
+                control={form.control}
+                name="description"
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <PostEditor
+                    initialEditorState={initialEditorState}
+                    onChange={(state) => field.onChange(JSON.stringify(state))}
+                    onUploadImage={handleOnUploadImage}
+                    placeholder="매치 설명을 입력해주세요."
+                    className="border p-2 rounded-md"
+                  />
+                )}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="date" className="after:content-['*'] after:text-red-500 after:ml-1">

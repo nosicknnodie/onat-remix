@@ -2,6 +2,7 @@ import { useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { Loading } from "~/components/Loading";
+import { View } from "~/components/lexical/View";
 import { Separator } from "~/components/ui/separator";
 import {
   type AttendanceSummaryItem,
@@ -13,6 +14,7 @@ import {
 import {
   getAttendanceDisplayName,
   getPlayerDisplayName,
+  parseMatchDescription,
   useAttendanceMutation,
   useAttendanceQuery,
   useMatchClubQuery,
@@ -288,7 +290,10 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   return (
     <div className="space-y-6">
       {match?.description ? (
-        <p className="text-sm text-muted-foreground whitespace-pre-line">{match.description}</p>
+        <View
+          editorState={parseMatchDescription(match.description)}
+          className="text-sm text-muted-foreground"
+        />
       ) : null}
       <Separator orientation="horizontal" className="h-[1px]" />
       {showAttendanceList ? (

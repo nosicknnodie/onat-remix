@@ -7,7 +7,7 @@ import { FaSearch } from "react-icons/fa";
 import { placeHistoryAtom } from "~/atoms/placeHistory";
 import { Button } from "~/components/ui/button";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
-import { parseUpdate } from "~/features/matches/isomorphic";
+import { EMPTY_MATCH_DESCRIPTION, parseUpdate } from "~/features/matches/isomorphic";
 import { detailService } from "~/features/matches/server";
 import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs";
 import { getUser, parseRequestData } from "~/libs/index.server";
@@ -100,7 +100,10 @@ const MatchEditPage = (_props: IMatchEditPageProps) => {
       <MatchForm
         defaultMatch={{
           title: match.title,
-          description: match.description ?? "",
+          description:
+            typeof match.description === "string"
+              ? match.description
+              : JSON.stringify(match.description ?? EMPTY_MATCH_DESCRIPTION),
           stDate: match.stDate,
           placeName: place?.place_name ?? match.placeName ?? "",
           address: place?.address_name ?? match.address ?? "",

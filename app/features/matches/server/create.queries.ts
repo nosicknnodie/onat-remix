@@ -24,7 +24,7 @@ export async function createMatchTx(
   tx: Prisma.TransactionClient,
   data: {
     title: string;
-    description: string;
+    description: Prisma.InputJsonValue;
     stDate: Date;
     placeName?: string;
     address?: string;

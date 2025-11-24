@@ -2,6 +2,17 @@ import type { Prisma } from "@prisma/client";
 import type { z } from "zod";
 import type { createSchema } from "./match.schema";
 
+export const EMPTY_MATCH_DESCRIPTION: Prisma.JsonObject = {
+  root: {
+    children: [],
+    direction: null,
+    format: "",
+    indent: 0,
+    type: "root",
+    version: 1,
+  },
+};
+
 const baseClubInclude = {
   club: {
     include: {
@@ -136,7 +147,7 @@ export type MatchClubSummary = {
 export type CreateMatchDTO = {
   clubId: string;
   title: string;
-  description: string;
+  description: Prisma.InputJsonValue | string | null;
   stDate: Date;
   placeName?: string;
   address?: string;
@@ -149,7 +160,7 @@ export type CreateMatchDTO = {
 
 export type UpdateMatchDTO = {
   title: string;
-  description: string;
+  description: Prisma.InputJsonValue | string | null;
   stDate: Date;
   placeName?: string;
   address?: string;

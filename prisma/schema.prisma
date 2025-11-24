@@ -333,7 +333,7 @@ model PlayerLog {
 model Match {
   id              String        @id @default(cuid())
   title           String
-  description     String     @db.Text
+  description     Json
   placeName       String?
   address         String?
   lng             Float?      

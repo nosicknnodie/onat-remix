@@ -2,7 +2,6 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { FcGoogle } from "react-icons/fc";
 import { SiNaver } from "react-icons/si";
-import { Button } from "~/components/ui/button";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 import DashBoardPage from "./dashboard";

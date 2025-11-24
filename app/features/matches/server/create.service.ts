@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+import { EMPTY_MATCH_DESCRIPTION } from "../isomorphic";
 import * as q from "./create.queries";
 import { sendMatchWebhook } from "./webhook";
 
@@ -14,7 +16,7 @@ export async function getNewMatchData(userId: string) {
 export async function createMatch(dto: {
   clubId: string;
   title: string;
-  description: string;
+  description: Prisma.InputJsonValue | string | null;
   stDate: Date;
   placeName?: string;
   address?: string;
@@ -24,13 +26,24 @@ export async function createMatch(dto: {
   createUserId: string;
 }) {
   try {
+    const normalizedDescription: Prisma.InputJsonValue = (() => {
+      if (!dto.description) return EMPTY_MATCH_DESCRIPTION;
+      if (typeof dto.description === "string") {
+        try {
+          return JSON.parse(dto.description) as Prisma.InputJsonValue;
+        } catch {
+          return dto.description;
+        }
+      }
+      return dto.description;
+    })();
     const res = await q.withTransaction(async (tx) => {
       const createPlayer = await tx.player.findFirst({
         where: { userId: dto.createUserId, clubId: dto.clubId },
       });
       const match = await q.createMatchTx(tx, {
         title: dto.title,
-        description: dto.description,
+        description: normalizedDescription ?? EMPTY_MATCH_DESCRIPTION,
         stDate: dto.stDate,
         placeName: dto.placeName ?? "",
         address: dto.address ?? "",

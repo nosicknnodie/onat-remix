@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+import { EMPTY_MATCH_DESCRIPTION } from "../isomorphic";
 import type { MatchSummary } from "../isomorphic/summary.types";
 import * as q from "./detail.queries";
 import { summarizeMatch } from "./summary.service";
@@ -13,7 +15,7 @@ export async function updateMatch(
   matchId: string,
   dto: {
     title: string;
-    description: string;
+    description: Prisma.InputJsonValue | string | null;
     stDate: Date;
     placeName?: string;
     address?: string;
@@ -29,9 +31,21 @@ export async function updateMatch(
     dto.createPlayerId ||
     (await q.findPlayerByUserAndClubIds(dto.createUserId, clubIds))?.id ||
     null;
+  const normalizedDescription: Prisma.InputJsonValue = (() => {
+    if (!dto.description) return EMPTY_MATCH_DESCRIPTION;
+    if (typeof dto.description === "string") {
+      try {
+        return JSON.parse(dto.description) as Prisma.InputJsonValue;
+      } catch {
+        return dto.description;
+      }
+    }
+    return dto.description;
+  })();
+
   await q.updateMatch(matchId, {
     title: dto.title,
-    description: dto.description,
+    description: normalizedDescription ?? EMPTY_MATCH_DESCRIPTION,
     stDate: dto.stDate,
     placeName: dto.placeName ?? "",
     address: dto.address ?? "",
