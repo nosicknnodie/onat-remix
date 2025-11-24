@@ -8,8 +8,9 @@ import {
   type AttendanceSummaryItem,
   CheckInSection,
   type PendingSummaryItem,
-  PostMatchSection,
   PreMatchSection,
+  RatingStatsCard,
+  RatingStatsListItem,
 } from "~/features/matches/client";
 import {
   getAttendanceDisplayName,
@@ -18,8 +19,7 @@ import {
   useAttendanceMutation,
   useAttendanceQuery,
   useMatchClubQuery,
-  useRatingQuery,
-  useRecordQuery,
+  useRatingStatsQuery,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
 import { getToastForError } from "~/libs/errors";
@@ -113,39 +113,18 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
     attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
   const attendanceMatchClub = attendanceData?.matchClub ?? null;
   const shouldLoadPostMatchData = canShowRecordAndRating && Boolean(matchClubId);
-  const { data: ratingData, isLoading: isRatingLoading } = useRatingQuery(matchClubId, {
-    enabled: shouldLoadPostMatchData,
-  });
-  const { data: recordData, isLoading: isRecordLoading } = useRecordQuery(matchClubId, {
-    enabled: shouldLoadPostMatchData,
-  });
+  const { data: ratingStatsData, isLoading: isRatingStatsLoading } = useRatingStatsQuery(
+    matchClubId,
+    { enabled: shouldLoadPostMatchData },
+  );
   const currentStatus = attendanceData?.currentStatus ?? null;
   const currentChecked = attendanceData?.currentChecked ?? null;
-  const ratingHighlights = useMemo(() => {
-    if (!ratingData) return [];
-    return ratingData.attendances
-      .filter((attendance) => attendance.isVote)
-      .map((attendance) => {
-        const name = getAttendanceDisplayName(attendance) || "이름 미등록";
-        const imageUrl =
-          attendance.player?.user?.userImage?.url ??
-          attendance.mercenary?.user?.userImage?.url ??
-          null;
-        const scoreAverage =
-          attendance.evaluations.length > 0
-            ? attendance.evaluations.reduce((sum, eva) => sum + (eva.score ?? 0), 0) /
-              attendance.evaluations.length
-            : null;
-        const likeCount = attendance.evaluations.filter((eva) => eva.liked).length;
-        return {
-          id: attendance.id,
-          name,
-          imageUrl,
-          scoreAverage,
-          likeCount,
-        };
-      });
-  }, [ratingData]);
+  const ratingStats = useMemo(() => {
+    if (!ratingStatsData) return [];
+    return ratingStatsData.stats
+      .filter((stat) => (stat.averageRating ?? 0) > 0)
+      .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
+  }, [ratingStatsData]);
   const attendanceList = useMemo(() => {
     if (!attendanceMatchClub) return [];
     return attendanceMatchClub.attendances
@@ -167,47 +146,6 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
         return a.sortValue - b.sortValue;
       });
   }, [attendanceMatchClub]);
-  const momHighlights = useMemo(() => {
-    if (!canShowRecordAndRating) return [];
-    const target = ratingHighlights.filter(
-      (att) => typeof att.scoreAverage === "number" && att.scoreAverage !== null,
-    );
-    const limit = Math.max(0, Math.ceil(ratingHighlights.length / 2));
-    return target.sort((a, b) => (b.scoreAverage ?? 0) - (a.scoreAverage ?? 0)).slice(0, limit);
-  }, [ratingHighlights, canShowRecordAndRating]);
-  const likeHighlights = useMemo(() => {
-    if (!canShowRecordAndRating) return [];
-    return ratingHighlights
-      .filter((att) => (att.likeCount ?? 0) > 0)
-      .sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0));
-  }, [ratingHighlights, canShowRecordAndRating]);
-  const goalHighlights = useMemo(() => {
-    if (!canShowRecordAndRating || !recordData) return [];
-    const stats = new Map<
-      string,
-      { id: string; name: string; imageUrl?: string | null; goalCount: number }
-    >();
-    for (const quarter of recordData.quarters ?? []) {
-      for (const goal of quarter.records ?? []) {
-        if (goal.isOwnGoal) continue;
-        const attendance = goal.attendance;
-        const name = getAttendanceDisplayName(attendance);
-        if (!name) continue;
-        const id = attendance.id;
-        const imageUrl =
-          attendance.player?.user?.userImage?.url ??
-          attendance.mercenary?.user?.userImage?.url ??
-          null;
-        const current = stats.get(id);
-        if (current) {
-          current.goalCount += 1;
-        } else {
-          stats.set(id, { id, name, imageUrl, goalCount: 1 });
-        }
-      }
-    }
-    return Array.from(stats.values()).sort((a, b) => b.goalCount - a.goalCount);
-  }, [recordData, canShowRecordAndRating]);
 
   const preMatchSummary = useMemo(() => {
     const source = attendanceMatchClub as {
@@ -321,14 +259,35 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
         />
       ) : null}
 
-      {canShowRecordAndRating &&
-        (isRatingLoading || isRecordLoading ? (
+      {/* {canShowRecordAndRating && ( */}
+      <div className="space-y-4">
+        {isRatingStatsLoading ? (
           <div className="py-6 flex justify-center">
             <Loading />
           </div>
+        ) : ratingStats.length === 0 ? (
+          <div className="text-sm text-muted-foreground">평점 정보가 없습니다.</div>
         ) : (
-          <PostMatchSection moms={momHighlights} likes={likeHighlights} goals={goalHighlights} />
-        ))}
+          <>
+            <div className="flex gap-2 justify-center w-full">
+              <RatingStatsCard stats={ratingStats.at(1)} rank={2} />
+              <RatingStatsCard stats={ratingStats.at(0)} rank={1} />
+              <RatingStatsCard stats={ratingStats.at(2)} rank={3} />
+            </div>
+            <div className="space-y-1">
+              {ratingStats.map((stat, index) => (
+                <RatingStatsListItem
+                  key={stat.attendanceId}
+                  stats={stat}
+                  rank={index + 1}
+                  matchStartDate={new Date(match.stDate)}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+      {/* )} */}
     </div>
   );
 };

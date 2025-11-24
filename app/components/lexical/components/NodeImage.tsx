@@ -10,7 +10,7 @@ const NodeImage = (_props: INodeImageProps) => {
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="w-full bg-gray-100 py-6 flex justify-center">
+    <div className="w-full py-6 flex justify-start">
       <div className="w-full max-w-[640px] min-h-[50px] px-4 relative">
         {
           {
@@ -18,7 +18,7 @@ const NodeImage = (_props: INodeImageProps) => {
               <>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-2">
                   <span>업로드 중</span>
-                  <Loading />
+                  <Loading isLoading className="text-primary" />
                 </div>
               </>
             ),
@@ -36,7 +36,7 @@ const NodeImage = (_props: INodeImageProps) => {
                 {!loaded && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-2">
                     <span>로딩 중</span>
-                    <Loading />
+                    <Loading isLoading className="text-primary" />
                   </div>
                 )}
                 {/** biome-ignore lint/a11y/useAltText: off */}

@@ -7,7 +7,7 @@ export interface ISVGProps extends React.SVGProps<SVGSVGElement> {
   isLoading?: boolean;
 }
 
-export const Loading = ({ size = 24, className, isLoading, ...props }: ISVGProps) => {
+export const Loading = ({ size = 24, className, isLoading = true, ...props }: ISVGProps) => {
   if (!isLoading) {
     return null;
   }

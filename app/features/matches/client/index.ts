@@ -37,6 +37,7 @@ export { default as SearchPlace } from "./place/SearchPlace";
 export * from "./position";
 export { RatingCard } from "./RatingCard";
 export * from "./RatingRightDrawer";
+export { RatingStatsCard, RatingStatsListItem } from "./RatingStats";
 export { GoalItem, QuarterRecord } from "./Record";
 export * from "./RecordRegister";
 export { AttendanceLabel, TeamCard, type TeamWithAttendances, type UIAttendance } from "./TeamCard";
