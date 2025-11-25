@@ -5,7 +5,7 @@ import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import type { AttendanceRecord } from "~/features/matches/isomorphic";
+import { type AttendanceRecord, getAttendanceDisplayName } from "~/features/matches/isomorphic";
 
 export type UIAttendance = AttendanceRecord;
 
@@ -67,11 +67,7 @@ export function AttendanceLabel({ attendance }: { attendance: UIAttendance }) {
           <Loading />
         </AvatarFallback>
       </Avatar>
-      <span>
-        {attendance.player?.user?.name ||
-          attendance.mercenary?.user?.name ||
-          attendance.mercenary?.name}
-      </span>
+      <span>{getAttendanceDisplayName(attendance)}</span>
     </div>
   );
 }

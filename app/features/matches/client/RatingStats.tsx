@@ -22,28 +22,28 @@ export function RatingStatsListItem({
   return (
     <div
       className={cn(
-        "flex justify-between gap-2 text-sm rounded-3xl px-4 py-1 hover:bg-primary/10 transform",
+        "flex justify-between gap-2 text-sm rounded-3xl px-2 py-1 hover:bg-primary/10 transform",
       )}
     >
       <div className="flex gap-2">
-        <div className="flex justify-center items-center min-w-6">{rank}</div>
+        <div className="flex justify-center items-center min-w-4">{rank}</div>
         <Avatar
-          className={cn("shadow-md shadow-yellow-100", {
+          className={cn("shadow-md", {
             "border-yellow-300 border": rank === 1,
             "border-gray-300 border": rank === 2,
             "border-orange-300 border": rank === 3,
           })}
         >
           <AvatarImage src={stats.attendance?.player?.user?.userImage?.url}></AvatarImage>
-          <AvatarFallback className="bg-primary">
-            <FaUser className="text-primary-foreground" />
+          <AvatarFallback className="bg-white">
+            <FaUser className="text-primary" />
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col items-start justify-center">
           <p className="font-semibold text-sm drop-shadow-sm">
             {getAttendanceDisplayName(stats?.attendance)}
           </p>
-          <div className="text-sm drop-shadow-sm">
+          <div className="text-sm drop-shadow-sm gap-1 flex">
             <Badge variant="outline" className="h-4 text-gray-400">
               {
                 {
@@ -83,7 +83,88 @@ export function RatingStatsListItem({
   );
 }
 
-export function RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; rank?: 1 | 2 | 3 }) {
+export const RatingStatsCard = ({ stats, rank }: { stats?: RatingStatsItem; rank?: 1 | 2 | 3 }) => {
+  const name = getAttendanceDisplayName(stats?.attendance);
+  const rankLabel = rank ? { 1: "MOM", 2: "2ND", 3: "3RD" }[rank] : "";
+  return (
+    <>
+      <div
+        className={cn("overflow-hidden rounded-lg  p-[0.01rem] w-full h-full", {
+          "animate-border bg-gradient-to-r from-white via-amber-400 to-white bg-[length:400%_400%] p-[0.05rem]":
+            rank === 1,
+          "border border-gray-400": rank === 2,
+          "border border-gray-800": rank === 3,
+        })}
+      >
+        <div className={cn("group h-full overflow-hidden rounded-lg bg-zinc-800 px-4 py-4")}>
+          <div className="relative h-full w-full">
+            <div className="absolute -top-4 h-full w-full -translate-x-1/3 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-800 via-zinc-800 to-zinc-800 group-hover:from-amber-700 group-hover:via-zinc-800 group-hover:to-zinc-800"></div>
+            <div className="absolute left-0 top-0">
+              <span className="flex items-center justify-start rounded-md bg-white bg-opacity-10 px-2 text-gray-200 opacity-90">
+                <i
+                  className={cn("fa-solid fa-trophy text-sm", {
+                    "text-amber-400 group-hover:text-amber-200": rank === 1,
+                    "text-gray-400": rank === 2,
+                    "text-amber-800": rank === 3,
+                  })}
+                ></i>
+                <span className="ml-1">{rankLabel}</span>
+              </span>
+            </div>
+
+            <div className="absolute left-0 top-12 z-10">
+              <span className="transform rounded-md px-2 text-2xl text-gray-300 hover:bg-white hover:bg-opacity-10 hover:text-white group-hover:text-gray-200">
+                {name}
+              </span>
+            </div>
+            <div className="absolute left-2/3 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="relative h-[20rem] w-[20rem] transform overflow-hidden rounded-full opacity-50 shadow-lg shadow-white drop-shadow-md  duration-1000 group-hover:opacity-90">
+                <img
+                  alt={name ?? "선수"}
+                  src={
+                    stats?.attendance.player?.user?.userImage?.url ||
+                    stats?.attendance.mercenary?.user?.userImage?.url ||
+                    "/images/user_empty.png"
+                  }
+                  className="user-select-none user-drag-none pointer-events-none w-full rounded-md"
+                />
+              </div>
+            </div>
+            <div className="absolute top-0 right-0">
+              {/* {onMoveClick && (
+                <button onClick={(e) => onMoveClick(e)}>
+                  <span className="flex items-center justify-start rounded-md bg-white bg-opacity-10 px-2 text-sm text-gray-200 opacity-90 hover:bg-opacity-20">
+                    <i className={clsx("fa-solid fa-angles-right")}></i>
+                    <span className="ml-1">이동하기</span>
+                  </span>
+                </button>
+              )} */}
+            </div>
+            <div className="absolute left-0 bottom-5 flex space-x-3">
+              <div>
+                <div className="px-2 text-gray-300 group-hover:text-gray-100 max-md:text-xs md:text-sm">
+                  평점
+                </div>
+                <div className="flex items-start justify-start px-2 text-gray-300 group-hover:text-gray-100 max-md:text-sm md:text-lg">
+                  <StarRating
+                    id={`result-mom-${stats?.attendance.id}`}
+                    score={stats?.averageRating ?? 0}
+                    className="text-amber-400"
+                  ></StarRating>
+                  <span className="ml-2 text-sm">
+                    {(stats?.averageRating ? stats?.averageRating / 20 : 0).toFixed(2)} / 3
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export function _RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; rank?: 1 | 2 | 3 }) {
   if (!stats) {
     return (
       <div

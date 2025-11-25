@@ -1,29 +1,21 @@
 import { useNavigate, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
-import { useEffect } from "react";
-import { FaCheck, FaInfoCircle, FaQuestionCircle, FaTimesCircle } from "react-icons/fa";
-import { MdEventAvailable } from "react-icons/md";
+import { useEffect, useMemo } from "react";
+
 import { Loading } from "~/components/Loading";
-import { Button } from "~/components/ui/button";
-import { useSession } from "~/contexts";
 import {
-  AttendanceGroupCard,
-  AttendanceGroupCardContent,
-  AttendanceGroupCardHeader,
-  AttendanceGroupCardItem,
-  AttendanceGroupCardTitle,
+  type AttendanceSummaryItem,
+  type PendingSummaryItem,
+  PreMatchSection,
 } from "~/features/matches/client";
-import type { AttendanceClubPlayer, AttendanceRecord } from "~/features/matches/isomorphic";
+import type { AttendanceStatus } from "~/features/matches/isomorphic";
 import {
-  EMPTY_ATTENDANCE_PLAYERS,
-  EMPTY_ATTENDANCE_RECORDS,
   getAttendanceDisplayName,
   getPlayerDisplayName,
   useAttendanceMutation,
   useAttendanceQuery,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { cn } from "~/libs";
 import { getToastForError } from "~/libs/errors";
 
 export const handle = {
@@ -38,7 +30,6 @@ const AttendancePage = (_props: IAttendancePageProps) => {
   const params = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const user = useSession();
   const matchClubId = params.matchClubId;
   const clubId = params.clubId;
 
@@ -58,35 +49,64 @@ const AttendancePage = (_props: IAttendancePageProps) => {
     attendanceQuery.data && !("redirectTo" in attendanceQuery.data) ? attendanceQuery.data : null;
   const matchClub = resolvedData?.matchClub ?? null;
   const currentStatus = resolvedData?.currentStatus ?? "PENDING";
-  const currentChecked = resolvedData?.currentChecked ?? "PENDING";
+  const _currentChecked = resolvedData?.currentChecked ?? "PENDING";
   const matchDate = matchClub ? new Date(matchClub.match.stDate) : null;
   const now = new Date();
   const isBeforeDay = matchDate ? now < dayjs(matchDate).subtract(1, "day").toDate() : false;
-  const isCheckTimeOpen = matchDate ? now > dayjs(matchDate).subtract(2, "hour").toDate() : false;
-  const matchClubAttendances = matchClub?.attendances ?? EMPTY_ATTENDANCE_RECORDS;
-  const mercenaryAttendances = matchClub
-    ? matchClubAttendances.filter((a) => !!a.mercenary)
-    : EMPTY_ATTENDANCE_RECORDS;
-  const mercenaryAttend = mercenaryAttendances.filter((a) => a.isVote);
-  const mercenaryAbsent = mercenaryAttendances.filter((a) => !a.isVote);
-  const attend: {
-    ATTEND: AttendanceRecord[];
-    ABSENT: AttendanceRecord[];
-    PENDING: AttendanceClubPlayer[];
-  } = matchClub
-    ? {
-        ATTEND: matchClubAttendances.filter((a) => !!a.player && a.isVote),
-        ABSENT: matchClubAttendances.filter((a) => !!a.player && !a.isVote),
-        PENDING: matchClub.club.players.filter(
-          (p) =>
-            p.userId && !matchClubAttendances.some((attendance) => attendance.playerId === p.id),
-        ),
-      }
-    : {
-        ATTEND: EMPTY_ATTENDANCE_RECORDS,
-        ABSENT: EMPTY_ATTENDANCE_RECORDS,
-        PENDING: EMPTY_ATTENDANCE_PLAYERS,
+  const _isCheckTimeOpen = matchDate ? now > dayjs(matchDate).subtract(2, "hour").toDate() : false;
+  const summary = useMemo(() => {
+    if (!matchClub) {
+      return {
+        attend: [] as AttendanceSummaryItem[],
+        absent: [] as AttendanceSummaryItem[],
+        pending: [] as AttendanceSummaryItem[],
       };
+    }
+    const attendances = matchClub.attendances ?? [];
+    const players = matchClub.club.players ?? [];
+
+    const attendSummary = attendances
+      .filter((attendance) => attendance.isVote)
+      .map((attendance) => {
+        const name = getAttendanceDisplayName(attendance);
+        if (!name) return null;
+        return {
+          id: attendance.id,
+          name,
+          type: attendance.player ? "PLAYER" : "MERCENARY",
+        } as AttendanceSummaryItem;
+      })
+      .filter((item): item is AttendanceSummaryItem => Boolean(item));
+
+    const absentSummary = attendances
+      .filter((attendance) => attendance.player && !attendance.isVote)
+      .map((attendance) => {
+        const name = getAttendanceDisplayName(attendance);
+        if (!name) return null;
+        return {
+          id: attendance.id,
+          name,
+          type: "PLAYER",
+        } as AttendanceSummaryItem;
+      })
+      .filter((item): item is AttendanceSummaryItem => Boolean(item));
+
+    const pendingSummary = players
+      .filter(
+        (player) =>
+          player.userId && !attendances.some((attendance) => attendance.playerId === player.id),
+      )
+      .map((player) => {
+        const name = getPlayerDisplayName(player) || "이름 미등록";
+        return { id: player.id, name, type: "PLAYER" } as PendingSummaryItem;
+      });
+
+    return {
+      attend: attendSummary,
+      absent: absentSummary,
+      pending: pendingSummary,
+    };
+  }, [matchClub]);
 
   if (attendanceQuery.isLoading || !resolvedData || !matchClub || !matchClubId || !clubId) {
     return (
@@ -96,12 +116,6 @@ const AttendancePage = (_props: IAttendancePageProps) => {
     );
   }
 
-  const statusIcons = {
-    ATTEND: <MdEventAvailable className="text-primary" />,
-    ABSENT: <FaTimesCircle className="text-destructive" />,
-    PENDING: <FaQuestionCircle className="text-muted-foreground" />,
-  } as const;
-
   const handleAttendanceChange = async (input: { isVote: boolean; isCheck: boolean }) => {
     try {
       await attendanceMutation.mutateAsync({ ...input });
@@ -109,160 +123,21 @@ const AttendancePage = (_props: IAttendancePageProps) => {
       toast(getToastForError(error));
     }
   };
+  const handleAttendanceVote = async (isVote: boolean) => {
+    await handleAttendanceChange({ isVote, isCheck: false });
+  };
 
   return (
     <div className="space-y-4">
-      <div className="border rounded-md p-3 space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className={cn("flex items-center gap-x-2 text-sm px-2")}>
-            <FaInfoCircle className="text-muted-foreground" /> 현재 상태:{" "}
-            <span
-              className={cn("flex items-center gap-x-1", {
-                "text-primary": currentStatus === "ATTEND",
-                "text-destructive": currentStatus === "ABSENT",
-                "text-muted-foreground": currentStatus === "PENDING",
-              })}
-            >
-              {statusIcons[currentStatus as keyof typeof statusIcons]}
-              {{ ATTEND: "참석", ABSENT: "불참", PENDING: "선택안함" }[currentStatus]}
-            </span>
-            {attendanceMutation.isPending && <Loading size={16} />}
-          </div>
-          {isCheckTimeOpen && currentStatus === "ATTEND" ? (
-            <Button
-              disabled={attendanceMutation.isPending || currentChecked === "CHECKED"}
-              className={cn({ "bg-green-500": currentChecked === "CHECKED" })}
-              onClick={() => handleAttendanceChange({ isCheck: true, isVote: true })}
-            >
-              {currentChecked === "CHECKED" ? "출석완" : "출석체크"}
-            </Button>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-2 ml-auto">
-            {isBeforeDay ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-x-1 max-sm:w-20 sm:w-32 max-sm:text-xs sm:text-sm"
-                  disabled={attendanceMutation.isPending}
-                  onClick={() => handleAttendanceChange({ isVote: true, isCheck: false })}
-                >
-                  {statusIcons.ATTEND} 참석
-                  {currentStatus === "ATTEND" && <FaCheck className="text-primary" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-x-1 max-sm:w-20 sm:w-32 max-sm:text-xs sm:text-sm"
-                  disabled={attendanceMutation.isPending}
-                  onClick={() => handleAttendanceChange({ isVote: false, isCheck: false })}
-                >
-                  {statusIcons.ABSENT} 불참
-                  {currentStatus === "ABSENT" && <FaCheck className="text-primary" />}
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <AttendanceGroupCard className="bg-primary/5">
-          <AttendanceGroupCardHeader>
-            <AttendanceGroupCardTitle>
-              {statusIcons.ATTEND} 참석: 회원 {attend.ATTEND.length}
-              {mercenaryAttend.length > 0 && ` · 용병 ${mercenaryAttend.length}`}
-              {currentStatus === "ATTEND" && <FaCheck className="text-primary" />}
-            </AttendanceGroupCardTitle>
-          </AttendanceGroupCardHeader>
-          <AttendanceGroupCardContent>
-            {attend.ATTEND.length > 0 && <p className="text-xs text-muted-foreground mb-1">회원</p>}
-            {attend.ATTEND.map((u) => (
-              <AttendanceGroupCardItem
-                key={u.id}
-                className={cn({
-                  "border-primary font-semibold text-primary": user?.id === u.player?.user?.id,
-                })}
-                isChecked={u.isCheck}
-              >
-                {getAttendanceDisplayName(u)}
-              </AttendanceGroupCardItem>
-            ))}
-            {mercenaryAttend.length > 0 && (
-              <p className="text-xs text-muted-foreground mb-1 mt-2">용병</p>
-            )}
-            {mercenaryAttend.map((ma) => (
-              <AttendanceGroupCardItem
-                key={ma.id}
-                className={cn({
-                  "border-primary font-semibold text-primary": user?.id === ma.mercenary?.userId,
-                })}
-                isChecked={ma.isCheck}
-              >
-                {getAttendanceDisplayName(ma)}
-              </AttendanceGroupCardItem>
-            ))}
-          </AttendanceGroupCardContent>
-        </AttendanceGroupCard>
-
-        <AttendanceGroupCard className="bg-destructive/5">
-          <AttendanceGroupCardHeader>
-            <AttendanceGroupCardTitle>
-              {statusIcons.ABSENT} 불참: 회원 {attend.ABSENT.length}
-              {mercenaryAbsent.length > 0 && ` · 용병 ${mercenaryAbsent.length}`}
-              {currentStatus === "ABSENT" && <FaCheck className="text-primary" />}
-            </AttendanceGroupCardTitle>
-          </AttendanceGroupCardHeader>
-          <AttendanceGroupCardContent>
-            {attend.ABSENT.length > 0 && <p className="text-xs text-muted-foreground mb-1">회원</p>}
-            {attend.ABSENT.map((u) => (
-              <AttendanceGroupCardItem
-                key={u.id}
-                className={cn({
-                  "border-primary font-semibold text-primary": user?.id === u.player?.user?.id,
-                })}
-              >
-                {getAttendanceDisplayName(u)}
-              </AttendanceGroupCardItem>
-            ))}
-            {mercenaryAbsent.length > 0 && (
-              <p className="text-xs text-muted-foreground mb-1 mt-2">용병</p>
-            )}
-            {mercenaryAbsent.map((ma) => (
-              <AttendanceGroupCardItem
-                key={ma.id}
-                className={cn({
-                  "border-primary font-semibold text-primary": user?.id === ma.mercenary?.userId,
-                })}
-                isChecked={ma.isCheck}
-              >
-                {getAttendanceDisplayName(ma)}
-              </AttendanceGroupCardItem>
-            ))}
-          </AttendanceGroupCardContent>
-        </AttendanceGroupCard>
-
-        <AttendanceGroupCard className="bg-muted-foreground/5">
-          <AttendanceGroupCardHeader>
-            <AttendanceGroupCardTitle>
-              {statusIcons.PENDING} 선택안함: {attend.PENDING.length}
-              {currentStatus === "PENDING" && <FaCheck className="text-primary" />}
-            </AttendanceGroupCardTitle>
-          </AttendanceGroupCardHeader>
-          <AttendanceGroupCardContent>
-            {attend.PENDING.map((u) => (
-              <AttendanceGroupCardItem
-                key={u.id}
-                className={cn({
-                  "border-primary font-semibold text-primary": user?.id === u.user?.id,
-                })}
-              >
-                {getPlayerDisplayName({ nick: u.user?.nick, user: u.user })}
-              </AttendanceGroupCardItem>
-            ))}
-          </AttendanceGroupCardContent>
-        </AttendanceGroupCard>
-      </div>
+      <PreMatchSection
+        summary={summary}
+        canVoteAttendance={isBeforeDay}
+        attendanceIsLoading={attendanceQuery.isLoading}
+        hasAttendanceData={Boolean(resolvedData)}
+        currentStatus={currentStatus as AttendanceStatus}
+        attendanceMutationPending={attendanceMutation.isPending}
+        onAttendanceVote={handleAttendanceVote}
+      />
     </div>
   );
 };

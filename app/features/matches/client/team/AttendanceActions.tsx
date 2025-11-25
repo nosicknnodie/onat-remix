@@ -5,13 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import InfoDrawer, { type TeamInfoPayload } from "./InfoDrawer";
@@ -24,6 +21,8 @@ export interface TeamAttendanceActionsProps extends PropsWithChildren {
   currentTeamId?: string | null;
   onSelectTeam: (teamId: string) => Promise<void> | void;
   payload: TeamInfoPayload | null;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export const TeamAttendanceActions = ({
@@ -35,10 +34,13 @@ export const TeamAttendanceActions = ({
   currentTeamId,
   onSelectTeam,
   payload,
+  disabled = false,
+  disabledReason,
 }: TeamAttendanceActionsProps) => {
   const [isPending, startTransition] = useTransition();
 
   const handleSelectedTeam = async (teamId: string) => {
+    if (disabled) return;
     startTransition(async () => {
       await onSelectTeam(teamId);
     });
@@ -51,7 +53,8 @@ export const TeamAttendanceActions = ({
           variant="outline"
           size="sm"
           className="focus:outline-none focus:ring-0 focus-visible:ring-0 gap-1 relative flex justify-between items-center"
-          disabled={isPending}
+          disabled={isPending || disabled}
+          title={disabledReason}
         >
           {isChecked && (
             <FaCheckCircle className="text-green-500 text-sm ml-1 absolute -top-1 -right-1 bg-transparent" />
@@ -70,21 +73,14 @@ export const TeamAttendanceActions = ({
         <DropdownMenuLabel>{`${name} 님`}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <InfoDrawer payload={payload}>정보확인</InfoDrawer>
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Team</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {teams.map((team) => (
-              <DropdownMenuCheckboxItem
-                checked={currentTeamId === team.id}
-                disabled={currentTeamId === team.id}
-                key={team.id}
-                onClick={() => handleSelectedTeam(team.id)}
-              >
-                {team.name}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        <DropdownMenuItem
+          disabled={disabled}
+          onClick={() =>
+            handleSelectedTeam(teams.find((team) => team.id !== currentTeamId)?.id ?? "")
+          }
+        >
+          팀이동
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

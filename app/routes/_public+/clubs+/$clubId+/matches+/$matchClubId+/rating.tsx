@@ -97,7 +97,7 @@ const RatingPage = (_props: IRatingPageProps) => {
   return (
     <>
       <div className="w-full pt-4 flex flex-col gap-6 relative">
-        <div className="absolute right-0 top-0 ">
+        <div className="absolute right-0 top-0 -translate-y-1/2">
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -133,9 +133,17 @@ const RatingPage = (_props: IRatingPageProps) => {
             </div>
           ) : (
             <>
-              <RatingStatsCard stats={stats?.at(1)} rank={2} />
-              <RatingStatsCard stats={stats?.at(0)} rank={1} />
-              <RatingStatsCard stats={stats?.at(2)} rank={3} />
+              <div className="gap-2 grid sm:grid-cols-3 max-sm:grid-cols-1 w-full">
+                <div className="h-72">
+                  <RatingStatsCard stats={stats?.at(0)} rank={1} />
+                </div>
+                <div className="h-72">
+                  <RatingStatsCard stats={stats?.at(1)} rank={2} />
+                </div>
+                <div className="h-72">
+                  <RatingStatsCard stats={stats?.at(2)} rank={3} />
+                </div>
+              </div>
             </>
           )}
         </div>

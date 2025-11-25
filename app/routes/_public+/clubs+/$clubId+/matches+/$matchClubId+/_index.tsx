@@ -275,9 +275,15 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
         ) : (
           <>
             <div className="flex gap-2 justify-center w-full">
-              <RatingStatsCard stats={ratingStats.at(1)} rank={2} />
-              <RatingStatsCard stats={ratingStats.at(0)} rank={1} />
-              <RatingStatsCard stats={ratingStats.at(2)} rank={3} />
+              <div className="h-72 w-full">
+                <RatingStatsCard stats={ratingStats.at(0)} rank={1} />
+              </div>
+              <div className="h-72 w-full">
+                <RatingStatsCard stats={ratingStats.at(1)} rank={2} />
+              </div>
+              <div className="h-72 w-full">
+                <RatingStatsCard stats={ratingStats.at(2)} rank={3} />
+              </div>
             </div>
             <div className="space-y-1">
               {ratingStats.map((stat, index) => (

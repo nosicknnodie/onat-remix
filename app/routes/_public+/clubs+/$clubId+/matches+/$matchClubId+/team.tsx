@@ -1,7 +1,9 @@
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { useNavigate, useParams } from "@remix-run/react";
+import dayjs from "dayjs";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiHelpCircle } from "react-icons/fi";
+
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -16,6 +18,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
 import {
   TeamAttendanceActions,
   TeamCard,
@@ -57,6 +60,11 @@ const TeamPage = (_props: ITeamPageProps) => {
     clubId,
     enabled: hasParams,
   });
+  const { data: membership } = useMembershipInfoQuery(clubId ?? "", { enabled: Boolean(clubId) });
+  const { data: permissions = [], isLoading: isPermissionLoading } = usePlayerPermissionsQuery(
+    membership?.id ?? "",
+    { enabled: Boolean(membership?.id) },
+  );
   useEffect(() => {
     if (attendanceQuery.data && "redirectTo" in attendanceQuery.data) {
       navigate(attendanceQuery.data.redirectTo);
@@ -72,6 +80,15 @@ const TeamPage = (_props: ITeamPageProps) => {
   const attendanceResult =
     attendanceQuery.data && !("redirectTo" in attendanceQuery.data) ? attendanceQuery.data : null;
   const attendances = attendanceResult?.matchClub.attendances ?? [];
+  const matchStartDate = attendanceResult?.matchClub.match?.stDate;
+  const manageWindowActive = matchStartDate
+    ? dayjs().diff(dayjs(matchStartDate).add(3, "day"), "millisecond") <= 0
+    : false;
+  const hasMatchManage = permissions.includes("MATCH_MANAGE");
+  const hasMatchMaster = permissions.includes("MATCH_MASTER");
+  const canManageTeam = (hasMatchManage || hasMatchMaster) && manageWindowActive;
+  const isTeamManageLocked = isPermissionLoading || !canManageTeam;
+  const canShowTeamEdit = canManageTeam && !isPermissionLoading;
   const notTeamAttendances = attendances.filter(
     (attendance) => !attendance.teamId || !teams.some((team) => team.id === attendance.teamId),
   );
@@ -96,6 +113,7 @@ const TeamPage = (_props: ITeamPageProps) => {
   }, [selectedTeamId, teams]);
   // 팀없는 선수들 체크했을경우 attends 에 모아두기
   const handleSelectedAtted = async (attendance: UIAttendance) => {
+    if (isTeamManageLocked) return;
     setSelectedAttends((prev) => {
       if (prev?.some((item) => item.id === attendance.id)) {
         return prev.filter((item) => item.id !== attendance.id);
@@ -104,6 +122,7 @@ const TeamPage = (_props: ITeamPageProps) => {
     });
   };
   const handleAddTeam = async () => {
+    if (isTeamManageLocked) return;
     if (!selectedTeamId || selectedAttends?.length <= 0) return;
     await teamAssignmentMutation.mutateAsync({
       teamId: selectedTeamId,
@@ -158,13 +177,14 @@ const TeamPage = (_props: ITeamPageProps) => {
                 </TooltipProvider>
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex">
+            <CardContent className="grid max-sm:grid-cols-2 sm:max-md:grid-cols-4 md:max-lg:grid-cols-4 lg:max-xl:grid-cols-5 xl:grid-cols-6 gap-2">
               {notTeamAttendances.map((attendance) => {
                 return (
                   <Fragment key={attendance.id}>
                     <div className="px-2 py-1 space-x-2 flex items-center justify-center">
                       <Checkbox
                         id={`checkbox-${attendance.id}`}
+                        disabled={isTeamManageLocked}
                         onCheckedChange={() => handleSelectedAtted(attendance)}
                       ></Checkbox>
 
@@ -195,7 +215,7 @@ const TeamPage = (_props: ITeamPageProps) => {
               <Select
                 value={selectedTeamId ?? undefined}
                 onValueChange={setSelectedTeamId}
-                disabled={isPending}
+                disabled={isPending || isTeamManageLocked}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a team" />
@@ -210,7 +230,11 @@ const TeamPage = (_props: ITeamPageProps) => {
                   })}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddTeam} disabled={isPending} className="shrink-0">
+              <Button
+                onClick={handleAddTeam}
+                disabled={isPending || isTeamManageLocked}
+                className="shrink-0"
+              >
                 <ArrowRightIcon className="mr-1" /> 이동
                 {isPending && <Loading />}
               </Button>
@@ -225,32 +249,34 @@ const TeamPage = (_props: ITeamPageProps) => {
               <TeamCard
                 team={team}
                 headerAction={
-                  <TeamEditDialog
-                    payload={team}
-                    onUpdate={async (teamId, data) => {
-                      try {
-                        const nextName = data.name ?? team.name ?? "";
-                        const nextColor = data.color ?? team.color ?? "#000000";
-                        await teamUpdateMutation.mutateAsync({
-                          teamId,
-                          name: nextName,
-                          color: nextColor,
-                        });
-                        return true;
-                      } catch {
-                        return false;
-                      }
-                    }}
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="팀 수정"
-                      className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
+                  canShowTeamEdit ? (
+                    <TeamEditDialog
+                      payload={team}
+                      onUpdate={async (teamId, data) => {
+                        try {
+                          const nextName = data.name ?? team.name ?? "";
+                          const nextColor = data.color ?? team.color ?? "#000000";
+                          await teamUpdateMutation.mutateAsync({
+                            teamId,
+                            name: nextName,
+                            color: nextColor,
+                          });
+                          return true;
+                        } catch {
+                          return false;
+                        }
+                      }}
                     >
-                      <FiEdit2 />
-                    </Button>
-                  </TeamEditDialog>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="팀 수정"
+                        className="bg-transparent shadow-none drop-shadow-none ring-0 focus:ring-0 outline-none"
+                      >
+                        <FiEdit2 />
+                      </Button>
+                    </TeamEditDialog>
+                  ) : null
                 }
                 renderAttendance={(attendance: UIAttendance | null) => (
                   <TeamAttendanceActions
@@ -267,7 +293,16 @@ const TeamPage = (_props: ITeamPageProps) => {
                       player: attendance?.player || null,
                       mercenary: attendance?.mercenary || null,
                     }}
+                    disabled={isTeamManageLocked}
+                    disabledReason={
+                      isPermissionLoading
+                        ? "팀 이동 권한 확인 중입니다."
+                        : manageWindowActive
+                          ? "MATCH_MANAGE 권한이 필요합니다."
+                          : "경기 시작 3일 이후에는 팀 이동이 불가합니다."
+                    }
                     onSelectTeam={async (teamId) => {
+                      if (isTeamManageLocked) return;
                       if (!attendance?.id) return;
                       await teamAssignmentMutation.mutateAsync({
                         teamId,
