@@ -8,6 +8,7 @@ import { mercenaryMigration } from "./mercenary.migration";
 import { playerMigration } from "./player.migration";
 import { ratingMigration } from "./rating.migration";
 import { recordMigration } from "./record.migration";
+import { statsMigration } from "./stats.migration";
 import { userMigration } from "./user.migration";
 
 config();
@@ -56,9 +57,9 @@ async function main() {
     console.log("✅ [ratingMigration] done");
 
     // DB 에서 해결.
-    // console.log("⚽ [statsMigration] start");
-    // await statsMigration();
-    // console.log("✅ [statsMigration] done");
+    console.log("⚽ [statsMigration] start");
+    await statsMigration();
+    console.log("✅ [statsMigration] done");
   } catch (error) {
     console.error("❌ Migration failed", error);
     throw error;

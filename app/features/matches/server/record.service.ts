@@ -1,3 +1,4 @@
+import { recalcPlayerStatsHistoryByAttendance } from "./rating.queries";
 import * as q from "./record.queries";
 
 export async function getRecordPageData(matchClubId: string) {
@@ -19,10 +20,25 @@ export async function createGoal(input: {
   goalType?: import("@prisma/client").GoalType;
 }) {
   await q.createRecord(input);
+  await Promise.all([
+    recalcPlayerStatsHistoryByAttendance(input.attendanceId),
+    input.assistAttendanceId
+      ? recalcPlayerStatsHistoryByAttendance(input.assistAttendanceId)
+      : Promise.resolve(),
+  ]);
   return { ok: true as const };
 }
 
 export async function deleteGoal(id: string) {
+  const record = await q.findRecordById(id);
   await q.deleteRecord(id);
+  await Promise.all(
+    [
+      record?.attendanceId ? recalcPlayerStatsHistoryByAttendance(record.attendanceId) : undefined,
+      record?.assistAttendanceId
+        ? recalcPlayerStatsHistoryByAttendance(record.assistAttendanceId)
+        : undefined,
+    ].filter(Boolean) as Promise<unknown>[],
+  );
   return { ok: true as const };
 }

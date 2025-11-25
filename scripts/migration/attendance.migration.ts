@@ -23,7 +23,7 @@ model Attendance {
 
   ratingStats   AttendanceRatingStats?
   ratingVote    AttendanceRatingVote?
-  ratingHistory AttendanceRatingHistory?
+  statsHistory  AttendanceStatsHistory?
   assigneds   Assigned[]
   evaluations Evaluation[]
   records     Record[]

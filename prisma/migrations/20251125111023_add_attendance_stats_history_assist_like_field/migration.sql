@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "AttendanceStatsHistory" ADD COLUMN     "halfYearTotalAssist" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "halfYearTotalLike" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "monthlyTotalAssist" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "monthlyTotalLike" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "quarterlyTotalAssist" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "quarterlyTotalLike" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "yearlyTotalAssist" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "yearlyTotalLike" INTEGER NOT NULL DEFAULT 0;

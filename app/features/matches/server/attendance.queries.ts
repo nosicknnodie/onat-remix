@@ -1,3 +1,4 @@
+import type { StatsPeriodType } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
 
 export async function findMatchClubWithRelations(id: string) {
@@ -135,62 +136,75 @@ async function calculateHistoryAverage(
   };
 }
 
-async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, matchDate: Date) {
-  const [monthly, quarterly, halfYear, yearly] = await Promise.all([
-    calculateHistoryAverage(clubId, startOfMonth(matchDate), matchDate),
-    calculateHistoryAverage(clubId, startOfQuarter(matchDate), matchDate),
-    calculateHistoryAverage(clubId, startOfHalfYear(matchDate), matchDate),
-    calculateHistoryAverage(clubId, startOfYear(matchDate), matchDate),
-  ]);
+const formatPeriodKey = (date: Date, type: StatsPeriodType): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  switch (type) {
+    case "MONTH":
+      return `${year}-${String(month).padStart(2, "0")}`;
+    case "QUARTER":
+      return `${year}-Q${Math.floor((month - 1) / 3) + 1}`;
+    case "HALF_YEAR":
+      return `${year}-H${month <= 6 ? 1 : 2}`;
+    case "YEAR":
+      return `${year}`;
+    default:
+      return `${year}`;
+  }
+};
 
-  await prisma.matchClubStatsHistory.upsert({
-    where: { matchClubId },
-    update: {
-      monthlyVoteCount: monthly.voteCount,
-      monthlyVoteRate: monthly.voteRate,
-      monthlyCheckCount: monthly.checkCount,
-      monthlyCheckRate: monthly.checkRate,
-      monthlyMatchCount: monthly.matchCount,
-      quarterlyVoteCount: quarterly.voteCount,
-      quarterlyVoteRate: quarterly.voteRate,
-      quarterlyCheckCount: quarterly.checkCount,
-      quarterlyCheckRate: quarterly.checkRate,
-      quarterlyMatchCount: quarterly.matchCount,
-      halfYearVoteCount: halfYear.voteCount,
-      halfYearVoteRate: halfYear.voteRate,
-      halfYearCheckCount: halfYear.checkCount,
-      halfYearCheckRate: halfYear.checkRate,
-      halfYearMatchCount: halfYear.matchCount,
-      yearVoteCount: yearly.voteCount,
-      yearVoteRate: yearly.voteRate,
-      yearCheckCount: yearly.checkCount,
-      yearCheckRate: yearly.checkRate,
-      yearMatchCount: yearly.matchCount,
-    },
-    create: {
-      matchClubId,
-      monthlyVoteCount: monthly.voteCount,
-      monthlyVoteRate: monthly.voteRate,
-      monthlyCheckCount: monthly.checkCount,
-      monthlyCheckRate: monthly.checkRate,
-      monthlyMatchCount: monthly.matchCount,
-      quarterlyVoteCount: quarterly.voteCount,
-      quarterlyVoteRate: quarterly.voteRate,
-      quarterlyCheckCount: quarterly.checkCount,
-      quarterlyCheckRate: quarterly.checkRate,
-      quarterlyMatchCount: quarterly.matchCount,
-      halfYearVoteCount: halfYear.voteCount,
-      halfYearVoteRate: halfYear.voteRate,
-      halfYearCheckCount: halfYear.checkCount,
-      halfYearCheckRate: halfYear.checkRate,
-      halfYearMatchCount: halfYear.matchCount,
-      yearVoteCount: yearly.voteCount,
-      yearVoteRate: yearly.voteRate,
-      yearCheckCount: yearly.checkCount,
-      yearCheckRate: yearly.checkRate,
-      yearMatchCount: yearly.matchCount,
-    },
-  });
+async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, matchDate: Date) {
+  const periods: Array<{
+    type: StatsPeriodType;
+    start: Date;
+  }> = [
+    { type: "MONTH", start: startOfMonth(matchDate) },
+    { type: "QUARTER", start: startOfQuarter(matchDate) },
+    { type: "HALF_YEAR", start: startOfHalfYear(matchDate) },
+    { type: "YEAR", start: startOfYear(matchDate) },
+  ];
+
+  const histories = await Promise.all(
+    periods.map(async (period) => {
+      const history = await calculateHistoryAverage(clubId, period.start, matchDate);
+      return {
+        ...history,
+        periodType: period.type,
+        periodKey: formatPeriodKey(matchDate, period.type),
+      };
+    }),
+  );
+
+  await prisma.$transaction(
+    histories.map((history) =>
+      prisma.matchClubStatsHistory.upsert({
+        where: {
+          matchClubId_periodType_periodKey: {
+            matchClubId,
+            periodType: history.periodType,
+            periodKey: history.periodKey,
+          },
+        },
+        update: {
+          voteCount: history.voteCount,
+          voteRate: history.voteRate,
+          checkCount: history.checkCount,
+          checkRate: history.checkRate,
+          matchCount: history.matchCount,
+        },
+        create: {
+          matchClubId,
+          periodType: history.periodType,
+          periodKey: history.periodKey,
+          voteCount: history.voteCount,
+          voteRate: history.voteRate,
+          checkCount: history.checkCount,
+          checkRate: history.checkRate,
+          matchCount: history.matchCount,
+        },
+      }),
+    ),
+  );
 }
 
 export async function recalcMatchClubStatistics(matchClubId: string) {

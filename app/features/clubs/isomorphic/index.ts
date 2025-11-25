@@ -7,5 +7,7 @@ export * from "./match.types";
 export * from "./member.hooks";
 export * from "./member.types";
 export * from "./schema";
+export * from "./stats.hooks";
+export * from "./stats.types";
 export * from "./types";
 export * from "./validators";

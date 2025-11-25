@@ -112,6 +112,24 @@ enum GenderType {
   FEMALE  // 여자
 }
 
+enum StatsPeriodType {
+  MONTH       // 월
+  QUARTER     // 분기
+  HALF_YEAR   // 상/하반기
+  YEAR        // 연도
+}
+
+enum MatchEventType {
+  GOAL
+  OWN_GOAL
+  PK_GOAL
+  ASSIST
+  SHOT
+  CARD
+  FOUL
+  SUB
+}
+
 
 model ConfirmToken {
   id String @id @default(cuid())
@@ -222,6 +240,7 @@ model Player {
   user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   club              Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
   attendances       Attendance[]
+  statsHistories    PlayerStatsHistory[]
   playerLogs        PlayerLog[]
   createdPlayerLogs PlayerLog[] @relation("PlayerLogCreatePlayer")
   createdMatches    Match[] @relation("MatchCreatePlayer")
@@ -372,7 +391,8 @@ model MatchClub {
   teams         Team[]
   evaluations   Evaluation[]
   total         MatchClubStatsTotal?
-  totalHistory  MatchClubStatsHistory?
+  statsHistories MatchClubStatsHistory[]
+  records       Record[]
 
   isUse         Boolean     @default(true)
   createdAt     DateTime    @default(now())
@@ -398,32 +418,22 @@ model MatchClubStatsTotal {
 }
 
 model MatchClubStatsHistory {
-  matchClubId String   @id
-  matchClub   MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  matchClubId  String
+  matchClub    MatchClub @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
 
-  monthlyVoteCount   Int @default(0)   // 월별 평균 참석수
-  monthlyVoteRate    Int @default(0)   // 월별 평균 참석률
-  monthlyCheckCount  Int @default(0)   // 월별 평균 출석수
-  monthlyCheckRate   Int @default(0)   // 월별 평균 출석률
-  monthlyMatchCount  Int @default(0)   // 월별 총 경기 수
+  periodType   StatsPeriodType // 집계 구간 타입
+  periodKey    String          // 예: 2024-01, 2024-Q1, 2024-H1, 2024
+  calculatedAt DateTime @default(now()) // 집계 기준 시각(출석 집계 시)
 
-  quarterlyVoteCount   Int @default(0)   // 분기별 평균 참석수
-  quarterlyVoteRate    Int @default(0)   // 분기별 평균 참석률
-  quarterlyCheckCount  Int @default(0)   // 분기별 평균 출석수
-  quarterlyCheckRate   Int @default(0)   // 분기별 평균 출석률
-  quarterlyMatchCount Int @default(0)   // 분기별 총 경기 수
+  voteCount    Int?    // 평균 참석수
+  voteRate     Int?    // 평균 참석률
+  checkCount   Int?    // 평균 출석수
+  checkRate    Int?    // 평균 출석률
+  matchCount   Int?    // 총 경기 수
+  playerTotalCount Int? // 기록 당시 승인된 회원 수
 
-  halfYearVoteCount   Int @default(0)   // 반기별 평균 참석수
-  halfYearVoteRate    Int @default(0)   // 반기별 평균 참석률
-  halfYearCheckCount  Int @default(0)   // 반기별 평균 출석수
-  halfYearCheckRate   Int @default(0)   // 반기별 평균 출석률
-  halfYearMatchCount  Int @default(0)   // 반기별 총 경기 수
-
-  yearVoteCount   Int @default(0)   // 연도별 평균 참석수
-  yearVoteRate    Int @default(0)   // 연도별 평균 참석률
-  yearCheckCount  Int @default(0)   // 연도별 평균 출석수
-  yearCheckRate   Int @default(0)   // 연도별 평균 출석률
-  yearMatchCount  Int @default(0)   // 연도별 총 경기 수
+  @@unique([matchClubId, periodType, periodKey])
 }
 
 
@@ -474,7 +484,6 @@ model Attendance {
 
   ratingStats   AttendanceRatingStats?
   ratingVote    AttendanceRatingVote?
-  ratingHistory AttendanceRatingHistory?
   assigneds   Assigned[]
   evaluations Evaluation[]
   records     Record[]
@@ -510,25 +519,24 @@ model AttendanceRatingVote {
   usedLikeCount    Int     @default(0) // 사용한 좋아요 개수
 }
 
-model AttendanceRatingHistory {
-  attendanceId String @id
-  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+model PlayerStatsHistory {
+  id            String   @id @default(cuid())
+  playerId      String
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  monthlyAverageRating    Int @default(0)  // 최근 월별 평균 평점
-  monthlyTotalRating      Int @default(0)  // 최근 월별 합계 평점
-  monthlyMatchCount       Int @default(0)  // 최근 월별 총 경기 수
+  periodType    StatsPeriodType // 집계 구간 타입
+  periodKey     String          // 예: 2024-01, 2024-Q1, 2024-H1, 2024
+  calculatedAt  DateTime @default(now()) // 집계 기준 시각(출석 집계 시)
 
-  quarterlyAverageRating  Int @default(0)  // 최근 분기별 평균 평점
-  quarterlyTotalRating    Int @default(0)  // 최근 분기별 합계 평점
-  quarterlyMatchCount     Int @default(0)  // 최근 분기별 총 경기 수
+  averageRating Int?    // 스케일 적용된 평균 평점
+  totalRating   Int?    // 평점 합계
+  totalGoal     Int?    // 총 골 수
+  totalAssist   Int?    // 총 어시스트 수
+  totalLike     Int?    // 받은 좋아요 수
+  matchCount    Int?    // 총 경기 수
 
-  halfYearAverageRating  Int @default(0)  // 최근 상/하반기별 평균 평점
-  halfYearTotalRating    Int @default(0)  // 최근 상/하반기별 합계 평점
-  halfYearMatchCount     Int @default(0)  // 최근 상/하반기별 총 경기 수
-
-  yearlyAverageRating    Int @default(0)  // 최근 연도별 평균 평점
-  yearlyTotalRating      Int @default(0)  // 최근 연도별 합계 평점
-  yearlyMatchCount       Int @default(0)  // 최근 연도별 총 경기 수
+  @@unique([playerId, periodType, periodKey])
+  @@index([playerId])
 }
 
 // 쿼터정보
@@ -652,8 +660,16 @@ model Record {
   teamId        String?
   team          Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
+  matchClubId   String?
+  matchClub     MatchClub? @relation(fields: [matchClubId], references: [id], onDelete: Cascade)
+
   quarterId     String
   quarter       Quarter  @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+
+  eventType     MatchEventType @default(GOAL) // 이벤트 유형(골/어시/카드 등)
+  value         Int?           // 이벤트 수치(필요 시 사용)
+  meta          Json?          // 추가 메타(위치, 설명 등)
+  occurredAt    DateTime @default(now()) // 경기 내 이벤트 발생 시각(입력 시각 기반)
 
   isOwnGoal     Boolean   @default(false)
   goalType      GoalType @default(NORMAL)
@@ -662,6 +678,7 @@ model Record {
 
   @@index([attendanceId])
   @@index([assistAttendanceId])
+  @@index([matchClubId, eventType])
 }
 
 enum GoalType {

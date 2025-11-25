@@ -77,3 +77,13 @@ export async function createRecord(data: {
 export async function deleteRecord(id: string) {
   return await prisma.record.delete({ where: { id } });
 }
+
+export async function findRecordById(id: string) {
+  return await prisma.record.findUnique({
+    where: { id },
+    select: {
+      attendanceId: true,
+      assistAttendanceId: true,
+    },
+  });
+}

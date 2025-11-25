@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, StatsPeriodType } from "@prisma/client";
 import { prisma } from "./prisma.db";
 
 type MatchClubMeta = {
@@ -13,6 +13,20 @@ const startOfQuarter = (date: Date) =>
 const startOfHalfYear = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth() < 6 ? 0 : 6, 1);
 const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
+const formatPeriodKey = (date: Date, type: StatsPeriodType): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  switch (type) {
+    case "MONTH":
+      return `${year}-${String(month).padStart(2, "0")}`;
+    case "QUARTER":
+      return `${year}-Q${Math.floor((month - 1) / 3) + 1}`;
+    case "HALF_YEAR":
+      return `${year}-H${month <= 6 ? 1 : 2}`;
+    default:
+      return `${year}`;
+  }
+};
 
 async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, matchDate: Date) {
   const calculateHistoryAverage = async (
@@ -64,61 +78,144 @@ async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, 
     };
   };
 
-  const [monthly, quarterly, halfYear, yearly] = await Promise.all([
-    calculateHistoryAverage(startOfMonth(matchDate), matchDate),
-    calculateHistoryAverage(startOfQuarter(matchDate), matchDate),
-    calculateHistoryAverage(startOfHalfYear(matchDate), matchDate),
-    calculateHistoryAverage(startOfYear(matchDate), matchDate),
+  const periods: Array<{ type: StatsPeriodType; start: Date }> = [
+    { type: "MONTH", start: startOfMonth(matchDate) },
+    { type: "QUARTER", start: startOfQuarter(matchDate) },
+    { type: "HALF_YEAR", start: startOfHalfYear(matchDate) },
+    { type: "YEAR", start: startOfYear(matchDate) },
+  ];
+
+  const histories = await Promise.all(
+    periods.map(async (period) => {
+      const history = await calculateHistoryAverage(period.start, matchDate);
+      return {
+        ...history,
+        periodType: period.type,
+        periodKey: formatPeriodKey(matchDate, period.type),
+      };
+    }),
+  );
+
+  await prisma.$transaction(
+    histories.map((history) =>
+      prisma.matchClubStatsHistory.upsert({
+        where: {
+          matchClubId_periodType_periodKey: {
+            matchClubId,
+            periodType: history.periodType,
+            periodKey: history.periodKey,
+          },
+        },
+        update: {
+          voteCount: history.voteCount,
+          voteRate: history.voteRate,
+          checkCount: history.checkCount,
+          checkRate: history.checkRate,
+          matchCount: history.matchCount,
+        },
+        create: {
+          matchClubId,
+          periodType: history.periodType,
+          periodKey: history.periodKey,
+          voteCount: history.voteCount,
+          voteRate: history.voteRate,
+          checkCount: history.checkCount,
+          checkRate: history.checkRate,
+          matchCount: history.matchCount,
+        },
+      }),
+    ),
+  );
+}
+
+async function calculatePlayerRangeStats(
+  playerId: string,
+  start: Date,
+  end: Date,
+): Promise<{
+  average: number;
+  total: number;
+  matchCount: number;
+  totalGoal: number;
+  totalAssist: number;
+  totalLike: number;
+}> {
+  const matchFilter = {
+    match: {
+      stDate: {
+        gte: start,
+        lte: end,
+      },
+    },
+  } as const;
+
+  const [ratingStats, matchCount, goalCount, assistCount, likeCount] = await Promise.all([
+    prisma.attendanceRatingStats.findMany({
+      where: {
+        attendance: {
+          playerId,
+          matchClub: {
+            ...matchFilter,
+          },
+        },
+      },
+      select: { averageRating: true },
+    }),
+    prisma.attendance.count({
+      where: {
+        playerId,
+        matchClub: {
+          ...matchFilter,
+        },
+      },
+    }),
+    prisma.record.count({
+      where: {
+        attendance: {
+          playerId,
+          matchClub: {
+            ...matchFilter,
+          },
+        },
+        eventType: { in: ["GOAL", "PK_GOAL"] },
+        isOwnGoal: false,
+      },
+    }),
+    prisma.record.count({
+      where: {
+        assistAttendance: {
+          playerId,
+          matchClub: {
+            ...matchFilter,
+          },
+        },
+      },
+    }),
+    prisma.evaluation.count({
+      where: {
+        liked: true,
+        attendance: {
+          playerId,
+          matchClub: {
+            ...matchFilter,
+          },
+        },
+      },
+    }),
   ]);
 
-  await prisma.matchClubStatsHistory.upsert({
-    where: { matchClubId },
-    update: {
-      monthlyVoteCount: monthly.voteCount,
-      monthlyVoteRate: monthly.voteRate,
-      monthlyCheckCount: monthly.checkCount,
-      monthlyCheckRate: monthly.checkRate,
-      monthlyMatchCount: monthly.matchCount,
-      quarterlyVoteCount: quarterly.voteCount,
-      quarterlyVoteRate: quarterly.voteRate,
-      quarterlyCheckCount: quarterly.checkCount,
-      quarterlyCheckRate: quarterly.checkRate,
-      quarterlyMatchCount: quarterly.matchCount,
-      halfYearVoteCount: halfYear.voteCount,
-      halfYearVoteRate: halfYear.voteRate,
-      halfYearCheckCount: halfYear.checkCount,
-      halfYearCheckRate: halfYear.checkRate,
-      halfYearMatchCount: halfYear.matchCount,
-      yearVoteCount: yearly.voteCount,
-      yearVoteRate: yearly.voteRate,
-      yearCheckCount: yearly.checkCount,
-      yearCheckRate: yearly.checkRate,
-      yearMatchCount: yearly.matchCount,
-    },
-    create: {
-      matchClubId,
-      monthlyVoteCount: monthly.voteCount,
-      monthlyVoteRate: monthly.voteRate,
-      monthlyCheckCount: monthly.checkCount,
-      monthlyCheckRate: monthly.checkRate,
-      monthlyMatchCount: monthly.matchCount,
-      quarterlyVoteCount: quarterly.voteCount,
-      quarterlyVoteRate: quarterly.voteRate,
-      quarterlyCheckCount: quarterly.checkCount,
-      quarterlyCheckRate: quarterly.checkRate,
-      quarterlyMatchCount: quarterly.matchCount,
-      halfYearVoteCount: halfYear.voteCount,
-      halfYearVoteRate: halfYear.voteRate,
-      halfYearCheckCount: halfYear.checkCount,
-      halfYearCheckRate: halfYear.checkRate,
-      halfYearMatchCount: halfYear.matchCount,
-      yearVoteCount: yearly.voteCount,
-      yearVoteRate: yearly.voteRate,
-      yearCheckCount: yearly.checkCount,
-      yearCheckRate: yearly.checkRate,
-      yearMatchCount: yearly.matchCount,
-    },
-  });
+  const validStats = ratingStats.filter((stat) => stat.averageRating > 0);
+  const total = validStats.reduce((acc, current) => acc + current.averageRating, 0);
+  const average = validStats.length ? Math.round(total / validStats.length) : 0;
+
+  return {
+    average,
+    total,
+    matchCount,
+    totalGoal: goalCount,
+    totalAssist: assistCount,
+    totalLike: likeCount,
+  };
 }
 
 async function recalcMatchClubStatistics(meta: MatchClubMeta) {
@@ -287,94 +384,80 @@ export const statsMigration = async () => {
     await recalcAttendanceRatingStatsMigration(attendance.id);
   });
 
-  const ratingStatsWithDate = await prisma.attendanceRatingStats.findMany({
-    include: {
-      attendance: {
-        select: {
-          id: true,
-          matchClub: { select: { match: { select: { stDate: true } } } },
-        },
-      },
-    },
+  const periods: StatsPeriodType[] = ["MONTH", "QUARTER", "HALF_YEAR", "YEAR"];
+  const playerIds = Array.from(
+    new Set(
+      attendances
+        .map((a) => (a.playerId && a.matchClub.match?.stDate ? a.playerId : null))
+        .filter(Boolean) as string[],
+    ),
+  );
+
+  const lastMatchDateByPlayer = new Map<string, Date>();
+  attendances.forEach((a) => {
+    if (!a.playerId || !a.matchClub.match?.stDate) return;
+    const date = new Date(a.matchClub.match.stDate);
+    const prev = lastMatchDateByPlayer.get(a.playerId);
+    if (!prev || date.getTime() > prev.getTime()) lastMatchDateByPlayer.set(a.playerId, date);
   });
 
-  const ratingStatsMeta = ratingStatsWithDate
-    .map((rs) => {
-      const matchDate = rs.attendance.matchClub.match?.stDate;
-      if (!matchDate) return null;
-      return {
-        attendanceId: rs.attendanceId,
-        averageRating: rs.averageRating,
-        totalRating: rs.totalRating,
-        matchDate: new Date(matchDate),
-      };
-    })
-    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+  await processInBatches(playerIds, 20, async (playerId) => {
+    const lastMatchDate = lastMatchDateByPlayer.get(playerId);
+    if (!lastMatchDate) return;
 
-  const buildHistory = (_attendanceId: string, matchDate: Date) => {
-    const calc = (start: Date, end: Date) => {
-      const stats = ratingStatsMeta.filter(
-        (s) => s.matchDate.getTime() >= start.getTime() && s.matchDate.getTime() <= end.getTime(),
-      );
-      if (!stats.length) return { average: 0, total: 0, matchCount: 0 };
-      const sums = stats.reduce(
-        (acc, cur) => ({
-          average: acc.average + cur.averageRating,
-          total: acc.total + cur.totalRating,
-          matchCount: acc.matchCount + 1,
+    const ops: Prisma.PrismaPromise<unknown>[] = [];
+    for (const periodType of periods) {
+      const start = (() => {
+        switch (periodType) {
+          case "MONTH":
+            return startOfMonth(lastMatchDate);
+          case "QUARTER":
+            return startOfQuarter(lastMatchDate);
+          case "HALF_YEAR":
+            return startOfHalfYear(lastMatchDate);
+          default:
+            return startOfYear(lastMatchDate);
+        }
+      })();
+
+      const history = await calculatePlayerRangeStats(playerId, start, lastMatchDate);
+      const periodKey = formatPeriodKey(lastMatchDate, periodType);
+
+      ops.push(
+        prisma.playerStatsHistory.upsert({
+          where: {
+            playerId_periodType_periodKey: {
+              playerId,
+              periodType,
+              periodKey,
+            },
+          },
+          update: {
+            averageRating: history.average,
+            totalRating: history.total,
+            matchCount: history.matchCount,
+            totalGoal: history.totalGoal,
+            totalAssist: history.totalAssist,
+            totalLike: history.totalLike,
+          },
+          create: {
+            playerId,
+            periodType,
+            periodKey,
+            averageRating: history.average,
+            totalRating: history.total,
+            matchCount: history.matchCount,
+            totalGoal: history.totalGoal,
+            totalAssist: history.totalAssist,
+            totalLike: history.totalLike,
+          },
         }),
-        { average: 0, total: 0, matchCount: 0 },
       );
-      const len = stats.length;
-      return {
-        average: Math.round(sums.average / len),
-        total: Math.round(sums.total / len),
-        matchCount: sums.matchCount,
-      };
-    };
+    }
 
-    return {
-      monthly: calc(startOfMonth(matchDate), matchDate),
-      quarterly: calc(startOfQuarter(matchDate), matchDate),
-      halfYear: calc(startOfHalfYear(matchDate), matchDate),
-      yearly: calc(startOfYear(matchDate), matchDate),
-    };
-  };
-
-  await processInBatches(ratingStatsMeta, 50, async ({ attendanceId, matchDate }) => {
-    const { monthly, quarterly, halfYear, yearly } = buildHistory(attendanceId, matchDate);
-    await prisma.attendanceRatingHistory.upsert({
-      where: { attendanceId },
-      update: {
-        monthlyAverageRating: monthly.average,
-        monthlyTotalRating: monthly.total,
-        monthlyMatchCount: monthly.matchCount,
-        quarterlyAverageRating: quarterly.average,
-        quarterlyTotalRating: quarterly.total,
-        quarterlyMatchCount: quarterly.matchCount,
-        halfYearAverageRating: halfYear.average,
-        halfYearTotalRating: halfYear.total,
-        halfYearMatchCount: halfYear.matchCount,
-        yearlyAverageRating: yearly.average,
-        yearlyTotalRating: yearly.total,
-        yearlyMatchCount: yearly.matchCount,
-      },
-      create: {
-        attendanceId,
-        monthlyAverageRating: monthly.average,
-        monthlyTotalRating: monthly.total,
-        monthlyMatchCount: monthly.matchCount,
-        quarterlyAverageRating: quarterly.average,
-        quarterlyTotalRating: quarterly.total,
-        quarterlyMatchCount: quarterly.matchCount,
-        halfYearAverageRating: halfYear.average,
-        halfYearTotalRating: halfYear.total,
-        halfYearMatchCount: halfYear.matchCount,
-        yearlyAverageRating: yearly.average,
-        yearlyTotalRating: yearly.total,
-        yearlyMatchCount: yearly.matchCount,
-      },
-    });
+    if (ops.length) {
+      await prisma.$transaction(ops);
+    }
   });
 
   await processInBatches(matchClubMeta, 20, async (meta) => recalcMatchClubStatistics(meta));
