@@ -70,7 +70,9 @@ export function useClubMatchInitialData(clubId?: string, matchClubId?: string) {
     );
     if (!cache) return undefined;
     for (const page of cache.pages) {
-      const matchClub = page.matches.find((match) => match.id === matchClubId);
+      const matchClub = page.matches.find(
+        (match: ClubMatchFeed["matches"][number]) => match.id === matchClubId,
+      );
       if (matchClub) {
         return {
           matchClub: matchClub as unknown as MatchClubQueryResponse["matchClub"],

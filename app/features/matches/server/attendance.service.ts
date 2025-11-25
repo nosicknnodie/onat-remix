@@ -1,5 +1,6 @@
 import { AES } from "~/libs/index.server";
 import * as q from "./attendance.queries";
+import { recalcPlayerStatsHistoryByAttendance } from "./rating.queries";
 
 const buildRedirectPath = (clubId: string, matchClubId: string) =>
   `/clubs/${clubId}/matches/${matchClubId}`;
@@ -70,7 +71,7 @@ export async function submitAttendance(
     matchClubId,
   );
   if (!currentPlayer) return { redirectTo: buildRedirectPath(clubId, matchClubId) } as const;
-  await q.upsertAttendance({
+  const attendance = await q.upsertAttendance({
     matchClubId,
     playerId: args.mercenaryId ? null : currentPlayer.id,
     mercenaryId: args.mercenaryId ?? undefined,
@@ -78,5 +79,8 @@ export async function submitAttendance(
     isCheck: args.isCheck,
   });
   await q.recalcMatchClubStatistics(matchClubId);
+  if (attendance?.playerId) {
+    await recalcPlayerStatsHistoryByAttendance(attendance.id);
+  }
   return { ok: true as const };
 }

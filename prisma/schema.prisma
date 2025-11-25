@@ -430,7 +430,7 @@ model MatchClubStatsHistory {
   voteRate     Int?    // 평균 참석률
   checkCount   Int?    // 평균 출석수
   checkRate    Int?    // 평균 출석률
-  matchCount   Int?    // 총 경기 수
+  matchCount   Int?    // 해당선수의 총 경기 참여 수
   playerTotalCount Int? // 기록 당시 승인된 회원 수
 
   @@unique([matchClubId, periodType, periodKey])
@@ -529,6 +529,7 @@ model PlayerStatsHistory {
   calculatedAt  DateTime @default(now()) // 집계 기준 시각(출석 집계 시)
 
   averageRating Int?    // 스케일 적용된 평균 평점
+  voteRate      Decimal?    // 기간별 출석률
   totalRating   Int?    // 평점 합계
   totalGoal     Int?    // 총 골 수
   totalAssist   Int?    // 총 어시스트 수

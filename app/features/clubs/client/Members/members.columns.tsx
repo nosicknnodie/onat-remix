@@ -8,6 +8,34 @@ import { getPlayerDisplayName } from "~/features/matches/isomorphic";
 import type { IPlayer } from "../../isomorphic/types";
 import { MembersAction } from "./members.action";
 
+const jobTitleLabelMap = {
+  CHAIRMAN: "회장",
+  VICE_CHAIRMAN: "부회장",
+  GENERAL_AFFAIRS: "총무",
+  ASSISTANT_GENERAL_AFFAIRS: "부총무",
+  DIRECTOR: "감독",
+  COACH: "코치",
+  OPERATOR: "운영",
+  ADVISER: "고문",
+  NO: "회원",
+} as const;
+
+const roleIconMap = {
+  MASTER: (
+    <span className="text-xs text-orange-500">
+      <FaStar />
+    </span>
+  ),
+  MANAGER: (
+    <span className="text-xs text-gray-500">
+      <FaStar />
+    </span>
+  ),
+  NORMAL: "",
+  PENDING: "",
+  NO: "",
+} as const;
+
 export const memberColumns: ColumnDef<IPlayer>[] = [
   {
     id: "name",
@@ -33,37 +61,9 @@ export const memberColumns: ColumnDef<IPlayer>[] = [
             </div>
             <div className="flex space-x-2">
               <span className="text-xs text-gray-500 place-items-center">
-                {
-                  {
-                    CHAIRMAN: "회장", // 회장
-                    VICE_CHAIRMAN: "부회장", // 부회장
-                    GENERAL_AFFAIRS: "총무", // 총무
-                    ASSISTANT_GENERAL_AFFAIRS: "부총무", // 부총무
-                    DIRECTOR: "감독", // 감독
-                    COACH: "코치", // 코치
-                    OPERATOR: "운영", // 운영
-                    ADVISER: "고문", // 고문
-                    NO: "회원", // 없음
-                  }[row.original.jobTitle ?? "NO"]
-                }
+                {jobTitleLabelMap[(row.original.jobTitle ?? "NO") as keyof typeof jobTitleLabelMap]}
               </span>
-              {
-                {
-                  MASTER: (
-                    <span className="text-xs text-orange-500">
-                      <FaStar />
-                    </span>
-                  ),
-                  MANAGER: (
-                    <span className="text-xs text-gray-500">
-                      <FaStar />
-                    </span>
-                  ),
-                  NORMAL: "",
-                  PENDING: "",
-                  NO: "",
-                }[row.original.role ?? "NORMAL"]
-              }
+              {roleIconMap[(row.original.role ?? "NORMAL") as keyof typeof roleIconMap]}
             </div>
           </div>
         </div>

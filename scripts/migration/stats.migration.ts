@@ -39,6 +39,7 @@ async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, 
     checkRate: number;
     matchCount: number;
   }> => {
+    const endCap = end > new Date() ? new Date() : end;
     const totals = await prisma.matchClubStatsTotal.findMany({
       where: {
         matchClub: {
@@ -46,7 +47,7 @@ async function upsertMatchClubTotalHistory(matchClubId: string, clubId: string, 
           match: {
             stDate: {
               gte: start,
-              lte: end,
+              lte: endCap,
             },
           },
         },
@@ -139,74 +140,89 @@ async function calculatePlayerRangeStats(
   totalGoal: number;
   totalAssist: number;
   totalLike: number;
+  voteRate: number;
 }> {
+  const cappedEnd = end > new Date() ? new Date() : end;
   const matchFilter = {
     match: {
       stDate: {
         gte: start,
-        lte: end,
+        lte: cappedEnd,
       },
     },
   } as const;
 
-  const [ratingStats, matchCount, goalCount, assistCount, likeCount] = await Promise.all([
-    prisma.attendanceRatingStats.findMany({
-      where: {
-        attendance: {
+  const [ratingStats, matchCount, goalCount, assistCount, likeCount, voteCount] = await Promise.all(
+    [
+      prisma.attendanceRatingStats.findMany({
+        where: {
+          attendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
+          },
+        },
+        select: { averageRating: true },
+      }),
+      prisma.attendance.count({
+        where: {
           playerId,
+          isVote: true,
           matchClub: {
             ...matchFilter,
           },
         },
-      },
-      select: { averageRating: true },
-    }),
-    prisma.attendance.count({
-      where: {
-        playerId,
-        matchClub: {
-          ...matchFilter,
-        },
-      },
-    }),
-    prisma.record.count({
-      where: {
-        attendance: {
+      }),
+      prisma.attendance.count({
+        where: {
           playerId,
+          isVote: true,
           matchClub: {
             ...matchFilter,
           },
         },
-        eventType: { in: ["GOAL", "PK_GOAL"] },
-        isOwnGoal: false,
-      },
-    }),
-    prisma.record.count({
-      where: {
-        assistAttendance: {
-          playerId,
-          matchClub: {
-            ...matchFilter,
+      }),
+      prisma.record.count({
+        where: {
+          attendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
+          },
+          eventType: { in: ["GOAL", "PK_GOAL"] },
+          isOwnGoal: false,
+        },
+      }),
+      prisma.record.count({
+        where: {
+          assistAttendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
           },
         },
-      },
-    }),
-    prisma.evaluation.count({
-      where: {
-        liked: true,
-        attendance: {
-          playerId,
-          matchClub: {
-            ...matchFilter,
+      }),
+      prisma.evaluation.count({
+        where: {
+          liked: true,
+          attendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
           },
         },
-      },
-    }),
-  ]);
+      }),
+    ],
+  );
 
   const validStats = ratingStats.filter((stat) => stat.averageRating > 0);
   const total = validStats.reduce((acc, current) => acc + current.averageRating, 0);
   const average = validStats.length ? Math.round(total / validStats.length) : 0;
+  const voteRate = matchCount > 0 ? Math.round((voteCount / matchCount) * 100) : 0;
 
   return {
     average,
@@ -215,6 +231,7 @@ async function calculatePlayerRangeStats(
     totalGoal: goalCount,
     totalAssist: assistCount,
     totalLike: likeCount,
+    voteRate,
   };
 }
 
@@ -439,6 +456,7 @@ export const statsMigration = async () => {
             totalGoal: history.totalGoal,
             totalAssist: history.totalAssist,
             totalLike: history.totalLike,
+            voteRate: history.voteRate,
           },
           create: {
             playerId,
@@ -450,6 +468,7 @@ export const statsMigration = async () => {
             totalGoal: history.totalGoal,
             totalAssist: history.totalAssist,
             totalLike: history.totalLike,
+            voteRate: history.voteRate,
           },
         }),
       );

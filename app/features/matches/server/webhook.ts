@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { sanitizeDiscordWebhook } from "~/features/clubs/server";
+import { utils } from "~/features/clubs/server";
 import { prisma } from "~/libs/db/db.server";
 
 type MatchWebhookAction = "created" | "updated" | "deleted";
@@ -42,7 +42,7 @@ export async function sendMatchWebhook(input: { matchClubId: string; action: Mat
   });
   if (!matchClub || !matchClub.match || !matchClub.club?.discordWebhook) return null;
 
-  const sanitizedWebhook = sanitizeDiscordWebhook(matchClub.club.discordWebhook);
+  const sanitizedWebhook = utils.sanitizeDiscordWebhook(matchClub.club.discordWebhook);
   if (!sanitizedWebhook) return null;
 
   const siteUrl = process.env.SITE_URL || process.env.APP_URL || "";

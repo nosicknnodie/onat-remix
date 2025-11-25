@@ -150,73 +150,87 @@ async function getAttendanceForHistory(attendanceId: string) {
 }
 
 async function calculateRangeStats(start: Date, end: Date, playerId: string) {
+  const cappedEnd = end > new Date() ? new Date() : end;
   const matchFilter = {
     match: {
       stDate: {
         gte: start,
-        lte: end,
+        lte: cappedEnd,
       },
     },
   } as const;
 
-  const [ratingStats, matchCount, goalCount, assistCount, likeCount] = await Promise.all([
-    prisma.attendanceRatingStats.findMany({
-      where: {
-        attendance: {
+  const [ratingStats, matchCount, goalCount, assistCount, likeCount, voteCount] = await Promise.all(
+    [
+      prisma.attendanceRatingStats.findMany({
+        where: {
+          attendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
+          },
+        },
+        select: { averageRating: true },
+      }),
+      prisma.attendance.count({
+        where: {
           playerId,
+          isVote: true,
           matchClub: {
             ...matchFilter,
           },
         },
-      },
-      select: { averageRating: true },
-    }),
-    prisma.attendance.count({
-      where: {
-        playerId,
-        matchClub: {
-          ...matchFilter,
-        },
-      },
-    }),
-    prisma.record.count({
-      where: {
-        attendance: {
+      }),
+      prisma.attendance.count({
+        where: {
           playerId,
+          isVote: true,
           matchClub: {
             ...matchFilter,
           },
         },
-        eventType: { in: ["GOAL", "PK_GOAL"] },
-        isOwnGoal: false,
-      },
-    }),
-    prisma.record.count({
-      where: {
-        assistAttendance: {
-          playerId,
-          matchClub: {
-            ...matchFilter,
+      }),
+      prisma.record.count({
+        where: {
+          attendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
+          },
+          eventType: { in: ["GOAL", "PK_GOAL"] },
+          isOwnGoal: false,
+        },
+      }),
+      prisma.record.count({
+        where: {
+          assistAttendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
           },
         },
-      },
-    }),
-    prisma.evaluation.count({
-      where: {
-        liked: true,
-        attendance: {
-          playerId,
-          matchClub: {
-            ...matchFilter,
+      }),
+      prisma.evaluation.count({
+        where: {
+          liked: true,
+          attendance: {
+            playerId,
+            matchClub: {
+              ...matchFilter,
+            },
           },
         },
-      },
-    }),
-  ]);
+      }),
+    ],
+  );
 
   const validStats = ratingStats.filter((stat) => stat.averageRating > 0);
   const total = validStats.reduce((acc: number, current) => acc + current.averageRating, 0);
   const average = validStats.length ? Math.round(total / validStats.length) : 0;
+  const voteRate = matchCount > 0 ? Math.round((voteCount / matchCount) * 100) : 0;
 
   return {
     average,
@@ -225,6 +239,7 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
     totalGoal: goalCount,
     totalAssist: assistCount,
     totalLike: likeCount,
+    voteRate,
   };
 }
 
@@ -287,6 +302,7 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
           totalGoal: history.totalGoal,
           totalAssist: history.totalAssist,
           totalLike: history.totalLike,
+          voteRate: history.voteRate,
         },
         create: {
           playerId,
@@ -298,6 +314,7 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
           totalGoal: history.totalGoal,
           totalAssist: history.totalAssist,
           totalLike: history.totalLike,
+          voteRate: history.voteRate,
         },
       }),
     ),
