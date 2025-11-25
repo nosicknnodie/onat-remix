@@ -274,7 +274,7 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
           <div className="text-sm text-muted-foreground">평점 정보가 없습니다.</div>
         ) : (
           <>
-            <div className="flex gap-2 justify-center w-full">
+            <div className="gap-2 grid sm:grid-cols-3 max-sm:grid-cols-1 w-full">
               <div className="h-72 w-full">
                 <RatingStatsCard stats={ratingStats.at(0)} rank={1} />
               </div>
@@ -286,14 +286,16 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
               </div>
             </div>
             <div className="space-y-1">
-              {ratingStats.map((stat, index) => (
-                <RatingStatsListItem
-                  key={stat.attendanceId}
-                  stats={stat}
-                  rank={index + 1}
-                  matchStartDate={new Date(match.stDate)}
-                />
-              ))}
+              {ratingStats
+                .filter((_, index) => index >= 3)
+                .map((stat, index) => (
+                  <RatingStatsListItem
+                    key={stat.attendanceId}
+                    stats={stat}
+                    rank={index + 4}
+                    matchStartDate={new Date(match.stDate)}
+                  />
+                ))}
             </div>
           </>
         )}
