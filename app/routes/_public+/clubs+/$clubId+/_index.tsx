@@ -205,7 +205,7 @@ const ClubPage = (_props: IClubPageProps) => {
       case "ratingSum":
         return (
           <div className="whitespace-nowrap">
-            <span className="font-semibold">{item.totalRating.toFixed(2)}</span>점
+            <span className="font-semibold">{(item.totalRating / 20).toFixed(2)}</span>점
           </div>
         );
       default:
@@ -240,8 +240,8 @@ const ClubPage = (_props: IClubPageProps) => {
             {club.name}
           </div>
           <div className="text-xs font-semibold flex gap-1">
-            <Badge className="bg-primary/30">{club.si || "-"}</Badge>
-            <Badge className="bg-primary/30">{club.gun || "-"}</Badge>
+            <Badge className="bg-primary/40">{club.si || "-"}</Badge>
+            <Badge className="bg-primary/40">{club.gun || "-"}</Badge>
           </div>
         </div>
       </div>
