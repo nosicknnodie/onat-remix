@@ -4,21 +4,61 @@ import StarRating from "~/components/StarRating";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/libs";
-import type { RatingStatsItem } from "../isomorphic";
+import type { AttendanceNameSource } from "../isomorphic";
 import { getAttendanceDisplayName } from "../isomorphic";
+
+type RatingStatsUser = {
+  nick?: string | null;
+  name?: string | null;
+  userImage?: { url?: string | null; [key: string]: unknown } | null;
+  [key: string]: unknown;
+};
+
+type RatingStatsPlayer = {
+  user?: RatingStatsUser | null;
+  jobTitle?: string | null;
+  nick?: string | null;
+  name?: string | null;
+  [key: string]: unknown;
+};
+
+type RatingStatsMercenary = {
+  user?: RatingStatsUser | null;
+  nick?: string | null;
+  name?: string | null;
+  [key: string]: unknown;
+};
+
+type RatingStatsCardAttendance = {
+  id?: string;
+  checkTime?: string | Date | null;
+  player?: RatingStatsPlayer | null;
+  mercenary?: RatingStatsMercenary | null;
+  [key: string]: unknown;
+};
+
+export type RatingStatsCardData = {
+  attendance: RatingStatsCardAttendance & AttendanceNameSource;
+  averageRating?: number | null;
+  voterCount?: number | null;
+  likeCount?: number | null;
+  [key: string]: unknown;
+};
 
 export function RatingStatsListItem({
   stats,
   rank,
   matchStartDate,
 }: {
-  stats: RatingStatsItem;
+  stats: RatingStatsCardData;
   rank: number;
   matchStartDate: Date;
 }) {
   const isPerception = stats.attendance.checkTime
     ? new Date(matchStartDate) < new Date(stats.attendance.checkTime)
     : false;
+  const averageRating = stats.averageRating ?? 0;
+  const voterCount = stats.voterCount ?? 0;
   return (
     <div
       className={cn(
@@ -34,7 +74,9 @@ export function RatingStatsListItem({
             "border-orange-300 border": rank === 3,
           })}
         >
-          <AvatarImage src={stats.attendance?.player?.user?.userImage?.url}></AvatarImage>
+          <AvatarImage
+            src={stats.attendance?.player?.user?.userImage?.url ?? undefined}
+          ></AvatarImage>
           <AvatarFallback className="bg-white">
             <FaUser className="text-primary" />
           </AvatarFallback>
@@ -67,12 +109,12 @@ export function RatingStatsListItem({
         <div className="flex gap-2 items-end">
           <StarRating
             id={`${stats.attendance.id}-star-id`}
-            score={stats.averageRating}
+            score={averageRating}
             width={20}
             isHighLight
           />
-          <span className="text-xs ">{((stats?.averageRating ?? 0) / 20).toFixed(2)}</span>
-          <span className="text-xs max-sm:hidden sm:block">{stats.voterCount} voters</span>
+          <span className="text-xs ">{(averageRating / 20).toFixed(2)}</span>
+          <span className="text-xs max-sm:hidden sm:block">{voterCount} voters</span>
         </div>
         <div className="flex items-end gap-2 text-xs text-muted-foreground">
           <FiHeart className="text-pink-500" />
@@ -83,8 +125,15 @@ export function RatingStatsListItem({
   );
 }
 
-export const RatingStatsCard = ({ stats, rank }: { stats?: RatingStatsItem; rank?: 1 | 2 | 3 }) => {
+export const RatingStatsCard = ({
+  stats,
+  rank,
+}: {
+  stats?: RatingStatsCardData;
+  rank?: 1 | 2 | 3;
+}) => {
   const name = getAttendanceDisplayName(stats?.attendance);
+  const averageRating = stats?.averageRating ?? 0;
   const rankLabel = rank ? { 1: "MOM", 2: "2ND", 3: "3RD" }[rank] : "";
   return (
     <>
@@ -148,12 +197,10 @@ export const RatingStatsCard = ({ stats, rank }: { stats?: RatingStatsItem; rank
                 <div className="flex items-start justify-start px-2 text-gray-300 group-hover:text-gray-100 max-md:text-sm md:text-lg">
                   <StarRating
                     id={`result-mom-${stats?.attendance.id}`}
-                    score={stats?.averageRating ?? 0}
+                    score={averageRating}
                     className="text-amber-400"
                   ></StarRating>
-                  <span className="ml-2 text-sm">
-                    {(stats?.averageRating ? stats?.averageRating / 20 : 0).toFixed(2)} / 3
-                  </span>
+                  <span className="ml-2 text-sm">{(averageRating / 20).toFixed(2)} / 3</span>
                 </div>
               </div>
             </div>
@@ -164,7 +211,13 @@ export const RatingStatsCard = ({ stats, rank }: { stats?: RatingStatsItem; rank
   );
 };
 
-export function _RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; rank?: 1 | 2 | 3 }) {
+export function _RatingStatsCard({
+  stats,
+  rank,
+}: {
+  stats?: RatingStatsCardData;
+  rank?: 1 | 2 | 3;
+}) {
   if (!stats) {
     return (
       <div
@@ -175,6 +228,7 @@ export function _RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; ran
       ></div>
     );
   }
+  const averageRating = stats.averageRating ?? 0;
   return (
     <div className="flex flex-col justify-center items-center w-full gap-2">
       <div className="font-semibold text-sm drop-shadow-sm flex gap-1 items-center">
@@ -200,7 +254,9 @@ export function _RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; ran
             "border-orange-300 size-20 ": rank === 3,
           })}
         >
-          <AvatarImage src={stats?.attendance?.player?.user?.userImage?.url}></AvatarImage>
+          <AvatarImage
+            src={stats?.attendance?.player?.user?.userImage?.url ?? undefined}
+          ></AvatarImage>
           <AvatarFallback className="bg-primary">
             <FaUser className="text-primary-foreground" />
           </AvatarFallback>
@@ -221,14 +277,14 @@ export function _RatingStatsCard({ stats, rank }: { stats?: RatingStatsItem; ran
       <div className="flex gap-2 mt-2 items-end">
         <StarRating
           id={`${stats?.attendance.id}-star-id`}
-          score={stats?.averageRating}
+          score={averageRating}
           width={20}
           isHighLight
         />
-        <span className="text-xs ">{((stats?.averageRating ?? 0) / 20).toFixed(2)}</span>
+        <span className="text-xs ">{(averageRating / 20).toFixed(2)}</span>
       </div>
       <div className="flex items-end">
-        <p className="text-xs italic text-gray-600">{stats.voterCount} voters</p>
+        <p className="text-xs italic text-gray-600">{stats?.voterCount ?? 0} voters</p>
       </div>
     </div>
   );

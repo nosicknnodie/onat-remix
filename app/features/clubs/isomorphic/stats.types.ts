@@ -5,6 +5,7 @@ export type ClubYearStatItem = {
   averageRating: number;
   totalGoal: number;
   totalLike: number;
+  totalRating: number;
   matchCount: number;
   attendanceRate: number;
 };

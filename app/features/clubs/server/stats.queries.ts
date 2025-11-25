@@ -7,6 +7,7 @@ type PlayerYearStat = {
   averageRating: number;
   totalGoal: number;
   totalLike: number;
+  totalRating: number;
   matchCount: number;
   attendanceRate: number;
 };
@@ -33,6 +34,7 @@ export async function getClubYearStats(input: {
         averageRating: true,
         totalGoal: true,
         totalLike: true,
+        totalRating: true,
         matchCount: true,
         voteRate: true,
         player: {
@@ -71,6 +73,7 @@ export async function getClubYearStats(input: {
         averageRating: s.averageRating ?? 0,
         totalGoal: s.totalGoal ?? 0,
         totalLike: s.totalLike ?? 0,
+        totalRating: s.totalRating ?? 0,
         matchCount,
         attendanceRate,
       };

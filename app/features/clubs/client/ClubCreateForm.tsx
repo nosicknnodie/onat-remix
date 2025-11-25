@@ -5,6 +5,7 @@ import ImageCropperDialog from "~/components/cropper/ImageCropperDialog";
 import FormError from "~/components/FormError";
 import FormSuccess from "~/components/FormSuccess";
 import { Loading } from "~/components/Loading";
+import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "~/components/ui/card";
@@ -48,7 +49,7 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
             <form method="post" className="space-y-6">
               <input type="hidden" name="imageId" value={image?.id || ""} />
               <input type="hidden" name="emblemId" value={emblem?.id || ""} />
-              <div className="relative w-full h-[240px]">
+              <AspectRatio ratio={21 / 9} className="relative w-full">
                 <img
                   alt="clubImage"
                   src={image?.url || "/images/club-default-image.webp"}
@@ -57,7 +58,7 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
                 <ImageCropperDialog
                   title="클럽 이미지 업로드"
                   descirption="클럽 이미지를 업로드해주세요."
-                  aspectRatio={16 / 9}
+                  aspectRatio={21 / 9}
                   purpose="CLUB_IMAGE"
                   onChangeValue={(image) => {
                     setImage(image);
@@ -67,7 +68,7 @@ export function ClubCreateForm({ isPending, actionData }: ClubCreateFormProps) {
                     <CameraIcon />
                   </div>
                 </ImageCropperDialog>
-              </div>
+              </AspectRatio>
               <div className="space-x-4 w-full flex justify-center min-h-[120px]">
                 <div className="w-[120px] h-[120px] relative">
                   <Avatar className="w-full h-full">

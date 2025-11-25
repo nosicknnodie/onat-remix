@@ -274,8 +274,8 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
           <div className="text-sm text-muted-foreground">평점 정보가 없습니다.</div>
         ) : (
           <>
-            <div className="gap-2 grid sm:grid-cols-3 max-sm:grid-cols-1 w-full">
-              <div className="h-72 w-full">
+            <div className="grid @sm:grid-cols-3 @max-sm:grid-cols-1 @md:max-lg:grid-cols-2 w-full gap-2">
+              <div className="h-72 w-full @md:max-lg:col-span-3">
                 <RatingStatsCard stats={ratingStats.at(0)} rank={1} />
               </div>
               <div className="h-72 w-full">
