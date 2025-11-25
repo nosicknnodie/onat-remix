@@ -1,5 +1,6 @@
 import { useParams } from "@remix-run/react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
+import { Fragment, type ReactNode, useEffect, useMemo, useState } from "react";
 import { FaChartLine, FaFutbol, FaInfo, FaRegThumbsUp, FaStar } from "react-icons/fa";
 import { FiEdit2 } from "react-icons/fi";
 import { Loading } from "~/components/Loading";
@@ -19,6 +20,7 @@ import {
   useClubDetailsQuery,
   useClubYearStats,
   useWeeklyTopRating,
+  type WeeklyTopRatingItem,
 } from "~/features/clubs/isomorphic";
 import { RatingStatsCard } from "~/features/matches/client";
 import { cn } from "~/libs";
@@ -145,23 +147,27 @@ const ClubPage = (_props: IClubPageProps) => {
     clubId,
     new Date().getFullYear(),
   );
-  const { data: lastWeekStats } = useWeeklyTopRating(clubId);
-  const weeklyStatsForCard = useMemo(() => {
-    if (!lastWeekStats) return undefined;
-    return {
-      attendance: {
-        player: {
-          nick: lastWeekStats.nick ?? undefined,
-          user: {
-            nick: lastWeekStats.nick ?? undefined,
-            name: lastWeekStats.nick ?? undefined,
-            userImage: { url: lastWeekStats.userImageUrl ?? undefined },
+  const { data: weeklyTopStats } = useWeeklyTopRating(clubId);
+  const weeklyCards = useMemo(() => {
+    if (!weeklyTopStats || weeklyTopStats.length === 0) return [];
+    return weeklyTopStats.map((stat: WeeklyTopRatingItem) => ({
+      ...stat,
+      stats: {
+        attendance: {
+          player: {
+            id: stat.playerId,
+            nick: stat.nick ?? undefined,
+            user: {
+              nick: stat.nick ?? undefined,
+              name: stat.nick ?? undefined,
+              userImage: { url: stat.userImageUrl ?? undefined },
+            },
           },
         },
+        averageRating: stat.averageRating ?? 0,
       },
-      averageRating: lastWeekStats.averageRating ?? 0,
-    };
-  }, [lastWeekStats]);
+    }));
+  }, [weeklyTopStats]);
   const heroImageUrl = club?.image?.url || "/images/club-default-image.webp";
 
   useEffect(() => {
@@ -323,12 +329,25 @@ const ClubPage = (_props: IClubPageProps) => {
             ))}
           </div>
         </LoadingSwitch>
-        <div className="w-full flex flex-col gap-2 relative">
-          <p className="font-semibold drop-shadow-md text-center">Week’s Star Player</p>
-          <div className="h-72 w-full p-2">
-            <RatingStatsCard stats={weeklyStatsForCard} rank={1} />
+        {weeklyCards.length > 0 && (
+          <div className="w-full flex flex-col gap-2 relative">
+            <p className="font-semibold drop-shadow-md text-center">Week’s Star Players</p>
+            <div className="grid w-full gap-2">
+              {weeklyCards.map((weeklyCard, index) => (
+                <Fragment key={weeklyCard.playerId ?? index}>
+                  <div className="font-semibold text-sm flex flex-col p-2">
+                    <p className="text-end pr-2">
+                      {dayjs(weeklyCard.matchDate).format("YYYY-MM-DD (ddd)")}
+                    </p>
+                    <div className="h-72 w-full">
+                      <RatingStatsCard stats={weeklyCard.stats} rank={1} />
+                    </div>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

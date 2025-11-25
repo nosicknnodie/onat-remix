@@ -12,9 +12,13 @@ export type ClubYearStatItem = {
 
 export type ClubYearStatsResponse = ClubYearStatItem[];
 
-export type WeeklyTopRatingResponse = {
+export type WeeklyTopRatingItem = {
   playerId: string;
+  matchClubId: string | null;
+  matchDate: string | null;
   nick: string | null;
   userImageUrl: string | null;
   averageRating: number;
-} | null;
+};
+
+export type WeeklyTopRatingResponse = WeeklyTopRatingItem[];

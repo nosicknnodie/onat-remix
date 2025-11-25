@@ -22,5 +22,6 @@ export function useWeeklyTopRating(clubId: string | undefined) {
       if (!res.ok) throw new Error("Failed to fetch weekly top rating");
       return (await res.json()) as WeeklyTopRatingResponse;
     },
+    initialData: [],
   });
 }

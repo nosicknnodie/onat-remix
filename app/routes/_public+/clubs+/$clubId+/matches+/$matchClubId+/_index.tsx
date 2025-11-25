@@ -96,7 +96,8 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
     !now.isAfter(checkWindowClose);
   const canShowRecordAndRating = recordVisibleTime !== null && !now.isBefore(recordVisibleTime);
   const shouldLoadAttendanceData =
-    Boolean(matchClubId && clubId) && (showAttendanceList || isCheckWindow);
+    Boolean(matchClubId && clubId) &&
+    (showAttendanceList || isCheckWindow || canShowRecordAndRating);
   const canSubmitAttendance =
     Boolean(matchClubId && clubId) && (canVoteAttendance || isCheckWindow);
   const attendanceQuery = useAttendanceQuery(matchClubId, {

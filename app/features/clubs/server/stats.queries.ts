@@ -88,18 +88,21 @@ export async function getWeeklyTopRating(clubId: string) {
   const weekAgo = new Date(now);
   weekAgo.setDate(now.getDate() - 7);
 
-  const top = await prisma.attendanceRatingStats.findFirst({
+  const tops = await prisma.attendanceRatingStats.findMany({
     where: {
       attendance: {
         playerId: { not: null },
         matchClub: { clubId, match: { stDate: { gte: weekAgo, lt: now } } },
       },
     },
-    orderBy: { averageRating: "desc" },
+    orderBy: [{ averageRating: "desc" }, { totalRating: "desc" }, { voterCount: "desc" }],
+    take: 5,
     include: {
       attendance: {
         select: {
           playerId: true,
+          matchClubId: true,
+          matchClub: { select: { match: { select: { stDate: true } } } },
           player: {
             select: {
               nick: true,
@@ -111,12 +114,21 @@ export async function getWeeklyTopRating(clubId: string) {
     },
   });
 
-  if (!top) return null;
+  if (!tops || tops.length === 0) return [];
 
-  return {
+  const topByMatch = new Map<string, (typeof tops)[number]>();
+  tops.forEach((item) => {
+    const matchClubId = item.attendance.matchClubId;
+    if (!matchClubId || topByMatch.has(matchClubId)) return;
+    topByMatch.set(matchClubId, item);
+  });
+
+  return Array.from(topByMatch.values()).map((top) => ({
     playerId: top.attendance.playerId!,
+    matchClubId: top.attendance.matchClubId,
+    matchDate: top.attendance.matchClub?.match?.stDate?.toISOString() ?? null,
     nick: top.attendance.player?.nick ?? null,
     userImageUrl: top.attendance.player?.user?.userImage?.url ?? null,
     averageRating: top.averageRating,
-  };
+  }));
 }
