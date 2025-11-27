@@ -91,7 +91,7 @@ const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> })
           </Button>
         </div>
         {replyOpen && (
-          <div className={cn("border border-primary rounded-3xl overflow-hidden p-4 ")}>
+          <div className={cn("")}>
             <CommentEditor
               onCancel={() => setReplyOpen(false)}
               onSubmit={handleSubmit}

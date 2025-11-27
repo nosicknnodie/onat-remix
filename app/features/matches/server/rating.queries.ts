@@ -132,6 +132,13 @@ const startOfQuarter = (date: Date) =>
 const startOfHalfYear = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth() < 6 ? 0 : 6, 1);
 const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
+const endOfMonth = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+const endOfQuarter = (date: Date) =>
+  new Date(date.getFullYear(), Math.floor(date.getMonth() / 3) * 3 + 3, 0, 23, 59, 59, 999);
+const endOfHalfYear = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth() < 6 ? 6 : 12, 0, 23, 59, 59, 999);
+const endOfYear = (date: Date) => new Date(date.getFullYear(), 12, 0, 23, 59, 59, 999);
 
 async function getAttendanceForHistory(attendanceId: string) {
   return prisma.attendance.findUnique({
@@ -283,17 +290,35 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
   const { playerId } = attendance;
   if (!playerId) return;
   const matchDate = attendance.matchClub.match.stDate;
+  const now = new Date();
 
-  const periods: Array<{ type: StatsPeriodType; start: Date }> = [
-    { type: "MONTH", start: startOfMonth(matchDate) },
-    { type: "QUARTER", start: startOfQuarter(matchDate) },
-    { type: "HALF_YEAR", start: startOfHalfYear(matchDate) },
-    { type: "YEAR", start: startOfYear(matchDate) },
+  const periods: Array<{ type: StatsPeriodType; start: Date; end: Date }> = [
+    {
+      type: "MONTH",
+      start: startOfMonth(matchDate),
+      end: endOfMonth(matchDate),
+    },
+    {
+      type: "QUARTER",
+      start: startOfQuarter(matchDate),
+      end: endOfQuarter(matchDate),
+    },
+    {
+      type: "HALF_YEAR",
+      start: startOfHalfYear(matchDate),
+      end: endOfHalfYear(matchDate),
+    },
+    {
+      type: "YEAR",
+      start: startOfYear(matchDate),
+      end: endOfYear(matchDate),
+    },
   ];
 
   const histories = await Promise.all(
     periods.map(async (period) => {
-      const range = await calculateRangeStats(period.start, matchDate, playerId);
+      const cappedEnd = period.end > now ? now : period.end;
+      const range = await calculateRangeStats(period.start, cappedEnd, playerId);
       return {
         ...range,
         periodType: period.type,

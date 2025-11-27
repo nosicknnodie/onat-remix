@@ -37,15 +37,19 @@ type YouTubeComponentProps = Readonly<{
 function YouTubeComponent({ className, format, nodeKey, videoID }: YouTubeComponentProps) {
   return (
     <BlockWithAlignableContents className={className} format={format} nodeKey={nodeKey}>
-      <iframe
-        width="560"
-        height="315"
-        src={`https://www.youtube-nocookie.com/embed/${videoID}`}
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen={true}
-        title="YouTube video"
-      />
+      <div
+        className="relative w-full overflow-hidden rounded-md"
+        style={{ paddingBottom: "56.25%" }}
+      >
+        <iframe
+          className="absolute inset-0 h-full w-full"
+          src={`https://www.youtube-nocookie.com/embed/${videoID}`}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="YouTube video"
+        />
+      </div>
     </BlockWithAlignableContents>
   );
 }
@@ -96,14 +100,16 @@ export class YouTubeNode extends DecoratorBlockNode {
   exportDOM(): DOMExportOutput {
     const element = document.createElement("iframe");
     element.setAttribute("data-lexical-youtube", this.__id);
-    element.setAttribute("width", "560");
-    element.setAttribute("height", "315");
+    element.setAttribute("width", "100%");
+    element.setAttribute("height", "100%");
+    element.setAttribute("style", "aspect-ratio:16/9;");
     element.setAttribute("src", `https://www.youtube-nocookie.com/embed/${this.__id}`);
     element.setAttribute("frameborder", "0");
     element.setAttribute(
       "allow",
       "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
     );
+    element.setAttribute("className", "w-full");
     element.setAttribute("allowfullscreen", "true");
     element.setAttribute("title", "YouTube video");
     return { element };

@@ -8,6 +8,7 @@ import { Loading } from "~/components/Loading";
 import { LoadingSwitch } from "~/components/LoadingSwitch";
 import { BreadcrumbLink } from "~/components/ui/breadcrumb";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useSession } from "~/contexts";
 import {
   CLUB_BOARD_FEED_TAKE,
   CLUB_MATCH_FEED_TAKE,
@@ -19,6 +20,7 @@ import {
   prefetchClubBoardFeed,
   useClubDetailsQuery,
   useMembershipInfoQuery,
+  usePlayerPermissionsQuery,
 } from "~/features/clubs/isomorphic";
 import { getJson } from "~/libs/api-client";
 import { scheduleIdle } from "~/libs/scheduleIdle";
@@ -55,6 +57,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = () => {
 
 const Layout = (_props: ILayoutProps) => {
   const params = useParams();
+  const session = useSession();
   const clubId = params.clubId!;
   const queryClient = useQueryClient();
   const { data: clubData, isLoading: isClubLoading } = useClubDetailsQuery(clubId, {
@@ -63,8 +66,14 @@ const Layout = (_props: ILayoutProps) => {
   const { data: playerData, isLoading: isMembershipLoading } = useMembershipInfoQuery(clubId, {
     enabled: Boolean(clubId),
   });
+  const { data: permissions = [], isLoading: isPermissionsLoading } = usePlayerPermissionsQuery(
+    playerData?.id ?? "",
+    { enabled: Boolean(playerData?.id && session) },
+  );
   const club = clubData ?? null;
   const player = playerData ?? null;
+  const isLoading =
+    isClubLoading || isMembershipLoading || isPermissionsLoading || session === undefined;
 
   useEffect(() => {
     if (!club) return;
@@ -154,7 +163,7 @@ const Layout = (_props: ILayoutProps) => {
     };
   }, [club, player, queryClient]);
 
-  if (isClubLoading || isMembershipLoading || !club) {
+  if (isLoading || !club) {
     return (
       <div className="py-10 flex justify-center">
         <Loading />
@@ -165,19 +174,17 @@ const Layout = (_props: ILayoutProps) => {
   const status = player?.status;
   const isPending = status === "PENDING";
   const isRejected = status === "REJECTED";
-
-  const isLoading = isClubLoading || isMembershipLoading;
-  if (!club && !isLoading) {
-    return (
-      <div className="py-10 flex justify-center">
-        <Loading />
-      </div>
-    );
-  }
+  const hasClubViewPermission = Boolean(player?.id && permissions.includes("CLUB_VIEW"));
+  const isUnauthorized = !session || !hasClubViewPermission;
 
   return (
     <LoadingSwitch isLoading={isLoading} skeleton={<ClubLayoutSkeleton />}>
       <div className="flex flex-col gap-4 w-full @container">
+        {isUnauthorized && (
+          <FormError className="py-2">
+            클럽을 볼 권한이 없습니다. 로그인했는지, 접근 권한이 있는지 확인해 주세요.
+          </FormError>
+        )}
         {isPending && (
           <div className="space-y-2">
             <FormSuccess>가입 승인 대기중입니다.</FormSuccess>
@@ -187,13 +194,13 @@ const Layout = (_props: ILayoutProps) => {
           </div>
         )}
 
-        {isRejected && (
+        {isRejected && !isUnauthorized && (
           <FormError className="py-2">
             가입 신청이 거절되었습니다. 필요시 다시 신청해 주세요.
           </FormError>
         )}
 
-        {!isPending && !isRejected && club && <Outlet />}
+        {!isUnauthorized && !isPending && !isRejected && club && <Outlet />}
       </div>
     </LoadingSwitch>
   );

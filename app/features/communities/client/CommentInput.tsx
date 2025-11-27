@@ -33,7 +33,7 @@ export const CommentInput = ({
     return await res.json();
   };
   return (
-    <div className={cn("border border-primary rounded-3xl overflow-hidden p-4 ", className)}>
+    <div className={cn("", className)}>
       <CommentEditor
         onCancel={handleCancel}
         onSubmit={handleSubmit}

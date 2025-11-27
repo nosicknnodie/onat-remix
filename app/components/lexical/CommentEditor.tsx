@@ -2,6 +2,7 @@ import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 // import { AutoFocusPlugin } from "@lexical/react/LexicalCod";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -9,7 +10,7 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
-import { useCallback, useEffect, useState } from "react";
+import { type ComponentProps, useCallback, useEffect, useState } from "react";
 import { cn } from "~/libs";
 import { Skeleton } from "../ui/skeleton";
 import { nodes } from "./nodes/nodes";
@@ -33,6 +34,19 @@ interface Props {
   onSubmit?: (root?: SerializedEditorState, editor?: LexicalEditor) => void;
   isSubmitting?: boolean;
   onUploadImage?: (file: File) => Promise<{ success: string; url: string }>;
+}
+
+function FocusableContentEditable(props: ComponentProps<typeof ContentEditable>) {
+  const [editor] = useLexicalComposerContext();
+  return (
+    <ContentEditable
+      {...props}
+      onClick={(event) => {
+        props.onClick?.(event);
+        editor.focus();
+      }}
+    />
+  );
 }
 
 export function CommentEditor({
@@ -78,18 +92,19 @@ export function CommentEditor({
         <ActiveEditorProvider>
           <ToolbarContext config={{ isToolbarVisible: false, isSubmitting, onUploadImage }}>
             <ToolbarPlugin />
-            <div className="relative  p-2">
+            <div className="relative rounded-lg border bg-card p-2 transition focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/50">
               <RichTextPlugin
                 contentEditable={
-                  <ContentEditable
+                  <FocusableContentEditable
                     className="min-h-[5rem] w-full focus:outline-none"
                     aria-placeholder={placeholder || "내용을 입력해 주세요."}
-                    placeholder={(_isEditable: boolean) => (
-                      <div className="text-gray-300 absolute top-2 left-2">
-                        {placeholder || "내용을 입력해주세요."}
-                      </div>
-                    )}
+                    placeholder={() => null}
                   />
+                }
+                placeholder={
+                  <div className="pointer-events-none text-gray-300 absolute top-2 left-2">
+                    {placeholder || "내용을 입력해주세요."}
+                  </div>
                 }
                 ErrorBoundary={LexicalErrorBoundary}
               />

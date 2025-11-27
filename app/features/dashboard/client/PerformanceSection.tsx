@@ -139,20 +139,24 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
             : "-",
       },
       {
-        label: "평점",
-        value: toThreePoint(selectedStat?.averageRating)?.toFixed(1) ?? "-",
+        label: "매치 수",
+        value: selectedStat?.matchCount ?? "-",
       },
       {
-        label: "골",
-        value: selectedStat?.totalGoal ?? "-",
+        label: "평점",
+        value: toThreePoint(selectedStat?.averageRating)?.toFixed(2) ?? "-",
+      },
+      {
+        label: "총 평점",
+        value: ((selectedStat?.totalRating ?? 0) / 20).toFixed(1) ?? "-",
       },
       {
         label: "받은좋아요",
         value: selectedStat?.totalLike ?? "-",
       },
       {
-        label: "매치 수",
-        value: selectedStat?.matchCount ?? "-",
+        label: "골",
+        value: selectedStat?.totalGoal ?? "-",
       },
     ],
     [selectedStat, toThreePoint],
@@ -236,7 +240,7 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
             <span className="font-semibold text-primary">{selectedMember.clubName}</span>
             {activeYear ? <span>{activeYear}년 기준</span> : null}
           </div>
-          <div className="grid max-sm:grid-cols-2 sm:grid-cols-5 gap-2 px-4">
+          <div className="grid max-sm:grid-cols-2 sm:grid-cols-6 gap-2 px-4">
             {statCards.map((card) => (
               <div
                 key={card.label}

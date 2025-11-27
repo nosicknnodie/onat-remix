@@ -99,7 +99,7 @@ export const UpcomingMatches = ({ items, isLoading, isPending, onVote, onCheck }
                       <Button
                         size="sm"
                         variant={userVote === true ? "default" : "outline"}
-                        disabled={phase !== "VOTE" || isPending}
+                        disabled={phase !== "VOTE" || isPending || userVote === true}
                         onClick={() => onVote(item, true)}
                         className="flex-1"
                       >
@@ -108,7 +108,7 @@ export const UpcomingMatches = ({ items, isLoading, isPending, onVote, onCheck }
                       <Button
                         size="sm"
                         variant={userVote === false ? "default" : "outline"}
-                        disabled={phase !== "VOTE" || isPending}
+                        disabled={phase !== "VOTE" || isPending || userVote === false}
                         onClick={() => onVote(item, false)}
                         className="flex-1"
                       >
