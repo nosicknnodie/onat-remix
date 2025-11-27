@@ -166,7 +166,7 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
       </div>
       <div className="flex flex-wrap items-center gap-2 px-2 text-sm">
         {yearOptions.length ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-2">
             <span className="text-muted-foreground">연도</span>
             <Select
               value={activeYear}
@@ -247,7 +247,7 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
               </div>
             ))}
           </div>
-          <div className="h-72 px-2">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />

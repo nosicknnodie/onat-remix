@@ -21,6 +21,7 @@ import {
   useMembershipInfoQuery,
 } from "~/features/clubs/isomorphic";
 import { getJson } from "~/libs/api-client";
+import { scheduleIdle } from "~/libs/scheduleIdle";
 
 const ClubBreadcrumb = ({ clubId }: { clubId?: string }) => {
   const { data } = useClubDetailsQuery(clubId ?? "", { enabled: Boolean(clubId) });
@@ -74,43 +75,6 @@ const Layout = (_props: ILayoutProps) => {
     const controller = new AbortController();
     const prefetch = async () => {
       const tasks: Array<Promise<unknown>> = [];
-      const infoEndpoints = [
-        {
-          key: clubInfoQueryKeys.recentMatch(selectedClubId),
-          url: `/api/clubs/${selectedClubId}/info/recent-match`,
-        },
-        {
-          key: clubInfoQueryKeys.upcomingMatch(selectedClubId),
-          url: `/api/clubs/${selectedClubId}/info/upcoming-match`,
-        },
-        {
-          key: clubInfoQueryKeys.attendance(selectedClubId),
-          url: `/api/clubs/${selectedClubId}/info/attendance`,
-        },
-        {
-          key: clubInfoQueryKeys.goalLeaders(selectedClubId),
-          url: `/api/clubs/${selectedClubId}/info/goal-leaders`,
-        },
-        {
-          key: clubInfoQueryKeys.ratingLeaders(selectedClubId),
-          url: `/api/clubs/${selectedClubId}/info/rating-leaders`,
-        },
-        {
-          key: clubInfoQueryKeys.notices(selectedClubId),
-          url: `/api/clubs/${selectedClubId}/info/notices`,
-        },
-      ];
-
-      infoEndpoints.forEach(({ key, url }) => {
-        tasks.push(
-          queryClient
-            .prefetchQuery({
-              queryKey: key,
-              queryFn: () => getJson(url, { signal: controller.signal }),
-            })
-            .catch(() => undefined),
-        );
-      });
 
       tasks.push(
         queryClient
@@ -179,9 +143,15 @@ const Layout = (_props: ILayoutProps) => {
 
       await Promise.all(tasks);
     };
+
     document.title = `ONSOA | ${club.name}`;
-    void prefetch();
-    return () => controller.abort();
+    const cancel = scheduleIdle(() => {
+      void prefetch();
+    });
+    return () => {
+      cancel();
+      controller.abort();
+    };
   }, [club, player, queryClient]);
 
   if (isClubLoading || isMembershipLoading || !club) {

@@ -1,6 +1,8 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
 
-import { Outlet, type UIMatch, useMatches } from "@remix-run/react";
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, type UIMatch, useLoaderData, useMatches } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Fragment } from "react/jsx-runtime";
@@ -14,13 +16,44 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import type { ClubWithMembership } from "~/features/clubs/isomorphic";
 import { clubInfoQueryKeys, clubMemberQueryKeys } from "~/features/clubs/isomorphic";
-import { getJson } from "~/libs/api-client";
+import { memberService, service } from "~/features/clubs/server";
+import { getUser } from "~/libs/index.server";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUser(request);
+  if (!user) {
+    return json({ myClubs: [], permissions: {} as Record<string, string[]> });
+  }
+
+  const myClubs = await service.getMyClubsData(user.id);
+  const permissionsEntries = await Promise.all(
+    myClubs.map(async (club) => {
+      const membership = club.membership;
+      if (!membership) return null;
+      const permissions = await memberService.getEffectivePermissions({
+        id: membership.id,
+        role: membership.role,
+      });
+      return [membership.id, permissions] as const;
+    }),
+  );
+
+  const permissions = Object.fromEntries(
+    permissionsEntries.filter(Boolean) as Array<[string, string[]]>,
+  );
+
+  return json({ myClubs, permissions });
+};
 
 interface IPublicLayoutProps {}
 
+export const shouldRevalidate: ShouldRevalidateFunction = () => {
+  return false;
+};
+
 const PublicLayout = (_props: IPublicLayoutProps) => {
+  const { myClubs, permissions } = useLoaderData<typeof loader>();
   const queryClient = useQueryClient();
   const matches = useMatches() as UIMatch<
     unknown,
@@ -47,66 +80,19 @@ const PublicLayout = (_props: IPublicLayoutProps) => {
     });
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const hydrateClubCaches = (clubs?: ClubWithMembership[]) => {
-      if (!clubs?.length) return;
-      clubs.forEach((clubItem) => {
-        const { membership, ...clubData } = clubItem;
-        queryClient.setQueryData(clubInfoQueryKeys.club(clubData.id), clubData);
-        queryClient.setQueryData(clubInfoQueryKeys.membership(clubData.id), membership ?? null);
-      });
-    };
-
-    const prefetchMemberPermissions = async (clubs?: ClubWithMembership[]) => {
-      if (!clubs?.length) return;
-      const membershipIds = clubs
-        .map((club) => club.membership?.id)
-        .filter((id): id is string => Boolean(id));
-
-      await Promise.all(
-        membershipIds.map((playerId) =>
-          queryClient.fetchQuery({
-            queryKey: clubMemberQueryKeys.playerPermissions(playerId),
-            queryFn: () =>
-              getJson<string[]>(`/api/players/${playerId}/permissions`, {
-                signal: controller.signal,
-              }),
-            staleTime: 1000 * 60 * 5,
-          }),
-        ),
-      );
-    };
-
-    const prefetchMyClubs = async () => {
-      const cached = queryClient.getQueryData<ClubWithMembership[]>(clubInfoQueryKeys.myClubs());
-      if (cached) {
-        hydrateClubCaches(cached);
-        void prefetchMemberPermissions(cached);
-        return;
+    queryClient.setQueryData(clubInfoQueryKeys.myClubs(), myClubs);
+    myClubs.forEach((clubItem) => {
+      const { membership, ...clubData } = clubItem;
+      queryClient.setQueryData(clubInfoQueryKeys.club(clubData.id), clubData);
+      queryClient.setQueryData(clubInfoQueryKeys.membership(clubData.id), membership ?? null);
+      if (membership?.id && permissions[membership.id]) {
+        queryClient.setQueryData(
+          clubMemberQueryKeys.playerPermissions(membership.id),
+          permissions[membership.id],
+        );
       }
-
-      try {
-        const clubs = await queryClient.fetchQuery({
-          queryKey: clubInfoQueryKeys.myClubs(),
-          queryFn: () =>
-            getJson<ClubWithMembership[]>("/api/clubs/my", {
-              signal: controller.signal,
-            }),
-          staleTime: 1000 * 60 * 5,
-        });
-        hydrateClubCaches(clubs);
-        void prefetchMemberPermissions(clubs);
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        console.error("[PublicLayout] Failed to prefetch my clubs", error);
-      }
-    };
-
-    void prefetchMyClubs();
-
-    return () => controller.abort();
-  }, [queryClient]);
+    });
+  }, [myClubs, permissions, queryClient]);
 
   return (
     <>

@@ -138,7 +138,7 @@ const DashboardContent = () => {
   if (!user) return null;
 
   return (
-    <div className="w-full p-4 rounded-lg grid sm:grid-cols-3 gap-3">
+    <div className="w-full sm:p-4 max-sm:p-1 rounded-lg grid sm:grid-cols-3 gap-3">
       {/** `프로필 box` */}
       <div className="sm:col-span-2 border border-gray-200 bg-white rounded-lg sm:p-8 max-sm:p-4 flex-col flex justify-start relative gap-4">
         <div className="absolute top-[8%] right-[5%]">
@@ -158,7 +158,10 @@ const DashboardContent = () => {
               <AvatarFallback className="bg-primary-foreground"> </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1">
-              <p className="text-2xl font-bold ">{user.nick ?? user.name ?? "이름 없음"}</p>
+              <p className="space-x-2">
+                <span className="text-2xl font-bold ">{user.nick ?? user.name ?? "이름 없음"}</span>
+                <span>{user.name && `(${user.name})`}</span>
+              </p>
               <p className="text-sm">{user.email}</p>
               <div className="flex gap-1">
                 {user.si && (

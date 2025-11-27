@@ -26,6 +26,7 @@ import {
   useMatchCommentsQuery,
 } from "~/features/matches/isomorphic";
 import { getJson } from "~/libs/api-client";
+import { scheduleIdle } from "~/libs/scheduleIdle";
 
 interface IMatchClubIdLayoutProps {}
 
@@ -72,13 +73,17 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
 
   useEffect(() => {
     if (!matchClubId) return;
+    const controller = new AbortController();
     const prefetchQueries = async () => {
       const tasks: Array<Promise<unknown>> = [];
       tasks.push(
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.detail(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/attendances`),
+            queryFn: async () =>
+              getJson(`/api/matchClubs/${matchClubId}/position/attendances`, {
+                signal: controller.signal,
+              }),
           })
           .catch(() => undefined),
       );
@@ -86,7 +91,10 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: positionQueryKeys.quarters(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/position/quarters`),
+            queryFn: async () =>
+              getJson(`/api/matchClubs/${matchClubId}/position/quarters`, {
+                signal: controller.signal,
+              }),
           })
           .catch(() => undefined),
       );
@@ -94,7 +102,8 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
         queryClient
           .prefetchQuery({
             queryKey: recordQueryKeys.detail(matchClubId),
-            queryFn: async () => getJson(`/api/matchClubs/${matchClubId}/record`),
+            queryFn: async () =>
+              getJson(`/api/matchClubs/${matchClubId}/record`, { signal: controller.signal }),
           })
           .catch(() => undefined),
       );
@@ -113,14 +122,23 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
             .prefetchQuery({
               queryKey: teamQueryKeys.detail(matchClubId),
               queryFn: async () =>
-                getJson(`/api/matchClubs/${matchClubId}/teams?${searchParams.toString()}`),
+                getJson(`/api/matchClubs/${matchClubId}/teams?${searchParams.toString()}`, {
+                  signal: controller.signal,
+                }),
             })
             .catch(() => undefined),
         );
       }
       await Promise.all(tasks);
     };
-    void prefetchQueries();
+
+    const cancel = scheduleIdle(() => {
+      void prefetchQueries();
+    });
+    return () => {
+      cancel();
+      controller.abort();
+    };
   }, [matchClubId, clubId, queryClient]);
 
   const matchClub = matchClubQueryData?.matchClub;
