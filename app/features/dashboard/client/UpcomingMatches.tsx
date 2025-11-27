@@ -41,7 +41,7 @@ export const UpcomingMatches = ({ items, isLoading, isPending, onVote, onCheck }
       ) : !items || items.length === 0 ? (
         <div className="text-sm text-muted-foreground px-2 py-4">표시할 일정이 없습니다.</div>
       ) : (
-        <div className="flex flex-col gap-2 max-h-96 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
           {items.map((item) => {
             const voteEnabled = canVote(item.stDate);
             const checkEnabled = canCheck(item.stDate);

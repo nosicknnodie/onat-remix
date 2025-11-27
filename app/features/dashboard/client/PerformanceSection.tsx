@@ -254,14 +254,14 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
                 <XAxis dataKey="label" />
                 <YAxis
                   yAxisId="left"
-                  domain={[0, 3]}
-                  ticks={[0, 1, 2, 3]}
+                  domain={[0, 5]}
+                  ticks={[0, 1, 2, 3, 4, 5]}
                   tickFormatter={(v) => v.toFixed(1)}
                 />
                 <YAxis yAxisId="right" orientation="right" />
                 <RechartsTooltip
                   formatter={(value, name) => {
-                    if (name === "평점(3점)") return [value, name];
+                    if (name === "평점(5점)") return [value, name];
                     if (name === "출석률(%)") return [`${value}%`, name];
                     return value;
                   }}
@@ -278,7 +278,7 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
                   type="monotone"
                   yAxisId="left"
                   dataKey="rating"
-                  name="평점(3점)"
+                  name="평점(5점)"
                   stroke="#0ea5e9"
                   strokeWidth={2}
                   dot={{ r: 3 }}
