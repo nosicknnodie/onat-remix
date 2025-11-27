@@ -65,7 +65,7 @@ const RatingPage = (_props: IRatingPageProps) => {
     const voteCount =
       ratingRegisterData?.attendances?.filter((attendance) => attendance.isVote).length ?? 0;
     const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
-    return filtered.slice(0, limit);
+    return filtered.filter((stat) => stat.averageRating > 0).slice(0, limit);
   })();
   const playerAttendances =
     ratingRegisterData?.attendances.filter(
@@ -133,7 +133,7 @@ const RatingPage = (_props: IRatingPageProps) => {
                 {isRatingWindowOpen ? (
                   <p>평점 입력 부탁드립니다.</p>
                 ) : (
-                  <p>평가 입력 시간이 지났습니다.</p>
+                  <p>평가 입력 시간이 아닙니다.</p>
                 )}
               </div>
             ) : (

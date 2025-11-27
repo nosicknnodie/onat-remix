@@ -18,7 +18,7 @@ import { ClubPermissionGate } from "~/features/clubs/client";
 import {
   type ClubYearStatItem,
   useClubDetailsQuery,
-  useClubYearStats,
+  useClubYearMainStats,
   useWeeklyTopRating,
   type WeeklyTopRatingItem,
 } from "~/features/clubs/isomorphic";
@@ -143,7 +143,7 @@ const ClubPage = (_props: IClubPageProps) => {
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [rankTab, setRankTab] = useState<RankTab>("rating");
   const { data: club, isLoading: isClubLoading } = useClubDetailsQuery(clubId);
-  const { data: stats, isLoading: isStatsLoading } = useClubYearStats(
+  const { data: stats, isLoading: isStatsLoading } = useClubYearMainStats(
     clubId,
     new Date().getFullYear(),
   );

@@ -1,12 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ClubYearStatsResponse, WeeklyTopRatingResponse } from "./stats.types";
+import type {
+  ClubYearMainStatsResponse,
+  ClubYearStatsResponse,
+  WeeklyTopRatingResponse,
+} from "./stats.types";
+
+export function useClubYearMainStats(clubId: string | undefined, year: number) {
+  return useQuery<ClubYearMainStatsResponse>({
+    queryKey: ["club-year-stats", clubId, year],
+    enabled: Boolean(clubId),
+    queryFn: async () => {
+      const res = await fetch(`/api/clubs/${clubId}/stats/main?year=${year}`);
+      if (!res.ok) throw new Error("Failed to fetch club year stats");
+      return (await res.json()) as ClubYearMainStatsResponse;
+    },
+  });
+}
 
 export function useClubYearStats(clubId: string | undefined, year: number) {
   return useQuery<ClubYearStatsResponse>({
     queryKey: ["club-year-stats", clubId, year],
     enabled: Boolean(clubId),
     queryFn: async () => {
-      const res = await fetch(`/api/clubs/${clubId}/stats/main?year=${year}`);
+      const res = await fetch(`/api/clubs/${clubId}/stats/year?year=${year}`);
       if (!res.ok) throw new Error("Failed to fetch club year stats");
       return (await res.json()) as ClubYearStatsResponse;
     },

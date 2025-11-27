@@ -18,6 +18,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response("Invalid query", { status: 400 });
   }
 
-  const data = await statsService.getClubYearStatsMainService({ clubId, year: parsed.data.year });
+  const data = await statsService.getClubYearStatsService({ clubId, year: parsed.data.year });
   return json(data);
 }

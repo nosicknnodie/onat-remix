@@ -3,7 +3,15 @@ import { useNavigate, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiHelpCircle } from "react-icons/fi";
-
+import {
+  Bar,
+  BarChart,
+  Cell,
+  LabelList,
+  Tooltip as RechartTooltip,
+  ResponsiveContainer,
+  XAxis,
+} from "recharts";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -18,7 +26,12 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { useMembershipInfoQuery, usePlayerPermissionsQuery } from "~/features/clubs/isomorphic";
+import {
+  type ClubYearStatItem,
+  useClubYearStats,
+  useMembershipInfoQuery,
+  usePlayerPermissionsQuery,
+} from "~/features/clubs/isomorphic";
 import {
   TeamAttendanceActions,
   TeamCard,
@@ -32,6 +45,187 @@ import {
   useTeamQuery,
   useTeamUpdateMutation,
 } from "~/features/matches/isomorphic";
+
+type TeamStatsItem = {
+  teamId: string;
+  teamName: string;
+  averageRating: string;
+  totalRating: string;
+  totalLike: number;
+};
+
+function TeamStatsCharts({
+  year,
+  teamStats,
+  isLoading,
+}: {
+  year: string;
+  teamStats?: TeamStatsItem[];
+  isLoading: boolean;
+}) {
+  const chartData = teamStats ?? [];
+  const colors = ["#2563eb", "#f59e0b", "#22c55e", "#ec4899", "#06b6d4", "#a855f7", "#ef4444"];
+
+  return (
+    <div className="mb-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex justify-between items-center">
+            <span>팀별 연간 평점/총점/좋아요 비교 ({year})</span>
+            {isLoading && <Loading />}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-3 text-sm">
+          {chartData.length > 0 ? (
+            <>
+              <div className="w-full">
+                <p className="mb-2 text-sm font-semibold text-muted-foreground text-center">
+                  평균 점수
+                </p>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ left: 8, right: 8 }}>
+                      <XAxis dataKey="teamName" tickLine={false} axisLine={false} />
+                      <RechartTooltip />
+                      <Bar
+                        dataKey={"averageRating"}
+                        name="평균 점수(별)"
+                        radius={[4, 4, 0, 0]}
+                        barSize={18}
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={entry.teamId} fill={colors[index % colors.length]} />
+                        ))}
+                        <LabelList
+                          dataKey={"averageRating"}
+                          position="left"
+                          formatter={(v: number) => v?.toFixed?.(3) ?? v}
+                        />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="w-full">
+                <p className="mb-2 text-sm font-semibold text-muted-foreground text-center">
+                  총 점수
+                </p>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ left: 8, right: 8 }}>
+                      <XAxis dataKey="teamName" tickLine={false} axisLine={false} />
+                      <RechartTooltip />
+                      <Bar
+                        dataKey={"totalRating"}
+                        name="총 점수(별)"
+                        radius={[4, 4, 0, 0]}
+                        barSize={18}
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={entry.teamId} fill={colors[index % colors.length]} />
+                        ))}
+                        <LabelList
+                          dataKey={"totalRating"}
+                          position="left"
+                          formatter={(v: number) => v?.toFixed?.(2) ?? v}
+                        />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className=" w-full">
+                <p className="mb-2 text-sm font-semibold text-muted-foreground text-center">
+                  좋아요
+                </p>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ left: 8, right: 8 }}>
+                      <XAxis dataKey="teamName" tickLine={false} axisLine={false} />
+                      <RechartTooltip />
+                      <Bar dataKey="totalLike" name="좋아요" radius={[4, 4, 0, 0]} barSize={18}>
+                        {chartData.map((entry, index) => (
+                          <Cell key={entry.teamId} fill={colors[index % colors.length]} />
+                        ))}
+                        <LabelList dataKey="totalLike" position="left" />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-muted-foreground">팀 통계가 없습니다.</div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function UnassignedPlayers({
+  notTeamAttendances,
+  isTeamManageLocked,
+  handleSelectedAtted,
+}: {
+  notTeamAttendances: UIAttendance[];
+  isTeamManageLocked: boolean;
+  handleSelectedAtted: (attendance: UIAttendance) => Promise<void> | void;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex justify-start gap-2 items-center">
+          <p>아직 팀이 없는 선수들</p>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <FiHelpCircle />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm p-4 space-y-2 bg-muted text-sm text-muted-foreground rounded-md shadow-lg border">
+                <p>팀 구분은 스쿼트 편의를 위한것입니다.</p>
+                <p>1. 각 팀으로 이동시켜주세요.</p>
+                <p>2. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.</p>
+                <p>3. 이동후에 개별적으로 이동시킬 수 있습니다.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid max-sm:grid-cols-2 sm:max-md:grid-cols-4 md:max-lg:grid-cols-4 lg:max-xl:grid-cols-5 xl:grid-cols-6 gap-2">
+        {notTeamAttendances.map((attendance) => {
+          return (
+            <Fragment key={attendance.id}>
+              <div className="px-2 py-1 space-x-2 flex items-center justify-center">
+                <Checkbox
+                  id={`checkbox-${attendance.id}`}
+                  disabled={isTeamManageLocked}
+                  onCheckedChange={() => handleSelectedAtted(attendance)}
+                ></Checkbox>
+
+                <Label htmlFor={`checkbox-${attendance.id}`} className="flex items-center gap-1">
+                  <Avatar className="size-5">
+                    <AvatarImage
+                      src={
+                        attendance.player?.user?.userImage?.url ||
+                        attendance.mercenary?.user?.userImage?.url ||
+                        "/images/user_empty.png"
+                      }
+                    />
+                    <AvatarFallback className="bg-primary-foreground">
+                      <Loading />
+                    </AvatarFallback>
+                  </Avatar>
+                  <span>{getAttendanceDisplayName(attendance)}</span>
+                </Label>
+              </div>
+            </Fragment>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
 
 export const handle = {
   breadcrumb: () => {
@@ -92,6 +286,9 @@ const TeamPage = (_props: ITeamPageProps) => {
   const notTeamAttendances = attendances.filter(
     (attendance) => !attendance.teamId || !teams.some((team) => team.id === attendance.teamId),
   );
+  const year = String(dayjs().year());
+  const { data: yearData, isLoading: isYearLoading } = useClubYearStats(clubId, Number(year));
+
   const teamsWithAttendances = useMemo(
     () =>
       teams.map((team) => ({
@@ -106,6 +303,34 @@ const TeamPage = (_props: ITeamPageProps) => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const teamAssignmentMutation = useTeamAssignmentMutation(matchClubId);
   const teamUpdateMutation = useTeamUpdateMutation(matchClubId);
+  const playerYearDataMap = new Map<string, ClubYearStatItem>();
+  yearData?.forEach((item) => {
+    playerYearDataMap.set(item.playerId, item);
+  });
+  const teamStatsItems = teamsWithAttendances.map((team) => {
+    const attendances = team.attendances;
+    let totalStatsPlayerCount = 0;
+    const totalRating = attendances.reduce((acc, cur) => {
+      return acc + (playerYearDataMap.get(cur.playerId!)?.totalRating ?? 0);
+    }, 0);
+    const averageRating = attendances.reduce((acc, cur) => {
+      const rating = playerYearDataMap.get(cur.playerId!)?.averageRating;
+      if (rating) {
+        totalStatsPlayerCount++;
+        return acc + rating;
+      } else return acc;
+    }, 0);
+    return {
+      teamId: team.id,
+      teamName: team.name,
+      totalRating: (totalRating / 20).toFixed(2),
+      averageRating: (averageRating / totalStatsPlayerCount / 20).toFixed(2),
+      totalLike: attendances.reduce(
+        (acc, cur) => acc + (playerYearDataMap.get(cur.playerId!)?.totalLike ?? 0),
+        0,
+      ),
+    };
+  });
   useEffect(() => {
     if (!selectedTeamId && teams.length > 0) {
       setSelectedTeamId(teams[0]?.id ?? null);
@@ -151,95 +376,41 @@ const TeamPage = (_props: ITeamPageProps) => {
 
   return (
     <>
-      {/* <div className="flex justify-end">
-        <Button asChild>
-          <Link to={"./new"}>팀생성</Link>
-        </Button>
-      </div> */}
       {notTeamAttendances.length > 0 && (
         <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex justify-start gap-2 items-center">
-                <p>아직 팀이 없는 선수들</p>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <FiHelpCircle />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-sm p-4 space-y-2 bg-muted text-sm text-muted-foreground rounded-md shadow-lg border">
-                      <p>팀 구분은 스쿼트 편의를 위한것입니다.</p>
-                      <p>1. 각 팀으로 이동시켜주세요.</p>
-                      <p>2. 선수들 체크하고 팀을 선택후 이동 버튼을 눌러주세요.</p>
-                      <p>3. 이동후에 개별적으로 이동시킬 수 있습니다.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid max-sm:grid-cols-2 sm:max-md:grid-cols-4 md:max-lg:grid-cols-4 lg:max-xl:grid-cols-5 xl:grid-cols-6 gap-2">
-              {notTeamAttendances.map((attendance) => {
-                return (
-                  <Fragment key={attendance.id}>
-                    <div className="px-2 py-1 space-x-2 flex items-center justify-center">
-                      <Checkbox
-                        id={`checkbox-${attendance.id}`}
-                        disabled={isTeamManageLocked}
-                        onCheckedChange={() => handleSelectedAtted(attendance)}
-                      ></Checkbox>
-
-                      <Label
-                        htmlFor={`checkbox-${attendance.id}`}
-                        className="flex items-center gap-1"
-                      >
-                        <Avatar className="size-5">
-                          <AvatarImage
-                            src={
-                              attendance.player?.user?.userImage?.url ||
-                              attendance.mercenary?.user?.userImage?.url ||
-                              "/images/user_empty.png"
-                            }
-                          />
-                          <AvatarFallback className="bg-primary-foreground">
-                            <Loading />
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{getAttendanceDisplayName(attendance)}</span>
-                      </Label>
-                    </div>
-                  </Fragment>
-                );
-              })}
-            </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row items-center gap-2">
-              <Select
-                value={selectedTeamId ?? undefined}
-                onValueChange={setSelectedTeamId}
-                disabled={isPending || isTeamManageLocked}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a team" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teams?.map((team) => {
-                    return (
-                      <SelectItem key={team.id} value={team.id}>
-                        {team.name}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={handleAddTeam}
-                disabled={isPending || isTeamManageLocked}
-                className="shrink-0"
-              >
-                <ArrowRightIcon className="mr-1" /> 이동
-                {isPending && <Loading />}
-              </Button>
-            </CardFooter>
-          </Card>
+          <UnassignedPlayers
+            notTeamAttendances={notTeamAttendances as UIAttendance[]}
+            isTeamManageLocked={isTeamManageLocked}
+            handleSelectedAtted={handleSelectedAtted}
+          />
+          <CardFooter className="flex flex-col sm:flex-row items-center gap-2">
+            <Select
+              value={selectedTeamId ?? undefined}
+              onValueChange={setSelectedTeamId}
+              disabled={isPending || isTeamManageLocked}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams?.map((team) => {
+                  return (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={handleAddTeam}
+              disabled={isPending || isTeamManageLocked}
+              className="shrink-0"
+            >
+              <ArrowRightIcon className="mr-1" /> 이동
+              {isPending && <Loading />}
+            </Button>
+          </CardFooter>
         </div>
       )}
       <div className="grid max-sm:grid-cols-1 sm:grid-cols-2 gap-4">
@@ -318,6 +489,11 @@ const TeamPage = (_props: ITeamPageProps) => {
           );
         })}
       </div>
+      <TeamStatsCharts
+        year={year}
+        teamStats={teamStatsItems as TeamStatsItem[] | undefined}
+        isLoading={isYearLoading}
+      />
     </>
   );
 };

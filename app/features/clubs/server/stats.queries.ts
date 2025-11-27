@@ -8,6 +8,16 @@ type PlayerYearStat = {
   totalGoal: number;
   totalLike: number;
   totalRating: number;
+};
+
+type ClubYearStatItem = {
+  playerId: string;
+  nick: string | null;
+  userImageUrl: string | null;
+  averageRating: number;
+  totalGoal: number;
+  totalLike: number;
+  totalRating: number;
   matchCount: number;
   attendanceRate: number;
 };
@@ -16,6 +26,45 @@ export async function getClubYearStats(input: {
   clubId: string;
   year: number;
 }): Promise<PlayerYearStat[]> {
+  const { clubId, year } = input;
+  const yearKey = `${year}`;
+  // const now = new Date();
+  // const start = new Date(year, 0, 1);
+  // const end = new Date(year + 1, 0, 1);
+  const yearlyStats = await prisma.playerStatsHistory.findMany({
+    where: {
+      player: { clubId, status: "APPROVED" },
+      periodType: "YEAR",
+      periodKey: yearKey,
+    },
+    select: {
+      playerId: true,
+      averageRating: true,
+      totalGoal: true,
+      totalLike: true,
+      totalRating: true,
+      matchCount: true,
+      voteRate: true,
+      player: {
+        select: { nick: true, user: { select: { userImage: { select: { url: true } } } } },
+      },
+    },
+  });
+  return yearlyStats.map((stat) => ({
+    playerId: stat.playerId,
+    nick: stat.player?.nick ?? null,
+    userImageUrl: stat.player?.user?.userImage?.url ?? null,
+    averageRating: Number(stat.averageRating ?? 0),
+    totalGoal: Number(stat.totalGoal ?? 0),
+    totalLike: Number(stat.totalLike ?? 0),
+    totalRating: Number(stat.totalRating ?? 0),
+  }));
+}
+
+export async function getClubYearMainStats(input: {
+  clubId: string;
+  year: number;
+}): Promise<ClubYearStatItem[]> {
   const { clubId, year } = input;
   const yearKey = `${year}`;
   const now = new Date();
@@ -61,7 +110,7 @@ export async function getClubYearStats(input: {
     if (item.playerId) attendanceCountMap.set(item.playerId, item._count._all ?? 0);
   });
 
-  const filtered: PlayerYearStat[] = yearlyStats
+  const filtered: ClubYearStatItem[] = yearlyStats
     .map((s) => {
       const matchCount = attendanceCountMap.get(s.playerId) ?? 0;
       const attendanceRate =

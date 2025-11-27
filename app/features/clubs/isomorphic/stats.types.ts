@@ -6,12 +6,14 @@ export type ClubYearStatItem = {
   totalGoal: number;
   totalLike: number;
   totalRating: number;
+};
+export interface ClubYearMainStatsItem extends ClubYearStatItem {
   matchCount: number;
   attendanceRate: number;
-};
+}
 
 export type ClubYearStatsResponse = ClubYearStatItem[];
-
+export type ClubYearMainStatsResponse = ClubYearMainStatsItem[];
 export type WeeklyTopRatingItem = {
   playerId: string;
   matchClubId: string | null;
