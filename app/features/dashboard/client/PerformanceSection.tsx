@@ -87,7 +87,7 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
 
   const toThreePoint = useCallback((score?: number | null) => {
     if (score === null || score === undefined) return null;
-    return Number((score * 0.03).toFixed(2)); // 100점 만점 -> 3점 환산
+    return Number((score / 20).toFixed(2)); // 60점 만점(3점 스케일) -> 3점 환산
   }, []);
 
   const selectedStat = useMemo(() => {

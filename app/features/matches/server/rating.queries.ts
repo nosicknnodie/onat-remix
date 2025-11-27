@@ -160,14 +160,20 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
     },
   } as const;
 
-  const [ratingStats, matchCount, goalCount, assistCount, likeCount, voteCount] = await Promise.all(
-    [
+  const playerClub = await prisma.player.findUnique({
+    where: { id: playerId },
+    select: { clubId: true },
+  });
+
+  const [ratingStats, _attendanceCount, voteCount, goalCount, assistCount, likeCount] =
+    await Promise.all([
       prisma.attendanceRatingStats.findMany({
         where: {
           attendance: {
             playerId,
             matchClub: {
               ...matchFilter,
+              clubId: playerClub?.clubId,
             },
           },
         },
@@ -176,9 +182,9 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
       prisma.attendance.count({
         where: {
           playerId,
-          isVote: true,
           matchClub: {
             ...matchFilter,
+            clubId: playerClub?.clubId,
           },
         },
       }),
@@ -188,6 +194,7 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
           isVote: true,
           matchClub: {
             ...matchFilter,
+            clubId: playerClub?.clubId,
           },
         },
       }),
@@ -197,6 +204,7 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
             playerId,
             matchClub: {
               ...matchFilter,
+              clubId: playerClub?.clubId,
             },
           },
           eventType: { in: ["GOAL", "PK_GOAL"] },
@@ -209,6 +217,7 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
             playerId,
             matchClub: {
               ...matchFilter,
+              clubId: playerClub?.clubId,
             },
           },
         },
@@ -220,22 +229,31 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
             playerId,
             matchClub: {
               ...matchFilter,
+              clubId: playerClub?.clubId,
             },
           },
         },
       }),
-    ],
-  );
+    ]);
 
   const validStats = ratingStats.filter((stat) => stat.averageRating > 0);
   const total = validStats.reduce((acc: number, current) => acc + current.averageRating, 0);
   const average = validStats.length ? Math.round(total / validStats.length) : 0;
-  const voteRate = matchCount > 0 ? Math.round((voteCount / matchCount) * 100) : 0;
+  const clubMatchCount = await prisma.matchClub.count({
+    where: {
+      clubId: playerClub?.clubId ?? "",
+      match: {
+        ...matchFilter.match,
+      },
+    },
+  });
+
+  const voteRate = clubMatchCount > 0 ? Math.round((voteCount / clubMatchCount) * 100) : 0;
 
   return {
     average,
     total,
-    matchCount,
+    matchCount: voteCount,
     totalGoal: goalCount,
     totalAssist: assistCount,
     totalLike: likeCount,

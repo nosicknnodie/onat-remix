@@ -241,7 +241,6 @@ export async function getPerformanceHistory(
     const currentYear = dayjs().format("YYYY");
     return { members: [], availableYears: [currentYear], defaultYear: currentYear };
   }
-  console.log("players - ", players);
 
   const targetYear = year ?? dayjs().format("YYYY");
   const history = await q.findPlayerStatsHistoryByYear({
