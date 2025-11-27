@@ -191,7 +191,7 @@ const ClubPage = (_props: IClubPageProps) => {
             <StarRating id={item.playerId} score={item.averageRating} />
             <div className="whitespace-nowrap">
               <span className="font-semibold">{(item.averageRating / 20).toFixed(2)}</span>
-              /3
+              /5.0
             </div>
           </>
         );
@@ -236,7 +236,7 @@ const ClubPage = (_props: IClubPageProps) => {
       />
       <div className="p-2 flex items-center gap-2 absolute bottom-[5%] right-[5%]">
         <div className="flex flex-col gap-1 items-center">
-          <div className="sm:text-2xl max-sm:text-base font-semibold bg-black/40 hover:bg-black/50 p-2 rounded-lg text-white text-center flex gap-2 items-center">
+          <div className="sm:text-2xl max-sm:text-base font-semibold backdrop-blur-sm  bg-white/5 border border-white/10 p-2 rounded-lg text-white text-center flex gap-2 items-center">
             <Avatar className="sm:size-6 max-sm:size-4">
               <AvatarImage src={club?.emblem?.url || "/images/club-default-emblem.webp"} />
               <AvatarFallback className="bg-primary">

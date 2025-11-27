@@ -70,10 +70,10 @@ export async function getClubYearStats(input: {
         playerId: s.playerId,
         nick: s.player?.nick ?? null,
         userImageUrl: s.player?.user?.userImage?.url ?? null,
-        averageRating: s.averageRating ?? 0,
+        averageRating: Number(s.averageRating ?? 0),
         totalGoal: s.totalGoal ?? 0,
         totalLike: s.totalLike ?? 0,
-        totalRating: s.totalRating ?? 0,
+        totalRating: Number(s.totalRating ?? 0),
         matchCount,
         attendanceRate,
       };

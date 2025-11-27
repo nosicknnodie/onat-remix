@@ -503,8 +503,8 @@ model AttendanceRatingStats {
   attendanceId String @id
   attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
-  averageRating Int  @default(0) // 해당 선수의 평균 평점(정수로 저장, 필요 시 100배 등 스케일 사용)
-  totalRating   Int  @default(0) // 해당 선수의 평점 합계
+  averageRating Decimal  @default(0) // 해당 선수의 평균 평점(정수로 저장, 필요 시 100배 등 스케일 사용)
+  totalRating   Decimal  @default(0) // 해당 선수의 평점 합계
   voterCount    Int  @default(0) // 몇 명이 평점을 남겼는지
   likeCount     Int  @default(0) // 받은 좋아요 누적
 }
@@ -528,9 +528,9 @@ model PlayerStatsHistory {
   periodKey     String          // 예: 2024-01, 2024-Q1, 2024-H1, 2024
   calculatedAt  DateTime @default(now()) // 집계 기준 시각(출석 집계 시)
 
-  averageRating Int?    // 스케일 적용된 평균 평점
+  averageRating Decimal?    // 스케일 적용된 평균 평점
   voteRate      Decimal?    // 기간별 출석률
-  totalRating   Int?    // 평점 합계
+  totalRating   Decimal?    // 평점 합계
   totalGoal     Int?    // 총 골 수
   totalAssist   Int?    // 총 어시스트 수
   totalLike     Int?    // 받은 좋아요 수

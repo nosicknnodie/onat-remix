@@ -15,7 +15,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { useSession } from "~/contexts";
 import { RatingStatsCard, RatingStatsListItem } from "~/features/matches/client";
 import {
@@ -56,8 +56,12 @@ const RatingPage = (_props: IRatingPageProps) => {
     { enabled: Boolean(matchClubId) },
   );
   const { data: ratingStats, isLoading: isRatingStatsLoading } = useRatingStatsQuery(matchClubId);
+  const normalizedStats = (ratingStats?.stats ?? []).map((stat) => ({
+    ...stat,
+    averageRating: Number(stat.averageRating ?? 0),
+  }));
   const stats = (() => {
-    const filtered = ratingStats?.stats.sort((a, b) => b.averageRating - a.averageRating) ?? [];
+    const filtered = normalizedStats.sort((a, b) => b.averageRating - a.averageRating) ?? [];
     const voteCount =
       ratingRegisterData?.attendances?.filter((attendance) => attendance.isVote).length ?? 0;
     const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
@@ -95,99 +99,100 @@ const RatingPage = (_props: IRatingPageProps) => {
 
   return (
     <>
-      <div className="w-full pt-4 flex flex-col gap-6 relative">
-        <div className="absolute right-0 top-0 -translate-y-1/2">
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <FaInfo className="text-primary" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs p-4 text-xs text-muted-foreground space-y-2 bg-muted">
-                <p className="font-semibold text-foreground">평점 기준 안내</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>평점을 하나라도 입력하면 본인 평점은 자동으로 만점 처리됩니다.</li>
-                  <li>본인 포함 최소 3명 이상이 점수을 입력해야 기록이 됩니다.</li>
-                  <li>평점이 0이면 기록이 무효 처리됩니다.</li>
-                  <li>
-                    여기서 기록이란 통계에 합 및 평균처리에서 제외되는 것으로 기록 자체를 쓰지
-                    않습니다.
-                  </li>
-                  <li>평점 입력은 경기시간시작 기준 하루동안 입력 할 수 있습니다.</li>
-                </ul>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+      <div className="w-full">
+        <div className="flex justify-end p-1">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <FaInfo className="text-primary" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              sideOffset={8}
+              className="w-max px-3 py-2 text-xs border-none bg-primary text-white font-semibold"
+            >
+              <p className="font-semibold">평점 기준 안내</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>평점을 하나라도 입력하면 본인 평점은 자동으로 만점 처리됩니다.</li>
+                <li>본인 포함 최소 3명 이상이 점수을 입력해야 기록이 됩니다.</li>
+                <li>평점이 0이면 기록이 무효 처리됩니다.</li>
+                <li>
+                  여기서 기록이란 통계에 합 및 평균처리에서 제외되는 것으로 기록 자체를 쓰지
+                  않습니다.
+                </li>
+                <li>평점 입력은 경기시간시작 기준 하루동안 입력 할 수 있습니다.</li>
+              </ul>
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="flex gap-2 justify-center w-full">
-          {stats?.length === 0 ? (
-            <div className="text-sm flex justify-center flex-col items-center w-full">
-              <p>평점 정보가 없습니다.</p>
-              {isRatingWindowOpen ? (
-                <p>평점 입력 부탁드립니다.</p>
-              ) : (
-                <p>평가 입력 시간이 지났습니다.</p>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="gap-2 grid sm:grid-cols-3 max-sm:grid-cols-1 w-full">
-                <div className="h-72">
-                  <RatingStatsCard stats={stats?.at(0)} rank={1} />
-                </div>
-                <div className="h-72">
-                  <RatingStatsCard stats={stats?.at(1)} rank={2} />
-                </div>
-                <div className="h-72">
-                  <RatingStatsCard stats={stats?.at(2)} rank={3} />
-                </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2 justify-center w-full">
+            {stats?.length === 0 ? (
+              <div className="text-sm flex justify-center flex-col items-center w-full">
+                <p>평점 정보가 없습니다.</p>
+                {isRatingWindowOpen ? (
+                  <p>평점 입력 부탁드립니다.</p>
+                ) : (
+                  <p>평가 입력 시간이 지났습니다.</p>
+                )}
               </div>
-            </>
-          )}
-        </div>
-        {stats?.length !== 0 && (
-          <div>
-            <p className="pl-4">
-              <span className="font-semibold">M</span>an <span className="font-semibold">O</span>f
-              the <span className="font-semibold">M</span>atch
-            </p>
-            <div className="">
-              {stats?.map((stat, index) => (
-                <Fragment key={stat.attendanceId}>
-                  <RatingStatsListItem
-                    stats={stat}
-                    rank={index + 1}
-                    matchStartDate={new Date(match.stDate)}
-                  />
-                </Fragment>
-              ))}
-            </div>
-          </div>
-        )}
-        {isRatingWindowOpen && (
-          <div className="fixed bottom-6 right-6 z-20">
-            {canSubmitRating ? (
-              <RatingRightInputDrawer
-                attendances={playerAttendances}
-                isLoading={isRatingRegisterLoading}
-                matchClubId={matchClubId}
-                userId={session?.id}
-                inputPointLimit={totalInputPoints}
-                stDate={stDate}
-              >
-                <Button
-                  type="button"
-                  className="rounded-full h-14 w-14 bg-primary text-white hover:bg-primary/90 shadow-xl"
-                  aria-label="평점 입력"
-                >
-                  <FaPlus className="size-6" />
-                </Button>
-              </RatingRightInputDrawer>
             ) : (
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              <>
+                <div className="gap-2 grid sm:grid-cols-3 max-sm:grid-cols-1 w-full">
+                  <div className="h-72">
+                    <RatingStatsCard stats={stats?.at(0)} rank={1} />
+                  </div>
+                  <div className="h-72">
+                    <RatingStatsCard stats={stats?.at(1)} rank={2} />
+                  </div>
+                  <div className="h-72">
+                    <RatingStatsCard stats={stats?.at(2)} rank={3} />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          {stats?.length !== 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="pl-4">
+                <span className="font-semibold">M</span>an <span className="font-semibold">O</span>f
+                the <span className="font-semibold">M</span>atch
+              </p>
+              <div className="">
+                {stats?.map((stat, index) => (
+                  <Fragment key={stat.attendanceId}>
+                    <RatingStatsListItem
+                      stats={stat}
+                      rank={index + 1}
+                      matchStartDate={new Date(match.stDate)}
+                    />
+                  </Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+          {isRatingWindowOpen && (
+            <div className="fixed bottom-6 right-6 z-20">
+              {canSubmitRating ? (
+                <RatingRightInputDrawer
+                  attendances={playerAttendances}
+                  isLoading={isRatingRegisterLoading}
+                  matchClubId={matchClubId}
+                  userId={session?.id}
+                  inputPointLimit={totalInputPoints}
+                  stDate={stDate}
+                >
+                  <Button
+                    type="button"
+                    className="rounded-full h-14 w-14 bg-primary text-white hover:bg-primary/90 shadow-xl"
+                    aria-label="평점 입력"
+                  >
+                    <FaPlus className="size-6" />
+                  </Button>
+                </RatingRightInputDrawer>
+              ) : (
+                <Popover>
+                  <PopoverTrigger asChild>
                     <Button
                       type="button"
                       className="rounded-full h-14 w-14 bg-muted text-muted-foreground"
@@ -196,15 +201,15 @@ const RatingPage = (_props: IRatingPageProps) => {
                     >
                       <FaPlus className="size-6" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs text-xs">
+                  </PopoverTrigger>
+                  <PopoverContent sideOffset={8} className="max-w-xs text-xs">
                     이 경기에 참여한 선수만 평점을 입력할 수 있습니다.
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-        )}
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
@@ -338,19 +343,20 @@ const RatingRightInputDrawer = ({
             사용 가능 포인트 {remainingPoints} / {inputPointLimit} · 좋아요 {maxLikes - usedLikes}/
             {maxLikes}
           </p>
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger className="text-[10px] text-primary underline underline-offset-2">
-                안내 보기
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs p-3 text-xs space-y-1">
-                <p>1. 평점 입력에 제한이 있습니다.</p>
-                <p>2. 총 사용 포인트는 매치 참여자 수만큼 부여됩니다.</p>
-                <p>3. 별은 가중치가 있습니다. 1★=1p, 2★=3p, 3★=6p (0.5★ 단위).</p>
-                <p>4. 좋아요는 총 5개까지 가능합니다.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Popover>
+            <PopoverTrigger className="text-[10px] text-primary underline underline-offset-2">
+              안내 보기
+            </PopoverTrigger>
+            <PopoverContent
+              sideOffset={8}
+              className="w-max px-3 py-2 text-xs border-none bg-primary text-white font-semibold"
+            >
+              <p>1. 평점 입력에 제한이 있습니다.</p>
+              <p>2. 총 사용 포인트는 매치 참여자 수만큼 부여됩니다.</p>
+              <p>3. 별은 가중치가 있습니다. 1★=1p, 2★=3p, 3★=6p (0.5★ 단위).</p>
+              <p>4. 좋아요는 총 5개까지 가능합니다.</p>
+            </PopoverContent>
+          </Popover>
         </DrawerHeader>
         <div className="p-4 space-y-3">
           {isLoading ? (

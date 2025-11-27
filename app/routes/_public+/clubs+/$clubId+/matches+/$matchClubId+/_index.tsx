@@ -122,7 +122,11 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   const currentChecked = attendanceData?.currentChecked ?? null;
   const ratingStats = useMemo(() => {
     if (!ratingStatsData) return [];
-    const filtered = ratingStatsData.stats
+    const normalized = ratingStatsData.stats.map((stat) => ({
+      ...stat,
+      averageRating: Number(stat.averageRating ?? 0),
+    }));
+    const filtered = normalized
       .filter((stat) => (stat.averageRating ?? 0) > 0)
       .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
     const voteCountFromAttendance =

@@ -79,8 +79,11 @@ export const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
               회원 정보 확인
             </DrawerTitle>
             {player?.user?.userImage?.url && (
-              <Avatar className="group max-sm:size-[100px] sm:size-[180px] shadow-lg">
-                <AvatarImage src={player?.user?.userImage?.url || "/images/user_empty.png"} />
+              <Avatar className="group max-sm:size-[100px] sm:size-[180px] shadow-lg ">
+                <AvatarImage
+                  src={player?.user?.userImage?.url || "/images/user_empty.png"}
+                  className="w-full h-full object-cover object-center"
+                />
                 <AvatarFallback>
                   <Loading />
                 </AvatarFallback>

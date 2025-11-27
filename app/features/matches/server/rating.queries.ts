@@ -1,4 +1,4 @@
-import type { Prisma, StatsPeriodType } from "@prisma/client";
+import { Prisma, type StatsPeriodType } from "@prisma/client";
 import { prisma } from "~/libs/db/db.server";
 import type { RatingRegisterAttendanceRaw } from "../isomorphic/rating.types";
 
@@ -243,8 +243,11 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
       }),
     ]);
 
-  const total = ratingStats.reduce((acc: number, current) => acc + current.averageRating, 0);
-  const average = ratingStats.length ? Math.round(total / ratingStats.length) : 0;
+  const total = ratingStats.reduce(
+    (acc: number, current) => acc + Number(current.averageRating ?? 0),
+    0,
+  );
+  const average = ratingStats.length ? total / ratingStats.length : 0;
   const clubMatchCount = await prisma.matchClub.count({
     where: {
       clubId: playerClub?.clubId ?? "",
@@ -338,8 +341,8 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
           },
         },
         update: {
-          averageRating: history.average,
-          totalRating: history.total,
+          averageRating: new Prisma.Decimal(history.average),
+          totalRating: new Prisma.Decimal(history.total),
           matchCount: history.matchCount,
           totalGoal: history.totalGoal,
           totalAssist: history.totalAssist,
@@ -350,8 +353,8 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
           playerId,
           periodType: history.periodType,
           periodKey: history.periodKey,
-          averageRating: history.average,
-          totalRating: history.total,
+          averageRating: new Prisma.Decimal(history.average),
+          totalRating: new Prisma.Decimal(history.total),
           matchCount: history.matchCount,
           totalGoal: history.totalGoal,
           totalAssist: history.totalAssist,
@@ -379,21 +382,21 @@ export async function recalcAttendanceRatingStats(attendanceId: string) {
 
   const totalRating = aggregates._sum.score ?? 0;
   const voterCount = aggregates._count._all ?? 0;
-  const averageRating = voterCount > 0 ? Math.round(totalRating / voterCount) : 0;
+  const averageRating = voterCount > 0 ? totalRating / voterCount : 0;
   const totalRatingForStore = totalRating;
 
   await prisma.attendanceRatingStats.upsert({
     where: { attendanceId },
     update: {
-      averageRating,
-      totalRating: totalRatingForStore,
+      averageRating: new Prisma.Decimal(averageRating),
+      totalRating: new Prisma.Decimal(totalRatingForStore),
       voterCount,
       likeCount,
     },
     create: {
       attendanceId,
-      averageRating,
-      totalRating: totalRatingForStore,
+      averageRating: new Prisma.Decimal(averageRating),
+      totalRating: new Prisma.Decimal(totalRatingForStore),
       voterCount,
       likeCount,
     },

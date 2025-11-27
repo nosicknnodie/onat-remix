@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "AttendanceRatingStats" ALTER COLUMN "averageRating" SET DEFAULT 0,
+ALTER COLUMN "averageRating" SET DATA TYPE DECIMAL(65,30),
+ALTER COLUMN "totalRating" SET DEFAULT 0,
+ALTER COLUMN "totalRating" SET DATA TYPE DECIMAL(65,30);
+
+-- AlterTable
+ALTER TABLE "PlayerStatsHistory" ALTER COLUMN "averageRating" SET DATA TYPE DECIMAL(65,30),
+ALTER COLUMN "totalRating" SET DATA TYPE DECIMAL(65,30);

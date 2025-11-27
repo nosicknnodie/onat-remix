@@ -219,9 +219,9 @@ async function calculatePlayerRangeStats(
     ],
   );
 
-  const validStats = ratingStats.filter((stat) => stat.averageRating > 0);
-  const total = validStats.reduce((acc, current) => acc + current.averageRating, 0);
-  const average = validStats.length ? Math.round(total / validStats.length) : 0;
+  const validStats = ratingStats.filter((stat) => Number(stat.averageRating ?? 0) > 0);
+  const total = validStats.reduce((acc, current) => acc + Number(current.averageRating ?? 0), 0);
+  const average = validStats.length ? total / validStats.length : 0;
   const voteRate = matchCount > 0 ? Math.round((voteCount / matchCount) * 100) : 0;
 
   return {
