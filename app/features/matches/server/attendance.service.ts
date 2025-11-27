@@ -84,3 +84,5 @@ export async function submitAttendance(
   }
   return { ok: true as const };
 }
+
+export const recalcMatchClubStatistics = q.recalcMatchClubStatistics;

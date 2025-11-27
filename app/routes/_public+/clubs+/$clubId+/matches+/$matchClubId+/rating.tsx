@@ -25,8 +25,10 @@ import {
   useRatingLikeMutation,
   useRatingRegisterQuery,
   useRatingScoreMutation,
+  useRatingSeedMutation,
   useRatingStatsQuery,
 } from "~/features/matches/isomorphic";
+import { useToast } from "~/hooks/use-toast";
 export const handle = {
   breadcrumb: () => {
     return <>평점</>;
@@ -55,10 +57,7 @@ const RatingPage = (_props: IRatingPageProps) => {
   );
   const { data: ratingStats, isLoading: isRatingStatsLoading } = useRatingStatsQuery(matchClubId);
   const stats = (() => {
-    const filtered =
-      ratingStats?.stats
-        .filter((stat) => stat.averageRating > 0)
-        .sort((a, b) => b.averageRating - a.averageRating) ?? [];
+    const filtered = ratingStats?.stats.sort((a, b) => b.averageRating - a.averageRating) ?? [];
     const voteCount =
       ratingRegisterData?.attendances?.filter((attendance) => attendance.isVote).length ?? 0;
     const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
@@ -77,8 +76,8 @@ const RatingPage = (_props: IRatingPageProps) => {
           attendance.mercenary?.user?.id === session?.id),
     ) ?? false;
   const totalInputPoints =
-    (ratingRegisterData?.attendances.filter((attendance) => attendance.player && attendance.isVote)
-      .length ?? 0) * 2;
+    ratingRegisterData?.attendances.filter((attendance) => attendance.player && attendance.isVote)
+      .length ?? 0;
   const now = dayjs();
   const ratingStart = stDate ? dayjs(stDate).add(1, "hour") : null;
   const ratingEnd = stDate ? dayjs(stDate).add(1, "day") : null;
@@ -213,25 +212,30 @@ const RatingPage = (_props: IRatingPageProps) => {
 
 const normalizeScore = (score: number) => {
   if (!Number.isFinite(score)) return 0;
-  return Math.min(60, Math.max(0, score));
+  return Math.min(100, Math.max(0, score));
 };
 
-const starToPointCost = (star: number) => {
-  if (star <= 1) return star * 1; // 0~1p
-  if (star <= 2) return 1 + (star - 1) * 2; // 1~3p
-  return 3 + (star - 2) * 3; // 3~6p
+// 포인트는 기본점수 대비 증감분에 대해 계산한다. (1★=1p, 2★=3p, 3★=6p)
+const deltaStarToCost = (deltaStar: number) => {
+  const abs = Math.abs(deltaStar);
+  if (abs <= 1) return abs * 1;
+  if (abs <= 2) return 1 + (abs - 1) * 2;
+  return 3 + (abs - 2) * 3;
 };
 
-const scoreToPointCost = (score: number) => {
+const scoreToPointCost = (score: number, baseScore: number) => {
   const star = normalizeScore(score) / 20;
-  return starToPointCost(star);
+  const baseStar = normalizeScore(baseScore) / 20;
+  const delta = star - baseStar;
+  return deltaStarToCost(delta);
 };
 
-const maxStarForBudget = (budget: number) => {
+const maxDeltaStarForBudget = (budget: number) => {
   if (budget <= 0) return 0;
-  if (budget <= 1) return budget; // within first segment
-  if (budget <= 3) return (budget + 1) / 2; // invert 1 + 2*(star-1)
-  return Math.min(3, (budget + 3) / 3); // invert 3 + 3*(star-2)
+  if (budget <= 1) return budget;
+  if (budget <= 3) return (budget + 1) / 2;
+  if (budget <= 6) return (budget + 3) / 3;
+  return 3;
 };
 
 const RatingRightInputDrawer = ({
@@ -250,15 +254,20 @@ const RatingRightInputDrawer = ({
   inputPointLimit: number;
   stDate: string | Date;
 } & PropsWithChildren) => {
+  const { toast } = useToast();
   const [scores, setScores] = useState<Record<string, number>>({});
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const scoreMutation = useRatingScoreMutation(matchClubId, { userId, target: "register" });
   const likeMutation = useRatingLikeMutation(matchClubId, { userId, target: "register" });
+  const seedMutation = useRatingSeedMutation(matchClubId);
+  const [open, setOpen] = useState(false);
 
   const getScoreValue = (attendance: RatingRegisterAttendance) =>
     scores[attendance.id] ?? attendance.myEvaluation?.score ?? 0;
   const getLikedValue = (attendance: RatingRegisterAttendance) =>
     liked[attendance.id] ?? attendance.myEvaluation?.liked ?? false;
+  const getBaseScore = (attendance: RatingRegisterAttendance) =>
+    attendance.player?.user?.id === userId ? 100 : 60;
 
   const maxLikes = 5;
   const usedLikes = attendances.reduce(
@@ -266,20 +275,40 @@ const RatingRightInputDrawer = ({
     0,
   );
   const usedPoints = attendances.reduce(
-    (sum, attendance) => sum + scoreToPointCost(getScoreValue(attendance)),
+    (sum, attendance) =>
+      sum + scoreToPointCost(getScoreValue(attendance), getBaseScore(attendance)),
     0,
   );
   const remainingPoints = Math.max(0, inputPointLimit - usedPoints);
 
+  const handleOpenChange = async (next: boolean) => {
+    if (next && !seedMutation.isPending && matchClubId) {
+      await seedMutation.mutateAsync();
+    }
+    setOpen(next);
+  };
+
   const handleScoreChange = (attendance: RatingRegisterAttendance, score: number) => {
     const normalizedScore = normalizeScore(score);
     const previousScore = getScoreValue(attendance);
-    const previousCost = scoreToPointCost(previousScore);
+    const baseScore = getBaseScore(attendance);
+    const previousCost = scoreToPointCost(previousScore, baseScore);
     const availableBudget = remainingPoints + previousCost;
     const targetStar = normalizedScore / 20;
-    const maxStar = Math.min(targetStar, maxStarForBudget(availableBudget));
-    const clampedStar = Math.floor(maxStar * 2) / 2; // 0.5 단위
-    const adjustedScore = normalizeScore(clampedStar * 20);
+    const baseStar = baseScore / 20;
+    const deltaStar = targetStar - baseStar;
+    const desiredCost = deltaStarToCost(deltaStar);
+    const maxDelta = Math.min(Math.abs(deltaStar), maxDeltaStarForBudget(availableBudget));
+    const clampedStar = baseStar + Math.sign(deltaStar) * maxDelta;
+    const adjustedStar = Math.floor(clampedStar * 2) / 2; // 0.5 단위
+    const adjustedScore = normalizeScore(adjustedStar * 20);
+    if (desiredCost > availableBudget) {
+      toast({
+        variant: "destructive",
+        description: "포인트가 부족해요. 여유 포인트를 확보한 뒤 다시 시도해주세요.",
+      });
+      return;
+    }
     if (adjustedScore === previousScore) return;
     setScores((prev) => ({ ...prev, [attendance.id]: adjustedScore }));
     scoreMutation.mutate({ attendanceId: attendance.id, score: adjustedScore });
@@ -289,6 +318,10 @@ const RatingRightInputDrawer = ({
     const prevLiked = getLikedValue(attendance);
     const nextLiked = !prevLiked;
     if (nextLiked && usedLikes >= maxLikes) {
+      toast({
+        variant: "destructive",
+        description: "좋아요는 최대 5개까지 선택할 수 있어요.",
+      });
       return;
     }
     setLiked((prev) => ({ ...prev, [attendance.id]: nextLiked }));
@@ -296,10 +329,10 @@ const RatingRightInputDrawer = ({
   };
 
   return (
-    <Drawer direction="right">
+    <Drawer direction="right" open={open} onOpenChange={handleOpenChange}>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent className="overflow-y-auto">
-        <DrawerHeader>
+        <DrawerHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur">
           <DrawerTitle>평점 입력</DrawerTitle>
           <p className="text-xs text-muted-foreground">
             사용 가능 포인트 {remainingPoints} / {inputPointLimit} · 좋아요 {maxLikes - usedLikes}/
@@ -312,9 +345,9 @@ const RatingRightInputDrawer = ({
               </TooltipTrigger>
               <TooltipContent className="max-w-xs p-3 text-xs space-y-1">
                 <p>1. 평점 입력에 제한이 있습니다.</p>
-                <p>2. 총 사용 포인트는 매치 참여자 수 * 2배입니다.</p>
-                <p>3. 스타는 높게 줄수록 포인트가 가중됩니다. 1★=1p, 2★=3p, 3★=6p.</p>
-                <p>4. 좋아요는 총 3개까지 가능합니다.</p>
+                <p>2. 총 사용 포인트는 매치 참여자 수만큼 부여됩니다.</p>
+                <p>3. 별은 가중치가 있습니다. 1★=1p, 2★=3p, 3★=6p (0.5★ 단위).</p>
+                <p>4. 좋아요는 총 5개까지 가능합니다.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -332,7 +365,7 @@ const RatingRightInputDrawer = ({
             attendances.map((attendance) => {
               const score = getScoreValue(attendance);
               const isLiked = getLikedValue(attendance);
-              const isPerception =
+              const _isPerception =
                 attendance.checkTime && new Date(attendance.checkTime) < new Date(stDate);
               const isGoal = attendance.records.some((record) => !record.isOwnGoal);
               return (
@@ -354,7 +387,7 @@ const RatingRightInputDrawer = ({
                           득점
                         </Badge>
                       )}
-                      {!attendance.isCheck && (
+                      {/* {!attendance.isCheck && (
                         <Badge variant="destructive" className="h-4 truncate">
                           불참
                         </Badge>
@@ -363,7 +396,7 @@ const RatingRightInputDrawer = ({
                         <Badge variant="destructive" className="h-4 truncate">
                           지각
                         </Badge>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   <div className="ml-auto flex items-center gap-2">

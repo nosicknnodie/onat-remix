@@ -21,7 +21,7 @@ const StarRating = ({ id, score, onClick, width, isHighLight, ...props }: IProps
   return (
     <>
       <div className="flex">
-        {[0, 1, 2].map((v) => (
+        {[0, 1, 2, 3, 4].map((v) => (
           <span key={v} className="relative">
             {onClick && (
               <>

@@ -11,6 +11,7 @@ export const ratingQueryKeys = {
   detail: (matchClubId: string) => ["MATCH_RATING_QUERY", matchClubId] as const,
   stats: (matchClubId: string) => ["MATCH_RATING_STATS_QUERY", matchClubId] as const,
   register: (matchClubId: string) => ["MATCH_RATING_REGISTER_QUERY", matchClubId] as const,
+  seed: (matchClubId: string) => ["MATCH_RATING_SEED", matchClubId] as const,
 } as const;
 
 export type UseRatingQueryOptions = {
@@ -93,6 +94,22 @@ type RatingMutationOptions = {
   userId?: string;
   target?: RatingMutationTarget;
 };
+
+export function useRatingSeedMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const registerKey = useMemo(() => ratingQueryKeys.register(matchClubId ?? ""), [matchClubId]);
+  const statsKey = useMemo(() => ratingQueryKeys.stats(matchClubId ?? ""), [matchClubId]);
+  return useMutation({
+    mutationFn: async () => {
+      if (!matchClubId) throw new Error("matchClubId is required");
+      await postJson(`/api/matchClubs/${matchClubId}/ratings/seed`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: registerKey });
+      queryClient.invalidateQueries({ queryKey: statsKey });
+    },
+  });
+}
 
 export function useRatingScoreMutation(matchClubId?: string, options?: RatingMutationOptions) {
   const queryClient = useQueryClient();

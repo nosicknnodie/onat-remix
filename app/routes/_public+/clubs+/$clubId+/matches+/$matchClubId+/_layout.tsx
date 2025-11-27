@@ -149,7 +149,7 @@ const MatchClubIdLayout = (_props: IMatchClubIdLayoutProps) => {
   const canManageActions = hasMatchMaster || (hasMatchManage && manageWindowActive);
   const now = dayjs();
   const isRecordLocked = now.isBefore(dayjs(match.stDate));
-  const isRatingLocked = now.isBefore(dayjs(match.stDate).add(1, "hour"));
+  const isRatingLocked = hasMatchMaster ? false : now.isBefore(dayjs(match.stDate).add(1, "hour"));
   const attendanceData =
     attendanceQuery.data && "matchClub" in attendanceQuery.data ? attendanceQuery.data : null;
   const matchClubAttendances = attendanceData?.matchClub.attendances ?? [];

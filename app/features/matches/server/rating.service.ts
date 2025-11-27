@@ -1,3 +1,4 @@
+import { prisma } from "~/libs/index.server";
 import type { RatingRegisterAttendance } from "../isomorphic/rating.types";
 import * as q from "./rating.queries";
 
@@ -46,6 +47,29 @@ export async function upsertLike(
   ]);
   return { ok: true as const };
 }
+
+export const updateSeeds = async (matchClubId: string, userId: string) => {
+  const myAttendance = await prisma.attendance.findFirst({
+    where: { matchClubId, player: { userId }, isVote: true },
+    include: {
+      ratingVote: { select: { hasVoted: true } },
+      matchClub: { select: { clubId: true } },
+    },
+  });
+  if (!myAttendance) {
+    return { error: "No attendance found" };
+  }
+  if (myAttendance.ratingVote?.hasVoted) {
+    return { ok: true, seeded: false };
+  }
+  const clubId = myAttendance.matchClub?.clubId;
+  if (!clubId) {
+    return { error: "Club not found" };
+  }
+  const myAttendanceId = myAttendance.id;
+  await q.updateSeeds(matchClubId, userId, myAttendanceId);
+  return { ok: true, seeded: true };
+};
 
 export const getRatingAttendances = q.getRatingAttendances;
 export const getRatingStats = q.getRatingStats;

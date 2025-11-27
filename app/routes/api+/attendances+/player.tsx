@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import * as z from "zod";
-import { recalcMatchClubStatistics } from "~/features/matches/server";
+import { attendanceService } from "~/features/matches/server";
 import { getUser, prisma } from "~/libs/index.server";
 
 const AttendanceValidate = z.object({
@@ -30,7 +30,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
         },
       },
     });
-    await recalcMatchClubStatistics(matchClubId);
+    await attendanceService.recalcMatchClubStatistics(matchClubId);
     return Response.json({ success: "success" });
   } catch {
     return Response.json({ error: "Internal Server Error" });

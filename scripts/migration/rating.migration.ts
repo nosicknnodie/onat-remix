@@ -142,8 +142,9 @@ export const ratingMigration = async () => {
       continue;
     }
 
+    // 기존 DB는 0~100 점수 스케일을 그대로 사용한다.
     const scoreRaw = row.score ?? 0;
-    const score = Math.max(0, Math.min(60, scoreRaw - 40));
+    const score = Math.max(0, Math.min(100, scoreRaw));
 
     const key = `${userId}:${matchClub.id}:${resolvedAttendanceId}`;
     if (existingKeySet.has(key)) continue;

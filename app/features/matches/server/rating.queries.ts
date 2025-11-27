@@ -236,9 +236,8 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
       }),
     ]);
 
-  const validStats = ratingStats.filter((stat) => stat.averageRating > 0);
-  const total = validStats.reduce((acc: number, current) => acc + current.averageRating, 0);
-  const average = validStats.length ? Math.round(total / validStats.length) : 0;
+  const total = ratingStats.reduce((acc: number, current) => acc + current.averageRating, 0);
+  const average = ratingStats.length ? Math.round(total / ratingStats.length) : 0;
   const clubMatchCount = await prisma.matchClub.count({
     where: {
       clubId: playerClub?.clubId ?? "",
@@ -355,18 +354,8 @@ export async function recalcAttendanceRatingStats(attendanceId: string) {
 
   const totalRating = aggregates._sum.score ?? 0;
   const voterCount = aggregates._count._all ?? 0;
-  const hasEnoughVoters = voterCount >= 3;
-  const ratingVote = await prisma.attendanceRatingVote.findUnique({
-    where: { attendanceId },
-    select: { hasVoted: true },
-  });
-  const forceSelfScore = ratingVote?.hasVoted ?? false;
-  const computedAverage =
-    hasEnoughVoters && voterCount > 0 ? Math.round(totalRating / voterCount) : 0;
-  const computedTotal = hasEnoughVoters ? totalRating : 0;
-  // 본인 투표 여부(hasVoted)에 따라 자기 평점을 60점으로 강제 저장한다.
-  const averageRating = forceSelfScore ? 60 : computedAverage;
-  const totalRatingForStore = forceSelfScore ? 60 : computedTotal;
+  const averageRating = voterCount > 0 ? Math.round(totalRating / voterCount) : 0;
+  const totalRatingForStore = totalRating;
 
   await prisma.attendanceRatingStats.upsert({
     where: { attendanceId },
@@ -397,11 +386,6 @@ export async function recalcAttendanceRatingVote(userId: string, matchClubId: st
     select: { id: true },
   });
   if (!attendance) return;
-
-  const existingVote = await prisma.attendanceRatingVote.findUnique({
-    where: { attendanceId: attendance.id },
-    select: { hasVoted: true },
-  });
 
   const baseWhere: Prisma.EvaluationWhereInput = {
     userId,
@@ -446,26 +430,89 @@ export async function recalcAttendanceRatingVote(userId: string, matchClubId: st
       usedLikeCount,
     },
   });
+}
 
-  if (hasVoted && !existingVote?.hasVoted) {
-    // 타인에게 첫 투표를 완료한 순간 자신의 Evaluation에 60점을 기록하고 통계를 갱신한다.
-    await prisma.evaluation.upsert({
+export const updateSeeds = async (matchClubId: string, userId: string, myAttendanceId: string) => {
+  const targetAttendances = await prisma.attendance.findMany({
+    where: {
+      matchClubId,
+      isVote: true,
+      player: { status: "APPROVED" },
+    },
+    select: { id: true, playerId: true },
+  });
+  const resolveEvaluations = targetAttendances.map((att) => {
+    return {
+      userId,
+      matchClubId,
+      attendanceId: att.id,
+      score: att.id === myAttendanceId ? 100 : 60,
+      liked: false,
+    };
+  });
+  await prisma.$transaction(async (tx) => {
+    await tx.evaluation.deleteMany({
       where: {
-        userId_matchClubId_attendanceId: {
-          userId,
-          matchClubId,
-          attendanceId: attendance.id,
-        },
-      },
-      update: { score: 60 },
-      create: {
         userId,
         matchClubId,
-        attendanceId: attendance.id,
-        score: 60,
-        liked: false,
       },
     });
-    await recalcAttendanceRatingStats(attendance.id);
-  }
-}
+    await tx.evaluation.createMany({
+      data: resolveEvaluations,
+    });
+
+    await tx.attendanceRatingVote.upsert({
+      where: { attendanceId: myAttendanceId },
+      update: {
+        hasVoted: true,
+        totalUsedRating: resolveEvaluations.reduce((sum, att) => sum + att.score, 0),
+        votedMemberCount: resolveEvaluations.length,
+      },
+      create: {
+        attendanceId: myAttendanceId,
+        hasVoted: true,
+        totalUsedRating: resolveEvaluations.reduce((sum, att) => sum + att.score, 0),
+        votedMemberCount: resolveEvaluations.length,
+      },
+    });
+
+    const attendanceIds = targetAttendances.map((att) => att.id);
+    if (attendanceIds.length > 0) {
+      const evalAgg = await tx.evaluation.groupBy({
+        by: ["attendanceId"],
+        where: { attendanceId: { in: attendanceIds } },
+        _sum: { score: true },
+        _count: { _all: true },
+      });
+      const likeAgg = await tx.evaluation.groupBy({
+        by: ["attendanceId"],
+        where: { attendanceId: { in: attendanceIds }, liked: true },
+        _count: { _all: true },
+      });
+      const likeMap = new Map(likeAgg.map((item) => [item.attendanceId, item._count._all ?? 0]));
+
+      for (const agg of evalAgg) {
+        const likeCount = likeMap.get(agg.attendanceId) ?? 0;
+        const voterCount = agg._count._all ?? 0;
+        const totalRating = agg._sum.score ?? 0;
+        await tx.attendanceRatingStats.upsert({
+          where: { attendanceId: agg.attendanceId },
+          update: {
+            averageRating: voterCount > 0 ? Math.round(totalRating / voterCount) : 0,
+            totalRating,
+            voterCount,
+            likeCount,
+          },
+          create: {
+            attendanceId: agg.attendanceId,
+            averageRating: voterCount > 0 ? Math.round(totalRating / voterCount) : 0,
+            totalRating,
+            voterCount,
+            likeCount,
+          },
+        });
+      }
+    }
+  });
+  await recalcAttendanceRatingVote(userId, matchClubId);
+};
