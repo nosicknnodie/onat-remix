@@ -121,3 +121,15 @@ export async function findUserAttendances(args: { userId: string; matchClubIds: 
     },
   });
 }
+
+export async function findPlayerStatsHistoryByYear(args: { playerIds: string[]; year: string }) {
+  const { playerIds, year } = args;
+  if (playerIds.length === 0) return [];
+  return await prisma.playerStatsHistory.findMany({
+    where: {
+      playerId: { in: playerIds },
+      periodKey: { startsWith: year },
+    },
+    orderBy: [{ periodType: "asc" }, { periodKey: "asc" }],
+  });
+}

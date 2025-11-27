@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { SiNaver } from "react-icons/si";
 import { Separator } from "~/components/ui/separator";
+import { InAppOauthNotice, useIsInAppBrowser } from "~/features/auth/client";
 import { loginService } from "~/features/auth/server";
 import { useToast } from "~/hooks/use-toast";
 
@@ -24,6 +25,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const Login = () => {
   const loaderData = useLoaderData<typeof loader>();
   const { toast } = useToast();
+  const isInApp = useIsInAppBrowser();
   useEffect(() => {
     if (loaderData?.oauthError) {
       toast({
@@ -47,25 +49,29 @@ const Login = () => {
           Google 또는 네이버 계정으로 로그인해 주세요.
         </p>
       </div>
-      <div className="space-y-2">
-        <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
-          <Separator className="flex-1" />
-          <span className="whitespace-nowrap">소셜 로그인</span>
-          <Separator className="flex-1" />
+      {isInApp ? (
+        <InAppOauthNotice message="카카오 인앱 브라우저에서는 Google, 네이버 등 모든 소셜 로그인이 막혀요. 외부 브라우저로 열어 다시 시도해주세요." />
+      ) : (
+        <div className="space-y-2">
+          <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
+            <Separator className="flex-1" />
+            <span className="whitespace-nowrap">소셜 로그인</span>
+            <Separator className="flex-1" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <LoginSocialButton
+              to={`/api/auth/oauth/google${redirectQuery}`}
+              label="Google로 계속하기"
+              provider="google"
+            />
+            <LoginSocialButton
+              to={`/api/auth/oauth/naver${redirectQuery}`}
+              label="네이버로 계속하기"
+              provider="naver"
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-2">
-          <LoginSocialButton
-            to={`/api/auth/oauth/google${redirectQuery}`}
-            label="Google로 계속하기"
-            provider="google"
-          />
-          <LoginSocialButton
-            to={`/api/auth/oauth/naver${redirectQuery}`}
-            label="네이버로 계속하기"
-            provider="naver"
-          />
-        </div>
-      </div>
+      )}
       {/* <div className="flex justify-end items-center gap-2 text-sm h-4">
         <Link to={"/auth/reset-form"}>비밀번호찾기</Link>
         <Separator orientation="vertical" />

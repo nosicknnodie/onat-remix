@@ -1,13 +1,19 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getJson } from "~/libs/api-client";
-import type { DashboardMatchInsight, DashboardMom, DashboardPost } from "./types";
+import type {
+  DashboardMatchInsight,
+  DashboardMom,
+  DashboardPerformanceHistory,
+  DashboardPost,
+} from "./types";
 
 export const dashboardQueryKeys = {
   todayMatches: ["dashboard", "today-matches"] as const,
   upcomingAttendances: ["dashboard", "upcoming-attendances"] as const,
   highlightPosts: ["dashboard", "highlight-posts"] as const,
   weeklyMoms: ["dashboard", "weekly-moms"] as const,
+  performanceHistory: (year?: string) => ["dashboard", "performance-history", year] as const,
 };
 
 type Options<TData> = Omit<UseQueryOptions<TData>, "queryKey" | "queryFn">;
@@ -53,5 +59,23 @@ export function useWeeklyMomsQuery(options?: Options<DashboardMom[]>) {
     dashboardQueryKeys.weeklyMoms,
     "/api/dashboard/weekly-moms",
     options,
+  );
+}
+
+export function usePerformanceHistoryQuery(
+  year?: string,
+  options?: Options<DashboardPerformanceHistory>,
+) {
+  const params = useMemo(() => {
+    const searchParams = new URLSearchParams();
+    if (year) searchParams.set("year", year);
+    const query = searchParams.toString();
+    return query ? `?${query}` : "";
+  }, [year]);
+
+  return useDashboardQuery<DashboardPerformanceHistory>(
+    dashboardQueryKeys.performanceHistory(year),
+    `/api/dashboard/performance-history${params}`,
+    { placeholderData: (prev) => prev, ...options },
   );
 }

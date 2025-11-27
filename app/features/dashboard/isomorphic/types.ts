@@ -7,6 +7,8 @@ export type DashboardMatchInsight = {
   stDate: string;
   placeName?: string | null;
   clubName: string;
+  clubId: string;
+  clubEmblemUrl?: string | null;
   opponents: Array<{ clubName: string }>;
   summary: MatchClubSummary;
   userAttendance?: {
@@ -40,4 +42,31 @@ export type DashboardData = {
   upcomingAttendances: DashboardMatchInsight[];
   highlightPosts: DashboardPost[];
   weeklyMoms: DashboardMom[];
+};
+
+export type DashboardMembership = {
+  clubId: string;
+  clubName: string;
+  clubEmblemUrl?: string | null;
+  playerId: string;
+};
+
+export type DashboardPlayerStatsHistory = {
+  id: string;
+  playerId: string;
+  periodType: string;
+  periodKey: string;
+  averageRating: number | null;
+  voteRate: number | null;
+  totalRating: number | null;
+  totalGoal: number | null;
+  totalAssist: number | null;
+  totalLike: number | null;
+  matchCount: number | null;
+};
+
+export type DashboardPerformanceHistory = {
+  members: Array<DashboardMembership & { history: DashboardPlayerStatsHistory[] }>;
+  availableYears: string[];
+  defaultYear: string;
 };

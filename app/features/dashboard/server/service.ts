@@ -5,6 +5,8 @@ import type {
   DashboardData,
   DashboardMatchInsight,
   DashboardMom,
+  DashboardPerformanceHistory,
+  DashboardPlayerStatsHistory,
   DashboardPost,
 } from "../isomorphic/types";
 import * as q from "./queries";
@@ -72,6 +74,8 @@ function buildMatchInsights(
         stDate: match.stDate.toISOString(),
         placeName: match.placeName,
         clubName: matchClub.club?.name ?? "",
+        clubId: matchClub.clubId,
+        clubEmblemUrl: matchClub.club?.emblem?.url ?? null,
         opponents,
         summary,
         userAttendance: userAttendance
@@ -151,7 +155,7 @@ export async function getTodayMatchInsights(userId: string, presetClubIds?: stri
 
 export async function getUpcomingAttendanceInsights(userId: string, presetClubIds?: string[]) {
   const now = dayjs();
-  const start = now.startOf("day").toDate();
+  const start = now.subtract(2, "hour").toDate();
   const end = now.add(14, "day").endOf("day").toDate();
   const clubIds = await getApprovedClubIds(userId, presetClubIds);
   const insights = await getInsightsByRange({
@@ -220,4 +224,78 @@ export async function getHighlightPostsData(userId: string, presetClubIds?: stri
     boardClubId: post.board?.clubs?.id ?? null,
     isMine: post.authorId === userId,
   })) satisfies DashboardPost[];
+}
+
+function toNumber(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
+}
+
+export async function getPerformanceHistory(
+  userId: string,
+  year?: string,
+): Promise<DashboardPerformanceHistory> {
+  const players = await q.findApprovedPlayers(userId);
+  if (players.length === 0) {
+    const currentYear = dayjs().format("YYYY");
+    return { members: [], availableYears: [currentYear], defaultYear: currentYear };
+  }
+  console.log("players - ", players);
+
+  const targetYear = year ?? dayjs().format("YYYY");
+  const history = await q.findPlayerStatsHistoryByYear({
+    playerIds: players.map((p) => p.id),
+    year: targetYear,
+  });
+
+  const memberMap = new Map<
+    string,
+    {
+      clubId: string;
+      clubName: string;
+      clubEmblemUrl?: string | null;
+      playerId: string;
+      history: DashboardPlayerStatsHistory[];
+    }
+  >();
+
+  players.forEach((player) => {
+    memberMap.set(player.id, {
+      clubId: player.clubId,
+      clubName: player.club?.name ?? "",
+      clubEmblemUrl: player.club?.emblem?.url ?? null,
+      playerId: player.id,
+      history: [],
+    });
+  });
+
+  history.forEach((item) => {
+    const member = memberMap.get(item.playerId);
+    if (!member) return;
+    member.history.push({
+      id: item.id,
+      playerId: item.playerId,
+      periodType: item.periodType,
+      periodKey: item.periodKey,
+      averageRating: toNumber(item.averageRating),
+      voteRate: toNumber(item.voteRate),
+      totalRating: toNumber(item.totalRating),
+      totalGoal: toNumber(item.totalGoal),
+      totalAssist: toNumber(item.totalAssist),
+      totalLike: toNumber(item.totalLike),
+      matchCount: toNumber(item.matchCount),
+    });
+  });
+
+  const availableYears = Array.from(
+    new Set(history.map((h) => h.periodKey.slice(0, 4)).filter(Boolean)),
+  );
+  const defaultYear = targetYear;
+
+  return {
+    members: Array.from(memberMap.values()),
+    availableYears: availableYears.length > 0 ? availableYears : [defaultYear],
+    defaultYear,
+  };
 }

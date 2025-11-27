@@ -534,7 +534,7 @@ model PlayerStatsHistory {
   totalGoal     Int?    // 총 골 수
   totalAssist   Int?    // 총 어시스트 수
   totalLike     Int?    // 받은 좋아요 수
-  matchCount    Int?    // 총 경기 수
+  matchCount    Int?    // 선수가 뛴 총 경기 수
 
   @@unique([playerId, periodType, periodKey])
   @@index([playerId])

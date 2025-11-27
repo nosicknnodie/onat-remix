@@ -78,20 +78,17 @@ export const InfoDrawer = ({ player, children }: IInfoDrawerProps) => {
             <DrawerTitle className="text-lg font-bold mb-4 border-b pb-2">
               회원 정보 확인
             </DrawerTitle>
-            <DrawerDescription>사용자 회원 정보 확인란입니다.</DrawerDescription>
-          </DrawerHeader>
-          <div className="space-y-3 pl-4 relative w-full">
             {player?.user?.userImage?.url && (
-              <Avatar className="group max-sm:size-[100px] sm:size-[180px] absolute right-2 top-5 opacity-80 shadow-lg">
-                <AvatarImage
-                  className="object-cover"
-                  src={player?.user?.userImage?.url || "/images/user_empty.png"}
-                />
+              <Avatar className="group max-sm:size-[100px] sm:size-[180px] shadow-lg">
+                <AvatarImage src={player?.user?.userImage?.url || "/images/user_empty.png"} />
                 <AvatarFallback>
                   <Loading />
                 </AvatarFallback>
               </Avatar>
             )}
+            <DrawerDescription>사용자 회원 정보 확인란입니다.</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-3 pl-4 relative w-full">
             <InfoRow
               label="선수명 (회원이름)"
               value={`${displayName}${nickLabel ? ` (${nickLabel})` : ""}`}

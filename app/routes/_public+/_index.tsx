@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { FcGoogle } from "react-icons/fc";
 import { SiNaver } from "react-icons/si";
+import { InAppOauthNotice, useIsInAppBrowser } from "~/features/auth/client";
 import { cn } from "~/libs";
 import { getUser } from "~/libs/index.server";
 import DashBoardPage from "./dashboard";
@@ -21,6 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
   const user = loaderData.user;
+  const isInApp = useIsInAppBrowser();
   if (user) {
     return <DashBoardPage />;
   }
@@ -39,24 +41,28 @@ export default function Index() {
           </p>
         </div>
         <div className="mt-10 flex flex-col gap-3 justify-center items-center w-full max-w-xs">
-          <div className="flex flex-col gap-2 w-full">
-            <Link
-              to="/api/auth/oauth/google"
-              prefetch="none"
-              className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium transition hover:bg-accent hover:text-accent-foreground"
-            >
-              <FcGoogle />
-              <span>Google로 계속하기</span>
-            </Link>
-            <Link
-              to="/api/auth/oauth/naver"
-              prefetch="none"
-              className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium transition hover:bg-accent hover:text-accent-foreground"
-            >
-              <SiNaver className="text-[#03c75a]" />
-              <span>네이버로 계속하기</span>
-            </Link>
-          </div>
+          {isInApp ? (
+            <InAppOauthNotice />
+          ) : (
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to="/api/auth/oauth/google"
+                prefetch="none"
+                className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium transition hover:bg-accent hover:text-accent-foreground"
+              >
+                <FcGoogle />
+                <span>Google로 계속하기</span>
+              </Link>
+              <Link
+                to="/api/auth/oauth/naver"
+                prefetch="none"
+                className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium transition hover:bg-accent hover:text-accent-foreground"
+              >
+                <SiNaver className="text-[#03c75a]" />
+                <span>네이버로 계속하기</span>
+              </Link>
+            </div>
+          )}
         </div>
         {/* <div className="mt-8 grid gap-4 md:grid-cols-3 max-w-4xl mx-auto">
   <FeatureItem icon={<SomeIcon />} title="클럽 관리" description="클럽 생성, 멤버 초대, 용병 모집 등 다양한 기능을 제공합니다." />
