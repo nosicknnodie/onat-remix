@@ -33,7 +33,7 @@ const CommentInput = () => {
           댓글 입력하기
         </button>
       ) : (
-        <div className={cn("border border-primary rounded-3xl overflow-hidden p-4 ")}>
+        <div className={cn("")}>
           <CommentEditor
             onCancel={handleCancel}
             onSubmit={handleSubmit}

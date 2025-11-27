@@ -70,8 +70,8 @@ function TeamStatsCharts({
     <div className="mb-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>팀별 연간 평점/총점/좋아요 비교 ({year})</span>
+          <CardTitle className="flex justify-center items-center w-full">
+            <span>팀별 연간 평점/총점/좋아요 ({year})</span>
             {isLoading && <Loading />}
           </CardTitle>
         </CardHeader>

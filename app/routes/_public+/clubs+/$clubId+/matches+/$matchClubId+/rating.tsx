@@ -114,12 +114,6 @@ const RatingPage = (_props: IRatingPageProps) => {
               <p className="font-semibold">평점 기준 안내</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>평점을 하나라도 입력하면 본인 평점은 자동으로 만점 처리됩니다.</li>
-                <li>본인 포함 최소 3명 이상이 점수을 입력해야 기록이 됩니다.</li>
-                <li>평점이 0이면 기록이 무효 처리됩니다.</li>
-                <li>
-                  여기서 기록이란 통계에 합 및 평균처리에서 제외되는 것으로 기록 자체를 쓰지
-                  않습니다.
-                </li>
                 <li>평점 입력은 경기시간시작 기준 하루동안 입력 할 수 있습니다.</li>
               </ul>
             </PopoverContent>

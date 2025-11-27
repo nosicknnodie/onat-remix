@@ -197,47 +197,42 @@ const MainSideMenu = () => {
     <Dialog open={isClubSwitcherOpen} onOpenChange={setClubSwitcherOpen}>
       <Sidebar collapsible="icon">
         <SidebarHeader className="mt-20 px-4">
-          <SidebarContent>
-            <div className={cn("flex items-center justify-between gap-2")}>
-              <div className={cn("flex items-center gap-3", { hidden: !open })}>
-                <Avatar className="size-10">
-                  <AvatarImage
-                    src={user?.userImage?.url ?? undefined}
-                    alt={displayName || "user"}
-                  />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {userInitial || <FaUser className="h-4 w-4" />}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-semibold">
-                    {displayName ? (
-                      displayName
-                    ) : (
-                      <>
-                        {typeof user === "undefined" ? (
-                          ""
-                        ) : (
-                          <ItemLink to="/auth/login">로그인이 필요합니다</ItemLink>
-                        )}
-                      </>
-                    )}
-                  </span>
-                  {user?.email && (
-                    <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+          <div className={cn("flex items-center justify-between gap-2")}>
+            <div className={cn("flex items-center gap-3", { hidden: !open })}>
+              <Avatar className="size-10">
+                <AvatarImage src={user?.userImage?.url ?? undefined} alt={displayName || "user"} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {userInitial || <FaUser className="h-4 w-4" />}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-semibold">
+                  {displayName ? (
+                    displayName
+                  ) : (
+                    <>
+                      {typeof user === "undefined" ? (
+                        ""
+                      ) : (
+                        <ItemLink to="/auth/login">로그인이 필요합니다</ItemLink>
+                      )}
+                    </>
                   )}
-                </div>
+                </span>
+                {user?.email && (
+                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                )}
               </div>
-              <Button
-                onClick={toggleSidebar}
-                size="icon"
-                variant="ghost"
-                className="transition-transform hover:bg-transparent"
-              >
-                {open ? <FaArrowAltCircleLeft /> : <FaArrowAltCircleRight />}
-              </Button>
             </div>
-          </SidebarContent>
+            <Button
+              onClick={toggleSidebar}
+              size="icon"
+              variant="ghost"
+              className="transition-transform hover:bg-transparent"
+            >
+              {open ? <FaArrowAltCircleLeft /> : <FaArrowAltCircleRight />}
+            </Button>
+          </div>
         </SidebarHeader>
         <SidebarSeparator className="mt-4" />
         <SidebarContent className="pt-3">
@@ -462,12 +457,10 @@ const MainSideMenu = () => {
         </SidebarContent>
         <SidebarSeparator className="mt-auto" />
         <SidebarFooter className="mt-4 pb-6">
-          <SidebarContent>
-            <div className={cn("text-xs text-muted-foreground leading-relaxed", { hidden: !open })}>
-              <p className="font-semibold">© {new Date().getFullYear()} ONSOA</p>
-              <p className="truncate text-xs">함께 만드는 축구 매니저</p>
-            </div>
-          </SidebarContent>
+          <div className={cn("text-xs text-muted-foreground leading-relaxed", { hidden: !open })}>
+            <p className="font-semibold">© {new Date().getFullYear()} ONSOA</p>
+            <p className="truncate text-xs">함께 만드는 축구 매니저</p>
+          </div>
         </SidebarFooter>
       </Sidebar>
       <DialogContent className="max-w-sm">
