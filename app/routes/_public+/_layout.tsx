@@ -47,8 +47,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ myClubs, permissions });
 };
 
-import { getJson } from "~/libs/client/api-client";
-
 interface IPublicLayoutProps {}
 
 export const shouldRevalidate: ShouldRevalidateFunction = () => {

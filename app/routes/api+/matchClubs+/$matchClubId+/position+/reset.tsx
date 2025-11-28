@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { positionSerivce } from "~/features/matches/server";
 import { getUser, parseRequestData } from "~/libs/server";
 
-export const action = async ({ params, request }: ActionFunctionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 

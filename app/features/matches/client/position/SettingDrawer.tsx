@@ -32,7 +32,6 @@ import {
   type PositionContextValue,
   useMatchClubQuery,
   usePositionAssignedDeleteMutation,
-  usePositionAssignMutation,
   usePositionAttendanceStateMutation,
 } from "~/features/matches/isomorphic";
 import { cn } from "~/libs/isomorphic";
