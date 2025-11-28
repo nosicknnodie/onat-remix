@@ -146,16 +146,13 @@ export const PositionSettingDrawer = ({
 
   return (
     <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-      <DrawerHeader>
-        <DrawerTitle>
-          포지션설정{" "}
-          {currentTeamId && <>({teams.find((t) => t.id === currentTeamId)?.name ?? "팀 정보"})</>}
-        </DrawerTitle>
-        <DrawerDescription>
-          {currentQuarter?.order}쿼터의 {positionType}의 포지션 설정
-        </DrawerDescription>
-      </DrawerHeader>
-      <DrawerContent className="flex flex-col h-full p-4 space-y-2">
+      <DrawerContent className="flex flex-col h-full p-4 space-y-1">
+        <DrawerHeader className="p-0">
+          <DrawerTitle className="text-base pb-0">
+            {`포지션설정 ${teams.find((t) => t.id === currentTeamId)?.name ?? "팀 정보"} ${currentQuarter?.order}쿼터`}
+          </DrawerTitle>
+          <DrawerDescription></DrawerDescription>
+        </DrawerHeader>
         <div className="w-full max-w-sm mx-auto">
           <div className="relative w-full aspect-[3/2] rounded-xl border bg-muted">
             <div className="absolute inset-0 bg-[url('/images/test.svg')] bg-cover bg-center opacity-70 rounded-xl" />
@@ -176,7 +173,6 @@ export const PositionSettingDrawer = ({
           </div>
         )}
         <div className="space-y-2">
-          <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
           {assigned ? (
             <ul className="divide-y divide-gray-200">
               <PositionSettingRowItem
