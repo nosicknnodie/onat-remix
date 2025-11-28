@@ -59,23 +59,24 @@ export async function createMatch(dto: {
         isSelf: dto.isSelf,
       });
 
+      let teams: { id: string; name: string; color: string }[] = [];
       if (dto.isSelf) {
         const beforeTeams = await q.findLatestSelfTeamsTx(tx, dto.clubId);
         if (beforeTeams && beforeTeams.length > 2) {
-          await Promise.all(
+          teams = await Promise.all(
             beforeTeams.map((team) =>
               q.createTeamTx(tx, { name: team.name, color: team.color, matchClubId: matchClub.id }),
             ),
           );
         } else {
-          await Promise.all([
+          teams = await Promise.all([
             q.createTeamTx(tx, { name: "Team A", color: "#000000", matchClubId: matchClub.id }),
             q.createTeamTx(tx, { name: "Team B", color: "#ffffff", matchClubId: matchClub.id }),
           ]);
         }
       }
 
-      const teams = await q.findTeamsByMatchClubTx(tx, matchClub.id);
+      // const teams = await q.findTeamsByMatchClubTx(tx, matchClub.id);
       if (dto.isSelf && teams.length < 2) throw new Error("팀 생성 실패");
 
       await Promise.all(
