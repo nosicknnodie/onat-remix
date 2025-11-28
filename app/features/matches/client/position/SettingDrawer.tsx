@@ -109,10 +109,12 @@ export const PositionSettingDrawer = ({
         position: positionType,
         teamId: currentTeamId,
       });
+      onOpenChange?.(false);
     } catch (error) {
       console.error(error);
     }
   };
+
   useEffect(() => {
     setTeamId(currentTeamId);
   }, [currentTeamId]);
