@@ -53,6 +53,7 @@ interface IPositionSettingDrawerProps {
   currentQuarter: Pick<NonNullable<PositionContextValue["currentQuarter"]>, "id" | "order"> | null;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onSelectedAssigned?: (attendance: PositionAttendance, positionType: POSITION_TYPE) => void;
 }
 
 export const PositionSettingDrawer = ({
@@ -64,11 +65,12 @@ export const PositionSettingDrawer = ({
   currentQuarter,
   open,
   onOpenChange,
+  onSelectedAssigned,
 }: IPositionSettingDrawerProps) => {
   const matchClubQuery = useMatchClubQuery(matchClubId, {
     enabled: Boolean(matchClubId),
   });
-  const assignMutation = usePositionAssignMutation(matchClubId);
+
   const deleteMutation = usePositionAssignedDeleteMutation(matchClubId);
   const attendanceStateMutation = usePositionAttendanceStateMutation(matchClubId);
   const teams = matchClubQuery.data?.matchClub?.teams ?? [];
@@ -100,21 +102,6 @@ export const PositionSettingDrawer = ({
       return aTime - bTime;
     });
 
-  const handleSelectPosition = async (attendance: NonNullable<typeof attendancesData>[number]) => {
-    if (!currentQuarter?.id) return;
-    try {
-      await assignMutation.mutateAsync({
-        attendanceId: attendance.id,
-        quarterId: currentQuarter.id,
-        position: positionType,
-        teamId: currentTeamId,
-      });
-      onOpenChange?.(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
     setTeamId(currentTeamId);
   }, [currentTeamId]);
@@ -141,7 +128,7 @@ export const PositionSettingDrawer = ({
   };
 
   const metaLoading = matchClubQuery.isLoading && !matchClubQuery.data;
-  const isMutating = assignMutation.isPending || deleteMutation.isPending;
+  const isMutating = deleteMutation.isPending;
   const isCancelPending = deleteMutation.isPending;
   const isStatePending = attendanceStateMutation.isPending;
   const previewCoords = getPositionPreviewCoordinates(positionType);
@@ -222,7 +209,7 @@ export const PositionSettingDrawer = ({
                 isLoading={isMutating}
                 isAssigned={false}
                 quarters={quarters}
-                onAssignClick={() => handleSelectPosition(attendance)}
+                onAssignClick={() => onSelectedAssigned?.(attendance, positionType)}
                 onChangeState={(state) => handleChangeAttendanceState(attendance.id, state)}
                 isStateMutating={isStatePending}
               />

@@ -171,3 +171,12 @@ export async function swapAssignedPosition(
   );
   return { ok: true as const };
 }
+
+export const resetPosition = async (quarterId: string, teamId: string | null) => {
+  try {
+    await q.deleteAssignedAll(quarterId, teamId);
+    return { ok: true as const };
+  } catch (error) {
+    return { ok: false as const, message: (error as Error).message };
+  }
+};

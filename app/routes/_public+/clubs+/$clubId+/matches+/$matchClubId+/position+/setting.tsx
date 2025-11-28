@@ -4,8 +4,10 @@ import { atomWithStorage } from "jotai/utils";
 import _ from "lodash";
 import { useEffect, useState, useTransition } from "react";
 import { Preview } from "react-dnd-preview";
+import { RxReset } from "react-icons/rx";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
+import { confirm } from "~/components/ui/confirm";
 import {
   Select,
   SelectContent,
@@ -16,8 +18,11 @@ import {
 import { DraggableChip, DropSpot, PositionSettingDrawer } from "~/features/matches/client";
 import {
   getAttendanceDisplayName,
+  type PositionAttendance,
   useMatchClubQuery,
   useOptimisticPositionUpdate,
+  usePositionAssignedDeleteAllMutation,
+  usePositionAssignMutation,
   usePositionContext,
   usePositionQuery,
 } from "~/features/matches/isomorphic";
@@ -68,6 +73,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const [positionTemplate, setPositionTemplate] = useAtom(POSITION_TEMPLATE);
   const params = useParams();
   const matchClubId = params.matchClubId!;
+  const assignMutation = usePositionAssignMutation(matchClubId);
   const matchClubQuery = useMatchClubQuery(matchClubId, { enabled: Boolean(matchClubId) });
   const matchClub = matchClubQuery.data?.matchClub;
   const matchClubLoading = matchClubQuery.isLoading;
@@ -76,6 +82,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
   const [shouldShowDragPreview, setShouldShowDragPreview] = useState(false);
   const positionContext = usePositionContext();
+  const resetPositionMutation = usePositionAssignedDeleteAllMutation(matchClubId);
   const currentQuarterOrder = positionContext?.currentQuarterOrder ?? 1;
   const currentQuarter =
     matchClub?.quarters.find((quarter) => quarter.order === currentQuarterOrder) || null;
@@ -89,6 +96,23 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   });
   const attendances = query.data?.attendances ?? [];
   const teamParamId = params.teamId ?? null;
+  const handleSelectedAssigned = async (
+    attendance: PositionAttendance,
+    positionType: POSITION_TYPE,
+  ) => {
+    if (!currentQuarter?.id) return;
+    try {
+      setDrawerOpen(false);
+      await assignMutation.mutateAsync({
+        attendanceId: attendance.id,
+        quarterId: currentQuarter.id,
+        position: positionType,
+        teamId: teamParamId,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -155,6 +179,20 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
       });
     };
 
+  const handleResetFormation = () => {
+    startTransition(async () => {
+      confirm({ title: "배정을 리셋하시겠어요?", confirmText: "리셋" }).onConfirm(async () => {
+        try {
+          await resetPositionMutation.mutateAsync({
+            quarterId: currentQuarter?.id || "",
+            teamId: teamParamId,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    });
+  };
   /**
    * 자동 배정
    */
@@ -333,6 +371,9 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               <Button variant="outline" onClick={handleAutoFormation}>
                 자동배치
               </Button>
+              <Button variant="outline" onClick={handleResetFormation}>
+                <RxReset />
+              </Button>
             </div>
 
             {shouldShowDragPreview && (
@@ -392,9 +433,17 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                           );
                         }}
                       >
-                        {position.assigned
-                          ? getAttendanceDisplayName(position.assigned.attendance)
-                          : position.key}
+                        {assignMutation.isPending && position.key === selectedPositionType ? (
+                          <div className="inline-flex items-center justify-center">
+                            <Loading className="z-20" />
+                          </div>
+                        ) : (
+                          <>
+                            {position.assigned
+                              ? getAttendanceDisplayName(position.assigned.attendance)
+                              : position.key}
+                          </>
+                        )}
                       </DraggableChip>
                     </>
                   ) : (
@@ -422,6 +471,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
               currentQuarter={currentQuarterSummary}
               open={drawerOpen}
               onOpenChange={setDrawerOpen}
+              onSelectedAssigned={handleSelectedAssigned}
             />
           </div>
         </section>

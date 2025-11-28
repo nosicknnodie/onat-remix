@@ -122,6 +122,10 @@ export async function deleteAssigned(id: string) {
   return await prisma.assigned.delete({ where: { id } });
 }
 
+export async function deleteAssignedAll(quarterId: string, teamId: string | null) {
+  return await prisma.assigned.deleteMany({ where: { quarterId, teamId } });
+}
+
 export async function findAssignedByPosition(
   quarterId: string,
   teamId: string | null,

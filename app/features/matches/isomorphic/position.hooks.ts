@@ -319,6 +319,36 @@ export function usePositionAssignedDeleteMutation(matchClubId?: string) {
   });
 }
 
+type DeleteAssignedAllInput = {
+  quarterId: string;
+  teamId: string | null;
+};
+
+export function usePositionAssignedDeleteAllMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const positionKey = useMemo(
+    () => (matchClubId ? positionQueryKeys.detail(matchClubId) : null),
+    [matchClubId],
+  );
+  const matchClubKey = useMemo(
+    () => (matchClubId ? positionQueryKeys.quarters(matchClubId) : null),
+    [matchClubId],
+  );
+  return useMutation<unknown, unknown, DeleteAssignedAllInput>({
+    mutationFn: async (input) => {
+      return del(`/api/matchClubs/${matchClubId}/position/reset`, { body: JSON.stringify(input) });
+    },
+    onSuccess: async () => {
+      if (positionKey) {
+        await queryClient.invalidateQueries({ queryKey: positionKey });
+      }
+      if (matchClubKey) {
+        await queryClient.invalidateQueries({ queryKey: matchClubKey });
+      }
+    },
+  });
+}
+
 type AttendanceStateUpdateInput = {
   id: string;
   state: AttendanceState;
