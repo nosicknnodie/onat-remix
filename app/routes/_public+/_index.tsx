@@ -3,8 +3,8 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { FcGoogle } from "react-icons/fc";
 import { SiNaver } from "react-icons/si";
 import { InAppOauthNotice, useIsInAppBrowser } from "~/features/auth/client";
-import { cn } from "~/libs";
-import { getUser } from "~/libs/index.server";
+import { cn } from "~/libs/isomorphic";
+import { getUser } from "~/libs/server";
 import DashBoardPage from "./dashboard";
 
 export const handle = {

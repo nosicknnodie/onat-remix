@@ -1,4 +1,4 @@
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 import type { NewBoardInput } from "../isomorphic/types";
 
 export async function listPublicBoards() {

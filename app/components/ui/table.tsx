@@ -1,4 +1,4 @@
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const Table = ({ className, ...props }: React.ComponentPropsWithRef<"table">) => (
   <div className="relative w-full overflow-auto max-h-full">

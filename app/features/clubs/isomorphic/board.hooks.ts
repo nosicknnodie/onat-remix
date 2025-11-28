@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-query";
 import type { SerializedEditorState } from "lexical";
 import { useMemo } from "react";
-import { getJson, postJson } from "~/libs/api-client";
+import { getJson, postJson } from "~/libs/client/api-client";
 import type { ClubBoardFeedQueryKey, ClubBoardFeedResponse } from "./board.types";
 import type {
   ClubBoardCommentsResponse,

@@ -5,7 +5,7 @@ import { FaRegThumbsDown, FaRegThumbsUp, FaThumbsDown, FaThumbsUp } from "react-
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useSession } from "~/contexts";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 type PostCommentWithExtras = PostComment & {
   author: User & { userImage: File | null };

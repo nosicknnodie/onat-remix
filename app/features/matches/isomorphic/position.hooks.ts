@@ -1,9 +1,9 @@
 import type { AttendanceState } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useMemo } from "react";
-import { BrowserStableWebSocket } from "~/libs";
-import { del, getJson, postJson, putJson } from "~/libs/api-client";
-import type { POSITION_TYPE } from "~/libs/const/position.const";
+import { del, getJson, postJson, putJson } from "~/libs/client/api-client";
+import { BrowserStableWebSocket } from "~/libs/client/browserStableWebSocket";
+import type { POSITION_TYPE } from "~/libs/isomorphic/const/position.const";
 import type {
   PositionAttendance,
   PositionContextValue,

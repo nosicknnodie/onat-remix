@@ -4,7 +4,7 @@ import type { ToggleGroupItemProps } from "@radix-ui/react-toggle-group";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
-import { cn, PORMATION_POSITION_CLASSNAME } from "~/libs";
+import { cn, PORMATION_POSITION_CLASSNAME } from "~/libs/isomorphic";
 
 interface IPositionProps {
   defaultValue?: string[] | undefined;

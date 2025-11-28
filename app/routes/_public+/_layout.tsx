@@ -17,8 +17,9 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { clubInfoQueryKeys, clubMemberQueryKeys } from "~/features/clubs/isomorphic";
+
 import { memberService, service } from "~/features/clubs/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -45,6 +46,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return json({ myClubs, permissions });
 };
+
+import { getJson } from "~/libs/client/api-client";
 
 interface IPublicLayoutProps {}
 

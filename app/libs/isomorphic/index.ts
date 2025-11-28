@@ -1,12 +1,10 @@
 // Client-safe and shared utilities
 
-export * from "./api-client";
-export * from "./browserStableWebSocket";
 export * from "./const/error.const";
 export * from "./const/position.const";
 export * from "./convert";
 export * from "./errors";
-export * from "./getBoardIcons";
+
 export * from "./id";
 export * from "./map";
 export * from "./native";

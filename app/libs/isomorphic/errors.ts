@@ -1,5 +1,5 @@
-import type { ErrorCode } from "~/libs/const/error.const";
-import { ERROR_MESSAGES } from "~/libs/const/error.const";
+import type { ErrorCode } from "~/libs/isomorphic/const/error.const";
+import { ERROR_MESSAGES } from "~/libs/isomorphic/const/error.const";
 
 /** HTTP 상태코드, ActionData, Exception을 표준 에러코드로 매핑 */
 export function toErrorCode(err: unknown): ErrorCode {

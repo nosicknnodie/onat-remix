@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSession } from "~/contexts";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 export const Settings = ({
   post,

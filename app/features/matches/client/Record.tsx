@@ -1,7 +1,7 @@
 import type { Team } from "@prisma/client";
 import type React from "react";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 export function QuarterRecord({
   quarter,

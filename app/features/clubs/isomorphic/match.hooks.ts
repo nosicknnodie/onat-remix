@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { MatchClubQueryResponse } from "~/features/matches/isomorphic";
-import { getJson } from "~/libs/api-client";
+import { getJson } from "~/libs/client/api-client";
 import type { ClubMatchFeed } from "./match.types";
 
 export const CLUB_MATCH_FEED_TAKE = 20;

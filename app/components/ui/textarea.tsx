@@ -1,4 +1,4 @@
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 export interface TextareaProps extends React.ComponentPropsWithRef<"textarea"> {}
 

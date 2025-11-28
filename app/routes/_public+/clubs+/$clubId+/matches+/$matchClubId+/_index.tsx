@@ -22,7 +22,7 @@ import {
   useRatingStatsQuery,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { getToastForError } from "~/libs/errors";
+import { getToastForError } from "~/libs/isomorphic/errors";
 
 export const handle = {
   breadcrumb: () => {

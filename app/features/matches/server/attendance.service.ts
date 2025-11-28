@@ -1,4 +1,4 @@
-import { AES } from "~/libs/index.server";
+import { AES } from "~/libs/server";
 import * as q from "./attendance.queries";
 import { recalcPlayerStatsHistoryByAttendance } from "./rating.queries";
 

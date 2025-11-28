@@ -1,6 +1,6 @@
 import { CaretSortIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const Select = SelectPrimitive.Root;
 

@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { utils } from "~/features/clubs/server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/server/db/lucia";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const user = await getUser(request);

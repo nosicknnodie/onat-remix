@@ -35,14 +35,14 @@ import {
   usePositionAssignMutation,
   usePositionAttendanceStateMutation,
 } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
-import type { POSITION_TYPE } from "~/libs/const/position.const";
+import { cn } from "~/libs/isomorphic";
+import type { POSITION_TYPE } from "~/libs/isomorphic/const/position.const";
 import {
   isAttackPosition,
   isDefensePosition,
   isMiddlePosition,
   PORMATION_POSITION_CLASSNAME,
-} from "~/libs/const/position.const";
+} from "~/libs/isomorphic/const/position.const";
 
 interface IPositionSettingDrawerProps {
   matchClubId: string;

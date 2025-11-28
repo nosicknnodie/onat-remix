@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { IKakaoLocalType } from "~/libs/map";
+import type { IKakaoLocalType } from "~/libs/isomorphic/map";
 
 interface IHistoryPlaceDownListProps {
   onSetPlace: (place: IKakaoLocalType) => void;

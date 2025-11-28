@@ -5,7 +5,7 @@ import { Badge } from "~/components/ui/badge";
 import { useSession } from "~/contexts";
 import { MatchList } from "~/features/matches/client";
 import { listSerivce } from "~/features/matches/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 // const RightComponent = () => {
 //   const session = useSession();

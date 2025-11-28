@@ -1,7 +1,11 @@
 import type { PositionType, Prisma } from "@prisma/client";
 import type { PostgrestError } from "@supabase/supabase-js";
-import { isDiffPosition, isRLDiffPostion, PORMATION_POSITIONS } from "~/libs/const/position.const";
-import { AES } from "~/libs/index.server";
+import {
+  isDiffPosition,
+  isRLDiffPostion,
+  PORMATION_POSITIONS,
+} from "~/libs/isomorphic/const/position.const";
+import { AES } from "~/libs/server";
 import { supabase } from ".";
 import { prisma } from "./prisma.db";
 

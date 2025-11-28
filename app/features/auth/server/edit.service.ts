@@ -1,6 +1,6 @@
 import { redirect } from "@remix-run/node";
-import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { getUser } from "~/libs/server/db/lucia";
+import { parseRequestData } from "~/libs/server/requestData";
 import { fail, ok } from "~/utils/action.server";
 import { editValidators } from "../isomorphic";
 import { service } from ".";

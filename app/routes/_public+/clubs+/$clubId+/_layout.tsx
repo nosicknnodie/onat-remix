@@ -22,7 +22,7 @@ import {
   useMembershipInfoQuery,
   usePlayerPermissionsQuery,
 } from "~/features/clubs/isomorphic";
-import { getJson } from "~/libs/api-client";
+import { getJson } from "~/libs/client/api-client";
 import { scheduleIdle } from "~/libs/scheduleIdle";
 
 const ClubBreadcrumb = ({ clubId }: { clubId?: string }) => {

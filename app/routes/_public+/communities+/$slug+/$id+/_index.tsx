@@ -23,8 +23,8 @@ import {
   Settings,
 } from "~/features/communities/client";
 import { service } from "~/features/communities/server";
-import { cn } from "~/libs";
-import { getUser } from "~/libs/index.server";
+import { cn } from "~/libs/isomorphic";
+import { getUser } from "~/libs/server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);

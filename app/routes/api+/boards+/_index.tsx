@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { getUser, parseRequestData, prisma } from "~/libs/index.server";
+import { getUser, parseRequestData, prisma } from "~/libs/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);

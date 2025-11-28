@@ -15,8 +15,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
-import { cn } from "~/libs";
-import { isAttackPosition, isDefensePosition, isMiddlePosition } from "~/libs/const/position.const";
+import { cn } from "~/libs/isomorphic";
+import {
+  isAttackPosition,
+  isDefensePosition,
+  isMiddlePosition,
+} from "~/libs/isomorphic/const/position.const";
 
 interface QuarterItem {
   id: string;
@@ -144,17 +148,17 @@ export const RatingRightDrawer = ({
                                   "bg-red-500":
                                     position &&
                                     isAttackPosition(
-                                      position as unknown as import("~/libs/const/position.const").POSITION_TYPE,
+                                      position as unknown as import("~/libs/isomorphic/const/position.const").POSITION_TYPE,
                                     ),
                                   "bg-yellow-400":
                                     position &&
                                     isMiddlePosition(
-                                      position as unknown as import("~/libs/const/position.const").POSITION_TYPE,
+                                      position as unknown as import("~/libs/isomorphic/const/position.const").POSITION_TYPE,
                                     ),
                                   "bg-blue-500":
                                     position &&
                                     isDefensePosition(
-                                      position as unknown as import("~/libs/const/position.const").POSITION_TYPE,
+                                      position as unknown as import("~/libs/isomorphic/const/position.const").POSITION_TYPE,
                                     ),
                                   "bg-green-500": position && position === "GK",
                                   "bg-gray-200 text-black": !position,

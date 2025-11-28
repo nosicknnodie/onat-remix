@@ -1,6 +1,6 @@
 import type { FilePurposeType, PositionType } from "@prisma/client";
 import sharp from "sharp";
-import { sendBufferToPublicImage } from "~/libs/db/s3.server";
+import { sendBufferToPublicImage } from "~/libs/server/db/s3";
 import { supabase } from ".";
 import { prisma } from "./prisma.db";
 

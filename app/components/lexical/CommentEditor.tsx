@@ -11,7 +11,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { Skeleton } from "../ui/skeleton";
 import { nodes } from "./nodes/nodes";
 import { CodeHighlightingPlugin } from "./plugins/CodeHighlightPlugin";

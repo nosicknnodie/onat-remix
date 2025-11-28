@@ -4,7 +4,7 @@ import { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { positionSerivce } from "~/features/matches/server";
-import { parseRequestData } from "~/libs/index.server";
+import { parseRequestData } from "~/libs/server";
 
 const assignedSchema = z.object({
   assignedId: z.string().min(1, "assignedId is required"),

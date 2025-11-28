@@ -27,8 +27,8 @@ import {
   useToggleMercenaryAttendanceMutation,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { formatPhoneNumber, removePhoneHyphen } from "~/libs";
-import { getToastForError } from "~/libs/errors";
+import { formatPhoneNumber, removePhoneHyphen } from "~/libs/isomorphic";
+import { getToastForError } from "~/libs/isomorphic/errors";
 import SetMercenaryDialog from "../mercenaries/New/SetMercenaryDialog";
 
 export type AttendanceMercenary = {

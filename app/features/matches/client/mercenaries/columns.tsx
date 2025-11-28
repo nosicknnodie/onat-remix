@@ -2,7 +2,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { formatPhoneNumber } from "~/libs";
+import { formatPhoneNumber } from "~/libs/isomorphic";
 import Actions from "./Actions";
 
 export type MercenaryRow = {

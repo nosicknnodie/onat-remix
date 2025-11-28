@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useClubMatchInitialData } from "~/features/clubs/isomorphic";
-import { del, getJson } from "~/libs/api-client";
+import { del, getJson } from "~/libs/client/api-client";
 import type { MatchClubQueryResponse } from "./matchClub.types";
 
 export const matchClubQueryKeys = {

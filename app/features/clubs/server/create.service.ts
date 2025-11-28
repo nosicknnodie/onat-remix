@@ -1,7 +1,7 @@
 import type { User } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { getUser, prisma } from "~/libs/index.server";
+import { getUser, prisma } from "~/libs/server";
 import { type CreateClubInput, CreateClubSchema } from "../isomorphic";
 import { sanitizeDiscordWebhook } from "./utils";
 

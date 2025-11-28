@@ -1,4 +1,4 @@
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
 
 export async function findMatchClubWithQuarters(matchClubId: string) {
   return await prisma.matchClub.findFirst({

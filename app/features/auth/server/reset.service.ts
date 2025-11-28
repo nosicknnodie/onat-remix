@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { sendPasswordResetEmail } from "~/libs/mail.server";
+import { sendPasswordResetEmail } from "~/libs/server/mail";
 import { ResetSchema } from "../isomorphic/reset.schema";
 import type { ResetActionResult, ResetInput } from "../isomorphic/reset.types";
 import { createPasswordResetToken, findUserByEmail } from "./reset.queries";

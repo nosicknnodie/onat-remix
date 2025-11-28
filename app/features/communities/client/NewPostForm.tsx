@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { type NewPostInput, postSchema } from "../isomorphic/schema";
 import type { BoardListItem, DraftPost } from "../isomorphic/types";
 

@@ -1,5 +1,5 @@
 import { Outlet } from "@remix-run/react";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 interface ILayoutProps {}
 

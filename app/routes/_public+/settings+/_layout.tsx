@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "@remix-run/react";
+
 import { useEffect } from "react";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 export const handle = { breadcrumb: "회원정보 수정" };
 

@@ -14,7 +14,7 @@ import {
   useUpcomingAttendancesQuery,
 } from "~/features/dashboard/isomorphic";
 import { useToast } from "~/hooks/use-toast";
-import { postJson } from "~/libs/api-client";
+import { postJson } from "~/libs/client/api-client";
 
 export const handle = {
   breadcrumb: "대시보드",

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson, postJson, putJson } from "~/libs/api-client";
+import { getJson, postJson, putJson } from "~/libs/client/api-client";
 import type {
   MercenaryFormValues,
   MercenaryMutationResult,

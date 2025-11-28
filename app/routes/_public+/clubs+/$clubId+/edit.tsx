@@ -25,8 +25,8 @@ import { Textarea } from "~/components/ui/textarea";
 import { useClubDetailsQuery } from "~/features/clubs/isomorphic";
 import { service } from "~/features/clubs/server";
 import { useActionToast, useToast } from "~/hooks";
-import { SIGUNGU } from "~/libs";
-import { getUser } from "~/libs/index.server"; // 사용자 인증 함수 예시
+import { SIGUNGU } from "~/libs/isomorphic";
+import { getUser } from "~/libs/server"; // 사용자 인증 함수 예시
 export const handle = { breadcrumb: "수정" };
 export async function action({ request }: ActionFunctionArgs) {
   const user = await getUser(request); // 로그인한 사용자 확인 (없으면 리다이렉트 등 처리 가능)

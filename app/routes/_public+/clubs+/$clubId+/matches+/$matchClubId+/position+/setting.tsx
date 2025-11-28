@@ -26,7 +26,7 @@ import {
   usePositionContext,
   usePositionQuery,
 } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import {
   isDiffPosition,
   isRLDiffPostion,
@@ -35,8 +35,8 @@ import {
   type PORMATION_TYPE,
   POSITION_TEMPLATE_LIST,
   type POSITION_TYPE,
-} from "~/libs/const/position.const";
-import { typedEntries } from "~/libs/convert";
+} from "~/libs/isomorphic/const/position.const";
+import { typedEntries } from "~/libs/isomorphic/convert";
 
 const BreadCrumbComponent = () => {
   const params = useParams();

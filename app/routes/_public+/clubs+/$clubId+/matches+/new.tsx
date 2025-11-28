@@ -8,7 +8,7 @@ import { placeHistoryAtom } from "~/atoms/placeHistory";
 import { Button } from "~/components/ui/button";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
 import { type MatchFormFields, useSaveMatchMutation } from "~/features/matches/isomorphic";
-import type { IKakaoLocalType } from "~/libs";
+import type { IKakaoLocalType } from "~/libs/isomorphic";
 
 export const handle = { breadcrumb: "매치 생성" };
 

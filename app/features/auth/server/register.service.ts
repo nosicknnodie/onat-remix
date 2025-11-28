@@ -1,9 +1,9 @@
 // features/register/service.ts
 
 import bcrypt from "bcryptjs";
-import { generateVerificationToken } from "~/libs/auth/token";
-import { prisma } from "~/libs/db/db.server";
-import { sendVerificationEmail } from "~/libs/index.server";
+import { sendVerificationEmail } from "~/libs/server";
+import { generateVerificationToken } from "~/libs/server/auth/token";
+import { prisma } from "~/libs/server/db/db";
 import { registerSchema } from "../isomorphic";
 import type { RegisterFormData } from "../isomorphic/register.types";
 

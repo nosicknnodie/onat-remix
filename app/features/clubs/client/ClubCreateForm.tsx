@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks";
-import { SIGUNGU } from "~/libs";
+import { SIGUNGU } from "~/libs/isomorphic";
 import type { ActionData } from "~/types/action";
 
 interface ClubCreateFormProps {

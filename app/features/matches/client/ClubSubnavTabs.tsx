@@ -1,5 +1,5 @@
 import { Link } from "~/components/ui/Link";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 export type ClubSubnavItem = {
   label: string;

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { parseRequestData, prisma } from "~/libs/index.server";
+import { parseRequestData, prisma } from "~/libs/server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const id = params.id;

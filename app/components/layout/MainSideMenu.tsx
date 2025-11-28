@@ -44,8 +44,9 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useSession } from "~/contexts";
 import type { ClubWithMembership, IClubLayoutLoaderData } from "~/features/clubs/isomorphic";
 import { clubInfoQueryKeys, clubMemberQueryKeys } from "~/features/clubs/isomorphic";
-import { cn, getBoardIcon } from "~/libs";
-import { getJson } from "~/libs/api-client";
+import { getJson } from "~/libs/client/api-client";
+import { getBoardIcon } from "~/libs/client/getBoardIcons";
+import { cn } from "~/libs/isomorphic";
 import ItemLink from "../ItemLink";
 
 const currentClubIdAtom = atomWithStorage<string | null>("currentClub", null);

@@ -2,7 +2,7 @@ import type { File, User } from "@prisma/client";
 import { redirect } from "@remix-run/node";
 import _ from "lodash";
 import { Lucia, type Session as LuciaSession } from "lucia";
-import { adapter } from "./adapter.server";
+import { adapter } from "./adapter";
 
 // These are passed back on the user during the authentication process.
 // Useful to avoid additional DB queries.

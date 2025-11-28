@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { teamId, attendanceIds } = await request.json();

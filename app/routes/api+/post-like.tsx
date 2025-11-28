@@ -1,8 +1,8 @@
 // POST /api/post-like
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { service } from "~/features/communities/server";
-import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { getUser } from "~/libs/server/db/lucia";
+import { parseRequestData } from "~/libs/server/requestData";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);

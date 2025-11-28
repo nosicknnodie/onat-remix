@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
 
 export async function getManagerClub(userId: string, clubId: string) {
   return await prisma.player.findFirst({

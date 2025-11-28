@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { PositionType } from "@prisma/client";
-import { AES } from "~/libs/index.server";
+import { AES } from "~/libs/server";
 import { supabase } from ".";
 import { prisma } from "./prisma.db";
 

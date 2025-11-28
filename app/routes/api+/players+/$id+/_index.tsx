@@ -2,8 +2,8 @@ import { JobTitle, type PlayerLog, RoleType, StatusType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import _ from "lodash";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { prisma } from "~/libs/server/db/db";
+import { getUser } from "~/libs/server/db/lucia";
 
 const PlayerUpdateSchema = z.object({
   role: z.nativeEnum(RoleType).optional(),

@@ -1,7 +1,7 @@
 import { FORMAT_ELEMENT_COMMAND } from "lexical";
 import { MdFormatAlignCenter } from "react-icons/md";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useActiveEditor, useToolbarState } from "../Context";
 
 interface ICenterAlignButtonProps {}

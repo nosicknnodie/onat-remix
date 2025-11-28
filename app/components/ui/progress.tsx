@@ -1,5 +1,5 @@
 import * as ProgressPrimitive from "@radix-ui/react-progress";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const Progress = ({
   className,

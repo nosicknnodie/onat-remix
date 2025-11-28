@@ -5,7 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { apiFetch, getJson, postJson } from "~/libs/api-client";
+import { apiFetch, getJson, postJson } from "~/libs/client/api-client";
 import type {
   CreateMatchClubCommentInput,
   CreateMatchClubCommentResponse,

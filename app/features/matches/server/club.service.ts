@@ -1,4 +1,4 @@
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 import * as q from "./club.queries";
 
 export async function getMatchClubLayoutData(matchClubId: string) {

@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { recordSchema } from "~/features/matches/isomorphic";
 import { recordService } from "~/features/matches/server";
-import { parseRequestData } from "~/libs/index.server";
+import { parseRequestData } from "~/libs/server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await parseRequestData(request);

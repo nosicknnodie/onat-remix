@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { matchSummaryRelations } from "~/features/matches/isomorphic";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 export async function findMatchByIdWithClubs(id: string) {
   return await prisma.match.findUnique({

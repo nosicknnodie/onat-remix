@@ -6,7 +6,7 @@ import { NewPostForm } from "~/features/communities/client";
 import { validators } from "~/features/communities/isomorphic";
 import { service } from "~/features/communities/server";
 import { useActionToast } from "~/hooks";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 export const handle = { breadcrumb: "새글 쓰기" };
 
@@ -24,7 +24,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);
   if (!user) return redirect("/auth/login");
-  const raw = await (await import("~/libs/requestData.server")).parseRequestData(request);
+  const raw = await (await import("~/libs/server/requestData")).parseRequestData(request);
   const parsed = validators.parseNewPost(raw);
   if (!parsed.ok) {
     return Response.json(

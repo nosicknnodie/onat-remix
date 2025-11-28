@@ -10,7 +10,7 @@ import { useLoaderData } from "@remix-run/react";
 import { useSession } from "~/contexts";
 import { ClubActionsDropdown, ClubTabs } from "~/features/clubs/client";
 import { service } from "~/features/clubs/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 /**
  * 서버사이드 데이터 로딩

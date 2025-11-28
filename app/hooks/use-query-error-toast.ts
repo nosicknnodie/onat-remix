@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getToastForError } from "~/libs";
+import { getToastForError } from "~/libs/isomorphic";
 import { useToast } from "./use-toast";
 
 export function useQueryErrorToast(error: unknown) {

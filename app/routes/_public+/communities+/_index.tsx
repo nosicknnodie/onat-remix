@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useSession } from "~/contexts";
 import { service } from "~/features/communities/server";
-import { getBoardIcon } from "~/libs";
+import { getBoardIcon } from "~/libs/client/getBoardIcons";
 
 const RightComponent = () => {
   const user = useSession();

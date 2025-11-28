@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 interface FormErrorProps extends React.ComponentProps<"div"> {}
 

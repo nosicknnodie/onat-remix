@@ -1,5 +1,5 @@
 import type { Player, PlayerPermission, PlayerPermissionKey, RoleType } from "@prisma/client";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 /**
  * 템플릿(RoleType) 기반 기본 퍼미션 목록 조회

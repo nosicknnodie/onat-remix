@@ -15,7 +15,8 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useSession } from "~/contexts";
 import { useToast } from "~/hooks";
-import { getToastForError, postJson } from "~/libs";
+import { postJson } from "~/libs/client/api-client";
+import { getToastForError } from "~/libs/isomorphic/errors";
 
 interface IJoinDialogProps extends PropsWithChildren {
   clubId: string;

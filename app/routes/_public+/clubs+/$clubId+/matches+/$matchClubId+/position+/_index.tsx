@@ -9,7 +9,7 @@ import {
   useQuarterQuery,
   useTeamQuery,
 } from "~/features/matches/isomorphic";
-import { PORMATION_POSITION_CLASSNAME } from "~/libs";
+import { PORMATION_POSITION_CLASSNAME } from "~/libs/isomorphic";
 
 export const handle = {
   breadcrumb: () => {

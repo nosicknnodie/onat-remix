@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
-import { getUser, parseRequestData, prisma } from "~/libs/index.server";
+import { getUser, parseRequestData, prisma } from "~/libs/server";
 
 const boardDeleteSchema = z.object({
   ids: z.array(z.string()),

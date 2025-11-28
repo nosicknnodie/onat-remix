@@ -1,6 +1,6 @@
 import type { PlayerNativeType, PositionType } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { invalidateUserSessionCache, prisma } from "~/libs/index.server";
+import { invalidateUserSessionCache, prisma } from "~/libs/server";
 import { service } from ".";
 
 export async function updateProfile(input: {

@@ -9,7 +9,7 @@ import {
 import { NewBoardForm } from "~/features/communities/client";
 import { adminValidators } from "~/features/communities/isomorphic";
 import { adminService } from "~/features/communities/server";
-import { parseRequestData } from "~/libs/index.server";
+import { parseRequestData } from "~/libs/server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const raw = await parseRequestData(request);

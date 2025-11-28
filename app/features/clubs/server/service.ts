@@ -5,7 +5,7 @@
  */
 
 import type { Prisma } from "@prisma/client";
-import { AES, prisma } from "~/libs/index.server";
+import { AES, prisma } from "~/libs/server";
 import type { CategorizedClubs, Club, ClubsData, ClubWithMembership, Player } from "../isomorphic";
 import {
   findClubsAndPlayers,

@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { attendanceService } from "~/features/matches/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 const getClubIdFromRequest = (request: Request) => {
   const url = new URL(request.url);

@@ -3,7 +3,7 @@ import { FiHeart } from "react-icons/fi";
 import StarRating from "~/components/StarRating";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import type { AttendanceNameSource } from "../isomorphic";
 import { getAttendanceDisplayName } from "../isomorphic";
 

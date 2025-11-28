@@ -1,4 +1,4 @@
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useGetMatchCommentsQuery } from "./_hooks";
 import CommentItem from "./CommentItem";
 

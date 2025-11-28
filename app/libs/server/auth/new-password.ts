@@ -1,7 +1,7 @@
 import { TokenType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 const NewPasswordSchema = z.object({
   password: z.string().min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),

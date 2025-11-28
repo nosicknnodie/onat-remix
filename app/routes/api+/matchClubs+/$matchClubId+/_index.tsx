@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import type { MatchClubQueryResponse } from "~/features/matches/isomorphic";
 import { clubService, matchService } from "~/features/matches/server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/server/db/lucia";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId;

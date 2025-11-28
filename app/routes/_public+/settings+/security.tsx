@@ -11,7 +11,7 @@ import { Label } from "~/components/ui/label";
 import { useSession } from "~/contexts";
 import { settingsService } from "~/features/auth/server";
 import { useActionToast } from "~/hooks";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 interface ISecurityPageProps {}
 

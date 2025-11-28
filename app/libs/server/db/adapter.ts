@@ -2,8 +2,8 @@
 
 import { Prisma } from "@prisma/client";
 import type { Adapter } from "lucia";
-import { prisma } from "./db.server";
-import { redis } from "./redis.server";
+import { prisma } from "./db";
+import { redis } from "./redis";
 
 export const adapter: Adapter = {
   getSessionAndUser: async (sessionId) => {

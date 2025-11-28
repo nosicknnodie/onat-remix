@@ -5,7 +5,7 @@
  */
 
 import { matchSummaryRelations } from "~/features/matches/isomorphic";
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
 import type { Club, Player } from "../isomorphic";
 
 /**

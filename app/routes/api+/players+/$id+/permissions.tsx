@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { memberService } from "~/features/clubs/server";
-import { prisma } from "~/libs/db/db.server";
-import { getUser } from "~/libs/db/lucia.server";
+import { prisma } from "~/libs/server/db/db";
+import { getUser } from "~/libs/server/db/lucia";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await getUser(request);

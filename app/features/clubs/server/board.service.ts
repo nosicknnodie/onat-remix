@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import _ from "lodash";
-import { deletePublicImage } from "~/libs/db/s3.server";
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
+import { deletePublicImage } from "~/libs/server/db/s3";
 import {
   countBoards,
   createDefaultBoards,

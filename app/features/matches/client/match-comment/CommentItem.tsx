@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import type { MatchClubComment } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useCommentInput, useCreateMatchComment, useMatchCommentContext } from "./_hooks";
 
 const CommentItem = ({ comment }: { comment: Omit<MatchClubComment, "replys"> }) => {

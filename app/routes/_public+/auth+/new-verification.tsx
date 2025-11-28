@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { service } from "~/features/auth/server";
-import { lucia } from "~/libs/index.server";
+import { lucia } from "~/libs/server";
 import { fail } from "~/utils/action.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useActionToast } from "~/hooks";
-import { cn } from "~/libs";
-import { deletePublicImage, getUser, parseRequestData, prisma } from "~/libs/index.server";
+import { cn } from "~/libs/isomorphic";
+import { deletePublicImage, getUser, parseRequestData, prisma } from "~/libs/server";
 
 export const handle = {
   breadcrumb: () => "수정",

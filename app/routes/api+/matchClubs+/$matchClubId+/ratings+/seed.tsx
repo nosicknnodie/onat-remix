@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { ratingService } from "~/features/matches/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const user = await getUser(request);

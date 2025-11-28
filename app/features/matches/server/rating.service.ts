@@ -1,4 +1,4 @@
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
 import type { RatingRegisterAttendance } from "../isomorphic/rating.types";
 import * as q from "./rating.queries";
 

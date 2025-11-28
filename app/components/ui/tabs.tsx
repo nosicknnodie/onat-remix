@@ -1,6 +1,6 @@
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const Tabs = TabsPrimitive.Root;
 

@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import type { MatchClubSummary } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 interface MatchSummarySectionProps {
   summaries: MatchClubSummary[];

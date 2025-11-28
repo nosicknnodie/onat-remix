@@ -1,5 +1,5 @@
 import * as SwitchPrimitives from "@radix-ui/react-switch";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const Switch = ({ className, ...props }: React.ComponentProps<typeof SwitchPrimitives.Root>) => (
   <SwitchPrimitives.Root

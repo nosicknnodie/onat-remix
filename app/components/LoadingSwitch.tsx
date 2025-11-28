@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { Skeleton } from "./ui/skeleton";
 
 interface LoadingSwitchProps {

@@ -1,6 +1,6 @@
 import { FaImage } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { InsertImageDialog } from "../../ImagesPlugin";
 
 interface IInsertImageButtonProps {}

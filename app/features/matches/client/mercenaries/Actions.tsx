@@ -17,8 +17,8 @@ import {
 } from "~/components/ui/dropdown-menu";
 import type { MercenaryFormValues } from "~/features/matches/isomorphic";
 import { mercenaryQueryKeys, useUpdateMercenaryMutation } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
-import { postJson } from "~/libs/api-client";
+import { postJson } from "~/libs/client/api-client";
+import { cn } from "~/libs/isomorphic";
 import HistoryDrawer, { type MercenaryPayloadWithAttendances } from "./HistoryDrawer";
 import InfoDrawer, { type MercenaryPayload } from "./InfoDrawer";
 import SetMercenaryDialog from "./New/SetMercenaryDialog";

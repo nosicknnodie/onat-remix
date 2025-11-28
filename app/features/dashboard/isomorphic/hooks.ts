@@ -1,6 +1,6 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson } from "~/libs/api-client";
+import { getJson } from "~/libs/client/api-client";
 import type {
   DashboardMatchInsight,
   DashboardMom,

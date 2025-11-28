@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { utils } from "~/features/clubs/server";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 type MatchWebhookAction = "created" | "updated" | "deleted";
 

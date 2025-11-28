@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { parseCreate } from "~/features/matches/isomorphic";
 import { createService } from "~/features/matches/server";
-import { getUser, parseRequestData } from "~/libs/index.server";
+import { getUser, parseRequestData } from "~/libs/server";
 import { jsonFail } from "~/utils/action.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {

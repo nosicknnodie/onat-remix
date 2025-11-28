@@ -42,7 +42,7 @@ model Attendance {
 import type { Prisma } from "@prisma/client";
 import { AttendanceState } from "@prisma/client";
 import type { PostgrestError } from "@supabase/supabase-js";
-import { AES } from "~/libs/index.server";
+import { AES } from "~/libs/server";
 import { supabase } from ".";
 import { prisma } from "./prisma.db";
 

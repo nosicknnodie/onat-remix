@@ -1,11 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: off */
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import _ from "lodash";
-import { prisma } from "~/libs/db/db.server";
-import { getUser } from "~/libs/db/lucia.server";
-import { generateShortId } from "~/libs/id";
-import { isMobile } from "~/libs/index.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { generateShortId } from "~/libs/isomorphic/id";
+import { isMobile } from "~/libs/server";
+import { prisma } from "~/libs/server/db/db";
+import { getUser } from "~/libs/server/db/lucia";
+import { parseRequestData } from "~/libs/server/requestData";
 
 type PostCommentWithAuthor = Awaited<ReturnType<typeof prisma.postComment.findMany>>[number];
 

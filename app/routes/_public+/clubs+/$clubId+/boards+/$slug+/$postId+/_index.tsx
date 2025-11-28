@@ -29,7 +29,7 @@ import {
   Settings,
 } from "~/features/communities/client";
 import { getPlayerDisplayName } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 type UserLike = {
   nick?: string | null;

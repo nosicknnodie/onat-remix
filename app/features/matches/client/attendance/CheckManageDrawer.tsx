@@ -18,7 +18,7 @@ import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
 import { useToggleAttendanceStateMutation } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { getToastForError } from "~/libs/errors";
+import { getToastForError } from "~/libs/isomorphic/errors";
 
 export type AttendanceCheckItem = {
   id: string;

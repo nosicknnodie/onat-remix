@@ -1,5 +1,5 @@
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const ScrollArea = ({
   className,

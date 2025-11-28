@@ -1,4 +1,4 @@
-import { redis } from "~/libs/index.server";
+import { redis } from "~/libs/server";
 import * as q from "./position.queries";
 
 export async function getQuarterData(matchClubId: string) {

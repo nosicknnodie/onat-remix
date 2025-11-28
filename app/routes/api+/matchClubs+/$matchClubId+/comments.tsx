@@ -3,7 +3,7 @@
 import type { Prisma } from "@prisma/client";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { getUser, parseRequestData, prisma } from "~/libs/index.server";
+import { getUser, parseRequestData, prisma } from "~/libs/server";
 
 const playerInclude = {
   include: {

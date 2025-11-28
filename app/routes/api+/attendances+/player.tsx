@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import * as z from "zod";
 import { attendanceService } from "~/features/matches/server";
-import { getUser, prisma } from "~/libs/index.server";
+import { getUser, prisma } from "~/libs/server";
 
 const AttendanceValidate = z.object({
   isVote: z.boolean().optional(),

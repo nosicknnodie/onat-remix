@@ -3,7 +3,7 @@ import type { FilePurposeType } from "@prisma/client";
 import type { NodeOnDiskFile } from "@remix-run/node/dist/upload/fileUploadHandler";
 import sharp from "sharp";
 import slugify from "slugify";
-import { prisma, sendBufferToPublicImage } from "~/libs/index.server";
+import { prisma, sendBufferToPublicImage } from "~/libs/server";
 
 export async function saveImageFromNodeFile(input: {
   nodeFile: NodeOnDiskFile;

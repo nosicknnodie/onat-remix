@@ -20,7 +20,7 @@ import {
 import { useSession } from "~/contexts";
 import { settingsService } from "~/features/auth/server";
 import { useActionToast } from "~/hooks";
-import { cn, SIGUNGU } from "~/libs";
+import { cn, SIGUNGU } from "~/libs/isomorphic";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const form = await request.formData();

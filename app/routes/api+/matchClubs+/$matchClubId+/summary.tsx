@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { detailService } from "~/features/matches/server";
-import { prisma } from "~/libs/index.server";
+import { prisma } from "~/libs/server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const matchClubId = params.matchClubId;

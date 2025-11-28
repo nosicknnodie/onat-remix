@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { parseUpdate } from "~/features/matches/isomorphic";
 import { detailService } from "~/features/matches/server";
-import { getUser, parseRequestData } from "~/libs/index.server";
+import { getUser, parseRequestData } from "~/libs/server";
 import { jsonFail } from "~/utils/action.server";
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const matchId = params.matchId;

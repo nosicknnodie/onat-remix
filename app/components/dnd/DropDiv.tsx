@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type { ComponentProps } from "react";
 import { useDrop } from "react-dnd";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const MotionDiv = motion.div;
 

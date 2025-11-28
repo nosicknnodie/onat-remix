@@ -1,7 +1,7 @@
 import { FORMAT_TEXT_COMMAND } from "lexical";
 import { GoStrikethrough } from "react-icons/go";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useActiveEditor, useToolbarState } from "../Context";
 
 interface IStrikethroughButtonProps {}

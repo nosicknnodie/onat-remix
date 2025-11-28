@@ -23,7 +23,7 @@ import {
   type WeeklyTopRatingItem,
 } from "~/features/clubs/isomorphic";
 import { RatingStatsCard } from "~/features/matches/client";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 interface IClubPageProps {}
 

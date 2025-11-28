@@ -6,7 +6,7 @@ import FormSuccess from "~/components/FormSuccess";
 import { Loading } from "~/components/Loading";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 interface ILoginFormProps extends ComponentProps<typeof Form> {
   values?: { email?: string };

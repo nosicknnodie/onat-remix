@@ -1,7 +1,7 @@
 import { FORMAT_TEXT_COMMAND } from "lexical";
 import { VscCode } from "react-icons/vsc";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useActiveEditor, useToolbarState } from "../Context";
 
 interface IInsertCodeButtonProps {}

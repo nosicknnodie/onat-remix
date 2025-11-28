@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { boardService } from "~/features/clubs/server";
-import { getUser } from "~/libs/db/lucia.server";
+import { getUser } from "~/libs/server/db/lucia";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const clubId = params.clubId;

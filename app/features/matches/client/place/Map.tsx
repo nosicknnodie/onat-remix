@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { Map as Kmap } from "react-kakao-maps-sdk";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 interface IKakaoMapProps extends ComponentProps<typeof Kmap> {}
 const KakaoMap = ({ className, id: _id, ...props }: IKakaoMapProps) => {

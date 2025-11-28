@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/complexity/useDateNow: off */
 import { TokenType } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 /**
  * 패스워드 리셋토큰 생성

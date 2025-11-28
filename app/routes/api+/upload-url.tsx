@@ -12,7 +12,7 @@ import {
 } from "@remix-run/node/dist/upload/fileUploadHandler";
 import sharp from "sharp";
 import { fileService } from "~/features/files/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 
 export const loader: LoaderFunction = async () => {
   // 필요 시 GET presigned URL도 여기서 처리 가능

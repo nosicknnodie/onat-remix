@@ -1,7 +1,7 @@
 import type { FilePurposeType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import sharp from "sharp";
-import { getUser, prisma, sendBufferToPublicImage } from "~/libs/index.server";
+import { getUser, prisma, sendBufferToPublicImage } from "~/libs/server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);

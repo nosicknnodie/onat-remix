@@ -1,4 +1,4 @@
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 import { issuePasswordResetToken } from "./token.service";
 
 /**

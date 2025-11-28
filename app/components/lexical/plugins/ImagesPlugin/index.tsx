@@ -44,7 +44,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import {
   $createImageNode,
   $isImageNode,

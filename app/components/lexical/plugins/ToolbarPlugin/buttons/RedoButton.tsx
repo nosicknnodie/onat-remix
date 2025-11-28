@@ -1,7 +1,7 @@
 import { REDO_COMMAND } from "lexical";
 import { FaRedo } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useActiveEditor, useToolbarState } from "../Context";
 
 interface IRedoButtonProps {}

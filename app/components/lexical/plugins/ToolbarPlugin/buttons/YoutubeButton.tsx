@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { INSERT_YOUTUBE_COMMAND } from "../../YouTubePlugin";
 import { useActiveEditor, useToolbarState } from "../Context";
 

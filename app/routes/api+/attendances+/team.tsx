@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import dayjs from "dayjs";
 import * as z from "zod";
 import { memberService } from "~/features/clubs/server";
-import { getUser, prisma } from "~/libs/index.server";
+import { getUser, prisma } from "~/libs/server";
 
 const TeamAssignmentSchema = z.object({
   teamId: z.string(),

@@ -9,8 +9,8 @@ import { Button } from "~/components/ui/button";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
 import { EMPTY_MATCH_DESCRIPTION, parseUpdate } from "~/features/matches/isomorphic";
 import { detailService } from "~/features/matches/server";
-import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs";
-import { getUser, parseRequestData } from "~/libs/index.server";
+import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs/isomorphic";
+import { getUser, parseRequestData } from "~/libs/server";
 import { jsonFail } from "~/utils/action.server";
 
 export const handle = { breadcrumb: "매치 수정" };

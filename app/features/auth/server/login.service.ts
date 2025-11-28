@@ -1,10 +1,10 @@
 import { redirect } from "@remix-run/node";
 import bcrypt from "bcryptjs";
 import _ from "lodash";
-import { prisma } from "~/libs/db/db.server";
-import { lucia } from "~/libs/db/lucia.server";
-import { sendVerificationEmail } from "~/libs/mail.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { prisma } from "~/libs/server/db/db";
+import { lucia } from "~/libs/server/db/lucia";
+import { sendVerificationEmail } from "~/libs/server/mail";
+import { parseRequestData } from "~/libs/server/requestData";
 import { loginValidators } from "../isomorphic";
 import { findKeyByEmail } from "./queries";
 import { issueVerificationToken } from "./token.service";

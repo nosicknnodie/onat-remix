@@ -1,5 +1,5 @@
 import type { PositionType } from "@prisma/client";
-import { AES, prisma } from "~/libs/index.server";
+import { AES, prisma } from "~/libs/server";
 import type { MercenaryFormValues } from "../isomorphic";
 import * as q from "./mercenaries.queries";
 

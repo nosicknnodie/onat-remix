@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import type { AttendanceCheckStatus, AttendanceStatus } from "~/features/matches/isomorphic";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import {
   type AttendanceSummaryItem,
   type PendingSummaryItem,

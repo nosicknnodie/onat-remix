@@ -14,7 +14,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem } from "~/components/ui/pagination";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import type { IKakaoLocalType } from "~/libs/map";
+import type { IKakaoLocalType } from "~/libs/isomorphic/map";
 
 interface IProps extends PropsWithChildren {
   onSubmit?: (value: IKakaoLocalType) => void;

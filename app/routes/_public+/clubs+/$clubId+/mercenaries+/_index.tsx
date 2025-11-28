@@ -16,7 +16,7 @@ import {
   useMercenariesQuery,
 } from "~/features/matches/isomorphic";
 import { useIsMobile } from "~/hooks/use-mobile";
-import { removePhoneHyphen } from "~/libs/convert";
+import { removePhoneHyphen } from "~/libs/isomorphic/convert";
 export const handle = { breadcrumb: "용병" };
 const MercenaryPage = () => {
   const { clubId } = useParams();

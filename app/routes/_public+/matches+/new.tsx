@@ -9,8 +9,8 @@ import { Button } from "~/components/ui/button";
 import { HistoryPlaceDownList, MatchForm, SearchPlace } from "~/features/matches/client";
 import { parseCreate } from "~/features/matches/isomorphic";
 import { createService } from "~/features/matches/server";
-import type { IKakaoLocalType } from "~/libs";
-import { getUser, parseRequestData } from "~/libs/index.server";
+import type { IKakaoLocalType } from "~/libs/isomorphic";
+import { getUser, parseRequestData } from "~/libs/server";
 import { jsonFail } from "~/utils/action.server";
 import { placeHistoryAtom } from "../../../atoms/placeHistory";
 

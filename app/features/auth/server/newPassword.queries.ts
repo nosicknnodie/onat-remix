@@ -1,5 +1,5 @@
 import { TokenType } from "@prisma/client";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 /**
  * @purpose 데이터베이스 관련 작업을 격리하여 처리합니다. 서비스 로직은 이 파일의 함수들을 통해

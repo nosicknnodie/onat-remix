@@ -28,9 +28,9 @@ import {
 } from "~/components/ui/select";
 import { boardService } from "~/features/clubs/server";
 import { useActionToast } from "~/hooks";
-import { cn } from "~/libs";
-import { getUser } from "~/libs/db/lucia.server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { cn } from "~/libs/isomorphic";
+import { getUser } from "~/libs/server/db/lucia";
+import { parseRequestData } from "~/libs/server/requestData";
 
 export const handle = {
   breadcrumb: () => "수정",

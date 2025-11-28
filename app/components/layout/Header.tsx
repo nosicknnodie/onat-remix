@@ -14,7 +14,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { useSidebar } from "~/components/ui/sidebar";
 import { useSession } from "~/contexts";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 const Header = () => {
   const user = useSession();

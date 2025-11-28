@@ -2,7 +2,7 @@ import { PositionType } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { positionSerivce } from "~/features/matches/server";
-import { parseRequestData } from "~/libs/requestData.server";
+import { parseRequestData } from "~/libs/server/requestData";
 
 const assignedSchema = z.object({
   id: z.string().optional(),

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { memberService } from "~/features/clubs/server";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 import * as q from "./match.queries";
 import { sendMatchWebhook } from "./webhook";
 

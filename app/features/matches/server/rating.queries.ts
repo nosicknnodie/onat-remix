@@ -1,5 +1,5 @@
 import { Prisma, type StatsPeriodType } from "@prisma/client";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 import type { RatingRegisterAttendanceRaw } from "../isomorphic/rating.types";
 
 export async function findMatchClubWithQuarters(matchClubId: string) {

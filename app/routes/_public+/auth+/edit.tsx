@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { redirect, useActionData, useLoaderData } from "@remix-run/react";
 import { EditorForm } from "~/features/auth/client";
 import { editService } from "~/features/auth/server";
-import { getUser } from "~/libs/index.server";
+import { getUser } from "~/libs/server";
 import type { ActionData } from "~/types/action";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

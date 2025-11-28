@@ -18,8 +18,8 @@ import {
   useSaveMatchMutation,
 } from "~/features/matches/isomorphic";
 import { useToast } from "~/hooks";
-import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs";
-import { postJson } from "~/libs/api-client";
+import { postJson } from "~/libs/client/api-client";
+import { type IKakaoLocalType, INITIAL_CENTER } from "~/libs/isomorphic";
 
 export const handle = { breadcrumb: "매치 수정" };
 

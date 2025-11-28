@@ -1,6 +1,6 @@
 import { RiTextBlock } from "react-icons/ri";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { useToolbarState } from "../../ToolbarPlugin/Context";
 
 interface IToolbarShowButtonProps {}

@@ -1,6 +1,6 @@
 import { type UseQueryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson } from "~/libs/api-client";
+import { getJson } from "~/libs/client/api-client";
 import type { Club, ClubInfoData, ClubWithMembership, IClubLayoutLoaderData } from "./types";
 
 export const clubInfoQueryKeys = {

@@ -15,8 +15,8 @@ import {
 } from "~/components/ui/select";
 import { useSession } from "~/contexts";
 import { settingsService } from "~/features/auth/server";
-import { NATIVE } from "~/libs";
-import { getUser } from "~/libs/index.server";
+import { NATIVE } from "~/libs/isomorphic";
+import { getUser } from "~/libs/server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request);

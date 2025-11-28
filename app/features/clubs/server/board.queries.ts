@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { prisma } from "~/libs/db/db.server";
+import { prisma } from "~/libs/server/db/db";
 
 const DEFAULT_BOARD_DEFINITIONS = [
   { name: "공지사항", slug: "notice", order: 0, type: "NOTICE" },

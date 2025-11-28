@@ -13,7 +13,7 @@ import {
   usePositionUpdate,
 } from "~/features/matches/isomorphic";
 import { useIsMobile } from "~/hooks/use-mobile";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import type { loader as rootLoader } from "~/root";
 
 export const handle = {

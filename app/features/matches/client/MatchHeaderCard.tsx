@@ -11,7 +11,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Link } from "~/components/ui/Link";
 import { useToast } from "~/hooks";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 
 export interface MatchHeaderCardProps {
   title: string;

@@ -1,4 +1,4 @@
-import { deletePublicImage } from "~/libs/db/s3.server";
+import { deletePublicImage } from "~/libs/server/db/s3";
 import type { ContentNode, NewPostDTO, PublishPostResult } from "../isomorphic/types";
 import {
   deleteFilesByIds,

@@ -3,7 +3,7 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import type { LexicalEditor, SerializedEditorState } from "lexical";
-import { cn } from "~/libs";
+import { cn } from "~/libs/isomorphic";
 import { nodes } from "./nodes/nodes";
 import { theme } from "./theme/theme";
 
