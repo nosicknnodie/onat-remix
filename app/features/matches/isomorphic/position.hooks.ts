@@ -103,7 +103,8 @@ type PositionUpdateOptions = {
 type PositionSocketMessage =
   | { type: "POSITION_UPDATED"; assigneds: PositionAttendance["assigneds"] }
   | { type: "POSITION_CREATED"; assigneds: PositionAttendance["assigneds"] }
-  | { type: "POSITION_REMOVED"; assignedIds: string[] };
+  | { type: "POSITION_REMOVED"; assignedIds: string[] }
+  | { type: "POSITION_RESET"; quarterId: string; teamId: string | null };
 
 export function usePositionUpdate({ url, matchClubId }: PositionUpdateOptions) {
   const queryClient = useQueryClient();
@@ -172,6 +173,17 @@ export function usePositionUpdate({ url, matchClubId }: PositionUpdateOptions) {
               assigneds: attendance.assigneds.filter(
                 (assigned) => !data.assignedIds.includes(assigned.id),
               ),
+            }));
+            return { attendances: updated };
+          }
+          if (data.type === "POSITION_RESET") {
+            const updated = old.attendances.map((attendance) => ({
+              ...attendance,
+              assigneds: attendance.assigneds.filter((assigned) => {
+                if (assigned.quarterId !== data.quarterId) return true;
+                if (data.teamId && assigned.teamId !== data.teamId) return true;
+                return false;
+              }),
             }));
             return { attendances: updated };
           }

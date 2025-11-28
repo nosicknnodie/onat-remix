@@ -175,6 +175,10 @@ export async function swapAssignedPosition(
 export const resetPosition = async (quarterId: string, teamId: string | null) => {
   try {
     await q.deleteAssignedAll(quarterId, teamId);
+    await redis.publish(
+      `position:${quarterId}`,
+      JSON.stringify({ type: "POSITION_RESET", quarterId, teamId }),
+    );
     return { ok: true as const };
   } catch (error) {
     return { ok: false as const, message: (error as Error).message };
