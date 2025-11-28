@@ -146,77 +146,77 @@ export const PositionSettingDrawer = ({
 
   return (
     <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>
-            포지션설정{" "}
-            {currentTeamId && <>({teams.find((t) => t.id === currentTeamId)?.name ?? "팀 정보"})</>}
-          </DrawerTitle>
-          <DrawerDescription>
-            {currentQuarter?.order}쿼터의 {positionType}의 포지션 설정
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="p-4 space-y-2">
-          <div className="w-full max-w-sm mx-auto">
-            <div className="relative w-full aspect-[3/2] rounded-xl border bg-muted">
-              <div className="absolute inset-0 bg-[url('/images/test.svg')] bg-cover bg-center opacity-70 rounded-xl" />
-              <div
-                className="absolute flex flex-col items-center gap-1 -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${previewCoords.left}%`, top: `${previewCoords.top}%` }}
-              >
-                <span className="text-xs font-medium text-muted-foreground">현재 포지션</span>
-                <div className="rounded-full px-3 py-2 text-xs font-semibold bg-white shadow">
-                  {positionType}
-                </div>
+      <DrawerHeader>
+        <DrawerTitle>
+          포지션설정{" "}
+          {currentTeamId && <>({teams.find((t) => t.id === currentTeamId)?.name ?? "팀 정보"})</>}
+        </DrawerTitle>
+        <DrawerDescription>
+          {currentQuarter?.order}쿼터의 {positionType}의 포지션 설정
+        </DrawerDescription>
+      </DrawerHeader>
+      <DrawerContent className="flex flex-col h-full p-4 space-y-2">
+        <div className="w-full max-w-sm mx-auto">
+          <div className="relative w-full aspect-[3/2] rounded-xl border bg-muted">
+            <div className="absolute inset-0 bg-[url('/images/test.svg')] bg-cover bg-center opacity-70 rounded-xl" />
+            <div
+              className="absolute flex flex-col items-center gap-1 -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${previewCoords.left}%`, top: `${previewCoords.top}%` }}
+            >
+              <span className="text-xs font-medium text-muted-foreground">현재 포지션</span>
+              <div className="rounded-full px-3 py-2 text-xs font-semibold bg-white shadow">
+                {positionType}
               </div>
             </div>
           </div>
-          {metaLoading && (
-            <div className="flex justify-center py-6">
-              <Loading />
+        </div>
+        {metaLoading && (
+          <div className="flex justify-center py-6">
+            <Loading />
+          </div>
+        )}
+        <div className="space-y-2">
+          <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
+          {assigned ? (
+            <ul className="divide-y divide-gray-200">
+              <PositionSettingRowItem
+                attendance={assigned.attendance}
+                isLoading={isMutating}
+                isAssigned={true}
+                quarters={quarters}
+                onChangeState={(state) =>
+                  handleChangeAttendanceState(assigned.attendance.id, state)
+                }
+                onCancelAssigned={() => handleCancelAssigned(assigned)}
+                isStateMutating={isStatePending}
+                isCancelPending={isCancelPending}
+              />
+            </ul>
+          ) : (
+            <div className="border rounded-md p-4 text-sm text-muted-foreground text-center">
+              현재 위치에 배정된 선수가 없습니다.
             </div>
           )}
-          <div className="space-y-2">
-            <h3 className="mb-2 text-base font-semibold">현재 위치 배정선수</h3>
-            {assigned ? (
-              <ul className="divide-y divide-gray-200">
-                <PositionSettingRowItem
-                  attendance={assigned.attendance}
-                  isLoading={isMutating}
-                  isAssigned={true}
-                  quarters={quarters}
-                  onChangeState={(state) =>
-                    handleChangeAttendanceState(assigned.attendance.id, state)
-                  }
-                  onCancelAssigned={() => handleCancelAssigned(assigned)}
-                  isStateMutating={isStatePending}
-                  isCancelPending={isCancelPending}
-                />
-              </ul>
-            ) : (
-              <div className="border rounded-md p-4 text-sm text-muted-foreground text-center">
-                현재 위치에 배정된 선수가 없습니다.
-              </div>
-            )}
-          </div>
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
-            {currentTeamId && (
-              <Select value={teamId ?? undefined} onValueChange={setTeamId}>
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue placeholder="팀 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-          <ul className="divide-y divide-gray-200">
+        </div>
+        <div className="flex justify-between items-center">
+          <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
+          {currentTeamId && (
+            <Select value={teamId ?? undefined} onValueChange={setTeamId}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="팀 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <ul className="divide-y divide-gray-200 ">
             {attendancesData?.map((attendance) => (
               <PositionSettingRowItem
                 key={attendance.id}
