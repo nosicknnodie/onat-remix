@@ -14,6 +14,7 @@ export async function setIsSelf(matchClubId: string, isSelf: boolean) {
         include: { teams: true },
       });
       if (!matchClub) throw new Error("matchClub not found");
+      let teams: { id: string; name: string; color: string }[] = [];
       if (isSelf && matchClub.teams.length < 2) {
         const before = await tx.matchClub.findFirst({
           where: { clubId: matchClub.clubId, isSelf: true, isUse: true },
@@ -21,7 +22,7 @@ export async function setIsSelf(matchClubId: string, isSelf: boolean) {
           include: { teams: true },
         });
         if (before?.teams && before.teams.length > 2) {
-          await Promise.all(
+          teams = await Promise.all(
             before.teams.map((team) =>
               tx.team.create({
                 data: { name: team.name, color: team.color, matchClubId: matchClub.id },
@@ -29,7 +30,7 @@ export async function setIsSelf(matchClubId: string, isSelf: boolean) {
             ),
           );
         } else {
-          await Promise.all([
+          teams = await Promise.all([
             tx.team.create({
               data: { name: "Team A", color: "#000000", matchClubId: matchClub.id },
             }),
@@ -39,7 +40,7 @@ export async function setIsSelf(matchClubId: string, isSelf: boolean) {
           ]);
         }
       }
-      const teams = await tx.team.findMany({ where: { matchClubId: matchClub.id } });
+      // const teams = await tx.team.findMany({ where: { matchClubId: matchClub.id } });
       await Promise.all([
         tx.matchClub.update({ where: { id: matchClubId }, data: { isSelf } }),
         tx.quarter.updateMany({
