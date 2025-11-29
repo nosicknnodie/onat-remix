@@ -26,7 +26,7 @@ import {
   usePositionContext,
   usePositionQuery,
 } from "~/features/matches/isomorphic";
-import { cn } from "~/libs/isomorphic";
+import { cn, getContrastColor } from "~/libs/isomorphic";
 import {
   isDiffPosition,
   isRLDiffPostion,
@@ -153,11 +153,18 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     // 배정이 있으면 isFormation를 false로
     isFormation = assigned?.attendance ? false : isFormation;
 
+    const teamId = assigned?.teamId || assigned?.attendance.teamId;
+    const team = matchClub?.teams.find((team) => team.id === teamId);
+    const teamColor = team?.color;
+    const contrastColor = teamColor ? getContrastColor(teamColor) : undefined;
+
     return {
       key: position,
       className,
       assigned,
       isFormation,
+      teamColor,
+      contrastColor,
     };
   });
 
@@ -350,7 +357,10 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     <>
       <div className="space-y-4 flex flex-col gap-2">
         <section>
-          <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative">
+          <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative outline outline-2 outline-[#d4edda] rounded-lg">
+            <div 
+              className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(0deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)] md:bg-[repeating-linear-gradient(90deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)]"
+            />
             <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
             <div className="absolute top-0 right-0 z-20 p-2 flex justify-end items-center gap-2">
               <Select
@@ -425,12 +435,16 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                         onClick={handlePositionClick(position.key)}
                         className={({ isDragging }) => {
                           return cn(
-                            "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary bg-white shadow-md",
+                            "rounded-full md:w-16 md:h-16 max-md:w-12 max-md:h-12 max-md:text-xs flex justify-center items-center border border-primary shadow-md font-extrabold text-lg",
                             {
                               // ["outline outline-primary"]: position.assigned,
                               "opacity-30": isDragging,
                             },
                           );
+                        }}
+                        style={{
+                          backgroundColor: position.teamColor,
+                          color: position.contrastColor,
                         }}
                       >
                         {assignMutation.isPending && position.key === selectedPositionType ? (

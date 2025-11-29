@@ -9,7 +9,7 @@ import {
   useQuarterQuery,
   useTeamQuery,
 } from "~/features/matches/isomorphic";
-import { PORMATION_POSITION_CLASSNAME } from "~/libs/isomorphic";
+import { getContrastColor, PORMATION_POSITION_CLASSNAME } from "~/libs/isomorphic";
 
 export const handle = {
   breadcrumb: () => {
@@ -86,17 +86,29 @@ const PositionPage = (_props: IPositionPageProps) => {
         ...assigned,
         className: computedClass,
         color,
+        contrastColor: color ? getContrastColor(color) : undefined,
       };
     });
   const assignedList: PositionAssigned[] =
     assigneds?.map((assigned) => {
       const name = getAttendanceDisplayName(assigned.attendance);
-      return { id: assigned.id, name, className: assigned.className, color: assigned.color };
+      return {
+        id: assigned.id,
+        name,
+        className: assigned.className,
+        color: assigned.color,
+        contrastColor: assigned.contrastColor,
+      };
     }) ?? [];
 
   return (
     <div className="lg:space-y-6 max-lg:space-y-2">
-      <PositionBoard assigned={assignedList} />
+      <PositionBoard 
+        assigned={assignedList}
+        isSelf={isSelf}
+        team1={team1 ? { name: team1.name, color: team1.color } : undefined}
+        team2={team2 ? { name: team2.name, color: team2.color } : undefined}
+      />
     </div>
   );
 };

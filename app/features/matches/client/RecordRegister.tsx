@@ -38,6 +38,16 @@ interface RecordRegisterProps extends React.PropsWithChildren {
   clubId: string;
   team?: TeamShape | null;
   canEdit?: boolean;
+  onGoalAdded?: (goal: {
+    attendanceId: string;
+    assistAttendanceId?: string;
+    teamId?: string | null;
+    quarterId: string;
+    isOwnGoal?: boolean;
+    scorerName: string;
+    scorerImage?: string;
+    assistName?: string;
+  }) => void;
 }
 
 type AttendanceForRecord = {
@@ -68,6 +78,7 @@ export const RecordRegister = ({
   clubId,
   team,
   canEdit,
+  onGoalAdded,
 }: RecordRegisterProps) => {
   const allowOwnGoal = Boolean(quarter.isSelf);
   const initialStep: "goalType" | "scorer" = allowOwnGoal ? "goalType" : "scorer";
@@ -211,12 +222,34 @@ export const RecordRegister = ({
     quarterId: string;
     isOwnGoal?: boolean;
   }) => {
-    await registerGoal(goal);
     setOpen(false);
     setGoalType(null);
     setStep("goalType");
     setScorer(null);
     setAssist(null);
+
+    if (onGoalAdded && scorer) {
+      onGoalAdded({
+        ...goal,
+        scorerName:
+          scorer.player?.user?.name ||
+          scorer.mercenary?.user?.name ||
+          scorer.mercenary?.name ||
+          "Unknown",
+        scorerImage:
+          scorer.player?.user?.userImage?.url ||
+          scorer.mercenary?.user?.userImage?.url ||
+          undefined,
+        assistName: assist
+          ? assist.player?.user?.name ||
+            assist.mercenary?.user?.name ||
+            assist.mercenary?.name ||
+            undefined
+          : undefined,
+      });
+    }
+
+    await registerGoal(goal);
   };
 
   const onSubmit = async (values: RecordGoalRequest) => {

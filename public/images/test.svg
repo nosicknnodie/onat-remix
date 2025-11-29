@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="1050" height="680" viewBox="0 0 1050 680" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="4" y="4" width="1042" height="672" rx="6" stroke="#eeeeee" stroke-width="8"/>
-<circle cx="114.5" cy="339.5" r="87.5" stroke="#eeeeee" stroke-width="8"/>
-<circle cx="944.5" cy="339.5" r="87.5" stroke="#eeeeee" stroke-width="8"/>
-<mask id="path-4-inside-1_1_1180" fill="white">
+<rect x="4" y="4" width="1042" height="672" rx="6" stroke="#ffffff" stroke-width="8"/>
+<defs>
+  <clipPath id="clip-left-circle">
+    <rect x="165" y="0" width="885" height="680"/>
+  </clipPath>
+  <clipPath id="clip-right-circle">
+    <rect x="0" y="0" width="885" height="680"/>
+  </clipPath>
+</defs>
+<circle cx="114.5" cy="339.5" r="87.5" stroke="#ffffff" stroke-width="8" clip-path="url(#clip-left-circle)"/>
+<circle cx="944.5" cy="339.5" r="87.5" stroke="#ffffff" stroke-width="8" clip-path="url(#clip-right-circle)"/>
+<mask id="path-4-inside-1_1_1180" stroke="#ffffff" stroke-width="8">
 <path d="M885 143C885 140.239 887.239 138 890 138H1050V541.2H890C887.239 541.2 885 538.961 885 536.2V143Z"/>
 </mask>
-<path d="M885 143C885 140.239 887.239 138 890 138H1050V541.2H890C887.239 541.2 885 538.961 885 536.2V143Z" fill="white" stroke="#eeeeee" stroke-width="16" mask="url(#path-4-inside-1_1_1180)"/>
-<mask id="path-5-inside-2_1_1180" fill="white">
+<path d="M885 143C885 140.239 887.239 138 890 138H1050V541.2H890C887.239 541.2 885 538.961 885 536.2V143Z" fill="white" stroke="#ffffff" stroke-width="16" mask="url(#path-4-inside-1_1_1180)"/>
+<mask id="path-5-inside-2_1_1180"  stroke="#ffffff" stroke-width="8">
 <path d="M0 138H160C162.761 138 165 140.239 165 143V536.2C165 538.961 162.761 541.2 160 541.2H0V138Z"/>
 </mask>
-<path d="M0 138H160C162.761 138 165 140.239 165 143V536.2C165 538.961 162.761 541.2 160 541.2H0V138Z" fill="white" stroke="#eeeeee" stroke-width="16" mask="url(#path-5-inside-2_1_1180)"/>
-<rect x="4" y="252" width="47" height="175.2" fill="white" stroke="#eeeeee" stroke-width="8"/>
-<rect x="999" y="252" width="47" height="175.2" fill="white" stroke="#eeeeee" stroke-width="8"/>
-<circle cx="116" cy="340" r="4" fill="#eeeeee" stroke="#eeeeee" stroke-width="4"/>
-<circle cx="946" cy="340" r="4" fill="#eeeeee" stroke="#eeeeee" stroke-width="4"/>
-<circle cx="525.5" cy="339.5" r="87.5" stroke="#eeeeee" stroke-width="8"/>
-<line x1="529" y1="1.74846e-07" x2="529" y2="680" stroke="#eeeeee" stroke-width="8"/>
-<circle cx="529" cy="340" r="4" stroke="#eeeeee" stroke-width="8"/>
+<path d="M0 138H160C162.761 138 165 140.239 165 143V536.2C165 538.961 162.761 541.2 160 541.2H0V138Z" fill="white" stroke="#ffffff" stroke-width="16" mask="url(#path-5-inside-2_1_1180)"/>
+<rect x="4" y="252" width="47" height="175.2" stroke="#ffffff" stroke-width="8"/>
+<rect x="999" y="252" width="47" height="175.2"  stroke="#ffffff" stroke-width="8"/>
+<circle cx="116" cy="340" r="4" fill="#ffffff" stroke="#ffffff" stroke-width="4"/>
+<circle cx="946" cy="340" r="4" fill="#ffffff" stroke="#ffffff" stroke-width="4"/>
+<circle cx="525.5" cy="339.5" r="87.5" stroke="#ffffff" stroke-width="8"/>
+<line x1="529" y1="1.74846e-07" x2="529" y2="680" stroke="#ffffff" stroke-width="8"/>
+<circle cx="529" cy="340" r="4" stroke="#ffffff" stroke-width="8"/>
 </svg>
 
 

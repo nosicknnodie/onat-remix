@@ -19,13 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   type PositionAssignedWithAttendance,
   type PositionAttendance,
@@ -183,20 +177,17 @@ export const PositionSettingDrawer = ({
           )}
         </div>
         <div className="flex justify-between items-center">
-          <h3 className="text-base font-semibold">배정 가능 선수 리스트</h3>
+          <h3 className="text-base font-semibold">선수 리스트</h3>
           {currentTeamId && (
-            <Select value={teamId ?? undefined} onValueChange={setTeamId}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="팀 선택" />
-              </SelectTrigger>
-              <SelectContent>
+            <Tabs value={teamId ?? undefined} onValueChange={setTeamId}>
+              <TabsList>
                 {teams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
+                  <TabsTrigger key={team.id} value={team.id}>
                     {team.name}
-                  </SelectItem>
+                  </TabsTrigger>
                 ))}
-              </SelectContent>
-            </Select>
+              </TabsList>
+            </Tabs>
           )}
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2">

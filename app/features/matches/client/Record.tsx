@@ -147,6 +147,7 @@ export function GoalItem({
   FaFutbol,
   Button,
   canDelete = true,
+  isPending,
 }: {
   id: string;
   name: string;
@@ -162,6 +163,7 @@ export function GoalItem({
   FaFutbol: React.ComponentType<{ className?: string }>;
   Button: React.ComponentType<Record<string, unknown>>;
   canDelete?: boolean;
+  isPending?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -187,6 +189,7 @@ export function GoalItem({
           x
         </Button>
       )}
+      {isPending && <Loading className="w-3 h-3" />}
     </div>
   );
 }

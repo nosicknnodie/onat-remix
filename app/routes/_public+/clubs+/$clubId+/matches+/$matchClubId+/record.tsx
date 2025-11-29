@@ -2,7 +2,7 @@
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { useParams } from "@remix-run/react";
 import dayjs from "dayjs";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { FaFutbol } from "react-icons/fa";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
@@ -47,6 +47,48 @@ const RecordPage = (_props: IRecordPageProps) => {
   const isRecordLocked = match ? dayjs().isAfter(dayjs(match.stDate).add(5, "day")) : false;
   const canEdit = canManage && !isRecordLocked;
 
+  const [pendingGoals, setPendingGoals] = useState<
+    {
+      id: string;
+      quarterId: string;
+      teamId?: string | null;
+      name: string;
+      imageUrl?: string;
+      isOwner?: boolean;
+      assistName?: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    if (data) {
+      setPendingGoals([]);
+    }
+  }, [data]);
+
+  const handleGoalAdded = (goal: {
+    attendanceId: string;
+    assistAttendanceId?: string;
+    teamId?: string | null;
+    quarterId: string;
+    isOwnGoal?: boolean;
+    scorerName: string;
+    scorerImage?: string;
+    assistName?: string;
+  }) => {
+    setPendingGoals((prev) => [
+      ...prev,
+      {
+        id: `pending-${Date.now()}`,
+        quarterId: goal.quarterId,
+        teamId: goal.teamId,
+        name: goal.scorerName,
+        imageUrl: goal.scorerImage,
+        isOwner: goal.isOwnGoal,
+        assistName: goal.assistName,
+      },
+    ]);
+  };
+
   if (isLoading) {
     return (
       <div className="py-10 flex justify-center">
@@ -88,6 +130,27 @@ const RecordPage = (_props: IRecordPageProps) => {
                 />
               );
             });
+          const pendingTeam1Goals = pendingGoals
+            .filter((goal) => {
+              return (
+                goal.quarterId === quarter.id &&
+                (goal.teamId === quarter.team1Id || !quarter.team1Id)
+              );
+            })
+            .map((goal) => (
+              <GoalComponent
+                key={goal.id}
+                id={goal.id}
+                name={goal.name}
+                imageUrl={goal.imageUrl}
+                isOwner={goal.isOwner}
+                assistName={goal.assistName}
+                onRefetch={async () => {}}
+                canEdit={false}
+                isPending={true}
+              />
+            ));
+          const team1ContentCombined = [...team1Goals, ...pendingTeam1Goals];
           const team2Goals = quarter.records
             .filter((goal) => {
               return goal.teamId === quarter.team2Id;
@@ -115,6 +178,24 @@ const RecordPage = (_props: IRecordPageProps) => {
                 />
               );
             });
+          const pendingTeam2Goals = pendingGoals
+            .filter((goal) => {
+              return goal.quarterId === quarter.id && goal.teamId === quarter.team2Id;
+            })
+            .map((goal) => (
+              <GoalComponent
+                key={goal.id}
+                id={goal.id}
+                name={goal.name}
+                imageUrl={goal.imageUrl}
+                isOwner={goal.isOwner}
+                assistName={goal.assistName}
+                onRefetch={async () => {}}
+                canEdit={false}
+                isPending={true}
+              />
+            ));
+          const team2ContentCombined = [...team2Goals, ...pendingTeam2Goals];
           return (
             <QuarterRecord
               key={quarter.id}
@@ -123,8 +204,8 @@ const RecordPage = (_props: IRecordPageProps) => {
               end={index === quarters.length - 1}
               isSameTeam1={isSameTeam1}
               isSameTeam2={isSameTeam2}
-              team1Content={team1Goals}
-              team2Content={team2Goals}
+              team1Content={team1ContentCombined}
+              team2Content={team2ContentCombined}
               canEdit={canEdit}
               Dialog={({ quarter: dialogQuarter, team, children }) => (
                 <RecordRegister
@@ -132,6 +213,7 @@ const RecordPage = (_props: IRecordPageProps) => {
                   clubId={clubId}
                   team={team ?? undefined}
                   canEdit={canEdit}
+                  onGoalAdded={handleGoalAdded}
                 >
                   {children}
                 </RecordRegister>
@@ -152,6 +234,7 @@ const GoalComponent = ({
   assistName,
   onRefetch,
   canEdit,
+  isPending,
 }: {
   id: string;
   name: string;
@@ -160,6 +243,7 @@ const GoalComponent = ({
   assistName?: string;
   onRefetch: () => Promise<void>;
   canEdit: boolean;
+  isPending?: boolean;
 }) => {
   const [_isPending, startTransition] = useTransition();
   const handleDelGoal = (id: string) => {
@@ -197,7 +281,8 @@ const GoalComponent = ({
       Loading={Loading}
       FaFutbol={FaFutbol}
       Button={Button}
-      canDelete={canEdit}
+      canDelete={canEdit && !isPending}
+      isPending={isPending}
     />
   );
 };
