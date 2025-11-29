@@ -358,10 +358,8 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
       <div className="space-y-4 flex flex-col gap-2">
         <section>
           <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative outline outline-2 outline-[#d4edda] rounded-lg">
-            <div 
-              className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(0deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)] md:bg-[repeating-linear-gradient(90deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)]"
-            />
-            <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(0deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)] md:bg-[repeating-linear-gradient(90deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)]" />
+            <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/board-vertical.svg')] md:bg-[url('/images/board.svg')] bg-cover bg-center" />
             <div className="absolute top-0 right-0 z-20 p-2 flex justify-end items-center gap-2">
               <Select
                 value={positionTemplate}

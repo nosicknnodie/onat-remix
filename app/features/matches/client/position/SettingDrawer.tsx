@@ -137,7 +137,7 @@ export const PositionSettingDrawer = ({
         </DrawerHeader>
         <div className="w-full max-w-sm mx-auto">
           <div className="relative w-full aspect-[3/2] rounded-xl border bg-muted">
-            <div className="absolute inset-0 bg-[url('/images/test.svg')] bg-cover bg-center opacity-70 rounded-xl" />
+            <div className="absolute inset-0 bg-[url('/images/board.svg')] bg-cover bg-center opacity-70 rounded-xl" />
             <div
               className="absolute flex flex-col items-center gap-1 -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${previewCoords.left}%`, top: `${previewCoords.top}%` }}

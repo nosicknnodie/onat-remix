@@ -33,30 +33,26 @@ export function PositionBoard({
 }) {
   return (
     <section>
-      <div 
-        className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative outline outline-2 outline-[#d4edda] rounded-lg"
-      >
-        <div 
-          className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(0deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)] md:bg-[repeating-linear-gradient(90deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)]"
-        />
-        <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/test-vertical.svg')] md:bg-[url('/images/test.svg')] bg-cover bg-center fill-white" />
+      <div className="w-full overflow-hidden max-md:pb-[154.41%] md:pb-[64.76%] relative outline outline-2 outline-[#d4edda] rounded-lg">
+        <div className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(0deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)] md:bg-[repeating-linear-gradient(90deg,#e8f5e9_0%,#e8f5e9_10%,#d4edda_10%,#d4edda_20%)]" />
+        <div className="absolute top-0 left-0 w-full h-full z-10 max-md:bg-[url('/images/board-vertical.svg')] md:bg-[url('/images/board.svg')] bg-cover bg-center fill-white" />
         {isSelf && team2 && (
-          <div 
+          <div
             className="absolute md:top-2 md:right-2 max-md:top-2 max-md:left-2 z-20 px-3 py-1.5 rounded-md font-bold text-sm md:text-base shadow-md"
             style={{
-              backgroundColor: team2.color ? `${team2.color}dd` : '#00000033',
-              color: team2.color ? '#ffffff' : '#000000',
+              backgroundColor: team2.color ? `${team2.color}dd` : "#00000033",
+              color: team2.color ? "#ffffff" : "#000000",
             }}
           >
             {team2.name}
           </div>
         )}
         {isSelf && team1 && (
-          <div 
+          <div
             className="absolute md:top-2 md:left-2 max-md:bottom-2 max-md:left-2 z-20 px-3 py-1.5 rounded-md font-bold text-sm md:text-base shadow-md"
             style={{
-              backgroundColor: team1.color ? `${team1.color}dd` : '#00000033',
-              color: team1.color ? '#ffffff' : '#000000',
+              backgroundColor: team1.color ? `${team1.color}dd` : "#00000033",
+              color: team1.color ? "#ffffff" : "#000000",
             }}
           >
             {team1.name}

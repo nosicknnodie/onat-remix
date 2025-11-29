@@ -51,7 +51,7 @@ const Position = ({
       <div className="py-4">
         <div className="w-full overflow-hidden pb-[154.41%] relative md:hidden">
           <img
-            src={"/images/test-vertical.svg"}
+            src={"/images/board-vertical.svg"}
             alt="soccer field"
             className="absolute top-0 left-0 w-full h-full"
           />
@@ -89,7 +89,7 @@ const Position = ({
         </div>
         <div className="w-full overflow-hidden pb-[64.76%] relative max-md:hidden">
           <img
-            src={"/images/test.svg"}
+            src={"/images/board.svg"}
             alt="soccer field"
             className="absolute top-0 left-0 w-full h-full"
           />
