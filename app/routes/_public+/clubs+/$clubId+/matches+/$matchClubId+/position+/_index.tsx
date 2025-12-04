@@ -103,7 +103,7 @@ const PositionPage = (_props: IPositionPageProps) => {
 
   return (
     <div className="lg:space-y-6 max-lg:space-y-2">
-      <PositionBoard 
+      <PositionBoard
         assigned={assignedList}
         isSelf={isSelf}
         team1={team1 ? { name: team1.name, color: team1.color } : undefined}

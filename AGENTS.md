@@ -1,6 +1,9 @@
 # 답변방식
  - 한글로 답변
 
+# 코드작성시 CONVENTION
+ - docs/CONVENTION.md 여기를 참조.
+
 # 코드 작성이나 마무리할때
  - 타입 및 린트 체크
  - pnpm verify

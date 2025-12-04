@@ -56,17 +56,23 @@ INSERT INTO "onat"."AttendanceRatingStats" (
 SELECT
   a.id AS "attendanceId",
   CASE
-    WHEN COALESCE(cnt.voterCount, 0) >= 3
+    WHEN COALESCE(cnt.voterCount, 0) > 0
       THEN ROUND(COALESCE(cnt.totalRating, 0)::numeric / cnt.voterCount, 2)
-    ELSE 0
+    ELSE NULL
   END AS "averageRating",
   CASE
-    WHEN COALESCE(cnt.voterCount, 0) >= 3
+    WHEN COALESCE(cnt.voterCount, 0) > 0
       THEN COALESCE(cnt.totalRating, 0)::numeric
-    ELSE 0
+    ELSE NULL
   END AS "totalRating",
-  COALESCE(cnt.voterCount, 0) AS "voterCount",
-  COALESCE(cnt.likeCount, 0) AS "likeCount"
+  CASE
+    WHEN COALESCE(cnt.voterCount, 0) > 0 THEN cnt.voterCount
+    ELSE NULL
+  END AS "voterCount",
+  CASE
+    WHEN COALESCE(cnt.voterCount, 0) > 0 THEN COALESCE(cnt.likeCount, 0)
+    ELSE NULL
+  END AS "likeCount"
 FROM "onat"."Attendance" a
 LEFT JOIN (
   SELECT

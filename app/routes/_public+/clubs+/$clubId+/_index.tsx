@@ -29,6 +29,9 @@ interface IClubPageProps {}
 
 type RankTab = "rating" | "like" | "goal" | "ratingSum";
 
+const scoreOrFallback = (value: number | null | undefined) =>
+  typeof value === "number" ? value : -1;
+
 const rankTabConfig: Record<
   RankTab,
   { label: ReactNode; getScore: (item: ClubYearStatItem) => number }
@@ -40,7 +43,7 @@ const rankTabConfig: Record<
         <span>평점</span>
       </span>
     ),
-    getScore: (item) => item.averageRating,
+    getScore: (item) => scoreOrFallback(item.averageRating),
   },
   like: {
     label: (
@@ -49,7 +52,7 @@ const rankTabConfig: Record<
         <span>좋아요</span>
       </span>
     ),
-    getScore: (item) => item.totalLike,
+    getScore: (item) => scoreOrFallback(item.totalLike),
   },
   goal: {
     label: (
@@ -58,7 +61,7 @@ const rankTabConfig: Record<
         <span>골득점</span>
       </span>
     ),
-    getScore: (item) => item.totalGoal,
+    getScore: (item) => scoreOrFallback(item.totalGoal),
   },
   ratingSum: {
     label: (
@@ -67,7 +70,7 @@ const rankTabConfig: Record<
         <span>평점합</span>
       </span>
     ),
-    getScore: (item) => item.totalRating,
+    getScore: (item) => scoreOrFallback(item.totalRating),
   },
 };
 
@@ -150,23 +153,33 @@ const ClubPage = (_props: IClubPageProps) => {
   const { data: weeklyTopStats } = useWeeklyTopRating(clubId);
   const weeklyCards = useMemo(() => {
     if (!weeklyTopStats || weeklyTopStats.length === 0) return [];
-    return weeklyTopStats.map((stat: WeeklyTopRatingItem) => ({
-      ...stat,
-      stats: {
-        attendance: {
-          player: {
-            id: stat.playerId,
-            nick: stat.nick ?? undefined,
-            user: {
-              nick: stat.nick ?? undefined,
-              name: stat.nick ?? undefined,
-              userImage: { url: stat.userImageUrl ?? undefined },
+    return weeklyTopStats
+      .map((stat: WeeklyTopRatingItem) => {
+        const ratingValue =
+          stat.averageRating === null || stat.averageRating === undefined
+            ? null
+            : Number(stat.averageRating);
+        const averageRating = Number.isNaN(ratingValue) ? null : ratingValue;
+        return {
+          ...stat,
+          averageRating,
+          stats: {
+            attendance: {
+              player: {
+                id: stat.playerId,
+                nick: stat.nick ?? undefined,
+                user: {
+                  nick: stat.nick ?? undefined,
+                  name: stat.nick ?? undefined,
+                  userImage: { url: stat.userImageUrl ?? undefined },
+                },
+              },
             },
+            averageRating,
           },
-        },
-        averageRating: stat.averageRating ?? 0,
-      },
-    }));
+        };
+      })
+      .filter((stat) => typeof stat.averageRating === "number" && stat.averageRating > 0);
   }, [weeklyTopStats]);
   const heroImageUrl = club?.image?.url || "/images/club-default-image.webp";
 
@@ -186,6 +199,9 @@ const ClubPage = (_props: IClubPageProps) => {
   const renderMetric = (item: ClubYearStatItem) => {
     switch (rankTab) {
       case "rating":
+        if (typeof item.averageRating !== "number") {
+          return <span className="text-xs text-muted-foreground">평점 없음</span>;
+        }
         return (
           <>
             <StarRating id={item.playerId} score={item.averageRating} />
@@ -196,6 +212,9 @@ const ClubPage = (_props: IClubPageProps) => {
           </>
         );
       case "like":
+        if (typeof item.totalLike !== "number") {
+          return <span className="text-xs text-muted-foreground">집계 없음</span>;
+        }
         return (
           <div className="whitespace-nowrap flex items-center gap-2">
             <span className="font-semibold">{item.totalLike}</span>
@@ -209,6 +228,9 @@ const ClubPage = (_props: IClubPageProps) => {
           </div>
         );
       case "ratingSum":
+        if (typeof item.totalRating !== "number") {
+          return <span className="text-xs text-muted-foreground">집계 없음</span>;
+        }
         return (
           <div className="whitespace-nowrap">
             <span className="font-semibold">{(item.totalRating / 20).toFixed(2)}</span>점

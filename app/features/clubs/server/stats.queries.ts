@@ -1,23 +1,29 @@
 import { prisma } from "~/libs/server/db/db";
 
+const toNullableNumber = (value: unknown): number | null => {
+  if (value === null || value === undefined) return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
+};
+
 type PlayerYearStat = {
   playerId: string;
   nick: string | null;
   userImageUrl: string | null;
-  averageRating: number;
+  averageRating: number | null;
   totalGoal: number;
-  totalLike: number;
-  totalRating: number;
+  totalLike: number | null;
+  totalRating: number | null;
 };
 
 type ClubYearStatItem = {
   playerId: string;
   nick: string | null;
   userImageUrl: string | null;
-  averageRating: number;
+  averageRating: number | null;
   totalGoal: number;
-  totalLike: number;
-  totalRating: number;
+  totalLike: number | null;
+  totalRating: number | null;
   matchCount: number;
   attendanceRate: number;
 };
@@ -54,10 +60,10 @@ export async function getClubYearStats(input: {
     playerId: stat.playerId,
     nick: stat.player?.nick ?? null,
     userImageUrl: stat.player?.user?.userImage?.url ?? null,
-    averageRating: Number(stat.averageRating ?? 0),
+    averageRating: toNullableNumber(stat.averageRating),
     totalGoal: Number(stat.totalGoal ?? 0),
-    totalLike: Number(stat.totalLike ?? 0),
-    totalRating: Number(stat.totalRating ?? 0),
+    totalLike: toNullableNumber(stat.totalLike),
+    totalRating: toNullableNumber(stat.totalRating),
   }));
 }
 
@@ -119,10 +125,10 @@ export async function getClubYearMainStats(input: {
         playerId: s.playerId,
         nick: s.player?.nick ?? null,
         userImageUrl: s.player?.user?.userImage?.url ?? null,
-        averageRating: Number(s.averageRating ?? 0),
+        averageRating: toNullableNumber(s.averageRating),
         totalGoal: s.totalGoal ?? 0,
-        totalLike: s.totalLike ?? 0,
-        totalRating: Number(s.totalRating ?? 0),
+        totalLike: toNullableNumber(s.totalLike),
+        totalRating: toNullableNumber(s.totalRating),
         matchCount,
         attendanceRate,
       };
@@ -178,6 +184,6 @@ export async function getWeeklyTopRating(clubId: string) {
     matchDate: top.attendance.matchClub?.match?.stDate?.toISOString() ?? null,
     nick: top.attendance.player?.nick ?? null,
     userImageUrl: top.attendance.player?.user?.userImage?.url ?? null,
-    averageRating: top.averageRating,
+    averageRating: toNullableNumber(top.averageRating),
   }));
 }

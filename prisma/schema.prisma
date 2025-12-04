@@ -503,10 +503,10 @@ model AttendanceRatingStats {
   attendanceId String @id
   attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
-  averageRating Decimal  @default(0) // 해당 선수의 평균 평점(정수로 저장, 필요 시 100배 등 스케일 사용)
-  totalRating   Decimal  @default(0) // 해당 선수의 평점 합계
-  voterCount    Int  @default(0) // 몇 명이 평점을 남겼는지
-  likeCount     Int  @default(0) // 받은 좋아요 누적
+  averageRating Decimal? // 해당 선수의 평균 평점(정수로 저장, 필요 시 100배 등 스케일 사용)
+  totalRating   Decimal? // 해당 선수의 평점 합계
+  voterCount    Int? // 몇 명이 평점을 남겼는지
+  likeCount     Int? // 받은 좋아요 누적
 }
 
 model AttendanceRatingVote {

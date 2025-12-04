@@ -57,8 +57,11 @@ export function RatingStatsListItem({
   const isPerception = stats.attendance.checkTime
     ? new Date(matchStartDate) < new Date(stats.attendance.checkTime)
     : false;
-  const averageRating = stats.averageRating ?? 0;
-  const voterCount = stats.voterCount ?? 0;
+  const hasRating = typeof stats.averageRating === "number";
+  const averageRating = hasRating ? (stats.averageRating ?? 0) : 0;
+  const averageText = hasRating ? (averageRating / 20).toFixed(2) : "-";
+  const voterText = typeof stats.voterCount === "number" ? String(stats.voterCount) : "-";
+  const likeText = typeof stats.likeCount === "number" ? String(stats.likeCount) : "-";
   return (
     <div
       className={cn(
@@ -111,14 +114,14 @@ export function RatingStatsListItem({
             id={`${stats.attendance.id}-star-id`}
             score={averageRating}
             width={20}
-            isHighLight
+            isHighLight={hasRating}
           />
-          <span className="text-xs ">{(averageRating / 20).toFixed(2)}</span>
-          <span className="text-xs max-sm:hidden sm:block">{voterCount} voters</span>
+          <span className="text-xs ">{averageText}</span>
+          <span className="text-xs max-sm:hidden sm:block">{voterText} voters</span>
         </div>
         <div className="flex items-end gap-2 text-xs text-muted-foreground">
           <FiHeart className="text-pink-500" />
-          <span className="text-foreground">{stats.likeCount ?? 0}</span>
+          <span className="text-foreground">{likeText}</span>
         </div>
       </div>
     </div>
@@ -133,7 +136,10 @@ export const RatingStatsCard = ({
   rank?: 1 | 2 | 3;
 }) => {
   const name = getAttendanceDisplayName(stats?.attendance);
-  const averageRating = stats?.averageRating ?? 0;
+  const hasRating = typeof stats?.averageRating === "number";
+  const averageRating = hasRating ? (stats?.averageRating ?? 0) : 0;
+  const averageText = hasRating ? (averageRating / 20).toFixed(2) : "-";
+  const averageWithScale = hasRating ? `${averageText} / 3` : "평가 없음";
   const rankLabel = rank ? { 1: "MOM", 2: "2ND", 3: "3RD" }[rank] : "";
   return (
     <>
@@ -200,7 +206,7 @@ export const RatingStatsCard = ({
                     score={averageRating}
                     className="text-amber-400"
                   ></StarRating>
-                  <span className="ml-2 text-sm">{(averageRating / 20).toFixed(2)} / 3</span>
+                  <span className="ml-2 text-sm">{averageWithScale}</span>
                 </div>
               </div>
             </div>
@@ -228,7 +234,11 @@ export function _RatingStatsCard({
       ></div>
     );
   }
-  const averageRating = stats.averageRating ?? 0;
+  const hasRating = typeof stats.averageRating === "number";
+  const averageRating = hasRating ? (stats.averageRating ?? 0) : 0;
+  const averageText = hasRating ? (averageRating / 20).toFixed(2) : "-";
+  const voterText =
+    typeof stats.voterCount === "number" ? `${stats.voterCount} voters` : "투표 없음";
   return (
     <div className="flex flex-col justify-center items-center w-full gap-2">
       <div className="font-semibold text-sm drop-shadow-sm flex gap-1 items-center">
@@ -279,12 +289,12 @@ export function _RatingStatsCard({
           id={`${stats?.attendance.id}-star-id`}
           score={averageRating}
           width={20}
-          isHighLight
+          isHighLight={hasRating}
         />
-        <span className="text-xs ">{(averageRating / 20).toFixed(2)}</span>
+        <span className="text-xs ">{averageText}</span>
       </div>
       <div className="flex items-end">
-        <p className="text-xs italic text-gray-600">{stats?.voterCount ?? 0} voters</p>
+        <p className="text-xs italic text-gray-600">{voterText}</p>
       </div>
     </div>
   );

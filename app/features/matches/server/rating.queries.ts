@@ -243,11 +243,9 @@ async function calculateRangeStats(start: Date, end: Date, playerId: string) {
       }),
     ]);
 
-  const total = ratingStats.reduce(
-    (acc: number, current) => acc + Number(current.averageRating ?? 0),
-    0,
-  );
-  const average = ratingStats.length ? total / ratingStats.length : 0;
+  const validStats = ratingStats.filter((stat) => stat.averageRating !== null);
+  const total = validStats.reduce((acc: number, current) => acc + Number(current.averageRating), 0);
+  const average = validStats.length ? total / validStats.length : null;
   const clubMatchCount = await prisma.matchClub.count({
     where: {
       clubId: playerClub?.clubId ?? "",
@@ -331,8 +329,13 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
   );
 
   await prisma.$transaction(
-    histories.map((history) =>
-      prisma.playerStatsHistory.upsert({
+    histories.map((history) => {
+      const averageDecimal =
+        history.average === null || history.average === undefined
+          ? null
+          : new Prisma.Decimal(history.average);
+      const totalDecimal = new Prisma.Decimal(history.total);
+      return prisma.playerStatsHistory.upsert({
         where: {
           playerId_periodType_periodKey: {
             playerId,
@@ -341,8 +344,8 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
           },
         },
         update: {
-          averageRating: new Prisma.Decimal(history.average),
-          totalRating: new Prisma.Decimal(history.total),
+          averageRating: averageDecimal,
+          totalRating: totalDecimal,
           matchCount: history.matchCount,
           totalGoal: history.totalGoal,
           totalAssist: history.totalAssist,
@@ -353,16 +356,16 @@ async function upsertPlayerStatsHistory(attendanceId: string) {
           playerId,
           periodType: history.periodType,
           periodKey: history.periodKey,
-          averageRating: new Prisma.Decimal(history.average),
-          totalRating: new Prisma.Decimal(history.total),
+          averageRating: averageDecimal,
+          totalRating: totalDecimal,
           matchCount: history.matchCount,
           totalGoal: history.totalGoal,
           totalAssist: history.totalAssist,
           totalLike: history.totalLike,
           voteRate: history.voteRate,
         },
-      }),
-    ),
+      });
+    }),
   );
 }
 
@@ -382,23 +385,29 @@ export async function recalcAttendanceRatingStats(attendanceId: string) {
 
   const totalRating = aggregates._sum.score ?? 0;
   const voterCount = aggregates._count._all ?? 0;
-  const averageRating = voterCount > 0 ? totalRating / voterCount : 0;
-  const totalRatingForStore = totalRating;
+  const hasVotes = voterCount > 0;
+  const averageRating = hasVotes ? totalRating / voterCount : null;
+  const totalRatingForStore = hasVotes ? totalRating : null;
+  const likeCountForStore = hasVotes ? likeCount : null;
+  const voterCountForStore = hasVotes ? voterCount : null;
+  const averageDecimal = averageRating === null ? null : new Prisma.Decimal(averageRating);
+  const totalDecimal =
+    totalRatingForStore === null ? null : new Prisma.Decimal(totalRatingForStore);
 
   await prisma.attendanceRatingStats.upsert({
     where: { attendanceId },
     update: {
-      averageRating: new Prisma.Decimal(averageRating),
-      totalRating: new Prisma.Decimal(totalRatingForStore),
-      voterCount,
-      likeCount,
+      averageRating: averageDecimal,
+      totalRating: totalDecimal,
+      voterCount: voterCountForStore,
+      likeCount: likeCountForStore,
     },
     create: {
       attendanceId,
-      averageRating: new Prisma.Decimal(averageRating),
-      totalRating: new Prisma.Decimal(totalRatingForStore),
-      voterCount,
-      likeCount,
+      averageRating: averageDecimal,
+      totalRating: totalDecimal,
+      voterCount: voterCountForStore,
+      likeCount: likeCountForStore,
     },
   });
 
@@ -523,20 +532,26 @@ export const updateSeeds = async (matchClubId: string, userId: string, myAttenda
         const likeCount = likeMap.get(agg.attendanceId) ?? 0;
         const voterCount = agg._count._all ?? 0;
         const totalRating = agg._sum.score ?? 0;
+        const hasVotes = voterCount > 0;
+        const averageRating = hasVotes ? totalRating / voterCount : null;
+        const averageDecimal = averageRating === null ? null : new Prisma.Decimal(averageRating);
+        const totalDecimal = hasVotes ? new Prisma.Decimal(totalRating) : null;
+        const likeCountValue = hasVotes ? likeCount : null;
+        const voterCountValue = hasVotes ? voterCount : null;
         await tx.attendanceRatingStats.upsert({
           where: { attendanceId: agg.attendanceId },
           update: {
-            averageRating: voterCount > 0 ? Math.round(totalRating / voterCount) : 0,
-            totalRating,
-            voterCount,
-            likeCount,
+            averageRating: averageDecimal,
+            totalRating: totalDecimal,
+            voterCount: voterCountValue,
+            likeCount: likeCountValue,
           },
           create: {
             attendanceId: agg.attendanceId,
-            averageRating: voterCount > 0 ? Math.round(totalRating / voterCount) : 0,
-            totalRating,
-            voterCount,
-            likeCount,
+            averageRating: averageDecimal,
+            totalRating: totalDecimal,
+            voterCount: voterCountValue,
+            likeCount: likeCountValue,
           },
         });
       }

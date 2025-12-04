@@ -2,10 +2,10 @@ export type ClubYearStatItem = {
   playerId: string;
   nick: string | null;
   userImageUrl: string | null;
-  averageRating: number;
+  averageRating: number | null;
   totalGoal: number;
-  totalLike: number;
-  totalRating: number;
+  totalLike: number | null;
+  totalRating: number | null;
 };
 export interface ClubYearMainStatsItem extends ClubYearStatItem {
   matchCount: number;
@@ -20,7 +20,7 @@ export type WeeklyTopRatingItem = {
   matchDate: string | null;
   nick: string | null;
   userImageUrl: string | null;
-  averageRating: number;
+  averageRating: number | null;
 };
 
 export type WeeklyTopRatingResponse = WeeklyTopRatingItem[];

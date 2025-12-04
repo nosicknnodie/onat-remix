@@ -148,7 +148,10 @@ export const PerformanceSection = ({ data, isLoading, selectedYear, onYearChange
       },
       {
         label: "총 평점",
-        value: ((selectedStat?.totalRating ?? 0) / 20).toFixed(1) ?? "-",
+        value:
+          selectedStat?.totalRating !== null && selectedStat?.totalRating !== undefined
+            ? (selectedStat.totalRating / 20).toFixed(1)
+            : "-",
       },
       {
         label: "받은좋아요",

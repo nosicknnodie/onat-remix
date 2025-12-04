@@ -315,16 +315,19 @@ const TeamPage = (_props: ITeamPageProps) => {
     }, 0);
     const averageRating = attendances.reduce((acc, cur) => {
       const rating = playerYearDataMap.get(cur.playerId!)?.averageRating;
-      if (rating) {
+      if (typeof rating === "number") {
         totalStatsPlayerCount++;
         return acc + rating;
-      } else return acc;
+      }
+      return acc;
     }, 0);
+    const averageRatingValue =
+      totalStatsPlayerCount > 0 ? averageRating / totalStatsPlayerCount : 0;
     return {
       teamId: team.id,
       teamName: team.name,
       totalRating: (totalRating / 20).toFixed(2),
-      averageRating: (averageRating / totalStatsPlayerCount / 20).toFixed(2),
+      averageRating: (averageRatingValue / 20).toFixed(2),
       totalLike: attendances.reduce(
         (acc, cur) => acc + (playerYearDataMap.get(cur.playerId!)?.totalLike ?? 0),
         0,

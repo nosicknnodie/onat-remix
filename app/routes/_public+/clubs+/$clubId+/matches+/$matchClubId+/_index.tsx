@@ -122,16 +122,23 @@ const MatchClubIdPage = (_props: IMatchClubIdPageProps) => {
   const currentChecked = attendanceData?.currentChecked ?? null;
   const ratingStats = useMemo(() => {
     if (!ratingStatsData) return [];
-    const normalized = ratingStatsData.stats.map((stat) => ({
-      ...stat,
-      averageRating: Number(stat.averageRating ?? 0),
-    }));
+    const normalized = ratingStatsData.stats.map((stat) => {
+      if (stat.averageRating === null || stat.averageRating === undefined) {
+        return { ...stat, averageRating: null };
+      }
+      const numeric = Number(stat.averageRating);
+      return {
+        ...stat,
+        averageRating: Number.isNaN(numeric) ? null : numeric,
+      };
+    });
     const filtered = normalized
+      .filter((stat) => typeof stat.averageRating === "number")
       .filter((stat) => (stat.averageRating ?? 0) > 0)
       .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
     const voteCountFromAttendance =
       attendanceMatchClub?.attendances?.filter((a) => a.isVote).length ?? null;
-    const voteCount = voteCountFromAttendance ?? ratingStatsData.stats.length ?? 0;
+    const voteCount = voteCountFromAttendance ?? filtered.length ?? 0;
     const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
     return filtered.slice(0, Math.min(filtered.length, limit));
   }, [attendanceMatchClub, ratingStatsData]);

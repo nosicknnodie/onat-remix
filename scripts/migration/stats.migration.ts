@@ -134,7 +134,7 @@ async function calculatePlayerRangeStats(
   start: Date,
   end: Date,
 ): Promise<{
-  average: number;
+  average: number | null;
   total: number;
   matchCount: number;
   totalGoal: number;
@@ -219,9 +219,9 @@ async function calculatePlayerRangeStats(
     ],
   );
 
-  const validStats = ratingStats.filter((stat) => Number(stat.averageRating ?? 0) > 0);
-  const total = validStats.reduce((acc, current) => acc + Number(current.averageRating ?? 0), 0);
-  const average = validStats.length ? total / validStats.length : 0;
+  const validStats = ratingStats.filter((stat) => stat.averageRating !== null);
+  const total = validStats.reduce((acc, current) => acc + Number(current.averageRating), 0);
+  const average = validStats.length ? total / validStats.length : null;
   const voteRate = matchCount > 0 ? Math.round((voteCount / matchCount) * 100) : 0;
 
   return {
@@ -343,22 +343,26 @@ async function recalcAttendanceRatingStatsMigration(attendanceId: string) {
 
   const totalRating = aggregates._sum.score ?? 0;
   const voterCount = aggregates._count._all ?? 0;
-  const averageRating = voterCount > 0 ? Math.round(totalRating / voterCount) : 0;
+  const hasVotes = voterCount > 0;
+  const averageRating = hasVotes ? totalRating / voterCount : null;
+  const totalRatingForStore = hasVotes ? totalRating : null;
+  const likeCountForStore = hasVotes ? likeCount : null;
+  const voterCountForStore = hasVotes ? voterCount : null;
 
   await prisma.attendanceRatingStats.upsert({
     where: { attendanceId },
     update: {
       averageRating,
-      totalRating,
-      voterCount,
-      likeCount,
+      totalRating: totalRatingForStore,
+      voterCount: voterCountForStore,
+      likeCount: likeCountForStore,
     },
     create: {
       attendanceId,
       averageRating,
-      totalRating,
-      voterCount,
-      likeCount,
+      totalRating: totalRatingForStore,
+      voterCount: voterCountForStore,
+      likeCount: likeCountForStore,
     },
   });
 }

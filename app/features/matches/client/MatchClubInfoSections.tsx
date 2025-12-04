@@ -286,7 +286,9 @@ export function PostMatchSection({
         (item) => (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <FiHeart className="text-pink-500" />
-            <span className="font-medium text-foreground">{item.likeCount ?? 0}개</span>
+            <span className="font-medium text-foreground">
+              {typeof item.likeCount === "number" ? `${item.likeCount}개` : "집계 없음"}
+            </span>
           </div>
         ),
         "좋아요 정보가 없습니다.",

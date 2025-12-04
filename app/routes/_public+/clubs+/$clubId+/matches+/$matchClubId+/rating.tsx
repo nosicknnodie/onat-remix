@@ -56,16 +56,24 @@ const RatingPage = (_props: IRatingPageProps) => {
     { enabled: Boolean(matchClubId) },
   );
   const { data: ratingStats, isLoading: isRatingStatsLoading } = useRatingStatsQuery(matchClubId);
-  const normalizedStats = (ratingStats?.stats ?? []).map((stat) => ({
-    ...stat,
-    averageRating: Number(stat.averageRating ?? 0),
-  }));
+  const normalizedStats = (ratingStats?.stats ?? []).map((stat) => {
+    if (stat.averageRating === null || stat.averageRating === undefined) {
+      return { ...stat, averageRating: null };
+    }
+    const numeric = Number(stat.averageRating);
+    return {
+      ...stat,
+      averageRating: Number.isNaN(numeric) ? null : numeric,
+    };
+  });
   const stats = (() => {
-    const filtered = normalizedStats.sort((a, b) => b.averageRating - a.averageRating) ?? [];
+    const filtered = normalizedStats
+      .filter((stat) => typeof stat.averageRating === "number")
+      .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
     const voteCount =
       ratingRegisterData?.attendances?.filter((attendance) => attendance.isVote).length ?? 0;
     const limit = voteCount > 0 ? Math.ceil(voteCount / 2) : filtered.length;
-    return filtered.filter((stat) => stat.averageRating > 0).slice(0, limit);
+    return filtered.filter((stat) => (stat.averageRating ?? 0) > 0).slice(0, limit);
   })();
   const playerAttendances =
     ratingRegisterData?.attendances.filter(
