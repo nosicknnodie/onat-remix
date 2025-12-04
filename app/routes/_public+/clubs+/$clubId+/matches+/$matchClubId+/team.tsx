@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { useNavigate, useParams } from "@remix-run/react";
 import dayjs from "dayjs";
+import type { ReactElement } from "react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiHelpCircle } from "react-icons/fi";
 import {
@@ -8,9 +9,11 @@ import {
   BarChart,
   Cell,
   LabelList,
+  type LabelProps,
   Tooltip as RechartTooltip,
   ResponsiveContainer,
   XAxis,
+  YAxis,
 } from "recharts";
 import { Loading } from "~/components/Loading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -45,13 +48,34 @@ import {
   useTeamQuery,
   useTeamUpdateMutation,
 } from "~/features/matches/isomorphic";
+import { getContrastColor } from "~/libs/isomorphic";
+
+const TEAM_COLOR_FALLBACKS = [
+  "#2563eb",
+  "#f59e0b",
+  "#22c55e",
+  "#ec4899",
+  "#06b6d4",
+  "#a855f7",
+  "#ef4444",
+];
+
+const normalizeHexColor = (color: string | null | undefined, fallback: string) => {
+  if (typeof color !== "string") return fallback;
+  const trimmed = color.trim();
+  const normalized = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+  return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized : fallback;
+};
 
 type TeamStatsItem = {
   teamId: string;
   teamName: string;
-  averageRating: string;
-  totalRating: string;
+  averageRating: number;
+  averageTotalRating: number;
+  totalRating: number;
   totalLike: number;
+  color: string;
+  contrastColor: string;
 };
 
 function TeamStatsCharts({
@@ -63,8 +87,102 @@ function TeamStatsCharts({
   teamStats?: TeamStatsItem[];
   isLoading: boolean;
 }) {
-  const chartData = teamStats ?? [];
-  const colors = ["#2563eb", "#f59e0b", "#22c55e", "#ec4899", "#06b6d4", "#a855f7", "#ef4444"];
+  const chartData = (teamStats ?? []).map((stat, index) => {
+    const fallbackColor = TEAM_COLOR_FALLBACKS[index % TEAM_COLOR_FALLBACKS.length];
+    const color = normalizeHexColor(stat.color, fallbackColor);
+    const contrastColor = stat.contrastColor ?? getContrastColor(color);
+    return {
+      ...stat,
+      color,
+      contrastColor,
+    } satisfies TeamStatsItem;
+  });
+  const metricCharts: Array<{
+    key: keyof Pick<TeamStatsItem, "averageRating" | "averageTotalRating" | "totalLike">;
+    label: string;
+    formatter: (value: number) => string;
+  }> = [
+    {
+      key: "averageRating",
+      label: "평균 점수",
+      formatter: (value) => (Number.isFinite(value) ? value.toFixed(2) : "0"),
+    },
+    {
+      key: "averageTotalRating",
+      label: "평균 총점",
+      formatter: (value) => (Number.isFinite(value) ? value.toFixed(2) : "0"),
+    },
+    {
+      key: "totalLike",
+      label: "좋아요",
+      formatter: (value) => (Number.isFinite(value) ? value.toFixed(0) : "0"),
+    },
+  ];
+  const getMetricDomain = (
+    key: keyof Pick<TeamStatsItem, "averageRating" | "averageTotalRating" | "totalLike">,
+  ): [number, number] => {
+    if (chartData.length === 0) return [0, 1];
+    const maxValue = Math.max(
+      ...chartData.map((team) => {
+        const value = Number(team[key]);
+        return Number.isFinite(value) && value > 0 ? value : 0;
+      }),
+    );
+    if (maxValue === 0) return [0, 1];
+    return [0, maxValue * 1.15];
+  };
+
+  const createLabelRenderer = (
+    metric: (typeof metricCharts)[number],
+  ): ((props: LabelProps) => ReactElement | null) => {
+    return (props: LabelProps) => {
+      const payload = (props as LabelProps & { payload?: TeamStatsItem }).payload;
+      const rawX = props?.x ?? 0;
+      const rawY = props?.y ?? 0;
+      const rawWidth = props?.width ?? 0;
+      const rawValue = props?.value;
+      const numericX = typeof rawX === "number" ? rawX : Number(rawX);
+      const numericY = typeof rawY === "number" ? rawY : Number(rawY);
+      const numericWidth = typeof rawWidth === "number" ? rawWidth : Number(rawWidth);
+      if (rawValue === undefined || rawValue === null || Number.isNaN(Number(rawValue))) {
+        return null;
+      }
+      const formatted = metric.formatter(Number(rawValue));
+      const badgeWidth = Math.max(36, formatted.length * 7 + 12);
+      const badgeHeight = 18;
+      const centerX = numericX + numericWidth / 2;
+      const badgeX = centerX - badgeWidth / 2;
+      const badgeY = numericY - badgeHeight - 6;
+      const isDarkLabel = (payload?.contrastColor ?? "black").toLowerCase() === "white";
+      const backgroundColor = isDarkLabel ? "rgba(15,23,42,0.85)" : "rgba(255,255,255,0.95)";
+      const borderColor = isDarkLabel ? "rgba(15,23,42,0.6)" : "rgba(148,163,184,0.6)";
+      const textColor = isDarkLabel ? "#ffffff" : "#0f172a";
+      return (
+        <g>
+          <rect
+            x={badgeX}
+            y={badgeY}
+            width={badgeWidth}
+            height={badgeHeight}
+            rx={badgeHeight / 2}
+            fill={backgroundColor}
+            stroke={borderColor}
+            strokeWidth={0.5}
+          />
+          <text
+            x={centerX}
+            y={badgeY + badgeHeight / 2 + 4}
+            textAnchor="middle"
+            fill={textColor}
+            fontSize={12}
+            fontWeight={600}
+          >
+            {formatted}
+          </text>
+        </g>
+      );
+    };
+  };
 
   return (
     <div className="mb-6">
@@ -74,85 +192,63 @@ function TeamStatsCharts({
             <span>팀별 연간 평점/총점/좋아요 ({year})</span>
             {isLoading && <Loading />}
           </CardTitle>
+          {chartData.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+              {chartData.map((team) => (
+                <div key={team.teamId} className="flex items-center gap-1">
+                  <span
+                    className="inline-block size-3 rounded-full"
+                    style={{ backgroundColor: team.color }}
+                  />
+                  <span>{team.teamName}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardHeader>
-        <CardContent className="grid md:grid-cols-3 text-sm">
+        <CardContent className="grid grid-cols-3 gap-4 text-sm">
           {chartData.length > 0 ? (
             <>
-              <div className="w-full">
-                <p className="mb-2 text-sm font-semibold text-muted-foreground text-center">
-                  평균 점수
-                </p>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ left: 8, right: 8 }}>
-                      <XAxis dataKey="teamName" tickLine={false} axisLine={false} />
-                      <RechartTooltip />
-                      <Bar
-                        dataKey={"averageRating"}
-                        name="평균 점수(별)"
-                        radius={[4, 4, 0, 0]}
-                        barSize={18}
+              {metricCharts.map((metric) => (
+                <div key={metric.key} className="w-full flex flex-col">
+                  <div className="h-52">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={chartData}
+                        margin={{ top: 20, left: 8, right: 8, bottom: 0 }}
+                        barCategoryGap="5%"
                       >
-                        {chartData.map((entry, index) => (
-                          <Cell key={entry.teamId} fill={colors[index % colors.length]} />
-                        ))}
-                        <LabelList
-                          dataKey={"averageRating"}
-                          position="left"
-                          formatter={(v: number) => v?.toFixed?.(3) ?? v}
+                        <XAxis dataKey="teamName" tickLine={false} axisLine={false} hide />
+                        <YAxis hide domain={getMetricDomain(metric.key)} />
+                        <RechartTooltip
+                          formatter={(value: number) => metric.formatter(value)}
+                          labelFormatter={(label: string) => `${metric.label} · ${label}`}
                         />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                        <Bar
+                          dataKey={metric.key}
+                          name={metric.label}
+                          radius={[4, 4, 0, 0]}
+                          barSize={24}
+                        >
+                          {chartData.map((entry) => (
+                            <Cell
+                              key={`${metric.key}-${entry.teamId}`}
+                              fill={entry.color}
+                              stroke="rgba(15,23,42,0.2)"
+                              strokeWidth={0.5}
+                              style={{ filter: "drop-shadow(0px 1px 2px rgba(15,23,42,0.3))" }}
+                            />
+                          ))}
+                          <LabelList dataKey={metric.key} content={createLabelRenderer(metric)} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="mt-1 text-sm font-semibold text-muted-foreground text-center">
+                    {metric.label}
+                  </p>
                 </div>
-              </div>
-              <div className="w-full">
-                <p className="mb-2 text-sm font-semibold text-muted-foreground text-center">
-                  총 점수
-                </p>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ left: 8, right: 8 }}>
-                      <XAxis dataKey="teamName" tickLine={false} axisLine={false} />
-                      <RechartTooltip />
-                      <Bar
-                        dataKey={"totalRating"}
-                        name="총 점수(별)"
-                        radius={[4, 4, 0, 0]}
-                        barSize={18}
-                      >
-                        {chartData.map((entry, index) => (
-                          <Cell key={entry.teamId} fill={colors[index % colors.length]} />
-                        ))}
-                        <LabelList
-                          dataKey={"totalRating"}
-                          position="left"
-                          formatter={(v: number) => v?.toFixed?.(2) ?? v}
-                        />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              <div className=" w-full">
-                <p className="mb-2 text-sm font-semibold text-muted-foreground text-center">
-                  좋아요
-                </p>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ left: 8, right: 8 }}>
-                      <XAxis dataKey="teamName" tickLine={false} axisLine={false} />
-                      <RechartTooltip />
-                      <Bar dataKey="totalLike" name="좋아요" radius={[4, 4, 0, 0]} barSize={18}>
-                        {chartData.map((entry, index) => (
-                          <Cell key={entry.teamId} fill={colors[index % colors.length]} />
-                        ))}
-                        <LabelList dataKey="totalLike" position="left" />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              ))}
             </>
           ) : (
             <div className="text-sm text-muted-foreground">팀 통계가 없습니다.</div>
@@ -307,32 +403,47 @@ const TeamPage = (_props: ITeamPageProps) => {
   yearData?.forEach((item) => {
     playerYearDataMap.set(item.playerId, item);
   });
-  const teamStatsItems = teamsWithAttendances.map((team) => {
+  const teamStatsItems = teamsWithAttendances.map((team, index) => {
     const attendances = team.attendances;
-    let totalStatsPlayerCount = 0;
-    const totalRating = attendances.reduce((acc, cur) => {
-      return acc + (playerYearDataMap.get(cur.playerId!)?.totalRating ?? 0);
+    let averageRatingContributorCount = 0;
+    let totalRatingContributorCount = 0;
+    const totalRatingRaw = attendances.reduce((acc, cur) => {
+      const total = playerYearDataMap.get(cur.playerId!)?.totalRating;
+      if (typeof total === "number") {
+        totalRatingContributorCount++;
+        return acc + total;
+      }
+      return acc;
     }, 0);
-    const averageRating = attendances.reduce((acc, cur) => {
+    const averageRatingRaw = attendances.reduce((acc, cur) => {
       const rating = playerYearDataMap.get(cur.playerId!)?.averageRating;
       if (typeof rating === "number") {
-        totalStatsPlayerCount++;
+        averageRatingContributorCount++;
         return acc + rating;
       }
       return acc;
     }, 0);
+    const normalizedTotalRating = totalRatingRaw / 20;
     const averageRatingValue =
-      totalStatsPlayerCount > 0 ? averageRating / totalStatsPlayerCount : 0;
+      averageRatingContributorCount > 0 ? averageRatingRaw / averageRatingContributorCount / 20 : 0;
+    const averageTotalRatingValue =
+      totalRatingContributorCount > 0 ? normalizedTotalRating / totalRatingContributorCount : 0;
+    const fallbackColor = TEAM_COLOR_FALLBACKS[index % TEAM_COLOR_FALLBACKS.length];
+    const teamColor = normalizeHexColor(team.color, fallbackColor);
+    const contrastColor = getContrastColor(teamColor);
     return {
       teamId: team.id,
       teamName: team.name,
-      totalRating: (totalRating / 20).toFixed(2),
-      averageRating: (averageRatingValue / 20).toFixed(2),
+      totalRating: normalizedTotalRating,
+      averageRating: averageRatingValue,
+      averageTotalRating: averageTotalRatingValue,
       totalLike: attendances.reduce(
         (acc, cur) => acc + (playerYearDataMap.get(cur.playerId!)?.totalLike ?? 0),
         0,
       ),
-    };
+      color: teamColor,
+      contrastColor,
+    } satisfies TeamStatsItem;
   });
   useEffect(() => {
     if (!selectedTeamId && teams.length > 0) {
@@ -492,11 +603,7 @@ const TeamPage = (_props: ITeamPageProps) => {
           );
         })}
       </div>
-      <TeamStatsCharts
-        year={year}
-        teamStats={teamStatsItems as TeamStatsItem[] | undefined}
-        isLoading={isYearLoading}
-      />
+      <TeamStatsCharts year={year} teamStats={teamStatsItems} isLoading={isYearLoading} />
     </>
   );
 };

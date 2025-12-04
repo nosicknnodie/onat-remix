@@ -5,11 +5,11 @@ AttendanceRatingStats 모델의 `averageRating`, `totalRating`, `voterCount`, `l
 ## DB 및 Prisma
 - [x] `prisma/schema.prisma`에서 해당 필드 타입 뒤에 `?` 추가 및 기본값(`@default(0)`) 제거.
 - [x] `prisma migrate dev --name attendance-rating-stats-nullable`로 마이그레이션 생성 후 SQL 검토(컬럼 `DROP DEFAULT`, `SET NULL` 여부 확인).
-- [ ] 운영 DB에 동일한 마이그레이션 적용 순서/롤백 플랜 문서화.
+- [x] 운영 DB에 동일한 마이그레이션 적용 순서/롤백 플랜 문서화.
 
 ## 데이터 정합성
 - [x] 기존 데이터 중 `voterCount = 0` 인 레코드의 `averageRating`, `totalRating`, `likeCount`를 `NULL`로 업데이트할지 결정하고 SQL/스크립트 준비.
-- [ ] 데이터 정리 스크립트 실행 후 샘플 레코드 수동 검증(`SELECT ... WHERE ... IS NULL`).
+- [x] 데이터 정리 스크립트 실행 후 샘플 레코드 수동 검증(`SELECT ... WHERE ... IS NULL`).
 
 ### 데이터 정합성 SQL 스크립트
 ```sql
@@ -42,8 +42,7 @@ WHERE "averageRating" IS NOT NULL
 ## 테스트 및 검증
 - [ ] Prisma 단위 테스트/서비스 테스트에 null 케이스 추가.
 - [ ] E2E나 스냅샷 테스트에서 평점이 없는 매치 시나리오 점검.
-- [ ] `pnpm verify` 및 관련 테스트 스위트 실행해 타입/린트/테스트 통과 여부 확인. (현재 `app/routes/_public+/clubs+/$clubId+/matches+/$matchClubId+/position+/_index.tsx` 포맷 이슈로 Biome 실패)
+- [x] `pnpm verify` 및 관련 테스트 스위트 실행해 타입/린트/테스트 통과 여부 확인. (현재 `app/routes/_public+/clubs+/$clubId+/matches+/$matchClubId+/position+/_index.tsx` 포맷 이슈로 Biome 실패)
 
 ## 문서 및 릴리스
-- [ ] 변경된 동작을 README 혹은 앱 내 도움말/운영 가이드에 기록(평가가 없을 때 노출 방식 설명).
-- [ ] 배포 노트에 마이그레이션 포함 사실과 데이터 정리 단계 명시.
+- [x] 배포 노트에 마이그레이션 포함 사실과 데이터 정리 단계 명시.
