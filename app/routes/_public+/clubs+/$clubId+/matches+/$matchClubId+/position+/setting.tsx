@@ -23,6 +23,7 @@ import {
   useOptimisticPositionUpdate,
   usePositionAssignedDeleteAllMutation,
   usePositionAssignMutation,
+  usePositionAutoAssignMutation,
   usePositionContext,
   usePositionQuery,
 } from "~/features/matches/isomorphic";
@@ -82,6 +83,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   const [selectedPositionType, setSelectedPositionType] = useState<POSITION_TYPE>("GK");
   const [shouldShowDragPreview, setShouldShowDragPreview] = useState(false);
   const positionContext = usePositionContext();
+  const autoAssignMutation = usePositionAutoAssignMutation(matchClubId);
   const resetPositionMutation = usePositionAssignedDeleteAllMutation(matchClubId);
   const currentQuarterOrder = positionContext?.currentQuarterOrder ?? 1;
   const currentQuarter =
@@ -145,11 +147,15 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
         (resolvedTeamId === null || assigned.teamId === resolvedTeamId),
     );
 
+  const formationPositions = PORMATION_POSITIONS[positionTemplate];
+  const isFormationFull = formationPositions.every((position) =>
+    assigneds.some((assigned) => assigned.position === position),
+  );
   const positions = typedEntries(PORMATION_POSITION_CLASSNAME).map(([position, { className }]) => {
     const assigned = assigneds?.find((assigned) => assigned.position === position) || null;
-    let isFormation = PORMATION_POSITIONS[positionTemplate].includes(position);
+    let isFormation = formationPositions.includes(position);
     // 인원이 11명이 다 차면 isFormation를 false로
-    isFormation = (assigneds?.length || 0) >= maxPlayers ? false : isFormation;
+    isFormation = isFormationFull ? false : isFormation;
     // 배정이 있으면 isFormation를 false로
     isFormation = assigned?.attendance ? false : isFormation;
 
@@ -203,7 +209,8 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
   /**
    * 자동 배정
    */
-  const handleAutoFormation = () => {
+  const handleAutoFormation = async () => {
+    if (autoAssignMutation.isPending) return;
     /**
      * [LOGIC]
      * 1. validation
@@ -220,6 +227,7 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
     // 포메이션이 남는자리 있는지 확인.
     const len = assigneds?.length || 0;
     if (len >= maxPlayers) return;
+    if (!currentQuarter?.id) return;
     const needed = maxPlayers - len;
     const emptyPositions = PORMATION_POSITIONS[positionTemplate].filter((position) => {
       return !assigneds?.find((assigned) => assigned.position === position);
@@ -326,23 +334,26 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
         const lastToPosition = popNonGkPosition();
         return { ...attendance, toPosition: lastToPosition };
       })
-      .filter((attendance) => attendance.toPosition);
-    startTransition(async () => {
+      .filter(
+        (
+          attendance,
+        ): attendance is (typeof notAttendance)[number] & { toPosition: POSITION_TYPE } =>
+          Boolean(attendance.toPosition),
+      );
+    try {
       if (pushAttendances && pushAttendances.length > 0 && currentQuarter?.id) {
-        await fetch("/api/assigneds", {
-          method: "POST",
-          body: JSON.stringify(
-            pushAttendances.map((attendance) => ({
-              attendanceId: attendance.id,
-              quarterId: currentQuarter.id,
-              position: attendance.toPosition,
-              teamId: resolvedTeamId,
-            })),
-          ),
-        });
-        await query.refetch();
+        await autoAssignMutation.mutateAsync(
+          pushAttendances.map((attendance) => ({
+            attendanceId: attendance.id,
+            quarterId: currentQuarter.id,
+            position: attendance.toPosition,
+            teamId: resolvedTeamId,
+          })),
+        );
       }
-    });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (matchClubLoading || !matchClub) {
@@ -376,8 +387,13 @@ const PositionSettingPage = (_props: IPositionSettingPageProps) => {
                   ))}
                 </SelectContent>
               </Select>
-              <Button variant="outline" onClick={handleAutoFormation}>
-                자동배치
+              <Button
+                variant="outline"
+                onClick={handleAutoFormation}
+                disabled={autoAssignMutation.isPending}
+                className="w-24"
+              >
+                {autoAssignMutation.isPending ? <Loading size={16} /> : "자동배치"}
               </Button>
               <Button variant="outline" onClick={handleResetFormation}>
                 <RxReset />

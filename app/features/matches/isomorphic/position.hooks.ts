@@ -1,4 +1,4 @@
-import type { AttendanceState } from "@prisma/client";
+import type { AttendanceState, PositionType } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { del, getJson, postJson, putJson } from "~/libs/client/api-client";
@@ -295,6 +295,88 @@ export function usePositionAssignMutation(matchClubId?: string) {
       if (matchClubKey) {
         await queryClient.invalidateQueries({ queryKey: matchClubKey });
       }
+    },
+  });
+}
+
+type AutoAssignInput = {
+  attendanceId: string;
+  quarterId: string;
+  position: POSITION_TYPE;
+  teamId?: string | null;
+};
+
+type AutoAssignResponse = {
+  success: boolean;
+  assigned: PositionAttendance["assigneds"];
+};
+
+export function usePositionAutoAssignMutation(matchClubId?: string) {
+  const queryClient = useQueryClient();
+  const positionKey = useMemo(
+    () => (matchClubId ? positionQueryKeys.detail(matchClubId) : null),
+    [matchClubId],
+  );
+  return useMutation<
+    AutoAssignResponse,
+    unknown,
+    AutoAssignInput[],
+    { previousData?: PositionQueryData }
+  >({
+    mutationFn: async (input) => {
+      return postJson("/api/assigneds", input);
+    },
+    onMutate: async (input) => {
+      if (!positionKey) return undefined;
+      await queryClient.cancelQueries({ queryKey: positionKey });
+      const previousData = queryClient.getQueryData<PositionQueryData>(positionKey);
+      const now = Date.now();
+      const optimisticAssigneds = input.map((assignment, index) => {
+        const timestamp = now + index;
+        return {
+          id: `optimistic-${timestamp}`,
+          attendanceId: assignment.attendanceId,
+          quarterId: assignment.quarterId,
+          position: assignment.position as PositionType,
+          teamId: assignment.teamId ?? null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } satisfies PositionAttendance["assigneds"][number];
+      });
+
+      queryClient.setQueryData<PositionQueryData>(positionKey, (old) => {
+        if (!old) return old;
+        return {
+          attendances: old.attendances.map((attendance) => {
+            const additions = optimisticAssigneds.filter(
+              (assigned) => assigned.attendanceId === attendance.id,
+            );
+            if (additions.length === 0) return attendance;
+            const withoutDuplicate = attendance.assigneds.filter(
+              (assigned) =>
+                !additions.some(
+                  (addition) =>
+                    addition.position === assigned.position &&
+                    addition.quarterId === assigned.quarterId &&
+                    (addition.teamId ?? null) === (assigned.teamId ?? null),
+                ),
+            );
+            return { ...attendance, assigneds: [...withoutDuplicate, ...additions] };
+          }),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (_err, _input, context) => {
+      if (!positionKey) return;
+      if (context?.previousData) {
+        queryClient.setQueryData(positionKey, context.previousData);
+      }
+    },
+    onSettled: async () => {
+      if (!positionKey) return;
+      await queryClient.invalidateQueries({ queryKey: positionKey });
     },
   });
 }

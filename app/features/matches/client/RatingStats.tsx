@@ -139,7 +139,7 @@ export const RatingStatsCard = ({
   const hasRating = typeof stats?.averageRating === "number";
   const averageRating = hasRating ? (stats?.averageRating ?? 0) : 0;
   const averageText = hasRating ? (averageRating / 20).toFixed(2) : "-";
-  const averageWithScale = hasRating ? `${averageText} / 3` : "평가 없음";
+  const averageWithScale = hasRating ? `${averageText} / 5` : "평가 없음";
   const rankLabel = rank ? { 1: "MOM", 2: "2ND", 3: "3RD" }[rank] : "";
   return (
     <>
